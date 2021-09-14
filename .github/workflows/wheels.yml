@@ -104,7 +104,7 @@ jobs:
         run: echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
 
       - name: macOS pre configure enviroment
-        if: runs-on == 'macos-latest'
+        if: matrix.runs-on == 'macos-latest'
         run: |
           brew install libffi libheif
           HOMEBREW_PREFIX=$(brew --prefix)
