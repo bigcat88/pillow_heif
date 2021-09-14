@@ -26,18 +26,21 @@ def test_open_image(folder, image_name):
 
 
 @pytest.mark.parametrize(
-    ['folder', 'image_name'],
+    ['folder', 'image_name', 'present'],
     [
-        ('Pug', 'PUG1.HEIC',),
-        ('Pug', 'PUG2.HEIC',),
-        ('Pug', 'PUG3.HEIC',),
-        ('hif', '93FG5559.HIF',),
-        ('hif', '93FG5564.HIF',),
+        ('Pug', 'PUG1.HEIC', True,),
+        ('Pug', 'PUG2.HEIC', True,),
+        ('Pug', 'PUG3.HEIC', False,),
+        ('hif', '93FG5559.HIF', True,),
+        ('hif', '93FG5564.HIF', True,),
     ]
 )
-def test_open_image_exif(folder, image_name):
+def test_open_image_exif(folder, image_name, present):
     image = Image.open(os.path.join(TESTS_DIR, 'images', folder, image_name))
-    assert image.info['exif'] is not None
+    if present:
+        assert image.info['exif'] is not None
+    else:
+        assert 'exif' not in image.info
 
 
 @pytest.mark.parametrize(
