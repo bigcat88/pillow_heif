@@ -4,10 +4,3 @@ before-all = [
     "chmod +x ./scripts/init_linux.sh",
     "./scripts/init_linux.sh",
 ]
-
-
-[tool.cibuildwheel.macos]
-before-all = [
-    "chmod +x ./scripts/init_macos.sh",
-    "./scripts/init_macos.sh",
-]
