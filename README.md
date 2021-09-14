@@ -8,11 +8,11 @@ Great thanks to them both.
 Pull requests are greatly welcome.
 
 ## Installation
-You can install pillow_heif from PyPi:
+You can install pillow_heif from [PyPi](https://pypi.org/project/pillow-heif/):
 
 ```pip install pillow_heif```
 
-or from GitHub:
+or from [GitHub](https://github.com/bigcat88/pillow_heif):
 
 ```pip install https://github.com/bigcat88/pillow_heif/archive/master.zip```
 
