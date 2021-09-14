@@ -1,6 +1,5 @@
 import io
 import os
-from pathlib import Path
 import piexif
 import pytest
 from PIL import Image, ImageCms
@@ -139,18 +138,22 @@ def test_read_exif_metadata(folder, image_name):
 
 
 @pytest.mark.parametrize(
-    ['folder', 'image_name'],
+    ['folder', 'image_name', 'expected_color_profile'],
     [
-        ('Pug', 'PUG1.HEIC',),
-        ('Pug', 'PUG2.HEIC',),
-        ('Pug', 'PUG3.HEIC',),
-        ('hif', '93FG5559.HIF',),
-        ('hif', '93FG5564.HIF',),
+        ('Pug', 'PUG1.HEIC', 'prof',),
+        ('Pug', 'PUG2.HEIC', 'prof',),
+        ('Pug', 'PUG3.HEIC', None,),
+        ('hif', '93FG5559.HIF', 'nclx',),
+        ('hif', '93FG5564.HIF', 'nclx',),
     ]
 )
-def test_read_icc_color_profile(folder, image_name):
+def test_read_icc_color_profile(folder, image_name, expected_color_profile):
     fn = os.path.join(TESTS_DIR, 'images', folder, image_name)
     heif_file = pillow_heif.read(fn)
+    if expected_color_profile:
+        assert heif_file.color_profile["type"] is expected_color_profile
+    else:
+        assert heif_file.color_profile is None
     if heif_file.color_profile and heif_file.color_profile["type"] in ["prof", "rICC", ]:
         profile = io.BytesIO(heif_file.color_profile["data"])
         cms = ImageCms.getOpenProfile(profile)

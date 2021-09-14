@@ -17,7 +17,7 @@ if homebrew_prefix:
 
 
 ffibuilder.set_source(
-    "_libheif_cffi",
+    "pillow_heif._libheif",
     """
      #include "libheif/heif.h"
     """,

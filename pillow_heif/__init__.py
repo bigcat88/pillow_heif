@@ -1,29 +1,27 @@
-import _libheif_cffi
-
-from PIL import Image, ImageFile
 from .constants import *
 from .reader import *
 from .writer import *
 from .error import HeifError
+from . import _libheif
+
+from PIL import Image, ImageFile
 
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 
 def libheif_version():
-    version = _libheif_cffi.lib.heif_get_version()
-    version = _libheif_cffi.ffi.string(version).decode()
-    return version
+    return _libheif.ffi.string(_libheif.lib.heif_get_version()).decode()
 
 
 class HeifImageFile(ImageFile.ImageFile):
-    format = 'HEIF'
+    format = "HEIF"
     format_description = "HEIF/HEIC image"
 
     def _open(self):
         data = self.fp.read(16)
         if not check_heif_magic(data):
-            raise SyntaxError('not a HEIF file')
+            raise SyntaxError("not a HEIF file")
         self.fp.seek(0)
         try:
             heif_file = read(self.fp)
@@ -39,13 +37,16 @@ class HeifImageFile(ImageFile.ImageFile):
         # Add Exif
         if heif_file.metadata:
             for data in heif_file.metadata:
-                if data['type'] == 'Exif':
-                    self.info['exif'] = data['data']
+                if data["type"] == "Exif":
+                    self.info["exif"] = data["data"]
                     break
+
+        # Add Color Profile
+        if heif_file.color_profile:
+            if heif_file.color_profile["type"] != "unknown":
+                self.color_profile = heif_file.color_profile
         offset = self.fp.tell()
-        self.tile = [
-            ('heif', (0, 0) + self.size, offset, (heif_file,))
-        ]
+        self.tile = [("heif", (0, 0) + self.size, offset, (heif_file,))]
 
 
 class HeifDecoder(ImageFile.PyDecoder):
@@ -54,7 +55,7 @@ class HeifDecoder(ImageFile.PyDecoder):
     def decode(self, buffer):
         heif_file = self.args[0]
         mode = heif_file.mode
-        raw_decoder = Image._getdecoder(mode, 'raw', (mode, heif_file.stride))
+        raw_decoder = Image._getdecoder(mode, "raw", (mode, heif_file.stride))
         raw_decoder.setimage(self.im)
         return raw_decoder.decode(heif_file.data)
 
@@ -74,22 +75,22 @@ def check_heif_magic(data):
     # 'hevs': scalable sequence
     code_list = [
         # Other
-        b'heic',
-        b'heix',
-        b'hevc',
-        b'hevx',
-        b'heim',
-        b'heis',
-        b'hevm',
-        b'hevs',
+        b"heic",
+        b"heix",
+        b"hevc",
+        b"hevx",
+        b"heim",
+        b"heis",
+        b"hevm",
+        b"hevs",
         # iPhone
-        b'mif1',
+        b"mif1",
     ]
-    return magic1 == b'ftyp' or magic2 in code_list
+    return magic1 == b"ftyp" or magic2 in code_list
 
 
 def register_heif_opener():
     Image.register_open(HeifImageFile.format, HeifImageFile, check_heif_magic)
-    Image.register_decoder('heif', HeifDecoder)
-    Image.register_extensions(HeifImageFile.format, ['.heic', '.heif'])
-    Image.register_mime(HeifImageFile.format, 'image/heif')
+    Image.register_decoder("heif", HeifDecoder)
+    Image.register_extensions(HeifImageFile.format, [".heic", ".heif"])
+    Image.register_mime(HeifImageFile.format, "image/heif")

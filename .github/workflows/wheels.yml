@@ -7,6 +7,9 @@ on:
       - v*
   pull_request:
     branches: [ master ]
+    tags:
+      - v*
+  workflow_dispatch:
 
 jobs:
   sdist:
@@ -66,10 +69,10 @@ jobs:
             cibw-arch: manylinux_x86_64
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_aarch64
-#          - runs-on: macos-latest
-#            cibw-arch: macosx_x86_64
-#          - runs-on: macos-latest
-#            cibw-arch: macosx_arm64
+          - runs-on: macos-latest
+            cibw-arch: macosx_x86_64
+          - runs-on: macos-latest
+            cibw-arch: macosx_arm64
 
     name: Wheels • ${{ matrix.cibw-arch }}
     runs-on: ${{ matrix.runs-on }}
@@ -108,10 +111,6 @@ jobs:
           echo "CIBW_SKIP=cp310-* pp*" >> $GITHUB_ENV
           echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
           echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
-
-      - name: PRINT CONFIGS
-        run: |
-          echo "$GITHUB_ENV"
 
       - name: Run cibuildwheel
         run: |
