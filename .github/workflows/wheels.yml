@@ -112,10 +112,10 @@ jobs:
           echo "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib" >> $GITHUB_ENV
 
       - name: macOS x64 pre configure enviroment
-        if: matrix.cibw-arch == 'macos-11'
+        if: matrix.cibw-arch == 'macosx_x86_64'
         shell: bash
         run: |
-          echo "CIBW_ARCHS_MACOS=macosx_x86_64" >> $GITHUB_ENV
+          echo "CIBW_ARCHS_MACOS=x86_64" >> $GITHUB_ENV
 
       - name: macOS arm64 pre configure enviroment
         if: matrix.cibw-arch == 'macosx_arm64'
