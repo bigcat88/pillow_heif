@@ -60,7 +60,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   wheels:
-    if: startsWith(github.ref, 'refs/tags/v')
+    # if: startsWith(github.ref, 'refs/tags/v')
     strategy:
       fail-fast: true
       matrix:
@@ -69,9 +69,9 @@ jobs:
             cibw-arch: manylinux_x86_64
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_aarch64
-          - runs-on: macos-latest
+          - runs-on: macos-11
             cibw-arch: macosx_x86_64
-          - runs-on: macos-latest
+          - runs-on: macos-11
             cibw-arch: macosx_arm64
 
     name: Wheels • ${{ matrix.cibw-arch }}
@@ -104,15 +104,11 @@ jobs:
         run: echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
 
       - name: macOS pre configure enviroment
-        if: matrix.runs-on == 'macos-latest'
+        if: matrix.runs-on == 'macos-11'
         run: |
           brew install libffi libheif
           HOMEBREW_PREFIX=$(brew --prefix)
-          BREW_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
-        env:
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: >-
-            DYLD_LIBRARY_PATH=$BREW_LIBRARY_PATH delocate-listdeps {wheel} &&
-            DYLD_LIBRARY_PATH=$BREW_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
+          echo "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib" >> $GITHUB_ENV
 
       - name: Configure cibuildwheel
         shell: bash
@@ -138,38 +134,38 @@ jobs:
         run: |
           twine check wheelhouse/*
 
-  create_release:
-    name: Create release
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [sdist, wheels]
-
-    steps:
-      - name: Collect sdist and wheels
-        uses: actions/download-artifact@v2
-        with:
-          name: wheels
-          path: wheelhouse
-
-      - name: Get release name
-        id: get_version
-        run: |
-          echo "::set-output name=version::${GITHUB_REF##refs/tags/v}"
-
-      - name: Upload sdist and wheels to release
-        uses: ncipollo/release-action@v1.8.8
-        with:
-          name: ${{ steps.get_version.outputs.version }}
-          draft: true
-          artifacts: wheelhouse/*
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish wheels to PyPI
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          pip install twine
-          ls -la wheelhouse/
-          twine upload --skip-existing wheelhouse/*.whl
-          twine upload wheelhouse/*tar.gz
+#  create_release:
+#    name: Create release
+#    runs-on: ubuntu-latest
+#    if: startsWith(github.ref, 'refs/tags/v')
+#    needs: [sdist, wheels]
+#
+#    steps:
+#      - name: Collect sdist and wheels
+#        uses: actions/download-artifact@v2
+#        with:
+#          name: wheels
+#          path: wheelhouse
+#
+#      - name: Get release name
+#        id: get_version
+#        run: |
+#          echo "::set-output name=version::${GITHUB_REF##refs/tags/v}"
+#
+#      - name: Upload sdist and wheels to release
+#        uses: ncipollo/release-action@v1.8.8
+#        with:
+#          name: ${{ steps.get_version.outputs.version }}
+#          draft: true
+#          artifacts: wheelhouse/*
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Publish wheels to PyPI
+#        env:
+#          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+#          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+#        run: |
+#          pip install twine
+#          ls -la wheelhouse/
+#          twine upload --skip-existing wheelhouse/*.whl
+#          twine upload wheelhouse/*tar.gz
