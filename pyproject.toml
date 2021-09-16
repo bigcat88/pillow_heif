@@ -6,7 +6,14 @@ before-all = [
 ]
 
 [tool.cibuildwheel.macos]
+before-all = [
+    "brew install libffi libheif",
+    "HOMEBREW_PREFIX=$(brew --prefix)",
+    "echo \"REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib\"",
+]
+
 repair-wheel-command = [
+    "echo $REPAIR_LIBRARY_PATH",
     "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel}",
     "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}"
 ]

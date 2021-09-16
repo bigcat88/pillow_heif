@@ -103,14 +103,6 @@ jobs:
         if: matrix.cibw-arch == 'manylinux_aarch64'
         run: echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
 
-      - name: macOS pre configure enviroment
-        if: matrix.runs-on == 'macos-11'
-        shell: bash
-        run: |
-          brew install libffi libheif
-          HOMEBREW_PREFIX=$(brew --prefix)
-          echo "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib" >> $GITHUB_ENV
-
       - name: macOS x64 pre configure enviroment
         if: matrix.cibw-arch == 'macosx_x86_64'
         shell: bash
