@@ -105,15 +105,27 @@ jobs:
 
       - name: macOS pre configure enviroment
         if: matrix.runs-on == 'macos-11'
+        shell: bash
         run: |
           brew install libffi libheif
           HOMEBREW_PREFIX=$(brew --prefix)
           echo "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib" >> $GITHUB_ENV
 
+      - name: macOS x64 pre configure enviroment
+        if: matrix.cibw-arch == 'macos-11'
+        shell: bash
+        run: |
+          echo "CIBW_ARCHS_MACOS=macosx_x86_64" >> $GITHUB_ENV
+
+      - name: macOS arm64 pre configure enviroment
+        if: matrix.cibw-arch == 'macosx_arm64'
+        shell: bash
+        run: |
+          echo "CIBW_ARCHS_MACOS=arm64" >> $GITHUB_ENV
+
       - name: Configure cibuildwheel
         shell: bash
         run: |
-          echo "CIBW_ARCHS_MACOS=x86_64 arm64" >> $GITHUB_ENV
           echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
           echo "CIBW_SKIP=cp310-* pp*" >> $GITHUB_ENV
           echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
