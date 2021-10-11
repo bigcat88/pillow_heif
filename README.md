@@ -1,9 +1,9 @@
 # pillow_heif
-A HEIF/HEIC addon for Pillow using libheif library through CFFI, with binary wheels(Python 3.6-3.9, linux/macos - x64,aarch64).
+A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`, with binary wheels (Python 3.6-3.9, linux/macos - x64, aarch64).
 
-Based mostly on work David's Poirier [pyheif](https://github.com/carsales/pyheif)    
-Idea of plugin connect from Christian's Bianciotto [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener)  
-Great thanks to them both.
+Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
+The idea for this plugin came from Christian Bianciotto's [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener).
+Many thanks!
 
 Pull requests are greatly welcome.
 
