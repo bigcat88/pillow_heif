@@ -1,3 +1,4 @@
+import functools
 import pathlib
 import warnings
 
@@ -111,10 +112,7 @@ def _read_heif_handle(handle, apply_transformations, convert_hdr_to_8bit):
         raise _error.HeifError(
             code=error.code, subcode=error.subcode, message=_libheif.ffi.string(error.message).decode(),)
     img = p_img[0]
-    try:
-        data, stride = _read_heif_image(img, height)
-    finally:
-        _libheif.lib.heif_image_release(img)
+    data, stride = _read_heif_image(img, height)
     metadata = _read_metadata(handle)
     color_profile = _read_color_profile(handle)
     heif_file = HeifFile(
@@ -191,6 +189,11 @@ def _read_heif_image(img, height):
     p_data = _libheif.lib.heif_image_get_plane_readonly(img, _constants.heif_channel_interleaved, p_stride)
     stride = p_stride[0]
     data_length = height * stride
+    collect = functools.partial(_release_heif_image, img)
+    p_data = _libheif.ffi.gc(p_data, collect)
     data_buffer = _libheif.ffi.buffer(p_data, data_length)
-    data = bytes(data_buffer)
-    return data, stride
+    return data_buffer, stride
+
+
+def _release_heif_image(img, p_data=None):
+    _libheif.lib.heif_image_release(img)
