@@ -20,8 +20,7 @@ class HeifFile:
 
 
 def check(fp):
-    d = _get_bytes(fp)
-    magic = d[:12]
+    magic = _get_bytes(fp, 12)
     filetype_check = _libheif.lib.heif_check_filetype(magic, len(magic))
     return filetype_check
 
@@ -37,20 +36,17 @@ def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
     return result
 
 
-def _get_bytes(fp):
+def _get_bytes(fp, length=None):
     if isinstance(fp, str):
         with open(fp, "rb") as f:
-            d = f.read()
-    elif isinstance(fp, bytearray):
-        d = bytes(fp)
+            d = f.read(length or -1)
     elif isinstance(fp, pathlib.Path):
-        d = fp.read_bytes()
+        with fp.open('rb') as f:
+            d = f.read(length or -1)
     elif hasattr(fp, "read"):
-        d = fp.read()
+        d = fp.read(length or -1)
     else:
-        d = fp
-    if not isinstance(d, bytes):
-        raise ValueError("Input must be file name, bytes, byte array, path or file-like object")
+        d = bytes(fp)[:length]
     return d
 
 
