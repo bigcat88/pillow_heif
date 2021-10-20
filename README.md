@@ -31,6 +31,14 @@ brew install libffi libheif
 pip install git+https://github.com/bigcat88/pillow_heif.git
 ```
 
+##### Windows
+With Visual Studio 2015+ C Compiler and SDK installed:
+```
+set INCLUDE=%INCLUDE%;X:\path\to\libheif\source
+set LIB=%LIB%;X:\path\to\libheif\build
+pip install git+https://github.com/bigcat88/pillow_heif.git
+```
+
 ## Example of use as opener
 ```
 from PIL import Image
