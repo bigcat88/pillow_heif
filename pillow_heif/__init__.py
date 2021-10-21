@@ -7,7 +7,7 @@ from . import _libheif
 from PIL import Image, ImageFile
 
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 
 def libheif_version():

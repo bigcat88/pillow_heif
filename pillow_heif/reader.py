@@ -42,7 +42,7 @@ def _get_bytes(fp, length=None):
         with open(fp, "rb") as f:
             d = f.read(length or -1)
     elif isinstance(fp, pathlib.Path):
-        with fp.open('rb') as f:
+        with fp.open("rb") as f:
             d = f.read(length or -1)
     elif hasattr(fp, "read"):
         d = fp.read(length or -1)

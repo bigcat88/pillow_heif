@@ -1,0 +1,38 @@
+name: Publish wheels
+
+on:
+  workflow_dispatch:
+
+env:
+  TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+  TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Get release info
+      id: get_release_info
+      run: |
+        RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/__init__.py)
+        echo "::set-output name=tag::v${RELEASE_VERSION}"
+
+    - name: Download Release Assets
+      id: download_release_assets
+      uses: i3h/download-release-asset@v1
+      with:
+        owner: ${{github.repository_owner}}
+        repo: ${{ github.event.repository.name }}
+        tag: ${{ steps.get_release_info.outputs.tag }}
+        file: '/.*pillow_heif.*/'
+        path: wheelhouse/
+
+    - name: Publish wheels to PyPI
+      run: |
+          pip install twine
+          ls -la wheelhouse/
+          twine upload --skip-existing wheelhouse/*.whl
+          twine upload wheelhouse/*tar.gz

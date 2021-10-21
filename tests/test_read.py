@@ -9,6 +9,17 @@ import pillow_heif
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+def to_pillow_image(heif_file):
+    return Image.frombytes(
+        heif_file.mode,
+        heif_file.size,
+        heif_file.data,
+        "raw",
+        heif_file.mode,
+        heif_file.stride,
+    )
+
+
 @pytest.mark.parametrize(
     ['folder', 'image_name'],
     [
@@ -172,14 +183,7 @@ def test_read_icc_color_profile(folder, image_name, expected_color_profile):
 def test_read_pillow_frombytes(folder, image_name):
     fn = os.path.join(TESTS_DIR, 'images', folder, image_name)
     heif_file = pillow_heif.read(fn)
-    image = Image.frombytes(
-        heif_file.mode,
-        heif_file.size,
-        heif_file.data,
-        "raw",
-        heif_file.mode,
-        heif_file.stride,
-    )
+    image = to_pillow_image(heif_file)
 
 
 @pytest.mark.parametrize(
@@ -192,11 +196,4 @@ def test_read_pillow_frombytes(folder, image_name):
 def test_read_10_bit(folder, image_name):
     fn = os.path.join(TESTS_DIR, 'images', folder, image_name)
     heif_file = pillow_heif.read(fn)
-    image = Image.frombytes(
-        heif_file.mode,
-        heif_file.size,
-        heif_file.data,
-        "raw",
-        heif_file.mode,
-        heif_file.stride,
-    )
+    image = to_pillow_image(heif_file)
