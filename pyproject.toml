@@ -4,3 +4,16 @@ before-all = [
     "chmod +x ./scripts/init_linux.sh",
     "./scripts/init_linux.sh",
 ]
+
+[tool.cibuildwheel.macos]
+before-all = [
+    "brew install libheif",
+    "HOMEBREW_PREFIX=$(brew --prefix)",
+    "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib",
+    "echo $REPAIR_LIBRARY_PATH",
+]
+
+repair-wheel-command = [
+    "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel}",
+    "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}",
+]

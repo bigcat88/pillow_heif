@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="pillow_heif",
-    version="0.1.2",
+    version="0.1.3",
     packages=["pillow_heif"],
     install_requires=["cffi>=1.0.0", "pillow"],
     setup_requires=["cffi>=1.0.0"],

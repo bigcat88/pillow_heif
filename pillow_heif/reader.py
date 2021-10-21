@@ -1,3 +1,4 @@
+import functools
 import pathlib
 import warnings
 
@@ -20,8 +21,7 @@ class HeifFile:
 
 
 def check(fp):
-    d = _get_bytes(fp)
-    magic = d[:12]
+    magic = _get_bytes(fp, 12)
     filetype_check = _libheif.lib.heif_check_filetype(magic, len(magic))
     return filetype_check
 
@@ -37,20 +37,17 @@ def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
     return result
 
 
-def _get_bytes(fp):
+def _get_bytes(fp, length=None):
     if isinstance(fp, str):
         with open(fp, "rb") as f:
-            d = f.read()
-    elif isinstance(fp, bytearray):
-        d = bytes(fp)
+            d = f.read(length or -1)
     elif isinstance(fp, pathlib.Path):
-        d = fp.read_bytes()
+        with fp.open("rb") as f:
+            d = f.read(length or -1)
     elif hasattr(fp, "read"):
-        d = fp.read()
+        d = fp.read(length or -1)
     else:
-        d = fp
-    if not isinstance(d, bytes):
-        raise ValueError("Input must be file name, bytes, byte array, path or file-like object")
+        d = bytes(fp)[:length]
     return d
 
 
@@ -115,10 +112,7 @@ def _read_heif_handle(handle, apply_transformations, convert_hdr_to_8bit):
         raise _error.HeifError(
             code=error.code, subcode=error.subcode, message=_libheif.ffi.string(error.message).decode(),)
     img = p_img[0]
-    try:
-        data, stride = _read_heif_image(img, height)
-    finally:
-        _libheif.lib.heif_image_release(img)
+    data, stride = _read_heif_image(img, height)
     metadata = _read_metadata(handle)
     color_profile = _read_color_profile(handle)
     heif_file = HeifFile(
@@ -195,6 +189,11 @@ def _read_heif_image(img, height):
     p_data = _libheif.lib.heif_image_get_plane_readonly(img, _constants.heif_channel_interleaved, p_stride)
     stride = p_stride[0]
     data_length = height * stride
+    collect = functools.partial(_release_heif_image, img)
+    p_data = _libheif.ffi.gc(p_data, collect)
     data_buffer = _libheif.ffi.buffer(p_data, data_length)
-    data = bytes(data_buffer)
-    return data, stride
+    return data_buffer, stride
+
+
+def _release_heif_image(img, p_data=None):
+    _libheif.lib.heif_image_release(img)
