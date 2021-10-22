@@ -1,4 +1,5 @@
 [tool.cibuildwheel.linux]
+manylinux-x86_64_image = "manylinux2014"
 before-all = [
     "yum install -y wget libtool git-all",
     "chmod +x ./scripts/init_linux.sh",
