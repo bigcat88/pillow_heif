@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Some speed optimizations.
+- Added Python 3.10 wheels.
 
 ## [0.1.2 - 2021-09-15]
 

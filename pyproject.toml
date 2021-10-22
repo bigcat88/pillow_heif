@@ -7,7 +7,7 @@ before-all = [
 
 [tool.cibuildwheel.macos]
 before-all = [
-    "brew install libheif",
+    "brew install x265 libjpeg libde265 libheif",
     "HOMEBREW_PREFIX=$(brew --prefix)",
     "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib",
     "echo $REPAIR_LIBRARY_PATH",
