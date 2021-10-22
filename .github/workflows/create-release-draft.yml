@@ -5,60 +5,117 @@ on:
   workflow_dispatch:
 
 jobs:
-  wheels_macos:
-    strategy:
-      fail-fast: true
-      matrix:
-        include:
-          - runs-on: macos-11
-            cibw-arch: macosx_x86_64
-    name: Wheels • ${{ matrix.cibw-arch }}
-    runs-on: ${{ matrix.runs-on }}
+#  wheels_windows:
+#    strategy:
+#      fail-fast: true
+#      matrix:
+#        include:
+#          - runs-on: windows-latest
+#            cibw-arch: AMD64
+#    name: Wheels • ${{ matrix.cibw-arch }}
+#    runs-on: ${{ matrix.runs-on }}
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#        with:
+#          submodules: recursive
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: '3.8'
+#          architecture: ${{ matrix.python-arch }}
+#
+#      - name: Install requirements
+#        run: |
+#          python -m pip install --upgrade pip
+#          python -m pip install cibuildwheel twine
+#
+#      - name: macOS x64 pre configure enviroment
+#        if: matrix.cibw-arch == 'AMD64'
+#        shell: cmd
+#        run: |
+#          echo "CIBW_ARCHS_WINDOWS=AMD64" >> $GITHUB_ENV
+#
+#      - name: Configure cibuildwheel
+#        shell: cmd
+#        run: |
+#          echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
+#          echo "CIBW_SKIP=pp*" >> $GITHUB_ENV
+#          echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
+#          echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
+#
+#      - name: Run cibuildwheel
+#        run: |
+#          cibuildwheel
+#
+#      - name: Upload built wheels
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: wheels
+#          path: wheelhouse/*.whl
+#          if-no-files-found: error
+#
+#      - name: Check built wheels
+#        run: |
+#          twine check wheelhouse/*
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-          architecture: ${{ matrix.python-arch }}
-
-      - name: Install requirements
-        run: |
-          python -m pip install cibuildwheel twine
-
-      - name: macOS x64 pre configure enviroment
-        if: matrix.cibw-arch == 'macosx_x86_64'
-        shell: bash
-        run: |
-          echo "CIBW_ARCHS_MACOS=x86_64" >> $GITHUB_ENV
-
-      - name: Configure cibuildwheel
-        shell: bash
-        run: |
-          echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
-          echo "CIBW_SKIP=pp*" >> $GITHUB_ENV
-          echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
-          echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
-
-      - name: Run cibuildwheel
-        run: |
-          cibuildwheel
-
-      - name: Upload built wheels
-        uses: actions/upload-artifact@v2
-        with:
-          name: wheels
-          path: wheelhouse/*.whl
-          if-no-files-found: error
-
-      - name: Check built wheels
-        run: |
-          twine check wheelhouse/*
+#  wheels_macos:
+#    strategy:
+#      fail-fast: true
+#      matrix:
+#        include:
+#          - runs-on: macos-11
+#            cibw-arch: macosx_x86_64
+#    name: Wheels • ${{ matrix.cibw-arch }}
+#    runs-on: ${{ matrix.runs-on }}
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#        with:
+#          submodules: recursive
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: '3.8'
+#          architecture: ${{ matrix.python-arch }}
+#
+#      - name: Install requirements
+#        run: |
+#          python -m pip install --upgrade pip
+#          python -m pip install cibuildwheel twine
+#
+#      - name: macOS x64 pre configure enviroment
+#        if: matrix.cibw-arch == 'macosx_x86_64'
+#        shell: bash
+#        run: |
+#          echo "CIBW_ARCHS_MACOS=x86_64" >> $GITHUB_ENV
+#
+#      - name: Configure cibuildwheel
+#        shell: bash
+#        run: |
+#          echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
+#          echo "CIBW_SKIP=pp*" >> $GITHUB_ENV
+#          echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
+#          echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
+#
+#      - name: Run cibuildwheel
+#        run: |
+#          cibuildwheel
+#
+#      - name: Upload built wheels
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: wheels
+#          path: wheelhouse/*.whl
+#          if-no-files-found: error
+#
+#      - name: Check built wheels
+#        run: |
+#          twine check wheelhouse/*
 
   wheels_linux:
     strategy:
@@ -92,6 +149,7 @@ jobs:
 
       - name: Install requirements
         run: |
+          python -m pip install --upgrade pip
           python -m pip install cibuildwheel twine
 
       - name: Arm linux pre configure enviroment
@@ -121,51 +179,52 @@ jobs:
         run: |
           twine check wheelhouse/*
 
-  sdist:
-    name: Source distribution
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-
-      - name: Install requirements
-        run: |
-          pip install --user check-manifest twine
-
-      - name: Install brew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install libffi libheif
-
-      - name: Run check-manifest
-        run: |
-          python -m check_manifest
-
-      - name: Build sdist
-        run: |
-          python -m build --sdist --outdir wheelhouse
-
-      - name: Install from sdist
-        run: |
-          pip install --user wheelhouse/*.tar.gz
-
-      - name: Check sdist
-        run: |
-          python -m twine check wheelhouse/*
-
-      - name: Upload sdist
-        uses: actions/upload-artifact@v2
-        with:
-          name: wheels
-          path: wheelhouse/*.tar.gz
+#  sdist:
+#    name: Source distribution
+#    runs-on: macos-latest
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#        with:
+#          submodules: recursive
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: '3.8'
+#
+#      - name: Install requirements
+#        run: |
+#          pip install --upgrade pip
+#          pip install --user check-manifest twine
+#
+#      - name: Install brew
+#        run: |
+#          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+#          brew install libffi libheif
+#
+#      - name: Run check-manifest
+#        run: |
+#          python -m check_manifest
+#
+#      - name: Build sdist
+#        run: |
+#          python -m build --sdist --outdir wheelhouse
+#
+#      - name: Install from sdist
+#        run: |
+#          pip install --user wheelhouse/*.tar.gz
+#
+#      - name: Check sdist
+#        run: |
+#          python -m twine check wheelhouse/*
+#
+#      - name: Upload sdist
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: wheels
+#          path: wheelhouse/*.tar.gz
 
   draft_release:
     needs: [sdist, wheels_linux, wheels_macos]
