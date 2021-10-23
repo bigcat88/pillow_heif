@@ -161,9 +161,9 @@ jobs:
         run: |
           echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
           echo "CIBW_SKIP=pp*" >> $GITHUB_ENV
-          echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
-          echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
           echo "CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014" >> $GITHUB_ENV
+#          echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
+#          echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
 
       - name: Run cibuildwheel
         run: |

@@ -34,6 +34,7 @@ def test_check_filetype(folder, image_name):
     fn = os.path.join(TESTS_DIR, 'images', folder, image_name)
     filetype = pillow_heif.check(fn)
     assert pillow_heif.heif_filetype_no != filetype
+    assert pillow_heif.heif_filetype_yes_unsupported != filetype
 
 
 @pytest.mark.parametrize(
