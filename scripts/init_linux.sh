@@ -44,6 +44,11 @@ set -ex \
     && make install \
     && automake --version
 
+for file in argz libtool ltdl ltoptions ltsugar ltversion lt~obsolete
+do
+  ln -s /usr/share/aclocal/$file.m4 /usr/local/share/aclocal/$file.m4
+done
+
 set -ex \
     && cd /build-tools \
     && LIBRESSL_VERSION="3.1.5" \
