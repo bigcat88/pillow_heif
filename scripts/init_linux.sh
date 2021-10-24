@@ -3,7 +3,7 @@ set -ex && mkdir /build-tools && mkdir /build-deps
 set -ex \
     && cd /build-tools \
     && PKG_CONFIG_VERSION="0.29.2" \
-    && wget https://pkg-config.freedesktop.org/releases/pkg-config-${PKG_CONFIG_VERSION}.tar.gz \
+    && wget --no-check-certificate https://pkg-config.freedesktop.org/releases/pkg-config-${PKG_CONFIG_VERSION}.tar.gz \
     && tar xvf pkg-config-${PKG_CONFIG_VERSION}.tar.gz \
     && cd pkg-config-${PKG_CONFIG_VERSION} \
     && ./configure --with-internal-glib \
@@ -25,7 +25,7 @@ set -ex \
 set -ex \
     && cd /build-tools \
     && AUTOCONF_VERSION="2.71" \
-    && wget https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz \
+    && wget --no-check-certificate https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz \
     && tar xvf autoconf-${AUTOCONF_VERSION}.tar.gz \
     && cd autoconf-${AUTOCONF_VERSION} \
     && ./configure \
@@ -36,18 +36,13 @@ set -ex \
 set -ex \
     && cd /build-tools \
     && AUTOMAKE_VERSION="1.16.4" \
-    && wget https://ftp.gnu.org/gnu/automake/automake-${AUTOMAKE_VERSION}.tar.gz \
+    && wget --no-check-certificate https://ftp.gnu.org/gnu/automake/automake-${AUTOMAKE_VERSION}.tar.gz \
     && tar xvf automake-${AUTOMAKE_VERSION}.tar.gz \
     && cd automake-${AUTOMAKE_VERSION} \
     && ./configure \
     && make -j4 \
     && make install \
     && automake --version
-
-for file in argz libtool ltdl ltoptions ltsugar ltversion lt~obsolete
-do
-  ln -s /usr/share/aclocal/$file.m4 /usr/local/share/aclocal/$file.m4
-done
 
 set -ex \
     && cd /build-tools \
