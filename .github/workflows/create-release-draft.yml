@@ -49,6 +49,10 @@ jobs:
 #        run: |
 #          cibuildwheel
 #
+#      - name: Check built wheels
+#        run: |
+#          twine check wheelhouse/*
+#
 #      - name: Upload built wheels
 #        uses: actions/upload-artifact@v2
 #        with:
@@ -56,10 +60,6 @@ jobs:
 #          path: wheelhouse/*.whl
 #          if-no-files-found: error
 #
-#      - name: Check built wheels
-#        run: |
-#          twine check wheelhouse/*
-
   wheels_macos:
     strategy:
       fail-fast: true
@@ -104,16 +104,16 @@ jobs:
         run: |
           cibuildwheel
 
+      - name: Check built wheels
+        run: |
+          twine check wheelhouse/*
+
       - name: Upload built wheels
         uses: actions/upload-artifact@v2
         with:
           name: wheels
           path: wheelhouse/*.whl
           if-no-files-found: error
-
-      - name: Check built wheels
-        run: |
-          twine check wheelhouse/*
 
   wheels_linux:
     strategy:
@@ -148,6 +148,7 @@ jobs:
         run: |
           echo "CIBW_ARCHS=x86_64" >> $GITHUB_ENV
           echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
+          echo "CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014" >> $GITHUB_ENV
 
       - name: Arm linux pre configure enviroment
         if: matrix.cibw-arch == 'manylinux_aarch64'
@@ -160,12 +161,15 @@ jobs:
         run: |
           echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
           echo "CIBW_SKIP=pp*" >> $GITHUB_ENV
-          echo "CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014" >> $GITHUB_ENV
           echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
 
       - name: Run cibuildwheel
         run: |
           cibuildwheel
+
+      - name: Check built wheels
+        run: |
+          twine check wheelhouse/*
 
       - name: Upload built wheels
         uses: actions/upload-artifact@v2
@@ -173,10 +177,6 @@ jobs:
           name: wheels
           path: wheelhouse/*.whl
           if-no-files-found: error
-
-      - name: Check built wheels
-        run: |
-          twine check wheelhouse/*
 
   sdist:
     name: Source distribution
