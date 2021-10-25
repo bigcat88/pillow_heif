@@ -188,6 +188,23 @@ def test_read_pillow_frombytes(folder, image_name):
     image = to_pillow_image(heif_file)
 
 
+# @pytest.mark.parametrize(
+#     ['folder', 'image_name'],
+#     [
+#         ('', 'arrow.heic',),
+#     ]
+# )
+# def test_no_transformations(folder, image_name):
+#     fn = os.path.join(TESTS_DIR, 'images', folder, image_name)
+#     transformed = pillow_heif.read(fn)
+#     native = pillow_heif.read(fn, apply_transformations=False)
+#     assert transformed.size[0] != transformed.size[1]
+#     assert transformed.size == native.size[::-1]
+#     transformed = to_pillow_image(transformed)
+#     native = to_pillow_image(native)
+#     assert transformed == native.transpose(Image.ROTATE_270)
+
+
 @pytest.mark.parametrize(
     ['folder', 'image_name'],
     [
@@ -195,7 +212,7 @@ def test_read_pillow_frombytes(folder, image_name):
         ('hif', '93FG5564.HIF',),
     ]
 )
-def test_read_10_bit(folder, image_name):
+def test_read_10_bit__everywhere(folder, image_name):
     fn = os.path.join(TESTS_DIR, 'images', folder, image_name)
     heif_file = pillow_heif.read(fn)
     image = to_pillow_image(heif_file)
@@ -205,11 +222,11 @@ def test_read_10_bit(folder, image_name):
     ['folder', 'image_name', 'has_metadata', 'has_profile'],
     [
         ('Pug', 'PUG1.HEIC', True, True,),
-        ('Pug', 'PUG3.HEIC', True, False,),
+        ('Pug', 'PUG3.HEIC', False, False,),
         ('hif', '93FG5559.HIF', True, True,),
     ]
 )
-def test_open_and_load(folder, image_name, has_metadata, has_profile):
+def test_open_and_load__everywhere(folder, image_name, has_metadata, has_profile):
     last_metadata = None
     last_color_profile = None
     fn = os.path.join(TESTS_DIR, 'images', folder, image_name)
@@ -253,13 +270,12 @@ def test_open_and_load(folder, image_name, has_metadata, has_profile):
         ('hif', '93FG5559.HIF',),
     ]
 )
-def test_open_and_load_data_collected(folder, image_name):
+def test_open_and_load_data_collected__everywhere(folder, image_name):
     fn = os.path.join(TESTS_DIR, 'images', folder, image_name)
     with open(fn, "rb") as f:
         data = f.read()
     heif_file = pillow_heif.open(data)
-    # heif_file.load() should work even if there is no other refs
-    # to the source data.
+    # heif_file.load() should work even if there is no other refs to the source data.
     data = None
     gc.collect()
     heif_file.load()

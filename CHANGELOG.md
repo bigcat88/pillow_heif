@@ -2,12 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.3 - 2021-10-22]
+## [0.1.3 - 2021-10-25]
+
+### Added
+
+- Python 3.10 wheels.
+- New function pillow_heif.open() added.(by @homm, more info: https://github.com/carsales/pyheif/pull/55)
 
 ### Changed
 
-- Some speed optimizations.
-- Added Python 3.10 wheels.
+- Some speed optimizations.(by @homm)
 
 ## [0.1.2 - 2021-09-15]
 
