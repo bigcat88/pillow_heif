@@ -239,7 +239,7 @@ jobs:
           RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/__init__.py)
           echo "::set-output name=version::v${RELEASE_VERSION}"
           echo "::set-output name=tag::v${RELEASE_VERSION}"
-          CHANGELOG=$(grep -oPz "(?s)##\s\[RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
+          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
           CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
           if [ "$CHANGELOG" == "" ]; then
             echo "changelog is empty!"
