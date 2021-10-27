@@ -1,5 +1,6 @@
 include libheif/*
 include README.md
+include CHANGELOG.md
 include pytest.ini
 include requirements.txt
 include requirements-dev.txt

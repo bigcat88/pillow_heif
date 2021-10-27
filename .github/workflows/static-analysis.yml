@@ -1,0 +1,50 @@
+name: Static analysis
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, edited]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      py_src: ${{ steps.filter.outputs.py_src }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        base: ${{ github.ref }}
+        filters: |
+          py_src:
+            - 'pillow_heif/*.py'
+
+  python-pylint:
+    needs: changes
+    if: ${{ needs.changes.outputs.py_src == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    name: PyLint
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: pylint installation
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint
+
+      - name: pylint analysis
+        run: |
+           pylint --rcfile .pylintrc pillow_heif/*
+
+  checks_status:
+    needs: [changes, python-pylint]
+    if: ${{ always() && contains(needs.*.result, 'success') && !(contains(needs.*.result, 'failure')) }}
+    name: checks-status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checks passed
+        run: echo "Checks passed"

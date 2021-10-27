@@ -1,78 +1,21 @@
 name: Create Release
+#dont have currently aarch64 build for macos, waiting till new macbook will arrive to setup throw self hosted running.
 
 on:
   workflow_dispatch:
 
 jobs:
-#  sdist:
-#    name: Source distribution
-#    runs-on: macos-latest
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#        with:
-#          submodules: recursive
-#
-#      - name: Setup Python
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: '3.8'
-#
-#      - name: Install requirements
-#        run: |
-#          pip install --user check-manifest twine
-#
-#      - name: Install brew
-#        run: |
-#          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-#          brew install libffi libheif
-#
-#      - name: Run check-manifest
-#        run: |
-#          python -m check_manifest
-#
-#      - name: Build sdist
-#        run: |
-#          python -m build --sdist --outdir wheelhouse
-#
-#      - name: Install from sdist
-#        run: |
-#          pip install --user wheelhouse/*.tar.gz
-#
-#      - name: Check sdist
-#        run: |
-#          python -m twine check wheelhouse/*
-#
-#      - name: Upload sdist
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.tar.gz
-
-#  wheels_linux:
+#  wheels_windows:
 #    strategy:
 #      fail-fast: true
 #      matrix:
 #        include:
-#          - runs-on: ubuntu-latest
-#            cibw-arch: manylinux_x86_64
-#          - runs-on: ubuntu-latest
-#            cibw-arch: manylinux_aarch64
-#          - runs-on: macos-11
-#            cibw-arch: macosx_x86_64
-#          - runs-on: macos-11
-#            cibw-arch: macosx_arm64
+#          - runs-on: windows-latest
+#            cibw-arch: AMD64
 #    name: Wheels • ${{ matrix.cibw-arch }}
 #    runs-on: ${{ matrix.runs-on }}
 #
 #    steps:
-#      - name: Set up QEMU
-#        if: matrix.cibw-arch == 'manylinux_aarch64'
-#        uses: docker/setup-qemu-action@v1
-#        with:
-#          platforms: arm64
-#
 #      - name: Checkout code
 #        uses: actions/checkout@v2
 #        with:
@@ -88,33 +31,27 @@ jobs:
 #        run: |
 #          python -m pip install cibuildwheel twine
 #
-#      - name: Arm linux pre configure enviroment
-#        if: matrix.cibw-arch == 'manylinux_aarch64'
-#        run: echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
-#
 #      - name: macOS x64 pre configure enviroment
-#        if: matrix.cibw-arch == 'macosx_x86_64'
-#        shell: bash
+#        if: matrix.cibw-arch == 'AMD64'
+#        shell: cmd
 #        run: |
-#          echo "CIBW_ARCHS_MACOS=x86_64" >> $GITHUB_ENV
-#
-#      - name: macOS arm64 pre configure enviroment
-#        if: matrix.cibw-arch == 'macosx_arm64'
-#        shell: bash
-#        run: |
-#          echo "CIBW_ARCHS_MACOS=arm64" >> $GITHUB_ENV
+#          echo "CIBW_ARCHS_WINDOWS=AMD64" >> $GITHUB_ENV
 #
 #      - name: Configure cibuildwheel
-#        shell: bash
+#        shell: cmd
 #        run: |
 #          echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
-#          echo "CIBW_SKIP=cp310-* pp*" >> $GITHUB_ENV
+#          echo "CIBW_SKIP=pp*" >> $GITHUB_ENV
 #          echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
 #          echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
 #
 #      - name: Run cibuildwheel
 #        run: |
 #          cibuildwheel
+#
+#      - name: Check built wheels
+#        run: |
+#          twine check wheelhouse/*
 #
 #      - name: Upload built wheels
 #        uses: actions/upload-artifact@v2
@@ -123,29 +60,17 @@ jobs:
 #          path: wheelhouse/*.whl
 #          if-no-files-found: error
 #
-#      - name: Check built wheels
-#        run: |
-#          twine check wheelhouse/*
-
   wheels_macos:
     strategy:
       fail-fast: true
       matrix:
         include:
-#          - runs-on: macos-11
-#            cibw-arch: macosx_x86_64
           - runs-on: macos-11
-            cibw-arch: macosx_arm64
+            cibw-arch: macosx_x86_64
     name: Wheels • ${{ matrix.cibw-arch }}
     runs-on: ${{ matrix.runs-on }}
 
     steps:
-      - name: Set up QEMU
-        if: matrix.cibw-arch == 'macosx_arm64'
-        uses: docker/setup-qemu-action@v1
-        with:
-          platforms: arm64
-
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -167,23 +92,21 @@ jobs:
         run: |
           echo "CIBW_ARCHS_MACOS=x86_64" >> $GITHUB_ENV
 
-      - name: macOS arm64 pre configure enviroment
-        if: matrix.cibw-arch == 'macosx_arm64'
-        shell: bash
-        run: |
-          echo "CIBW_ARCHS_MACOS=arm64" >> $GITHUB_ENV
-
       - name: Configure cibuildwheel
         shell: bash
         run: |
           echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
-          echo "CIBW_SKIP=cp310-* pp*" >> $GITHUB_ENV
+          echo "CIBW_SKIP=pp*" >> $GITHUB_ENV
           echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
           echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
 
       - name: Run cibuildwheel
         run: |
           cibuildwheel
+
+      - name: Check built wheels
+        run: |
+          twine check wheelhouse/*
 
       - name: Upload built wheels
         uses: actions/upload-artifact@v2
@@ -192,49 +115,154 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
+  wheels_linux:
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - runs-on: ubuntu-latest
+            cibw-arch: manylinux_x86_64
+          - runs-on: ubuntu-latest
+            cibw-arch: manylinux_aarch64
+    name: Wheels • ${{ matrix.cibw-arch }}
+    runs-on: ${{ matrix.runs-on }}
+
+    steps:
+      - name: Set up QEMU
+        if: matrix.cibw-arch == 'manylinux_aarch64'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: arm64
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Install requirements
+        run: |
+          python -m pip install cibuildwheel twine
+
+      - name: x64 linux pre configure enviroment
+        if: matrix.cibw-arch == 'manylinux_x86_64'
+        run: |
+          echo "CIBW_ARCHS=x86_64" >> $GITHUB_ENV
+          echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
+          echo "CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014" >> $GITHUB_ENV
+
+      - name: Arm linux pre configure enviroment
+        if: matrix.cibw-arch == 'manylinux_aarch64'
+        run: |
+          echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
+          echo "CIBW_TEST_COMMAND=pytest -k '__everywhere' {project}" >> $GITHUB_ENV
+
+      - name: Configure cibuildwheel
+        shell: bash
+        run: |
+          echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
+          echo "CIBW_SKIP=pp*" >> $GITHUB_ENV
+          echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
+
+      - name: Run cibuildwheel
+        run: |
+          cibuildwheel
+
       - name: Check built wheels
         run: |
           twine check wheelhouse/*
 
-#  draft_release:
-#    needs: [sdist, wheels_linux, wheels_macos]
-#    runs-on: ubuntu-latest
-#    name: Build and create release
-#
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#
-#      - name: Get release info
-#        id: get_release_info
-#        run: |
-#          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/__init__.py)
-#          echo "::set-output name=version::v${RELEASE_VERSION}"
-#          echo "::set-output name=tag::v${RELEASE_VERSION}"
-#          CHANGELOG=$(grep -oPz "(?s)##\s\[RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
-#          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
-#          if [ "$CHANGELOG" == "" ]; then
-#            echo "changelog is empty!"
-#            exit 1
-#          fi
-#          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-#          echo "$CHANGELOG" >> $GITHUB_ENV
-#          echo "EOF" >> $GITHUB_ENV
-#
-#      - name: Collect sdist and wheels
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: wheels
-#          path: wheelhouse
-#
-#      - name: Create release draft
-#        uses: ncipollo/release-action@v1.8.8
-#        with:
-#          name: ${{ steps.get_release_info.outputs.version }}
-#          tag: ${{ steps.get_release_info.outputs.tag }}
-#          commit: ${{ github.ref }}
-#          draft: true
-#          body: ${{ env.CHANGELOG }}
-#          artifacts: wheelhouse/*
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          artifactErrorsFailBuild: true
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  sdist:
+    name: Source distribution
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install requirements
+        run: |
+          pip install --user check-manifest twine
+
+      - name: Install brew
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew install libffi libheif
+
+      - name: Run check-manifest
+        run: |
+          python -m check_manifest
+
+      - name: Build sdist
+        run: |
+          python -m build --sdist --outdir wheelhouse
+
+      - name: Install from sdist
+        run: |
+          pip install --user wheelhouse/*.tar.gz
+
+      - name: Check sdist
+        run: |
+          python -m twine check wheelhouse/*
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: wheelhouse/*.tar.gz
+
+  draft_release:
+    needs: [sdist, wheels_linux, wheels_macos]
+    runs-on: ubuntu-latest
+    name: Build and create release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get release info
+        id: get_release_info
+        run: |
+          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/__init__.py)
+          echo "::set-output name=version::v${RELEASE_VERSION}"
+          echo "::set-output name=tag::v${RELEASE_VERSION}"
+          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
+          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
+          if [ "$CHANGELOG" == "" ]; then
+            echo "changelog is empty!"
+            exit 1
+          fi
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Collect sdist and wheels
+        uses: actions/download-artifact@v2
+        with:
+          name: wheels
+          path: wheelhouse
+
+      - name: Create release draft
+        uses: ncipollo/release-action@v1.8.8
+        with:
+          name: ${{ steps.get_release_info.outputs.version }}
+          tag: ${{ steps.get_release_info.outputs.tag }}
+          commit: ${{ github.ref }}
+          draft: true
+          body: ${{ env.CHANGELOG }}
+          artifacts: wheelhouse/*
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifactErrorsFailBuild: true
