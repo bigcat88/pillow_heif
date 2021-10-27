@@ -1,6 +1,7 @@
 # pillow_heif
 ![build](https://github.com/bigcat88/pillow_heif/actions/workflows/create-release-draft.yml/badge.svg)
 ![published](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi.yaml/badge.svg)
+
 A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`, with binary wheels (Python 3.6-3.9, linux/macos - x64, aarch64).
 
 Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
