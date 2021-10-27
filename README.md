@@ -1,4 +1,6 @@
 # pillow_heif
+![build](https://github.com/bigcat88/pillow_heif/actions/workflows/create-release-draft.yml/badge.svg)
+![published](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi.yaml/badge.svg)
 A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`, with binary wheels (Python 3.6-3.9, linux/macos - x64, aarch64).
 
 Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
@@ -71,11 +73,12 @@ image = Image.frombytes(
 
 The returned `HeifFile` has the following properties:
 
-* `mode` - the image mode, e.g. "RGB" or "RGBA"
 * `size` - the size of the image as a `(width, height)` tuple of integers
-* `data` - the raw decoded file data, as bytes
-* `metadata` - a list of metadata dictionaries
-* `brand` - a list of heif_brand constants.
-* `color_profile` - a color profile dictionary
-* `stride` - the number of bytes in a row of decoded file data
+* `brand` - a list of heif_brand constants
+* `has_alpha`  - (bool)presence of alpha channel
+* `mode` - the image mode, e.g. "RGB" or "RGBA"
 * `bit_depth` - the number of bits in each component of a pixel
+* `metadata` - a list of metadata dictionaries
+* `color_profile` - a color profile dictionary
+* `data` - the raw decoded file data, as bytes
+* `stride` - the number of bytes in a row of decoded file data

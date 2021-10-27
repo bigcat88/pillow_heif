@@ -30,7 +30,7 @@ class HeifFile:
         return self  # already loaded
 
     def close(self):
-        pass  # TODO: release self.data here?
+        pass
 
 
 class UndecodedHeifFile(HeifFile):
@@ -63,14 +63,14 @@ def read_heif(fp, apply_transformations=True):
     return read(fp, apply_transformations=apply_transformations)
 
 
-def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
-    heif_file = open(fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit,)
-    return heif_file.load()
-
-
 def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
     d = _get_bytes(fp)
     return _read_heif_bytes(d, apply_transformations, convert_hdr_to_8bit)
+
+
+def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
+    heif_file = open(fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit,)
+    return heif_file.load()
 
 
 def _get_bytes(fp, length=None):
@@ -90,7 +90,7 @@ def _get_bytes(fp, length=None):
 def _keep_refs(destructor, **refs):
     """
     Keep refs to passed arguments until `inner` callback exist.
-    This prevents collecting parent objects until all children collcted.
+    This prevents collecting parent objects until all children are collected.
     """
     def inner(cdata):
         return destructor(cdata)
@@ -103,7 +103,7 @@ def _read_heif_bytes(d, apply_transformations, convert_hdr_to_8bit):
     filetype_check = _libheif.lib.heif_check_filetype(magic, len(magic))
     if filetype_check == _constants.heif_filetype_no:
         raise ValueError("Input is not a HEIF/AVIF file")
-    elif filetype_check == _constants.heif_filetype_yes_unsupported:
+    if filetype_check == _constants.heif_filetype_yes_unsupported:
         warnings.warn("Input is an unsupported HEIF/AVIF file type - trying anyway!")
     brand = _libheif.lib.heif_main_brand(magic, len(magic))
     ctx = _libheif.lib.heif_context_alloc()
@@ -158,7 +158,7 @@ def _read_heif_handle(handle, apply_transformations, convert_hdr_to_8bit):
 def _read_metadata(handle):
     block_count = _libheif.lib.heif_image_handle_get_number_of_metadata_blocks(handle, _libheif.ffi.NULL)
     if block_count == 0:
-        return
+        return []
     metadata = []
     ids = _libheif.ffi.new("heif_item_id[]", block_count)
     _libheif.lib.heif_image_handle_get_list_of_metadata_block_IDs(handle, _libheif.ffi.NULL, ids, block_count)
@@ -183,11 +183,11 @@ def _read_metadata(handle):
 def _read_color_profile(handle):
     profile_type = _libheif.lib.heif_image_handle_get_color_profile_type(handle)
     if profile_type == _constants.heif_color_profile_type_not_present:
-        return
+        return None
     if profile_type in (_constants.heif_color_profile_type_rICC, _constants.heif_color_profile_type_prof):
         data_length = _libheif.lib.heif_image_handle_get_raw_color_profile_size(handle)
         if data_length == 0:
-            return
+            return None
         p_data = _libheif.ffi.new("char[]", data_length)
         error = _libheif.lib.heif_image_handle_get_raw_color_profile(handle, p_data)
     elif profile_type == _constants.heif_color_profile_type_nclx:
@@ -247,5 +247,5 @@ def _read_heif_image(handle, heif_file):
     return data_buffer, stride
 
 
-def _release_heif_image(img, p_data=None):
+def _release_heif_image(img, _p_data=None):
     _libheif.lib.heif_image_release(img)

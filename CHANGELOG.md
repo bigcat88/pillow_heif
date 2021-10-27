@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4 - 2021-xx-xx]
+
+### Added
+
+- Windows wheels. 
+- Linux build now includes `libaom` library.
+- `musli` linux wheels.
+
+### Changed
+
+- Code refactoring, readme update.
+
 ## [0.1.3 - 2021-10-25]
 
 ### Added
