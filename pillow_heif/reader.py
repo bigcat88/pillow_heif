@@ -5,7 +5,7 @@ import warnings
 
 from . import constants as _constants
 from . import error as _error
-from . import _libheif
+from . import _libheif  # pylint: disable=no-name-in-module
 
 
 class HeifFile:
@@ -58,12 +58,7 @@ def check(fp):
     return filetype_check
 
 
-def read_heif(fp, apply_transformations=True):
-    warnings.warn("read_heif is deprecated, use read instead", DeprecationWarning)
-    return read(fp, apply_transformations=apply_transformations)
-
-
-def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
+def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # pylint: disable=redefined-builtin
     d = _get_bytes(fp)
     return _read_heif_bytes(d, apply_transformations, convert_hdr_to_8bit)
 
@@ -162,13 +157,13 @@ def _read_metadata(handle):
     metadata = []
     ids = _libheif.ffi.new("heif_item_id[]", block_count)
     _libheif.lib.heif_image_handle_get_list_of_metadata_block_IDs(handle, _libheif.ffi.NULL, ids, block_count)
-    for i in range(len(ids)):
-        metadata_type = _libheif.lib.heif_image_handle_get_metadata_type(handle, ids[i])
+    for each_item in ids:
+        metadata_type = _libheif.lib.heif_image_handle_get_metadata_type(handle, each_item)
         metadata_type = _libheif.ffi.string(metadata_type).decode()
-        data_length = _libheif.lib.heif_image_handle_get_metadata_size(handle, ids[i])
+        data_length = _libheif.lib.heif_image_handle_get_metadata_size(handle, each_item)
         if data_length > 0:
             p_data = _libheif.ffi.new("char[]", data_length)
-            error = _libheif.lib.heif_image_handle_get_metadata(handle, ids[i], p_data)
+            error = _libheif.lib.heif_image_handle_get_metadata(handle, each_item, p_data)
             if error.code != 0:
                 raise _error.HeifError(
                     code=error.code, subcode=error.subcode, message=_libheif.ffi.string(error.message).decode(),)

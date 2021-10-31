@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 heif_chroma_undefined = 99
 heif_chroma_monochrome = 0
 heif_chroma_420 = 1

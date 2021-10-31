@@ -2,17 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.4 - 2021-xx-xx]
+## [0.1.4 - 2021-11-01]
 
 ### Added
 
-- Windows wheels. 
-- Linux build now includes `libaom` library.
-- `musli` linux wheels.
+- More tests.
 
 ### Changed
 
 - Code refactoring, readme update.
+
+### Fixed
+
+- Header check when used as plugin for Pillow with `as_opener` function. Thanks for this to @DimonLavron 
 
 ## [0.1.3 - 2021-10-25]
 

@@ -1,6 +1,6 @@
 import os
-import pytest
 from unittest import mock
+import pytest
 from PIL import Image
 from pillow_heif import register_heif_opener, check_heif_magic
 
