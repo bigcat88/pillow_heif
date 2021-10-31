@@ -1,6 +1,10 @@
 # pillow_heif
+![pypi](https://img.shields.io/pypi/v/pillow_heif.svg)
+![PythonVersion](https://img.shields.io/badge/python-3.6%20%7C3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)
+![static-analysis](https://github.com/bigcat88/pillow_heif/actions/workflows/static-analysis.yml/badge.svg)
 ![build](https://github.com/bigcat88/pillow_heif/actions/workflows/create-release-draft.yml/badge.svg)
 ![published](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi.yaml/badge.svg)
+
 
 A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`, with binary wheels (Python 3.6-3.9, linux/macos - x64, aarch64).
 

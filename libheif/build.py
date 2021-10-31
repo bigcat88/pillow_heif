@@ -4,7 +4,7 @@ from cffi import FFI
 ffibuilder = FFI()
 
 
-with open("libheif/heif.h") as f:
+with open("libheif/heif.h", "r", encoding="utf-8") as f:
     ffibuilder.cdef(f.read())
 
 

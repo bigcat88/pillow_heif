@@ -7,6 +7,7 @@ from .error import HeifError
 class HeifImageFile(ImageFile.ImageFile):
     format = "HEIF"
     format_description = "HEIF/HEIC image"
+    color_profile = None
 
     def _open(self):
         data = self.fp.read(16)
@@ -50,33 +51,30 @@ class HeifDecoder(ImageFile.PyDecoder):
         return raw_decoder.decode(heif_file.data)
 
 
-def check_heif_magic(data):
+def check_heif_magic(data) -> bool:
+    # according to HEIF standard ISO/IEC 23008-12:2017
+    # https://standards.iso.org/ittf/PubliclyAvailableStandards/c066067_ISO_IEC_23008-12_2017.zip
+    if len(data) < 12:
+        return False
     magic1 = data[4:8]
+    if magic1 != b"ftyp":
+        return False
     magic2 = data[8:12]
-    # https://github.com/strukturag/libheif/issues/83
-    # https://github.com/GNOME/gimp/commit/e4bff4c8016f18195f9a6229f59cbf41740ddb8d
-    # 'heic': the usual HEIF images
-    # 'heix': 10bit images, or anything that uses h265 with range extension
-    # 'hevc', 'hevx': brands for image sequences
-    # 'heim': multiview
-    # 'heis': scalable
-    # 'hevm': multiview sequence
-    # 'hevs': scalable sequence
-    # 'hevs': scalable sequence
     code_list = [
-        # Other
-        b"heic",
-        b"heix",
-        b"hevc",
-        b"hevx",
-        b"heim",
-        b"heis",
-        b"hevm",
-        b"hevs",
-        # iPhone
-        b"mif1",
+        b"heic",  # the usual HEIF images
+        b"heix",  # 10bit images, or anything that uses h265 with range extension
+        b"hevc",  # image sequences
+        b"hevx",  # image sequences
+        b"heim",  # multiview
+        b"heis",  # scalable
+        b"hevm",  # multiview sequence
+        b"hevs",  # scalable sequence
+        b"mif1",  # image, any coding algorithm
+        b"msf1",  # sequence, any coding algorithm
+        # avif
+        # avis
     ]
-    return magic1 == b"ftyp" or magic2 in code_list
+    return magic2 in code_list
 
 
 def register_heif_opener():
