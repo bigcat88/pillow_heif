@@ -22,34 +22,32 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Prepare directories
+      - name: Make preparations
         run: |
           sudo mkdir /build-tools
           sudo chmod 777 /build-tools
+          echo SCRIPTS_DIR="./build_scripts/linux" >> $GITHUB_ENV
 
       - run: |
-          echo BUILD_CMD="&& sh ./build_scripts/linux/$NAME.sh $VERSION" >> $GITHUB_ENV
-          echo STUFF_PATH="/build-tools/$NAME" >> $GITHUB_ENV
+          echo BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION" >> $GITHUB_ENV
+          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-0
         env:
-          NAME: "PKG_CONFIG"
+          NAME: "pkg-config"
           VERSION: "0.29.2"
 
       - name: Debug
         run: |
-          mkdir /build-tools/test
-          mkdir /build-tools/test/123
-          echo $STUFF
-          echo $VERSION
           echo $BUILD_CMD
           echo $STUFF_PATH
-          echo $CACHE_STEP_ID
+          echo $SCRIPTS_DIR
+          echo $CACHE_KEY
 
-
-#      - uses: actions/cache@v2
-#        id: ${{ env.CACHE_STEP_ID }}
-#        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ STUFF }}-${{ VERSION }}
+      - uses: actions/cache@v2
+        id: cache-pkg_config
+        with:
+          path: ${{ env.STUFF_PATH }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 #
 #      - if: steps.${{ env.CACHE_STEP_ID }}.outputs.cache-hit != 'true'
 #        run: |
