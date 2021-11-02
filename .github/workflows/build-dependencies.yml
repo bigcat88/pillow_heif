@@ -31,7 +31,6 @@ jobs:
       - run: |
           BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
           echo BUILD_CMD="$BUILD_CMD" >> $GITHUB_ENV
-#          echo BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION" >> $GITHUB_ENV
           echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
           echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-0 >> $GITHUB_ENV
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
@@ -56,7 +55,7 @@ jobs:
 #
 #      - if: steps.${{ env.CACHE_STEP_ID }}.outputs.cache-hit != 'true'
 #        run: |
-
+#          echo BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION" >> $GITHUB_ENV
 
 #      - uses: actions/cache@v2
 #        id: cache_autoconf
