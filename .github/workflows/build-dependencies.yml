@@ -40,6 +40,11 @@ jobs:
           echo $BUILD_CMD
           echo $STUFF_PATH
           echo $CACHE_STEP_ID
+          echo STUFF_PATH="/build-tools/$STUFF" >> $GITHUB_ENV
+
+      - name: Debug2
+        run: |
+          echo $STUFF_PATH
 
 #      - uses: actions/cache@v2
 #        id: ${{ env.CACHE_STEP_ID }}
