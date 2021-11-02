@@ -118,7 +118,6 @@ jobs:
       - name: Start test build
         run: |
           cibuildwheel
-#         --config-file "{package}/build_scripts/dependencies.toml"
         env:
           CIBW_TEST_SKIP: "*"
           CIBW_REPAIR_WHEEL_COMMAND: ""

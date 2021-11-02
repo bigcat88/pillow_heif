@@ -1,4 +1,6 @@
 cd /host/build-tools || exit 2
+echo "ATTENTION"
+echo $(ls -la)
 echo "$1"
 if [[ -d pkg-config-"$1" ]]
 then
@@ -10,6 +12,7 @@ then
   && make -j4
 else
   echo "Cache found for pkg-config, install it..."
+  cd pkg-config-"$1"
 fi
 make install \
 && pkg-config --version
