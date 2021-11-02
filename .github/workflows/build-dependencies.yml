@@ -28,7 +28,8 @@ jobs:
           sudo chmod 777 /build-tools
           echo SCRIPTS_DIR="./build_scripts/linux" >> $GITHUB_ENV
 
-      - run: |
+      - name: pkg_config
+        run: |
           BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
           echo BUILD_CMD="$BUILD_CMD" >> $GITHUB_ENV
           echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
@@ -38,61 +39,47 @@ jobs:
           NAME: "pkg-config"
           VERSION: "0.29.2"
 
-      - name: Debug1
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.STUFF_PATH }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+
+      - name: autoconf
+        run: |
+          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+          echo BUILD_CMD="$BUILD_CMD" >> $GITHUB_ENV
+          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-0 >> $GITHUB_ENV
+          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+        env:
+          NAME: "autoconf"
+          VERSION: "2.71"
+
+      - name: Debug
         run: |
           echo $BUILD_CMD
           echo $STUFF_PATH
           echo $SCRIPTS_DIR
           echo $CACHE_KEY
-          echo $CACHE_KEY
           echo $BUILD_CMD_LIST
 
       - uses: actions/cache@v2
-        id: cache-pkg_config
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-#
-#      - if: steps.${{ env.CACHE_STEP_ID }}.outputs.cache-hit != 'true'
-#        run: |
-#          echo BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION" >> $GITHUB_ENV
 
-#      - uses: actions/cache@v2
-#        id: cache_autoconf
-#        with:
-#          path: /build-tools
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-07-autoconf-2.71
-#
-#      - if: steps.cache_autoconf.outputs.cache-hit != 'true'
-#        run: |
-#          BUILD_CMD="&& sh ./build_scripts/linux/autoconf.sh"
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#
-#      - uses: actions/cache@v2
-#        id: cache_automake
-#        with:
-#          path: /build-tools
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-08-automake-1.16.4
-#
-#      - if: steps.cache_automake.outputs.cache-hit != 'true'
-#        run: |
-#          BUILD_CMD="&& sh ./build_scripts/linux/automake.sh"
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
-      - name: Preparations for build start
-        run: |
-          echo BUILD_COMMAND="set -ex $BUILD_CMD_LIST" >> $GITHUB_ENV
-          echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
-#
+
 #      - name: Set up QEMU
-#        if: env.BUILD_COMMAND != '' && matrix.cibw-arch == 'manylinux_aarch64'
+#        if: matrix.cibw-arch == 'manylinux_aarch64'
 #        uses: docker/setup-qemu-action@v1
 #        with:
 #          platforms: arm64
-#
-#      - name: Install requirements
-#        run: |
-#          python -m pip install cibuildwheel
+
+      - name: Prepare cibuildwheel
+        run: |
+          python -m pip install cibuildwheel
+          echo BUILD_COMMAND="set -ex $BUILD_CMD_LIST" >> $GITHUB_ENV
 #
 #      - name: x64 linux pre configure enviroment
 #        if: matrix.cibw-arch == 'manylinux_x86_64'
