@@ -22,16 +22,18 @@ jobs:
         with:
           submodules: recursive
 
-      - run: |
+      - name: Prepare directories
+        run: |
           sudo mkdir /build-tools
           sudo chmod 777 /build-tools
 
       - run: |
-          echo STUFF="PKG-CONFIG" >> $GITHUB_ENV
-          echo VERSION="0.29.2" >> $GITHUB_ENV
           echo BUILD_CMD="&& sh ./build_scripts/linux/$STUFF.sh $VERSION" >> $GITHUB_ENV
           echo STUFF_PATH="/build-tools/$STUFF" >> $GITHUB_ENV
           echo CACHE_STEP_ID="cache_$STUFF" >> $GITHUB_ENV
+        env:
+          STUFF: "PKG-CONFIG"
+          VERSION: "0.29.2"
 
       - name: Debug
         run: |
