@@ -26,33 +26,33 @@ jobs:
         id: cache_pkg-config
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-06-pkg-config-0.29.2
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-07-pkg-config-0.29.2
 
       - if: steps.cache_pkg-config.outputs.cache-hit != 'true'
         run: |
-          BUILD_CMD="&& sh ./build_scripts/pkg-config.sh"
+          BUILD_CMD="&& sh ./build_scripts/linux/pkg-config.sh"
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - uses: actions/cache@v2
         id: cache_autoconf
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-06-autoconf-2.71
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-07-autoconf-2.71
 
       - if: steps.cache_autoconf.outputs.cache-hit != 'true'
         run: |
-          BUILD_CMD="&& sh ./build_scripts/autoconf.sh"
+          BUILD_CMD="&& sh ./build_scripts/linux/autoconf.sh"
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - uses: actions/cache@v2
         id: cache_automake
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-06-automake-1.16.4
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-07-automake-1.16.4
 
       - if: steps.cache_automake.outputs.cache-hit != 'true'
         run: |
-          BUILD_CMD="&& sh ./build_scripts/automake.sh"
+          BUILD_CMD="&& sh ./build_scripts/linux/automake.sh"
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - name: Preparations for build start
