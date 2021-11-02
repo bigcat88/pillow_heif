@@ -40,8 +40,8 @@ jobs:
           echo "$BUILD_LIST"
           echo "$BUILD_CMD"
           echo "1"
-          echo  $BUILD_LIST
-          echo "$BUILD_CMD
+          echo $BUILD_LIST
+          echo $BUILD_CMD
           echo "3"
           echo "${{ env.BUILD_CMD }}"
           echo "${{ env.BUILD_LIST }}"
