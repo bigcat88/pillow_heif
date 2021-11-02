@@ -77,11 +77,13 @@ jobs:
         run: |
           echo "CIBW_ARCHS=x86_64" >> $GITHUB_ENV
           echo "CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014" >> $GITHUB_ENV
+          echo "CIBW_BUILD=cp38-manylinux_x86_64" >> $GITHUB_ENV
 
       - name: Arm linux pre configure enviroment
         if: env.BUILD_COMMAND != '' && matrix.cibw-arch == 'manylinux_aarch64'
         run: |
           echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
+          echo "CIBW_BUILD=cp38-manylinux_aarch64" >> $GITHUB_ENV
 
       - name: Start building
         if: env.BUILD_COMMAND != ''
@@ -89,4 +91,5 @@ jobs:
           cibuildwheel --config-file "{package}/build_scripts/dependencies.toml" --allow-empty
         env:
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
-          CIBW_SKIP: "*"
+          CIBW_TEST_SKIP: *
+          CIBW_REPAIR_WHEEL_COMMAND: ""
