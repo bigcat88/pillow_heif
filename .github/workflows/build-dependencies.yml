@@ -29,7 +29,7 @@ jobs:
         id: cache_pkg-config
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-3-pkg-config-0.29.2
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-4-pkg-config-0.29.2
         env:
           BUILD_CMD: "&& sh ./scripts/build__pkg-config.sh"
 
@@ -66,6 +66,12 @@ jobs:
         run: |
           echo $BUILD_LIST
           echo $BUILD_CMD
+          echo "123"
+          echo "$BUILD_LIST"
+          echo "$BUILD_CMD"
+          echo "456"
+          echo ${{ env.BUILD_LIST }}
+          echo ${{ env.BUILD_CMD }}
 #          python -m pip install cibuildwheel
 
 #      - name: Run cibuildwheel
