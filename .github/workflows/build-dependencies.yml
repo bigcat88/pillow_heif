@@ -36,7 +36,10 @@ jobs:
       - name: Add to build list
         if: steps.cache_pkg-config.outputs.cache-hit != 'true'
         run: |
-          echo $BUILD_LIST $BUILD_CMD
+          echo "$BUILD_LIST"
+          echo "$BUILD_CMD"
+          echo ${{ env.BUILD_CMD }}
+          echo "omg"
           echo "BUILD_LIST=$(echo $BUILD_LIST $BUILD_CMD)" >> $GITHUB_ENV
           echo "$BUILD_LIST"
           echo ${{ env.BUILD_LIST }}
