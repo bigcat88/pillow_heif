@@ -26,7 +26,7 @@ jobs:
         id: cache_pkg-config
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-05-pkg-config-0.29.2
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-06-pkg-config-0.29.2
 
       - if: steps.cache_pkg-config.outputs.cache-hit != 'true'
         run: |
@@ -37,7 +37,7 @@ jobs:
         id: cache_autoconf
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-05-autoconf-2.71
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-06-autoconf-2.71
 
       - if: steps.cache_autoconf.outputs.cache-hit != 'true'
         run: |
@@ -48,7 +48,7 @@ jobs:
         id: cache_automake
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-05-automake-1.16.4
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-06-automake-1.16.4
 
       - if: steps.cache_automake.outputs.cache-hit != 'true'
         run: |
