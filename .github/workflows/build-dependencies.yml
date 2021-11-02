@@ -35,7 +35,8 @@ jobs:
 
       - name: Add to build list
         if: steps.cache_pkg-config.outputs.cache-hit != 'true'
-        run: echo "BUILD_LIST=$BUILD_LIST $BUILD_CMD" >> $GITHUB_ENV
+        run: |
+          echo "BUILD_LIST=$BUILD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - name: Check for autoconf
         uses: actions/cache@v2
@@ -48,7 +49,8 @@ jobs:
 
       - name: Add to build list
         if: steps.cache_autoconf.outputs.cache-hit != 'true'
-        run: echo "BUILD_LIST=$BUILD_LIST $BUILD_CMD" >> $GITHUB_ENV
+        run: |
+          echo "BUILD_LIST=$BUILD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - name: Set up QEMU
         if: matrix.cibw-arch == 'manylinux_aarch64'
@@ -60,6 +62,7 @@ jobs:
         run: |
           python -m pip install cibuildwheel
           echo "$BUILD_LIST"
+          echo "$BUILD_CMD"
 
 #      - name: Run cibuildwheel
 #        run: |
