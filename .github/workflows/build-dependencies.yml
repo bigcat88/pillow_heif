@@ -29,7 +29,7 @@ jobs:
         id: cache_pkg-config
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-4-pkg-config-0.29.2
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-5-pkg-config-0.29.2
         env:
           BUILD_CMD: "&& sh ./scripts/build__pkg-config.sh"
 
