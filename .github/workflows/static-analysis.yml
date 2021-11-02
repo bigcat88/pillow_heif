@@ -1,11 +1,6 @@
 name: Static analysis
 
 on:
-  pull_request:
-    branches: [master]
-    types: [opened, reopened, edited]
-  push:
-    branches: [master]
   workflow_dispatch:
 
 jobs:
