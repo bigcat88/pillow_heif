@@ -21,22 +21,40 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+        env:
+          BUILD_CMD: "set -ex"
 
       - name: pkg-config
         run: |
           echo "DEPENDENCY=pkg-config-0.29.2" >> $GITHUB_ENV
-          echo "BUILD_CMD=scripts/build__pkg_config.sh" >> $GITHUB_ENV
+          echo "BUILD_CMD=&& sh ./scripts/build__pkg_config.sh" >> $GITHUB_ENV
 
       - name: Check for ${{ env.DEPENDENCY }}
         uses: actions/cache@v2
         id: cache
         with:
           path: /build-tools
-          key: ${{ matrix.cibw-arch }}-${{ env.DEPENDENCY }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.DEPENDENCY }}
 
       - name: Add to build list
         if: steps.cache.outputs.cache-hit != 'true'
-        run: echo "BUILD_LIST=${{ env.BUILD_LIST }}:${{ env.BUILD_CMD }}" >> $GITHUB_ENV
+        run: echo "BUILD_LIST=${{ env.BUILD_LIST }}${{ env.BUILD_CMD }}" >> $GITHUB_ENV
+
+      - name: autoconf
+        run: |
+          echo "DEPENDENCY=autoconf-2.71" >> $GITHUB_ENV
+          echo "BUILD_CMD=&& sh ./scripts/build__autoconf.sh" >> $GITHUB_ENV
+
+      - name: Check for ${{ env.DEPENDENCY }}
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: /build-tools
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.DEPENDENCY }}
+
+      - name: Add to build list
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: echo "BUILD_LIST=${{ env.BUILD_LIST }}${{ env.BUILD_CMD }}" >> $GITHUB_ENV
 
       - name: Set up QEMU
         if: matrix.cibw-arch == 'manylinux_aarch64'
