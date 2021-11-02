@@ -30,13 +30,13 @@ jobs:
 
       - name: Check
         uses: actions/cache@v2
-        id: cache-${{ DEPENDENCY }}
+        id: ${{ DEPENDENCY }}
         with:
           path: /build-tools
           key: ${{ matrix.cibw-arch }}-${{ DEPENDENCY }}
 
       - name: Add to build list
-        if: steps.cache-${{ DEPENDENCY }}.outputs.cache-hit != 'true'
+        if: steps.${{ DEPENDENCY }}.outputs.cache-hit != 'true'
         run: echo "BUILD_LIST=${{ BUILD_LIST }}:${{ BUILD_CMD }}" >> $GITHUB_ENV
 
       - name: Set up QEMU
