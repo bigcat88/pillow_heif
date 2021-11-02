@@ -44,33 +44,39 @@ jobs:
           BUILD_CMD="&& sh ./scripts/build__autoconf.sh"
           echo BUILD_ALL="$BUILD_ALL $BUILD_CMD" >> $GITHUB_ENV
 
-      - name: DEBUG
-        if: steps.cache_pkg-config.outputs.cache-hit != 'true'
-        run: |
-          echo "2"
-          echo $BUILD_CMD
-          echo $BUILD_ALL
-          echo "3"
-          echo "${{ env.BUILD_CMD }}"
-          echo "${{ env.BUILD_ALL }}"
-#
-#      - name: Set up QEMU
-#        if: matrix.cibw-arch == 'manylinux_aarch64'
-#        uses: docker/setup-qemu-action@v1
-#        with:
-#          platforms: arm64
+      - uses: actions/cache@v2
+        id: cache_automake
+        with:
+          path: /build-tools
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-2-automake-1.16.4
 
-#      - name: Install requirements
-#        run: |
-#          echo $BUILD_LIST
-#          echo $BUILD_CMD
-#          echo "123"
-#          echo "$BUILD_LIST"
-#          echo "$BUILD_CMD"
-#          echo "456"
-#          echo ${{ env.BUILD_LIST }}
-#          echo ${{ env.BUILD_CMD }}
-#          python -m pip install cibuildwheel
+      - if: steps.cache_automake.outputs.cache-hit != 'true'
+        run: |
+          BUILD_CMD="&& sh ./scripts/build__cache_automake.sh"
+          echo BUILD_ALL="$BUILD_ALL $BUILD_CMD" >> $GITHUB_ENV
+
+      - name: DEBUG
+        run: |
+          echo "1"
+          echo $BUILD_ALL
+          echo "2"
+          echo "${{ env.BUILD_ALL }}"
+
+      - name: Preparations for build start
+        if: ${{ env.BUILD_ALL != '' }}
+        run: |
+          echo BUILD_COMMAND="set -ex && $BUILD_ALL" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        if: ${{ env.BUILD_COMMAND }} && matrix.cibw-arch == 'manylinux_aarch64'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: arm64
+
+      - name: Install requirements
+        if: ${{ env.BUILD_COMMAND }}
+        run: |
+          python -m pip install cibuildwheel
 
 #      - name: Run cibuildwheel
 #        run: |
