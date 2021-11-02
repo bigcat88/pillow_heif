@@ -34,7 +34,7 @@ jobs:
           BUILD_CMD: "&& sh ./scripts/build__pkg-config.sh"
 
       - name: Add to build list
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache_pkg-config.outputs.cache-hit != 'true'
         run: echo "BUILD_LIST=$BUILD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - name: Check for autoconf
@@ -47,7 +47,7 @@ jobs:
           BUILD_CMD: "&& sh ./scripts/build__autoconf.sh"
 
       - name: Add to build list
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache_autoconf.outputs.cache-hit != 'true'
         run: echo "BUILD_LIST=$BUILD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - name: Set up QEMU
