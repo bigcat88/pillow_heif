@@ -29,7 +29,7 @@ jobs:
         id: cache_pkg-config
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-2-pkg-config-0.29.2
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-3-pkg-config-0.29.2
         env:
           BUILD_CMD: "&& sh ./scripts/build__pkg-config.sh"
 
@@ -38,9 +38,10 @@ jobs:
         run: |
           NEW_BUILD_LIST="${{ env.BUILD_LIST }} ${{ env.BUILD_CMD }}"
           echo "$NEW_BUILD_LIST"
-          echo "BUILD_LIST=$NEW_BUILD_LIST" >> $GITHUB_ENV
-          echo "BUILD_LIST"
-          echo ${{ env.BUILD_LIST }}
+          echo "BUILD_LIST=$(NEW_BUILD_LIST)" >> $GITHUB_ENV
+          echo "BUILD_LIST=$(NEW_BUILD_LIST)"
+          echo "$BUILD_LIST"
+          echo "${{ env.BUILD_LIST }}"
 
 #      - name: Check for autoconf
 #        uses: actions/cache@v2
@@ -65,8 +66,8 @@ jobs:
 
       - name: Install requirements
         run: |
-          echo "$BUILD_LIST"
-          echo "$BUILD_CMD"
+          echo $BUILD_LIST
+          echo $BUILD_CMD
 #          python -m pip install cibuildwheel
 
 #      - name: Run cibuildwheel
