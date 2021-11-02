@@ -3,7 +3,7 @@ ls -la
 if [[ -d autoconf-"$1" ]]
 then
   echo "No cache found for autoconf, build it..."
-  wget --no-check-certificate https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz \
+  wget --no-check-certificate https://ftp.gnu.org/gnu/autoconf/autoconf-"$1".tar.gz \
   && tar xvf autoconf-"$1".tar.gz \
   && cd autoconf-"$1" \
   && ./configure \

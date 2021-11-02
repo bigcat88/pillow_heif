@@ -1,6 +1,5 @@
 [tool.cibuildwheel.linux]
-#before-all = [
-#    "yum install -y wget libtool git-all openssl-devel",
-#    "chmod +x ./scripts/init_linux.sh",
-#    "./scripts/init_linux.sh",
-#]
+before-all = [
+    "yum install -y wget libtool git-all openssl-devel",
+    "echo $BUILD_CMD_LIST",
+]

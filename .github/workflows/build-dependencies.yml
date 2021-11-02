@@ -31,7 +31,6 @@ jobs:
       - name: pkg_config
         run: |
           BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo BUILD_CMD="$BUILD_CMD" >> $GITHUB_ENV
           echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
           echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-0 >> $GITHUB_ENV
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
@@ -44,10 +43,17 @@ jobs:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
+      - name: cmake
+        run: |
+          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+        env:
+          NAME: "cmake"
+          VERSION: "3.21.2"
+
       - name: autoconf
         run: |
           BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo BUILD_CMD="$BUILD_CMD" >> $GITHUB_ENV
           echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
           echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-0 >> $GITHUB_ENV
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
@@ -55,9 +61,23 @@ jobs:
           NAME: "autoconf"
           VERSION: "2.71"
 
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.STUFF_PATH }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+
+      - name: automake
+        run: |
+          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-0 >> $GITHUB_ENV
+          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+        env:
+          NAME: "automake"
+          VERSION: "1.16.4"
+
       - name: Debug
         run: |
-          echo $BUILD_CMD
           echo $STUFF_PATH
           echo $SCRIPTS_DIR
           echo $CACHE_KEY
@@ -68,36 +88,33 @@ jobs:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
-
-
-#      - name: Set up QEMU
-#        if: matrix.cibw-arch == 'manylinux_aarch64'
-#        uses: docker/setup-qemu-action@v1
-#        with:
-#          platforms: arm64
+      - name: Set up QEMU
+        if: matrix.cibw-arch == 'manylinux_aarch64'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: arm64
 
       - name: Prepare cibuildwheel
         run: |
           python -m pip install cibuildwheel
-          echo BUILD_COMMAND="set -ex $BUILD_CMD_LIST" >> $GITHUB_ENV
-#
-#      - name: x64 linux pre configure enviroment
-#        if: matrix.cibw-arch == 'manylinux_x86_64'
-#        run: |
-#          echo "CIBW_ARCHS=x86_64" >> $GITHUB_ENV
-#          echo "CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014" >> $GITHUB_ENV
-#          echo "CIBW_BUILD=cp38-manylinux_x86_64" >> $GITHUB_ENV
-#
-#      - name: Arm linux pre configure enviroment
-#        if: matrix.cibw-arch == 'manylinux_aarch64'
-#        run: |
-#          echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
-#          echo "CIBW_BUILD=cp38-manylinux_aarch64" >> $GITHUB_ENV
-#
-#      - name: Start test build
-#        run: |
-#          cibuildwheel --config-file "{package}/build_scripts/dependencies.toml"
-#        env:
-#          CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
-#          CIBW_TEST_SKIP: "*"
-#          CIBW_REPAIR_WHEEL_COMMAND: ""
+          echo BUILD_COMMAND=`set -ex $BUILD_CMD_LIST` >> $GITHUB_ENV
+
+      - name: x64 linux pre configure enviroment
+        if: matrix.cibw-arch == 'manylinux_x86_64'
+        run: |
+          echo "CIBW_ARCHS=x86_64" >> $GITHUB_ENV
+          echo "CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014" >> $GITHUB_ENV
+          echo "CIBW_BUILD=cp38-manylinux_x86_64" >> $GITHUB_ENV
+
+      - name: Arm linux pre configure enviroment
+        if: matrix.cibw-arch == 'manylinux_aarch64'
+        run: |
+          echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
+          echo "CIBW_BUILD=cp38-manylinux_aarch64" >> $GITHUB_ENV
+
+      - name: Start test build
+        run: |
+          cibuildwheel --config-file "{package}/build_scripts/dependencies.toml"
+        env:
+          CIBW_TEST_SKIP: "*"
+          CIBW_REPAIR_WHEEL_COMMAND: ""
