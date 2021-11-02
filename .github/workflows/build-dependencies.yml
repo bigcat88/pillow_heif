@@ -25,11 +25,11 @@ jobs:
           BUILD_LIST: "set -ex"
 
       - name: Check for pkg-config
-#        uses: actions/cache@v2
-#        id: cache_pkg-config
-#        with:
-#          path: /build-tools
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}--pkg-config-0.29.2
+        uses: actions/cache@v2
+        id: cache_pkg-config
+        with:
+          path: /build-tools
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-1-pkg-config-0.29.2
         env:
           BUILD_CMD: "&& sh ./scripts/build__pkg-config.sh"
 
@@ -40,11 +40,11 @@ jobs:
           echo "BUILD_LIST=$NEW_BUILD_LIST" >> $GITHUB_ENV
 
       - name: Check for autoconf
-#        uses: actions/cache@v2
-#        id: cache_autoconf
-#        with:
-#          path: /build-tools
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}--autoconf-2.71
+        uses: actions/cache@v2
+        id: cache_autoconf
+        with:
+          path: /build-tools
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-1-autoconf-2.71
         env:
           BUILD_CMD: "&& sh ./scripts/build__autoconf.sh"
 
