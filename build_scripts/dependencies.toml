@@ -2,8 +2,10 @@
 before-all = [
     "yum install -y wget libtool git-all openssl-devel",
     "echo DEBUG!!!",
+    "echo $BUILD_COMMAND",
+    "echo DEBUG!!!",
     "echo $BUILD_COMMAND>>build_scripts/execute.sh",
     "chmod +x build_scripts/execute.sh",
-    "cat build_scripts/execute.sh",
+    "echo $(cat build_scripts/execute.sh)",
     "./build_scripts/execute.sh",
 ]
