@@ -1,8 +1,7 @@
 cd /host/build-tools \
-&& PKG_CONFIG_VERSION="0.29.2" \
-&& wget --no-check-certificate https://pkg-config.freedesktop.org/releases/pkg-config-${PKG_CONFIG_VERSION}.tar.gz \
-&& tar xvf pkg-config-${PKG_CONFIG_VERSION}.tar.gz \
-&& cd pkg-config-${PKG_CONFIG_VERSION} \
+&& wget --no-check-certificate https://pkg-config.freedesktop.org/releases/pkg-config-"$1".tar.gz \
+&& tar xvf pkg-config-"$1".tar.gz \
+&& cd pkg-config-"$1" \
 && ./configure --with-internal-glib \
 && make -j4 \
 && make install \
