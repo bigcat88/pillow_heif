@@ -24,21 +24,18 @@ jobs:
         env:
           BUILD_LIST: "set -ex"
 
-      - name: pkg-config
-        run: |
-          echo "DEPENDENCY=pkg-config-0.29.2" >> $GITHUB_ENV
-          echo "BUILD_CMD=&& sh ./scripts/build__pkg_config.sh" >> $GITHUB_ENV
-
-      - name: Check for ${{ env.DEPENDENCY }}
+      - name: Check for pkg-config
         uses: actions/cache@v2
-        id: cache
+        id: cache_pkg-config
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.DEPENDENCY }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}--pkg-config-0.29.2
+        env:
+          BUILD_CMD: "&& sh ./scripts/build__pkg-config.sh"
 
       - name: Add to build list
         if: steps.cache.outputs.cache-hit != 'true'
-        run: echo "BUILD_LIST=${{ env.BUILD_LIST }}${{ env.BUILD_CMD }}" >> $GITHUB_ENV
+        run: echo "BUILD_LIST=$BUILD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - name: Check for autoconf
         uses: actions/cache@v2
@@ -51,7 +48,7 @@ jobs:
 
       - name: Add to build list
         if: steps.cache.outputs.cache-hit != 'true'
-        run: echo "BUILD_LIST=${{ env.BUILD_LIST }}${{ env.BUILD_CMD }}" >> $GITHUB_ENV
+        run: echo "BUILD_LIST=$BUILD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - name: Set up QEMU
         if: matrix.cibw-arch == 'manylinux_aarch64'
