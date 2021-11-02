@@ -29,20 +29,27 @@ jobs:
         id: cache_pkg-config
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-5-pkg-config-0.29.2
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-6-pkg-config-0.29.2
         env:
           BUILD_CMD: "&& sh ./scripts/build__pkg-config.sh"
 
       - name: Add to build list
         if: steps.cache_pkg-config.outputs.cache-hit != 'true'
         run: |
+          echo "1"
           echo "$BUILD_LIST"
           echo "$BUILD_CMD"
+          echo "1"
+          echo  $BUILD_LIST
+          echo "$BUILD_CMD
+          echo "3"
+          echo "${{ env.BUILD_CMD }}"
+          echo "${{ env.BUILD_LIST }}"
+          echo "4"
           echo ${{ env.BUILD_CMD }}
-          echo "omg"
-          echo "BUILD_LIST=$(echo $BUILD_LIST $BUILD_CMD)" >> $GITHUB_ENV
-          echo "$BUILD_LIST"
           echo ${{ env.BUILD_LIST }}
+#          echo "BUILD_LIST=$(echo $BUILD_LIST $BUILD_CMD)" >> $GITHUB_ENV
+#          echo "$BUILD_LIST"
 
 #      - name: Check for autoconf
 #        uses: actions/cache@v2
@@ -65,16 +72,16 @@ jobs:
 #        with:
 #          platforms: arm64
 
-      - name: Install requirements
-        run: |
-          echo $BUILD_LIST
-          echo $BUILD_CMD
-          echo "123"
-          echo "$BUILD_LIST"
-          echo "$BUILD_CMD"
-          echo "456"
-          echo ${{ env.BUILD_LIST }}
-          echo ${{ env.BUILD_CMD }}
+#      - name: Install requirements
+#        run: |
+#          echo $BUILD_LIST
+#          echo $BUILD_CMD
+#          echo "123"
+#          echo "$BUILD_LIST"
+#          echo "$BUILD_CMD"
+#          echo "456"
+#          echo ${{ env.BUILD_LIST }}
+#          echo ${{ env.BUILD_CMD }}
 #          python -m pip install cibuildwheel
 
 #      - name: Run cibuildwheel
