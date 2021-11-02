@@ -33,12 +33,12 @@ jobs:
           echo CACHE_STEP_ID="cache_$STUFF" >> $GITHUB_ENV
 
       - uses: actions/cache@v2
-        id: ${{ CACHE_STEP_ID }}
+        id: ${{ env.CACHE_STEP_ID }}
         with:
-          path: ${{ STUFF_PATH }}
+          path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ STUFF }}-${{ VERSION }}
 
-      - if: steps.${{ CACHE_STEP_ID }}.outputs.cache-hit != 'true'
+      - if: steps.${{ env.CACHE_STEP_ID }}.outputs.cache-hit != 'true'
         run: |
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
