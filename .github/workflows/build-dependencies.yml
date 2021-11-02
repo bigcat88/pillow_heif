@@ -48,7 +48,7 @@ jobs:
         id: cache_automake
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-07-automake-1.16.4
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-08-automake-1.16.4
 
       - if: steps.cache_automake.outputs.cache-hit != 'true'
         run: |
