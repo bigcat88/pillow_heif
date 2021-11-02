@@ -29,40 +29,43 @@ jobs:
         id: cache_pkg-config
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-1-pkg-config-0.29.2
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-2-pkg-config-0.29.2
         env:
           BUILD_CMD: "&& sh ./scripts/build__pkg-config.sh"
 
       - name: Add to build list
         if: steps.cache_pkg-config.outputs.cache-hit != 'true'
         run: |
-          NEW_BUILD_LIST="$BUILD_LIST $BUILD_CMD"
+          NEW_BUILD_LIST="${{ env.BUILD_LIST }} ${{ env.BUILD_CMD }}"
+          echo "$NEW_BUILD_LIST"
           echo "BUILD_LIST=$NEW_BUILD_LIST" >> $GITHUB_ENV
+          echo "BUILD_LIST"
+          echo ${{ env.BUILD_LIST }}
 
-      - name: Check for autoconf
-        uses: actions/cache@v2
-        id: cache_autoconf
-        with:
-          path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-1-autoconf-2.71
-        env:
-          BUILD_CMD: "&& sh ./scripts/build__autoconf.sh"
-
-      - name: Add to build list
-        if: steps.cache_autoconf.outputs.cache-hit != 'true'
-        run: |
-          NEW_BUILD_LIST="$BUILD_LIST $BUILD_CMD"
-          echo "BUILD_LIST=$NEW_BUILD_LIST" >> $GITHUB_ENV
-
-      - name: Set up QEMU
-        if: matrix.cibw-arch == 'manylinux_aarch64'
-        uses: docker/setup-qemu-action@v1
-        with:
-          platforms: arm64
+#      - name: Check for autoconf
+#        uses: actions/cache@v2
+#        id: cache_autoconf
+#        with:
+#          path: /build-tools
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-1-autoconf-2.71
+#        env:
+#          BUILD_CMD: "&& sh ./scripts/build__autoconf.sh"
+#
+#      - name: Add to build list
+#        if: steps.cache_autoconf.outputs.cache-hit != 'true'
+#        run: |
+#          NEW_BUILD_LIST="$BUILD_LIST $BUILD_CMD"
+#          echo "BUILD_LIST=$NEW_BUILD_LIST" >> $GITHUB_ENV
+#
+#      - name: Set up QEMU
+#        if: matrix.cibw-arch == 'manylinux_aarch64'
+#        uses: docker/setup-qemu-action@v1
+#        with:
+#          platforms: arm64
 
       - name: Install requirements
         run: |
-          python -m pip install cibuildwheel
+#          python -m pip install cibuildwheel
           echo "$BUILD_LIST"
           echo "$BUILD_CMD"
 
