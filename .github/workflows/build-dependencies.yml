@@ -91,5 +91,5 @@ jobs:
           cibuildwheel --config-file "{package}/build_scripts/dependencies.toml" --allow-empty
         env:
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
-          CIBW_TEST_SKIP: *
+          CIBW_TEST_SKIP: "*"
           CIBW_REPAIR_WHEEL_COMMAND: ""
