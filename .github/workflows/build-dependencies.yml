@@ -30,23 +30,20 @@ jobs:
       - run: |
           echo BUILD_CMD="&& sh ./build_scripts/linux/$NAME.sh $VERSION" >> $GITHUB_ENV
           echo STUFF_PATH="/build-tools/$NAME" >> $GITHUB_ENV
-          echo CACHE_STEP_ID="cache_$NAME" >> $GITHUB_ENV
         env:
           NAME: "PKG_CONFIG"
           VERSION: "0.29.2"
 
       - name: Debug
         run: |
+          mkdir /build-tools/test
+          mkdir /build-tools/test/123
           echo $STUFF
           echo $VERSION
           echo $BUILD_CMD
           echo $STUFF_PATH
           echo $CACHE_STEP_ID
 
-      - name: test
-        id: ${{ env.CACHE_STEP_ID }}
-        run: |
-          echo "lol
 
 #      - uses: actions/cache@v2
 #        id: ${{ env.CACHE_STEP_ID }}
