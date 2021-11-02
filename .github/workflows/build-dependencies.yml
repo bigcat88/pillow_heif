@@ -22,7 +22,7 @@ jobs:
         with:
           submodules: recursive
         env:
-          BUILD_CMD: "set -ex"
+          BUILD_LIST: "set -ex"
 
       - name: pkg-config
         run: |
@@ -40,17 +40,14 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: echo "BUILD_LIST=${{ env.BUILD_LIST }}${{ env.BUILD_CMD }}" >> $GITHUB_ENV
 
-      - name: autoconf
-        run: |
-          echo "DEPENDENCY=autoconf-2.71" >> $GITHUB_ENV
-          echo "BUILD_CMD=&& sh ./scripts/build__autoconf.sh" >> $GITHUB_ENV
-
-      - name: Check for ${{ env.DEPENDENCY }}
+      - name: Check for autoconf
         uses: actions/cache@v2
-        id: cache
+        id: cache_autoconf
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.DEPENDENCY }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}--autoconf-2.71
+        env:
+          BUILD_CMD: "&& sh ./scripts/build__autoconf.sh"
 
       - name: Add to build list
         if: steps.cache.outputs.cache-hit != 'true'
