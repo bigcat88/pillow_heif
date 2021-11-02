@@ -26,7 +26,7 @@ jobs:
         id: cache_pkg-config
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-91-pkg-config-0.29.2
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-03-pkg-config-0.29.2
 
       - if: steps.cache_pkg-config.outputs.cache-hit != 'true'
         run: |
@@ -37,7 +37,7 @@ jobs:
         id: cache_autoconf
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-21-autoconf-2.71
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-02-autoconf-2.71
 
       - if: steps.cache_autoconf.outputs.cache-hit != 'true'
         run: |
@@ -48,19 +48,12 @@ jobs:
         id: cache_automake
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-21-automake-1.16.4
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-01-automake-1.16.4
 
       - if: steps.cache_automake.outputs.cache-hit != 'true'
         run: |
           BUILD_CMD="&& sh ./scripts/build__cache_automake.sh"
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-
-      - name: DEBUG
-        run: |
-          echo "1"
-          echo $BUILD_CMD_LIST
-          echo "2"
-          echo "${{ env.BUILD_CMD_LIST }}"
 
       - name: Preparations for build start
         if: env.BUILD_CMD_LIST != ''
@@ -78,8 +71,11 @@ jobs:
         run: |
           python -m pip install cibuildwheel
 
-#      - name: Run cibuildwheel
-#        run: |
-#          cibuildwheel
-#        env:
-#          CIBW_SKIP: *
+      - name: Start building
+        if: env.BUILD_COMMAND != ''
+        env:
+          CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
+          CIBW_SKIP: *
+        run: |
+          cibuildwheel --config-file ""
+
