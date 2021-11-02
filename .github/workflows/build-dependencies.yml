@@ -30,7 +30,7 @@ jobs:
 
       - if: steps.cache_pkg-config.outputs.cache-hit != 'true'
         run: |
-          BUILD_CMD="&& sh ./scripts/build__pkg-config.sh"
+          BUILD_CMD="&& sh ./build_scripts/pkg-config.sh"
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - uses: actions/cache@v2
@@ -41,7 +41,7 @@ jobs:
 
       - if: steps.cache_autoconf.outputs.cache-hit != 'true'
         run: |
-          BUILD_CMD="&& sh ./scripts/build__autoconf.sh"
+          BUILD_CMD="&& sh ./build_scripts/autoconf.sh"
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - uses: actions/cache@v2
@@ -52,7 +52,7 @@ jobs:
 
       - if: steps.cache_automake.outputs.cache-hit != 'true'
         run: |
-          BUILD_CMD="&& sh ./scripts/build__cache_automake.sh"
+          BUILD_CMD="&& sh ./build_scripts/automake.sh"
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
 
       - name: Preparations for build start
@@ -74,7 +74,7 @@ jobs:
       - name: Start building
         if: env.BUILD_COMMAND != ''
         run: |
-          cibuildwheel --config-file ""
+          cibuildwheel --config-file "{package}/build_scripts/dependencies.toml" --allow-empty
         env:
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
           CIBW_SKIP: "*"
