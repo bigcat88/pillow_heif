@@ -36,12 +36,10 @@ jobs:
       - name: Add to build list
         if: steps.cache_pkg-config.outputs.cache-hit != 'true'
         run: |
-          NEW_BUILD_LIST="${{ env.BUILD_LIST }} ${{ env.BUILD_CMD }}"
-          echo "$NEW_BUILD_LIST"
-          echo "BUILD_LIST=$(NEW_BUILD_LIST)" >> $GITHUB_ENV
-          echo "BUILD_LIST=$(NEW_BUILD_LIST)"
+          echo $BUILD_LIST $BUILD_CMD
+          echo "BUILD_LIST=$(echo $BUILD_LIST $BUILD_CMD)" >> $GITHUB_ENV
           echo "$BUILD_LIST"
-          echo "${{ env.BUILD_LIST }}"
+          echo ${{ env.BUILD_LIST }}
 
 #      - name: Check for autoconf
 #        uses: actions/cache@v2
