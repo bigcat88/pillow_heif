@@ -1,5 +1,5 @@
 cd /host/build-tools || exit 2
-ls -la
+echo "$1"
 if [[ -d pkg-config-"$1" ]]
 then
   echo "No cache found for pkg-config, build it..."

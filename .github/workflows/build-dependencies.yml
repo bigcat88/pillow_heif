@@ -27,7 +27,7 @@ jobs:
           sudo mkdir /build-tools
           sudo chmod 777 /build-tools
           echo SCRIPTS_DIR="./build_scripts/linux" >> $GITHUB_ENV
-          echo CACHE_RND="1" >>$GITHUB_ENV
+          echo CACHE_RND="2" >>$GITHUB_ENV
 
       - name: pkg_config
         run: |
@@ -117,7 +117,8 @@ jobs:
 
       - name: Start test build
         run: |
-          cibuildwheel --config-file "{package}/build_scripts/dependencies.toml"
+          cibuildwheel
+#         --config-file "{package}/build_scripts/dependencies.toml"
         env:
           CIBW_TEST_SKIP: "*"
           CIBW_REPAIR_WHEEL_COMMAND: ""
