@@ -21,33 +21,36 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-        env:
-          BUILD_LIST: "set -ex"
 
       - name: Check for pkg-config
         uses: actions/cache@v2
         id: cache_pkg-config
         with:
           path: /build-tools
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-6-pkg-config-0.29.2
-        env:
-          BUILD_CMD: "&& sh ./scripts/build__pkg-config.sh"
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-8-pkg-config-0.29.2
+
+      - name: Add to build list
+        if: steps.cache_pkg-config.outputs.cache-hit != 'true'
+        run: |
+          BUILD_CMD="&& sh ./scripts/build__pkg-config.sh"
+          echo BUILD_ALL="$BUILD_ALL $BUILD_CMD" >> $GITHUB_ENV
+
 
       - name: Add to build list
         if: steps.cache_pkg-config.outputs.cache-hit != 'true'
         run: |
           echo "1"
-          echo "$BUILD_LIST"
-          echo "$BUILD_CMD"
-          echo "1"
-          echo $BUILD_LIST
+          echo "BUILD_CMD"
+          echo "BUILD_ALL"
+          echo "2"
           echo $BUILD_CMD
+          echo $BUILD_ALL
           echo "3"
           echo "${{ env.BUILD_CMD }}"
-          echo "${{ env.BUILD_LIST }}"
+          echo "${{ env.BUILD_ALL }}"
           echo "4"
           echo ${{ env.BUILD_CMD }}
-          echo ${{ env.BUILD_LIST }}
+          echo ${{ env.BUILD_ALL }}
 #          echo "BUILD_LIST=$(echo $BUILD_LIST $BUILD_CMD)" >> $GITHUB_ENV
 #          echo "$BUILD_LIST"
 
