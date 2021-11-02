@@ -23,7 +23,8 @@ jobs:
           submodules: recursive
 
       - run: |
-          mkdir /build-tools
+          sudo mkdir /build-tools
+          sudo chmod 777 /build-tools
 
       - run: |
           echo STUFF="PKG-CONFIG" >> $GITHUB_ENV
