@@ -94,14 +94,6 @@ jobs:
           OS_PACKAGES="yum install -y wget libtool git-all openssl-devel"
           echo BUILD_COMMAND="$OS_PACKAGES && set -ex $BUILD_CMD_LIST" >> $GITHUB_ENV
 
-      - name: Debug
-        run: |
-          echo $STUFF_PATH
-          echo $SCRIPTS_DIR
-          echo $CACHE_KEY
-          echo $BUILD_CMD_LIST
-          echo $BUILD_COMMAND
-
       - name: x64 linux pre configure enviroment
         if: matrix.cibw-arch == 'manylinux_x86_64'
         run: |
