@@ -4,11 +4,9 @@ if [[ -d "libressl-$1" ]]; then
   cd "libressl-$1" || exit 102
 else
   echo "No cache found for LibreSSL, build it..."
-  wget -q "https://github.com/libressl-portable/portable/archive/v$1.tar.gz" \
-  && tar xvf "portable-$1.tar.gz" \
-  && echo $(ls -la) \
+  wget "https://github.com/libressl-portable/portable/archive/v$1.tar.gz" \
+  && tar xvf "v$1.tar.gz" \
   && mv "portable-$1" "libressl-$1" \
-  && echo $(ls -la) \
   && cd "libressl-$1" \
   && ./autogen.sh \
   && ./configure \
