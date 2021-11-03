@@ -5,7 +5,8 @@ echo "ATTENTION2"
 echo $(ls -la /host)
 echo "ATTENTION3"
 echo $(ls -la /host/build-tools)
-echo "ATTENTION3"
+echo "ATTENTION4"
+echo "ls -la /host/build-tools/pkg-config-$1"
 echo $(ls -la "/host/build-tools/pkg-config-$1")
 echo "pkg-config-$1/"
 if [[ -d "/host/build-tools/pkg-config-$1/" ]]

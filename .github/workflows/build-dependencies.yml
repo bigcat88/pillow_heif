@@ -34,7 +34,7 @@ jobs:
           BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
           echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
           echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+          echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
         env:
           NAME: "pkg-config"
           VERSION: "0.29.2"
