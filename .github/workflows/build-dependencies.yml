@@ -29,12 +29,17 @@ jobs:
           echo SCRIPTS_DIR="./build_scripts/linux" >> $GITHUB_ENV
           echo CACHE_RND="4" >>$GITHUB_ENV
 
-#      - name: pkg_config
+
+
+#      -
 #        run: |
 #          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
 #          echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
+# TWO POSSIBLE WAYS:
+# 1. MOVE VERSION to sh file and here do cashkey=hash by content of sh file.
+# 2. read in sh file this file that contains version and parse it. look like first will be clear to understand.
 
-
+      - name: pkg_config
       - uses: actions/cache@v2
         with:
           path: /build-*/${{ env.NAME }}-${{ env.VERSION }}
@@ -44,7 +49,8 @@ jobs:
           VERSION: "0.29.2"
 
 
-      - uses: actions/cache@v2
+      - name: pkg_config_lol
+        uses: actions/cache@v2
         with:
           path: /build-*/${{ env.NAME }}-${{ env.VERSION }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.NAME }}-${{ env.VERSION }}
