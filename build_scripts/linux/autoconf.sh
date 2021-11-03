@@ -4,7 +4,7 @@ if [[ -d "autoconf-$1" ]]; then
   cd "autoconf-$1" || exit 102
 else
   echo "No cache found for autoconf, build it..."
-  wget --no-check-certificate "https://ftp.gnu.org/gnu/autoconf/autoconf-$1.tar.gz" \
+  wget -q --no-check-certificate "https://ftp.gnu.org/gnu/autoconf/autoconf-$1.tar.gz" \
   && tar xvf "autoconf-$1.tar.gz" \
   && cd "autoconf-$1" \
   && ./configure \
