@@ -27,7 +27,7 @@ jobs:
           sudo mkdir /build-tools /build-deps
           sudo chmod 777 /build-tools /build-deps
           echo SCRIPTS_DIR="./build_scripts/linux" >> $GITHUB_ENV
-          echo CACHE_RND="3" >>$GITHUB_ENV
+          echo CACHE_RND="4" >>$GITHUB_ENV
 
       - name: pkg_config
         run: |
@@ -40,10 +40,9 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          path: $STUFF_PATH
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          path: ${{ env.STUFF_PATH }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.STUFF_PATH }}
         env:
-          CACHE_KEY: ${{ env.STUFF_PATH }}
           STUFF_PATH: ${{ env.STUFF_PATH }}
 
 
@@ -58,10 +57,9 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          path: $STUFF_PATH
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          path: ${{ env.STUFF_PATH }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.STUFF_PATH }}
         env:
-          CACHE_KEY: ${{ env.STUFF_PATH }}
           STUFF_PATH: ${{ env.STUFF_PATH }}
 
 #      - name: cmake
