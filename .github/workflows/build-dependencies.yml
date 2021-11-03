@@ -29,84 +29,84 @@ jobs:
           echo SCRIPTS_DIR="./build_scripts/linux" >> $GITHUB_ENV
           echo CACHE_RND="3" >>$GITHUB_ENV
 
-      - name: pkg_config
-        run: |
-          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
-          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-          echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
-        env:
-          NAME: "pkg-config"
-          VERSION: "0.29.2"
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.STUFF_PATH }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-
-      - name: cmake
-        run: |
-          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-        env:
-          NAME: "cmake"
-          VERSION: "3.21.2"
-
-      - name: autoconf
-        run: |
-          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
-          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-        env:
-          NAME: "autoconf"
-          VERSION: "2.71"
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.STUFF_PATH }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-
-      - name: automake
-        run: |
-          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
-          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-        env:
-          NAME: "automake"
-          VERSION: "1.16.4"
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.STUFF_PATH }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-
-      - name: LibreSSL
-        run: |
-          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
-          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-        env:
-          NAME: "libressl"
-          VERSION: "3.1.5"
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.STUFF_PATH }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-
-      - name: nasm
-        run: |
-          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
-          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-        env:
-          NAME: "nasm"
-          VERSION: "2.15.05"
-
+#      - name: pkg_config
+#        run: |
+#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+#          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
+#          echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
+#        env:
+#          NAME: "pkg-config"
+#          VERSION: "0.29.2"
+#
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.STUFF_PATH }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+#
+#      - name: cmake
+#        run: |
+#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+#        env:
+#          NAME: "cmake"
+#          VERSION: "3.21.2"
+#
+#      - name: autoconf
+#        run: |
+#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+#          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
+#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+#        env:
+#          NAME: "autoconf"
+#          VERSION: "2.71"
+#
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.STUFF_PATH }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+#
+#      - name: automake
+#        run: |
+#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+#          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
+#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+#        env:
+#          NAME: "automake"
+#          VERSION: "1.16.4"
+#
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.STUFF_PATH }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+#
+#      - name: LibreSSL
+#        run: |
+#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+#          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
+#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
+#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+#        env:
+#          NAME: "libressl"
+#          VERSION: "3.1.5"
+#
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.STUFF_PATH }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+#
+#      - name: nasm
+#        run: |
+#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+#          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
+#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+#        env:
+#          NAME: "nasm"
+#          VERSION: "2.15.05"
+#
 #      - uses: actions/cache@v2
 #        with:
 #          path: ${{ env.STUFF_PATH }}
