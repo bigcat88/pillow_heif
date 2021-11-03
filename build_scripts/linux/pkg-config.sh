@@ -9,8 +9,7 @@ echo "ATTENTION4"
 echo "ls -la /host/build-tools/pkg-config-$1"
 echo $(ls -la "/host/build-tools/pkg-config-$1")
 echo "pkg-config-$1/"
-if [[ -d "/host/build-tools/pkg-config-$1/" ]]
- then
+if [[ -d "/host/build-tools/pkg-config-$1/" ]]; then
   echo "No cache found for pkg-config, build it..."
   wget --no-check-certificate "https://pkg-config.freedesktop.org/releases/pkg-config-$1.tar.gz" \
   && tar xvf "pkg-config-$1.tar.gz" \
