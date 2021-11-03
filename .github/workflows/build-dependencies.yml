@@ -32,10 +32,10 @@ jobs:
       - name: pkg_config
         run: |
           BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+          echo GG_NEXT="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
           echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
         env:
-          NAME: "pkg-config"
+          NAME: "pkg-config3"
           VERSION: "0.29.2"
 
       - uses: actions/cache@v2
@@ -43,16 +43,16 @@ jobs:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.STUFF_PATH }}
         env:
-          STUFF_PATH: ${{ env.STUFF_PATH }}
+          STUFF_PATH: ${{ env.GG_NEXT }}
 
 
       - name: pkg_config2
         run: |
           BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+          echo GG_NEXT="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
           echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
         env:
-          NAME: "pkg-config2"
+          NAME: "pkg-config23"
           VERSION: "0.29.22"
 
       - uses: actions/cache@v2
@@ -60,7 +60,7 @@ jobs:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.STUFF_PATH }}
         env:
-          STUFF_PATH: ${{ env.STUFF_PATH }}
+          STUFF_PATH: ${{ env.GG_NEXT }}
 
 #      - name: cmake
 #        run: |
