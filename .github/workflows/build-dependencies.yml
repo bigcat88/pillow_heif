@@ -107,40 +107,70 @@ jobs:
           NAME: "nasm"
           VERSION: "2.15.05"
 
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.STUFF_PATH }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.STUFF_PATH }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+#
+#      - name: x265
+#        run: |
+#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+#          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
+#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
+#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+#        env:
+#          NAME: "x265"
+#          VERSION: "3.5"
+#
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.STUFF_PATH }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+#
+#      - name: libde265
+#        run: |
+#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+#          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
+#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
+#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+#        env:
+#          NAME: "libde265"
+#          VERSION: "1.0.8"
+#
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.STUFF_PATH }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
-      - name: x265
+      - name: aom
         run: |
           BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
           echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
           echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
           echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
         env:
-          NAME: "x265"
-          VERSION: "3.5"
+          NAME: "aom"
+          VERSION: "bb35ba9148543f22ba7d8642e4fbd29ae301f5dc"
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
-      - name: libde265
-        run: |
-          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
-          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-        env:
-          NAME: "libde265"
-          VERSION: "1.0.8"
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.STUFF_PATH }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+#      - name: libheif
+#        run: |
+#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+#          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
+#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
+#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+#        env:
+#          NAME: "libheif"
+#          VERSION: "1.12.0"
+#
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.STUFF_PATH }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: libffi
         run: |

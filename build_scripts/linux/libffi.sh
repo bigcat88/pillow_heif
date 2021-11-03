@@ -1,12 +1,13 @@
+NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
 cd /host/build-deps || exit 2
-if [[ -d "libffi-$1" ]]; then
-  echo "Cache found for libffi, install it..."
-  cd "libffi-$1" || exit 102
+if [[ -d "$NAME-$1" ]]; then
+  echo "Cache found for $NAME, install it..."
+  cd "$NAME-$1" || exit 102
 else
-  echo "No cache found for libffi, build it..."
-  wget -q --no-check-certificate "ftp://sourceware.org/pub/libffi/libffi-$1.tar.gz" \
-  && tar xvf "libffi-$1.tar.gz" \
-  && cd "libffi-$1" \
+  echo "No cache found for $NAME, build it..."
+  wget -q --no-check-certificate "ftp://sourceware.org/pub/libffi/$NAME-$1.tar.gz" \
+  && tar xvf "$NAME-$1.tar.gz" \
+  && cd "$NAME-$1" \
   && ./configure --prefix /usr \
   && make -j4
 fi

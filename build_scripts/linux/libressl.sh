@@ -1,13 +1,14 @@
+NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
 cd /host/build-deps || exit 2
-if [[ -d "libressl-$1" ]]; then
-  echo "Cache found for LibreSSL, install it..."
-  cd "libressl-$1" || exit 102
+if [[ -d "$NAME-$1" ]]; then
+  echo "Cache found for $NAME, install it..."
+  cd "$NAME-$1" || exit 102
 else
-  echo "No cache found for LibreSSL, build it..."
-  mkdir "libressl-$1"
-  wget -q -O "libressl-$1.tar.gz" "https://github.com/libressl-portable/portable/archive/v$1.tar.gz" \
-  && tar xvf "libressl-$1.tar.gz" -C "libressl-$1" --strip-components 1 \
-  && cd "libressl-$1" \
+  echo "No cache found for $NAME, build it..."
+  mkdir "$NAME-$1"
+  wget -q -O "$NAME-$1.tar.gz" "https://github.com/libressl-portable/portable/archive/v$1.tar.gz" \
+  && tar xvf "$NAME-$1.tar.gz" -C "$NAME-$1" --strip-components 1 \
+  && cd "$NAME-$1" \
   && ./autogen.sh \
   && ./configure \
   && make -j4

@@ -1,12 +1,13 @@
+NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
 cd /host/build-tools || exit 2
-if [[ -d "automake-$1" ]]; then
-  echo "Cache found for automake, install it..."
-  cd "automake-$1" || exit 102
+if [[ -d "$NAME-$1" ]]; then
+  echo "Cache found for $NAME, install it..."
+  cd "$NAME-$1" || exit 102
 else
-  echo "No cache found for automake, build it..."
-  wget -q --no-check-certificate "https://ftp.gnu.org/gnu/automake/automake-$1.tar.gz" \
-  && tar xvf "automake-$1.tar.gz" \
-  && cd "automake-$1" \
+  echo "No cache found for $NAME, build it..."
+  wget -q --no-check-certificate "https://ftp.gnu.org/gnu/automake/$NAME-$1.tar.gz" \
+  && tar xvf "$NAME-$1.tar.gz" \
+  && cd "$NAME-$1" \
   && ./configure \
   && make -j4
 fi

@@ -1,13 +1,13 @@
-echo $(basename $BASH_SOURCE | cut -f 1 -d '.')
+NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
 cd /host/build-tools || exit 2
-if [[ -d "pkg-config-$1" ]]; then
-  echo "Cache found for pkg-config, install it..."
-  cd "pkg-config-$1" || exit 102
+if [[ -d "$NAME-$1" ]]; then
+  echo "Cache found for $NAME, install it..."
+  cd "$NAME-$1" || exit 102
 else
-  echo "No cache found for pkg-config, build it..."
-  wget -q --no-check-certificate "https://pkg-config.freedesktop.org/releases/pkg-config-$1.tar.gz" \
-  && tar xvf "pkg-config-$1.tar.gz" \
-  && cd "pkg-config-$1" \
+  echo "No cache found for $NAME, build it..."
+  wget -q --no-check-certificate "https://pkg-config.freedesktop.org/releases/$NAME-$1.tar.gz" \
+  && tar xvf "$NAME-$1.tar.gz" \
+  && cd "$NAME-$1" \
   && ./configure --with-internal-glib \
   && make -j4
 fi
