@@ -5,8 +5,9 @@ if [[ -d "libressl-$1" ]]; then
 else
   echo "No cache found for LibreSSL, build it..."
   wget "https://github.com/libressl-portable/portable/archive/v$1.tar.gz" \
-  && tar xvf "v$1.tar.gz" \
-  && mv "portable-$1" "libressl-$1" \
+  && ls -la \
+  && tar xvf "v$1.tar.gz"  -C "libressl-$1" --strip-components 1 \
+  && ls -la \
   && cd "libressl-$1" \
   && ./autogen.sh \
   && ./configure \
