@@ -29,32 +29,40 @@ jobs:
           echo SCRIPTS_DIR="./build_scripts/linux" >> $GITHUB_ENV
           echo CACHE_RND="3" >>$GITHUB_ENV
 
-#      - name: pkg_config
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "pkg-config"
-#          VERSION: "0.29.2"
+      - name: pkg_config
+        run: |
+          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+          echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
+        env:
+          NAME: "pkg-config"
+          VERSION: "0.29.2"
 
       - uses: actions/cache@v2
         with:
           path: $STUFF_PATH
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
         env:
-          CACHE_KEY: 1234
-          STUFF_PATH: 4565
+          CACHE_KEY: ${{ env.STUFF_PATH }}
+          STUFF_PATH: ${{ env.STUFF_PATH }}
 
+
+      - name: pkg_config2
+        run: |
+          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
+          echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
+        env:
+          NAME: "pkg-config2"
+          VERSION: "0.29.22"
 
       - uses: actions/cache@v2
         with:
-          path: $STUFF_P4ATH
+          path: $STUFF_PATH
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
         env:
-          CACHE_KEY: 1234567
-          STUFF_PATH: 456589
+          CACHE_KEY: ${{ env.STUFF_PATH }}
+          STUFF_PATH: ${{ env.STUFF_PATH }}
 
 #      - name: cmake
 #        run: |
