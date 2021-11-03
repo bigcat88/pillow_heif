@@ -43,6 +43,7 @@ jobs:
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: cmake
         run: |
@@ -66,6 +67,7 @@ jobs:
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: automake
         run: |
@@ -81,6 +83,7 @@ jobs:
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: LibreSSL
         run: |
@@ -96,6 +99,7 @@ jobs:
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: nasm
         run: |
@@ -111,6 +115,7 @@ jobs:
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: x265
         run: |
@@ -126,6 +131,7 @@ jobs:
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: libde265
         run: |
@@ -141,6 +147,7 @@ jobs:
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: aom
         run: |
@@ -156,6 +163,7 @@ jobs:
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: libheif
         run: |
@@ -171,6 +179,7 @@ jobs:
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: libffi
         run: |
@@ -186,6 +195,7 @@ jobs:
         with:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+          restore-keys: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: Set up QEMU
         if: matrix.cibw-arch == 'manylinux_aarch64'
