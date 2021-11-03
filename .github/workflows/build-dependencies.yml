@@ -41,7 +41,7 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.STUFF_PATH }}
+          path: $STUFF_PATH
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: cmake
@@ -212,12 +212,12 @@ jobs:
           echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
           echo "CIBW_BUILD=cp38-manylinux_aarch64" >> $GITHUB_ENV
 
-      - name: Start test build
-        run: |
-          cibuildwheel
-        env:
-          CIBW_TEST_SKIP: "*"
-          CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
+#      - name: Start test build
+#        run: |
+#          cibuildwheel
+#        env:
+#          CIBW_TEST_SKIP: "*"
+#          CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
 
       - name: Check builded wheel
         run: |
