@@ -1,7 +1,7 @@
 name: 'Close stale issues'
 on:
   schedule:
-    - cron: '0 17 * * *' # Every day at 17:00 PM
+    - cron: '0 8 * * *' # Every day at 12:00 PM GMT+2
   workflow_dispatch:
 
 jobs:
