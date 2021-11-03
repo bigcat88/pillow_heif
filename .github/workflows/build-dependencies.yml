@@ -196,7 +196,7 @@ jobs:
       - name: Prepare cibuildwheel
         run: |
           python -m pip install cibuildwheel
-          OS_PACKAGES="yum install -y wget libtool git-all"
+          OS_PACKAGES="yum install -y -q wget libtool git-all"
           echo BUILD_COMMAND="$OS_PACKAGES && set -ex $BUILD_CMD_LIST" >> $GITHUB_ENV
 #  openssl-devel"
 

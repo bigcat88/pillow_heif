@@ -5,15 +5,17 @@ if [[ -d "$NAME-build-$1" ]]; then
   cd "$NAME-build-$1" || exit 102
 else
   echo "No cache found for lib$NAME, build it..."
-  mkdir "$NAME-build-$1"
-  wget --no-check-certificate -O "$NAME-$1.tar.gz" "https://aomedia.googlesource.com/aom/+archive/$1.tar.gz" \
+  mkdir "$NAME-build-$1" "$NAME-$1" && cd "$NAME-$1" || exit 104
+  wget -q --no-check-certificate -O "$NAME-$1.tar.gz" "https://aomedia.googlesource.com/aom/+archive/$1.tar.gz" \
   && ls -la \
   && tar xvf "$NAME-$1.tar.gz" \
   && ls -la \
-  && cd "$NAME-build-$1" \
+  && cd "../$NAME-build-$1" \
   && ls -la \
   && cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1 "../$NAME-$1" \
-  && make -j4
+  && ls -la \
+  && make -j4 \
+  && ls -la
 fi
 make install && ldconfig
 
