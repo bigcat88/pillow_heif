@@ -6,7 +6,7 @@ if [[ -d "$NAME-$1" ]]; then
 else
   echo "No cache found for $NAME, build it..."
   wget -q --no-check-certificate "https://ftp.gnu.org/gnu/automake/$NAME-$1.tar.gz" \
-  && tar xvf "$NAME-$1.tar.gz" \
+  && tar xf "$NAME-$1.tar.gz" \
   && cd "$NAME-$1" \
   && ./configure \
   && make -j4

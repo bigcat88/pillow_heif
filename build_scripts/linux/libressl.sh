@@ -7,7 +7,7 @@ else
   echo "No cache found for $NAME, build it..."
   mkdir "$NAME-$1"
   wget -q -O "$NAME-$1.tar.gz" "https://github.com/libressl-portable/portable/archive/v$1.tar.gz" \
-  && tar xvf "$NAME-$1.tar.gz" -C "$NAME-$1" --strip-components 1 \
+  && tar xf "$NAME-$1.tar.gz" -C "$NAME-$1" --strip-components 1 \
   && cd "$NAME-$1" \
   && ./autogen.sh \
   && ./configure \

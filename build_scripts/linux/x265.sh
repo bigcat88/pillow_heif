@@ -7,7 +7,7 @@ else
   echo "No cache found for $NAME, build it..."
   mkdir "$NAME-$1"
   wget -O "$NAME-$1.tar.gz" "https://bitbucket.org/multicoreware/x265_git/get/$1.tar.gz" \
-  && tar xvf "$NAME-$1.tar.gz" -C "$NAME-$1" --strip-components 1 \
+  && tar xf "$NAME-$1.tar.gz" -C "$NAME-$1" --strip-components 1 \
   && cd "$NAME-$1" \
   && cmake -DCMAKE_INSTALL_PREFIX=/usr -G "Unix Makefiles" ./source \
   && make -j4
