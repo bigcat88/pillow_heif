@@ -42,7 +42,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: $STUFF_PATH
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-$CACHE_KEY
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ CACHE_KEY }}
         env:
           CACHE_KEY: 123
           STUFF_PATH: 456
