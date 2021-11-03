@@ -7,6 +7,7 @@ else
   echo "No cache found for $NAME, build it..."
   wget -q "https://github.com/strukturag/libheif/releases/download/v$1/$NAME-$1.tar.gz" \
   && tar xf "$NAME-$1.tar.gz" \
+  && rm -f "$NAME-$1.tar.gz" \
   && cd "$NAME-$1" \
   && ./configure --prefix /usr \
   && make -j4

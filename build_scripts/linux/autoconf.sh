@@ -7,6 +7,7 @@ else
   echo "No cache found for $NAME, build it..."
   wget -q --no-check-certificate "https://ftp.gnu.org/gnu/autoconf/$NAME-$1.tar.gz" \
   && tar xf "$NAME-$1.tar.gz" \
+  && rm -f "$NAME-$1.tar.gz" \
   && cd "$NAME-$1" \
   && ./configure \
   && make -j4

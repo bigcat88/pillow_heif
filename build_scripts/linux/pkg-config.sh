@@ -7,6 +7,7 @@ else
   echo "No cache found for $NAME, build it..."
   wget -q --no-check-certificate "https://pkg-config.freedesktop.org/releases/$NAME-$1.tar.gz" \
   && tar xf "$NAME-$1.tar.gz" \
+  && rm -f "$NAME-$1.tar.gz" \
   && cd "$NAME-$1" \
   && ./configure --with-internal-glib \
   && make -j4

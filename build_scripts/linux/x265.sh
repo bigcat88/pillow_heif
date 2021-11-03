@@ -8,6 +8,7 @@ else
   mkdir "$NAME-$1"
   wget -O "$NAME-$1.tar.gz" "https://bitbucket.org/multicoreware/x265_git/get/$1.tar.gz" \
   && tar xf "$NAME-$1.tar.gz" -C "$NAME-$1" --strip-components 1 \
+  && rm -f "$NAME-$1.tar.gz" \
   && cd "$NAME-$1" \
   && cmake -DCMAKE_INSTALL_PREFIX=/usr -G "Unix Makefiles" ./source \
   && make -j4
