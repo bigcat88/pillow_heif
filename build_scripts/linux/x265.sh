@@ -1,4 +1,4 @@
-scd /host/build-deps || exit 2
+cd /host/build-deps || exit 2
 if [[ -d "x265-$1" ]]; then
   echo "Cache found for x265, install it..."
   cd "x265-$1" || exit 102

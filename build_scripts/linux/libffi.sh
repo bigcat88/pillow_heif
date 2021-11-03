@@ -1,26 +1,13 @@
-set -ex \
-    && cd /build-deps \
-    && LIBFFI_VERSION="3.3" \
-    && wget ftp://sourceware.org/pub/libffi/libffi-${LIBFFI_VERSION}.tar.gz \
-    && tar xvf libffi-${LIBFFI_VERSION}.tar.gz \
-    && cd libffi-${LIBFFI_VERSION} \
-    && ./configure --prefix /usr \
-    && make -j4 \
-    && make install \
-    && ldconfig
-
-
-cd /host/build-tools || exit 2
-if [[ -d "autoconf-$1" ]]; then
-  echo "Cache found for autoconf, install it..."
-  cd "autoconf-$1" || exit 102
+cd /host/build-deps || exit 2
+if [[ -d "libffi-$1" ]]; then
+  echo "Cache found for libffi, install it..."
+  cd "libffi-$1" || exit 102
 else
-  echo "No cache found for autoconf, build it..."
-  wget -q --no-check-certificate "https://ftp.gnu.org/gnu/autoconf/autoconf-$1.tar.gz" \
-  && tar xvf "autoconf-$1.tar.gz" \
-  && cd "autoconf-$1" \
-  && ./configure \
+  echo "No cache found for libffi, build it..."
+  wget -q --no-check-certificate "ftp://sourceware.org/pub/libffi/libffi-$1.tar.gz" \
+  && tar xvf "libffi-$1.tar.gz" \
+  && cd "libffi-$1" \
+  && ./configure --prefix /usr \
   && make -j4
 fi
-make install \
-&& autoconf --version
+make install && ldconfig

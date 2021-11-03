@@ -1,4 +1,4 @@
-echo $(basename $BASH_SOURCE)
+echo $(basename $BASH_SOURCE | cut -f 1 -d '.')
 cd /host/build-tools || exit 2
 if [[ -d "pkg-config-$1" ]]; then
   echo "Cache found for pkg-config, install it..."
