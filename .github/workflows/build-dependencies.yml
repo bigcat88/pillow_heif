@@ -112,20 +112,20 @@ jobs:
           path: ${{ env.STUFF_PATH }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
-#      - name: x265
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "x265"
-#          VERSION: "3.5"
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+      - name: x265
+        run: |
+          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
+          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
+          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
+          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
+        env:
+          NAME: "x265"
+          VERSION: "3.5"
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.STUFF_PATH }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
 
       - name: Set up QEMU
         if: matrix.cibw-arch == 'manylinux_aarch64'
