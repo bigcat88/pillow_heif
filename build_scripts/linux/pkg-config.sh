@@ -1,6 +1,6 @@
 cd /host/build-tools || exit 2
 echo "ATTENTION"
-echo $(ls -la)
+echo $(ls -la ./)
 echo "pkg-config-$1/"
 if [[ -d "pkg-config-$1/" ]]
  then
