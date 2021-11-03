@@ -24,8 +24,8 @@ jobs:
 
       - name: Make preparations
         run: |
-          sudo mkdir /build-tools
-          sudo chmod 777 /build-tools
+          sudo mkdir /build-tools /build-deps
+          sudo chmod 777 /build-tools /build-deps
           echo SCRIPTS_DIR="./build_scripts/linux" >> $GITHUB_ENV
           echo CACHE_RND="3" >>$GITHUB_ENV
 
