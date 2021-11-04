@@ -40,7 +40,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('${{ env.SCRIPTS_DIR }}/${{ env.NAME }}.sh') }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(${{ env.SCRIPTS_DIR }}/${{ env.NAME }}.sh) }}
         env:
           NAME: "pkg-config"
 
@@ -49,7 +49,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('${{ env.SCRIPTS_DIR }}/${{ env.NAME }}.sh') }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(${{ env.SCRIPTS_DIR }}/${{ env.NAME }}.sh) }}
         env:
           NAME: "libffi"
 
