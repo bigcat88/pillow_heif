@@ -1,5 +1,5 @@
 NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
-cd /host/build-tools || exit 2
+cd /host/build-stuff || exit 2
 if [[ -d "$NAME-$1" ]]; then
   echo "Cache found for $NAME, install it..."
   cd "$NAME-$1" || exit 102

@@ -1,6 +1,6 @@
 NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
 os_architecture=$(uname -m)
-cd /host/build-tools || exit 2
+cd /host/build-stuff || exit 2
 if [[ $os_architecture == "x86_64" ]]
 then
   wget -q "https://github.com/Kitware/CMake/releases/download/v$1/$NAME-$1-linux-x86_64.sh" \

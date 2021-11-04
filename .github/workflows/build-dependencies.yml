@@ -15,6 +15,9 @@ jobs:
 #            cibw-arch: manylinux_aarch64
     name: Dependecies • ${{ matrix.cibw-arch }}
     runs-on: ${{ matrix.runs-on }}
+    env:
+      BUILD_STUFF: "/build-stuff"
+      SCRIPTS_DIR: "./build_scripts/linux"
 
     steps:
       - name: Checkout code
@@ -24,14 +27,8 @@ jobs:
 
       - name: Make preparations
         run: |
-          sudo mkdir /build-tools /build-deps
-          sudo chmod 777 /build-tools /build-deps
-          echo SCRIPTS_DIR="./build_scripts/linux" >> $GITHUB_ENV
-          echo CACHE_RND="4" >>$GITHUB_ENV
+          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
 
-
-
-#      -
 #        run: |
 #          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
 #          echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
@@ -40,23 +37,21 @@ jobs:
 # 2. read in sh file this file that contains version and parse it. look like first will be clear to understand.
 
       - name: pkg_config
-      - uses: actions/cache@v2
-        with:
-          path: /build-*/${{ env.NAME }}-${{ env.VERSION }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.NAME }}-${{ env.VERSION }}
-        env:
-          NAME: "pkg-config13"
-          VERSION: "0.29.2"
-
-
-      - name: pkg_config_lol
         uses: actions/cache@v2
         with:
-          path: /build-*/${{ env.NAME }}-${{ env.VERSION }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.NAME }}-${{ env.VERSION }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('${{ env.SCRIPTS_DIR }}/${{ env.NAME }}') }}
         env:
-          NAME: "pkg-config133"
-          VERSION: "0.29.2"
+          NAME: "pkg-config"
+
+
+      - name: pkg_config
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('${{ env.SCRIPTS_DIR }}/${{ env.NAME }}') }}
+        env:
+          NAME: "pkg-config"
 
 
 #      - name: cmake
