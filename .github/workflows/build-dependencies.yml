@@ -25,7 +25,7 @@ jobs:
         run: |
           echo "$BUILD_LIST"
         env:
-          BUILD_LIST: ${{ env.BUILD_ORDER }}
+          BUILD_LIST: ${{ join(env.BUILD_ORDER, '  ,') }}
 
 
 #      - name: Checkout code
