@@ -6,7 +6,7 @@ if [[ -f "$NAME.sh" ]]; then
   echo "Cache found for $NAME, install it..."
 else
   echo "No cache found for $NAME, download it..."
-  wget -O "$NAME.sh" "$URL"
+  wget -q -O "$NAME.sh" "$URL"
 fi
 chmod +x "$NAME.sh"
 sh "$NAME.sh" --prefix=/usr/local/ --exclude-subdir
