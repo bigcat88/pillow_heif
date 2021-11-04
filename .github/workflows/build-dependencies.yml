@@ -40,18 +40,18 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('${{ env.SCRIPTS_DIR }}/${{ env.NAME }}') }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('${{ env.SCRIPTS_DIR }}/${{ env.NAME }}.sh') }}
         env:
           NAME: "pkg-config"
 
 
-      - name: pkg_config
+      - name: libffi_test
         uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('${{ env.SCRIPTS_DIR }}/${{ env.NAME }}') }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('${{ env.SCRIPTS_DIR }}/${{ env.NAME }}.sh') }}
         env:
-          NAME: "pkg-config"
+          NAME: "libffi"
 
 
 #      - name: cmake
