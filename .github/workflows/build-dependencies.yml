@@ -40,14 +40,10 @@ jobs:
           path: ${{ env.BUILD_STUFF }}/pkg-config
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/pkg-config.sh') }}
 
-      - name: pkg-config_lol
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-        env:
-          NAME: "libffi"
-          CACHE_KEY: ${{ echo "123" }}
+          path: ${{ env.BUILD_STUFF }}/libffi
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/libffi.sh') }}
 
 #       ${{ env.SCRIPTS_DIR }}/${{ env.NAME }}
 #      - name: cmake
