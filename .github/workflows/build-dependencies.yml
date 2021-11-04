@@ -43,8 +43,8 @@ jobs:
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
         env:
           NAME: "pkg-config"
-          TESS: ${{ format('{0}{1}', ${{ env.NAME }}, 'lol1' ) }}
-          CACHE_KEY: ${{ hashFiles( ${{ env.TESS }} ) }}
+          TESS: ${{ format('{0}{1}', env.NAME , 'lol1' ) }}
+          CACHE_KEY: ${{ hashFiles( env.TESS ) }}
 
 
 
@@ -55,8 +55,8 @@ jobs:
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}--${{ env.CACHE_KEY }}
         env:
           NAME: "libffi"
-          TESS: ${{ format('{0}{1}', ${{ env.NAME }}, 'lol2' ) }}
-          CACHE_KEY: ${{ hashFiles( ${{ env.TESS }} ) }}
+          TESS: ${{ format('{0}{1}', env.NAME , 'lol2' ) }}
+          CACHE_KEY: ${{ hashFiles( env.TESS ) }}
 
 #       ${{ env.SCRIPTS_DIR }}/${{ env.NAME }}
 #      - name: cmake
