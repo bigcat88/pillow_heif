@@ -22,128 +22,121 @@ jobs:
       OS_PACKAGES: "wget libtool git-all"
 
     steps:
-      - name: TEST
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Make preparations
         run: |
-          BUILD_MODULES_CMD=$(echo "$BUILD_ORDER" | sed 's/,/ \&\& sh /g')
-          echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES $BUILD_MODULES_CMD" >> $GITHUB_ENV
-          echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES $BUILD_MODULES_CMD"
+          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
+          BUILD_STUFF_CMD=$(echo "$BUILD_ORDER" | sed 's/,/ \&\& sh /g')
+          echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
 
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+        env:
+          NAME: pkg-config
 
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#        with:
-#          submodules: recursive
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+        env:
+          NAME: cmake
 
-#      - name: Make preparations
-#        run: |
-#          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
-#
-#          echo BUILD_COMMAND="$OS_PACKAGES && set -ex && cd build_scripts/linux $BUILD_LIST" >> $GITHUB_ENV
-#        env:
-#          BUILD_LIST: ${{ join(env.BUILD_ORDER,' ')
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+        env:
+          NAME: autoconf
 
-# THIS IS GOAL:
-#          BUILD_LIST="&& sh pkg-config.sh
-#                      && sh cmake.sh
-#                      && sh autoconf.sh
-#                      && sh automake.sh
-#                      && sh libressl.sh
-#                      && sh nasm.sh
-#                      && sh libde265.sh
-#                      && sh aom.sh
-#                      && sh libheif.sh
-#                      && sh libffi.sh"
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+        env:
+          NAME: automake
 
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format( '{0}{1}{2}',env.SCRIPTS, env.NAME, '.sh')) }}
-#        env:
-#          NAME: pkg-config
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format( '{0}{1}{2}',env.SCRIPTS, env.NAME, '.sh')) }}
-#        env:
-#          NAME: cmake
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+        env:
+          NAME: libressl
 
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/autoconf
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/autoconf.sh') }}
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/automake
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/automake.sh') }}
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/libressl
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/libressl.sh') }}
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/nasm
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/nasm.sh') }}
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/libde265
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/libde265.sh') }}
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: |
-#            ${{ env.BUILD_STUFF }}/aom
-#            ${{ env.BUILD_STUFF }}/aom-build
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/aom.sh') }}
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/libheif
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/libheif.sh') }}
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/libffi
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/libffi.sh') }}
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+        env:
+          NAME: nasm
 
-#      - name: Set up QEMU
-#        if: matrix.cibw-arch == 'manylinux_aarch64'
-#        uses: docker/setup-qemu-action@v1
-#        with:
-#          platforms: arm64
-#
-#      - name: x64 linux pre configure enviroment
-#        if: matrix.cibw-arch == 'manylinux_x86_64'
-#        run: |
-#          echo "CIBW_ARCHS=x86_64" >> $GITHUB_ENV
-#          echo "CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014" >> $GITHUB_ENV
-#          echo "CIBW_BUILD=cp38-manylinux_x86_64" >> $GITHUB_ENV
-#
-#      - name: Arm linux pre configure enviroment
-#        if: matrix.cibw-arch == 'manylinux_aarch64'
-#        run: |
-#          echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
-#          echo "CIBW_BUILD=cp38-manylinux_aarch64" >> $GITHUB_ENV
-#
-#      - name: Start test build
-#        run: |
-#          python -m pip install cibuildwheel twine
-#          cibuildwheel
-#        env:
-#          CIBW_TEST_SKIP: "*"
-#          CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
-#
-#      - name: Check builded wheel
-#        run: |
-#          twine check wheelhouse/*
-#
-#      - name: Upload builded wheel
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+        env:
+          NAME: libde265
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+        env:
+          NAME: aom
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+        env:
+          NAME: libheif
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+        env:
+          NAME: libffi
+
+      - name: Set up QEMU
+        if: matrix.cibw-arch == 'manylinux_aarch64'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: arm64
+
+      - name: x64 linux pre configure enviroment
+        if: matrix.cibw-arch == 'manylinux_x86_64'
+        run: |
+          echo "CIBW_ARCHS=x86_64" >> $GITHUB_ENV
+          echo "CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014" >> $GITHUB_ENV
+          echo "CIBW_BUILD=cp38-manylinux_x86_64" >> $GITHUB_ENV
+
+      - name: Arm linux pre configure enviroment
+        if: matrix.cibw-arch == 'manylinux_aarch64'
+        run: |
+          echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
+          echo "CIBW_BUILD=cp38-manylinux_aarch64" >> $GITHUB_ENV
+
+      - name: Start test build
+        run: |
+          python -m pip install cibuildwheel twine
+          cibuildwheel
+        env:
+          CIBW_TEST_SKIP: "*"
+          CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
+
+      - name: Check builded wheel
+        run: |
+          twine check wheelhouse/*
+
+      - name: Upload builded wheel
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
