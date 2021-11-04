@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: TEST
         run: |
-          BUILD_MODULES_CMD=$(echo "$BUILD_ORDER" | sed 's/,/ && sh /g')
+          BUILD_MODULES_CMD=$(echo "$BUILD_ORDER" | sed 's/,/ \&\& sh /g')
           echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES $BUILD_MODULES_CMD" >> $GITHUB_ENV
           echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES $BUILD_MODULES_CMD"
 
