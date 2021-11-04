@@ -1,10 +1,14 @@
 VERSION="0.29.2"
 NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
 URL="https://pkg-config.freedesktop.org/releases/$NAME-$VERSION.tar.gz"
+echo "1"
 ls -la
-cd "/host/$BUILD_STUFF" || exit 2
-ls -la
+echo "1"
+ls -la "/host"
+echo "1"
+ls -la "/host/$BUILD_STUFF"
 exit 222
+cd "/host/$BUILD_STUFF" || exit 2
 if [[ -d "$NAME" ]]; then
   echo "Cache found for $NAME, install it..."
   cd "$NAME" || exit 102
