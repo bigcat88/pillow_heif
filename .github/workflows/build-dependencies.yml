@@ -18,7 +18,7 @@ jobs:
     env:
       BUILD_STUFF: "/build-stuff"
       SCRIPTS: "./build_scripts/linux/"
-      BUILD_ORDER: "[,pkg-config,cmake,autoconf,automake,libressl,nasm,libde265,aom,libheif,libffi]"
+      BUILD_ORDER: pkg-config,cmake,autoconf,automake,libressl,nasm,libde265,aom,libheif,libffi
 
     steps:
       - name: TEST
