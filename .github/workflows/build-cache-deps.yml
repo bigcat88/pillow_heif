@@ -126,12 +126,6 @@ jobs:
         run: |
           echo "Lets see(1):"
           du -h --max-depth=1 "$BUILD_STUFF"
-          echo "Lets see(2):"
-          ls -la "$BUILD_STUFF/aom"
-          echo "Lets see(3):"
-          ls -la "$BUILD_STUFF/aom/aom"
-          echo "Lets see(3):"
-          ls -la "$BUILD_STUFF/aom/aom-build"
 
       - name: Start test build
         run: |
@@ -144,14 +138,8 @@ jobs:
 
       - name: DEBUG2
         run: |
-          echo "Lets see(1):"
-          du -h --max-depth=1 "$BUILD_STUFF"
           echo "Lets see(2):"
-          ls -la "$BUILD_STUFF/aom"
-          echo "Lets see(3):"
-          ls -la "$BUILD_STUFF/aom/aom"
-          echo "Lets see(3):"
-          ls -la "$BUILD_STUFF/aom/aom-build"
+          du -h --max-depth=1 "$BUILD_STUFF"
 
       - name: Check builded wheel
         run: |
