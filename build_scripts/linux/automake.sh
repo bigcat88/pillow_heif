@@ -17,4 +17,4 @@ else
 fi
 make install \
 && automake --version
-# TEST VERSION
+# TEST VERSION2

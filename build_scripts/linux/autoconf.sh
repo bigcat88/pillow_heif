@@ -17,4 +17,4 @@ else
 fi
 make install \
 && autoconf --version
-# TEST VERSION
+# TEST VERSION2

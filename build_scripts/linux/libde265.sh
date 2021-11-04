@@ -17,4 +17,4 @@ else
   && make -j4
 fi
 make install && ldconfig
-# TEST VERSION
+# TEST VERSION2

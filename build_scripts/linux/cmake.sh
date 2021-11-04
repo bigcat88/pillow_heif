@@ -11,4 +11,4 @@ fi
 chmod +x "$NAME.sh"
 sh "$NAME.sh" --prefix=/usr/local/ --exclude-subdir
 /usr/local/bin/cmake --version
-# TEST VERSION
+# TEST VERSION2

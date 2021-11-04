@@ -37,70 +37,70 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
-          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: pkg-config
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
-          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: cmake
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
-          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: autoconf
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
-          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: automake
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
-          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: libressl
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
-          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: nasm
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
-          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: libde265
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
-          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: aom
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
-          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: libheif
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
-          key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: libffi
 
