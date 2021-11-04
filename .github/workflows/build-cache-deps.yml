@@ -142,6 +142,9 @@ jobs:
           du -h --max-depth=1 "$BUILD_STUFF"
           ls -la "$BUILD_STUFF/nasm"
           ls -la "$BUILD_STUFF/nasm/Mkfiles"
+          chmod -R 777 $BUILD_STUFF
+          ls -la "$BUILD_STUFF/nasm"
+          ls -la "$BUILD_STUFF/nasm/Mkfiles"
 
       - name: Check builded wheel
         run: |
