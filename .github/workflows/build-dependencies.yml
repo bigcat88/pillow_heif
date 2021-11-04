@@ -38,12 +38,8 @@ jobs:
       - name: pkg-config
         uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-        env:
-          NAME: "pkg-config"
-          CACHE_KEY: ${{ hashFiles('./build_scripts/linux/pkg-config.sh') }}
-
+          path: ${{ env.BUILD_STUFF }}/${{ "pkg-config" }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/pkg-config.sh') }}
 
       - name: pkg-config_lol
         uses: actions/cache@v2
@@ -52,7 +48,7 @@ jobs:
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
         env:
           NAME: "libffi"
-          CACHE_KEY: ${{ hashFiles('./build_scripts/linux/libffi.sh') }}
+          CACHE_KEY: ${{ echo "123" }}
 
 #       ${{ env.SCRIPTS_DIR }}/${{ env.NAME }}
 #      - name: cmake
