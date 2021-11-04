@@ -125,11 +125,13 @@ jobs:
 
       - name: Start test build
         run: |
+          echo $CIBW_ENVIRONMENT
           python -m pip install cibuildwheel twine
           cibuildwheel
         env:
           CIBW_TEST_SKIP: "*"
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
+          CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }}
 
       - name: DEBUG1
         run: |
