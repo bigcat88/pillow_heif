@@ -11,8 +11,8 @@ jobs:
         include:
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_x86_64
-#          - runs-on: ubuntu-latest
-#            cibw-arch: manylinux_aarch64
+          - runs-on: ubuntu-latest
+            cibw-arch: manylinux_aarch64
     name: Dependecies • ${{ matrix.cibw-arch }}
     runs-on: ${{ matrix.runs-on }}
     env:

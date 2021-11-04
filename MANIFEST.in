@@ -3,7 +3,10 @@ include README.md
 include CHANGELOG.md
 include pytest.ini
 include requirements.txt
-include requirements-dev.txt
+include requirements_dev.txt
 
-graft scripts
 graft tests
+
+exclude .pylintrc
+
+prune build_scripts
