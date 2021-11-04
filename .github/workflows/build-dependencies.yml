@@ -18,9 +18,8 @@ jobs:
     env:
       BUILD_STUFF: "/build-stuff"
       SCRIPTS: "./build_scripts/linux/"
-      BUILD_ORDER: "pkg-config,cmake,autoconf,automake,libressl,nasm,libde265,libheif,libffi"
+      BUILD_ORDER: "pkg-config,cmake,autoconf,automake,libressl,nasm,libde265,aom,libheif,libffi"
       OS_PACKAGES: "wget libtool git-all"
-# ,aom
 
     steps:
       - name: Checkout code
@@ -36,70 +35,70 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
           key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: pkg-config
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
           key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: cmake
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
           key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: autoconf
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
           key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: automake
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
           key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: libressl
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
           key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: nasm
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
           key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: libde265
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
           key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: aom
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
           key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: libheif
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}/**/**
           key: ${{ matrix.runs-on }}${{ matrix.cibw-arch }}${{ hashFiles(format('{0}{1}{2}', env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: libffi
