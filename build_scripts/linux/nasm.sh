@@ -17,8 +17,4 @@ else
 fi
 make install \
 && nasm --version
-echo "WOW"
-ls -la
 chmod -R 777 .
-ls -la
-# TEST VERSION11251212

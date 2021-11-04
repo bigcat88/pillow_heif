@@ -122,11 +122,6 @@ jobs:
           echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
           echo "CIBW_BUILD=cp38-manylinux_aarch64" >> $GITHUB_ENV
 
-      - name: CACHES_BEFORE
-        run: |
-          echo "Lets see:"
-          du -h --max-depth=1 "$BUILD_STUFF"
-
       - name: Start test build
         run: |
           python -m pip install cibuildwheel twine
@@ -135,16 +130,6 @@ jobs:
           CIBW_TEST_SKIP: "*"
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }}
-
-      - name: CACHES_AFTER
-        run: |
-          echo "Lets see:"
-          du -h --max-depth=1 "$BUILD_STUFF"
-          ls -la "$BUILD_STUFF/nasm"
-          ls -la "$BUILD_STUFF/nasm/Mkfiles"
-#          sudo chmod -R 777 $BUILD_STUFF
-#          ls -la "$BUILD_STUFF/nasm"
-#          ls -la "$BUILD_STUFF/nasm/Mkfiles"
 
       - name: Check builded wheel
         run: |
