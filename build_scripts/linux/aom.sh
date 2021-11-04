@@ -9,7 +9,7 @@ else
   echo "No cache found for lib$NAME, build it..."
   mkdir "$NAME" "$NAME/build" "$NAME/$NAME" && cd "$NAME" || exit 104
   ls -la
-  wget -q --no-check-certificate -O "$NAME.tar.gz" "$URL"
+  wget --no-check-certificate -O "$NAME.tar.gz" "$URL"
   ls -la
   tar xf "$NAME.tar.gz" -C "$NAME" --strip-components 1
   ls -la
