@@ -6,8 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- GitHub building Actions now use cache.
+- GitHub build Actions now use cache.
 - Added `libaom` library to linux build.
+- More tests. 
 
 ### Changed
 

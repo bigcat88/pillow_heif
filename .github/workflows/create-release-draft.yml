@@ -93,7 +93,7 @@ jobs:
           cibuildwheel
         env:
           CIBW_BUILD: "*"
-          CIBW_SKIP: pp* cp27-* cp35-*
+          CIBW_SKIP: "pp*"
           CIBW_TEST_COMMAND: pytest {project}
           CIBW_TEST_REQUIRES: pytest piexif
           CIBW_BUILD_VERBOSITY: 1
@@ -233,9 +233,9 @@ jobs:
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }}
           CIBW_BUILD: "*"
-          CIBW_SKIP: pp* cp27-* cp35-*
-          CIBW_TEST_COMMAND: pytest {project}
-          CIBW_TEST_REQUIRES: pytest piexif
+          CIBW_SKIP: "pp*"
+          CIBW_TEST_COMMAND: "pytest {project}"
+          CIBW_TEST_REQUIRES: "pytest piexif"
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Check builded wheels
