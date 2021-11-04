@@ -140,6 +140,7 @@ jobs:
         run: |
           echo "Lets see:"
           du -h --max-depth=1 "$BUILD_STUFF"
+          ls -la "$BUILD_STUFF/nasm"
 
       - name: Check builded wheel
         run: |
