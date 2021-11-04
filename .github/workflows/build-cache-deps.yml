@@ -1,4 +1,4 @@
-name: Build dependecies
+name: Build cache for dependecies
 
 on:
   workflow_dispatch:
@@ -122,9 +122,19 @@ jobs:
           echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
           echo "CIBW_BUILD=cp38-manylinux_aarch64" >> $GITHUB_ENV
 
+      - name: DEBUG1
+        run: |
+          echo "Lets see(1):"
+          du -h --max-depth=1 "$BUILD_STUFF"
+          echo "Lets see(2):"
+          ls -la "$BUILD_STUFF/aom"
+          echo "Lets see(3):"
+          ls -la "$BUILD_STUFF/aom/aom"
+          echo "Lets see(3):"
+          ls -la "$BUILD_STUFF/aom/aom-build"
+
       - name: Start test build
         run: |
-          echo $CIBW_ENVIRONMENT
           python -m pip install cibuildwheel twine
           cibuildwheel
         env:
@@ -132,14 +142,16 @@ jobs:
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }}
 
-      - name: DEBUG1
+      - name: DEBUG2
         run: |
           echo "Lets see(1):"
-          ls -la "$BUILD_STUFF"
+          du -h --max-depth=1 "$BUILD_STUFF"
           echo "Lets see(2):"
-          ls -la "$BUILD_STUFF/nasm"
+          ls -la "$BUILD_STUFF/aom"
           echo "Lets see(3):"
-          ls -la "$BUILD_STUFF/pkg-config"
+          ls -la "$BUILD_STUFF/aom/aom"
+          echo "Lets see(3):"
+          ls -la "$BUILD_STUFF/aom/aom-build"
 
       - name: Check builded wheel
         run: |
@@ -151,12 +163,3 @@ jobs:
           name: wheels
           path: wheelhouse/*.whl
           if-no-files-found: error
-
-      - name: DEBUG2
-        run: |
-          echo "Lets see(1):"
-          ls -la "$BUILD_STUFF"
-          echo "Lets see(2):"
-          ls -la "$BUILD_STUFF/nasm"
-          echo "Lets see(3):"
-          ls -la "$BUILD_STUFF/pkg-config"
