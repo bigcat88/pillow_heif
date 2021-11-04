@@ -35,10 +35,9 @@ jobs:
 # 1. MOVE VERSION to sh file and here do cashkey=hash by content of sh file.
 # 2. read in sh file this file that contains version and parse it. look like first will be clear to understand.
 
-      - name: pkg-config
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ "pkg-config" }}
+          path: ${{ env.BUILD_STUFF }}/pkg-config
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/pkg-config.sh') }}
 
       - name: pkg-config_lol
