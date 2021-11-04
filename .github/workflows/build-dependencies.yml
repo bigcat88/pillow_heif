@@ -18,21 +18,30 @@ jobs:
     env:
       BUILD_STUFF: "/build-stuff"
       SCRIPTS: "./build_scripts/linux/"
+      BUILD_ORDER: "[,pkg-config,cmake,autoconf,automake,libressl,nasm,libde265,aom,libheif,libffi]"
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-
-      - name: Make preparations
+      - name: TEST
         run: |
-          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
-          OS_PACKAGES="yum install -y -q wget libtool git-all"
-          SCRIPTS_ORDER="pkg-config,cmake,autoconf,automake,libressl,nasm,libde265,aom,libheif,libffi"
-          echo BUILD_COMMAND="$OS_PACKAGES && set -ex && cd build_scripts/linux $BUILD_LIST" >> $GITHUB_ENV
+          echo "$BUILD_LIST"
+        env:
+          BUILD_LIST: ${{ join(env.BUILD_ORDER,'--')
 
 
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#        with:
+#          submodules: recursive
+
+#      - name: Make preparations
+#        run: |
+#          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
+#          OS_PACKAGES="yum install -y -q wget libtool git-all"
+#          echo BUILD_COMMAND="$OS_PACKAGES && set -ex && cd build_scripts/linux $BUILD_LIST" >> $GITHUB_ENV
+#        env:
+#          BUILD_LIST: ${{ join(env.BUILD_ORDER,' ')
+
+# THIS IS GOAL:
 #          BUILD_LIST="&& sh pkg-config.sh
 #                      && sh cmake.sh
 #                      && sh autoconf.sh
@@ -44,20 +53,19 @@ jobs:
 #                      && sh libheif.sh
 #                      && sh libffi.sh"
 
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format( '{0}{1}{2}',env.SCRIPTS, env.NAME, '.sh')) }}
-        env:
-          NAME: pkg-config
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format( '{0}{1}{2}',env.SCRIPTS, env.NAME, '.sh')) }}
-        env:
-          NAME: cmake
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format( '{0}{1}{2}',env.SCRIPTS, env.NAME, '.sh')) }}
+#        env:
+#          NAME: pkg-config
+#
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format( '{0}{1}{2}',env.SCRIPTS, env.NAME, '.sh')) }}
+#        env:
+#          NAME: cmake
 
 #      - uses: actions/cache@v2
 #        with:
