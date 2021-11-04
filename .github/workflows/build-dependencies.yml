@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
     env:
       BUILD_STUFF: "/build-stuff"
-      SCRIPTS_PATH: "./build_scripts/linux"
+      SCRIPTS: "./build_scripts/linux/"
 
     steps:
       - name: Checkout code
@@ -47,13 +47,17 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/pkg-config
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(join(env.SCRIPTS_PATH,'/linux/pkg-config.sh')) }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(join(env.SCRIPTS,env.NAME)) }}
+        env:
+          NAME: pkg-config
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/cmake
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/cmake.sh') }}
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(join(env.SCRIPTS,env.NAME)) }}
+        env:
+          NAME: cmake
 
 #      - uses: actions/cache@v2
 #        with:
