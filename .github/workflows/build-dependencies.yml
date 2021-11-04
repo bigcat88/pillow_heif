@@ -17,7 +17,6 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
     env:
       BUILD_STUFF: "/build-stuff"
-      SCRIPTS_DIR: "./build_scripts/linux"
 
     steps:
       - name: Checkout code
@@ -36,27 +35,24 @@ jobs:
 # 1. MOVE VERSION to sh file and here do cashkey=hash by content of sh file.
 # 2. read in sh file this file that contains version and parse it. look like first will be clear to understand.
 
-      - name: pkg_config
+      - name: pkg-config
         uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
         env:
           NAME: "pkg-config"
-          TESS: ${{ format('{0}{1}', env.NAME , 'lol1' ) }}
-          CACHE_KEY: ${{ hashFiles( env.TESS ) }}
+          CACHE_KEY: ${{ hashFiles( './build_scripts/linux/pkg-config.sh' }}
 
 
-
-      - name: libffi_test
+      - name: pkg-config_lol
         uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}--${{ env.CACHE_KEY }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
         env:
           NAME: "libffi"
-          TESS: ${{ format('{0}{1}', env.NAME , 'lol2' ) }}
-          CACHE_KEY: ${{ hashFiles( env.TESS ) }}
+          CACHE_KEY: ${{ hashFiles( './build_scripts/linux/libffi.sh' }}
 
 #       ${{ env.SCRIPTS_DIR }}/${{ env.NAME }}
 #      - name: cmake
