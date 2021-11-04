@@ -131,6 +131,15 @@ jobs:
           CIBW_TEST_SKIP: "*"
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
 
+      - name: DEBUG1
+        run: |
+          echo "Lets see(1):"
+          ls -la "$BUILD_STUFF"
+          echo "Lets see(2):"
+          ls -la "$BUILD_STUFF/nasm"
+          echo "Lets see(3):"
+          ls -la "$BUILD_STUFF/pkg-config"
+
       - name: Check builded wheel
         run: |
           twine check wheelhouse/*
@@ -141,3 +150,12 @@ jobs:
           name: wheels
           path: wheelhouse/*.whl
           if-no-files-found: error
+
+      - name: DEBUG2
+        run: |
+          echo "Lets see(1):"
+          ls -la "$BUILD_STUFF"
+          echo "Lets see(2):"
+          ls -la "$BUILD_STUFF/nasm"
+          echo "Lets see(3):"
+          ls -la "$BUILD_STUFF/pkg-config"
