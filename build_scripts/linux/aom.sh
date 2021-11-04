@@ -1,13 +1,14 @@
-#          VERSION: "bb35ba9148543f22ba7d8642e4fbd29ae301f5dc"
+VERSION="bb35ba9148543f22ba7d8642e4fbd29ae301f5dc"
 NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
-cd /host/build-stuff || exit 2
+URL="https://aomedia.googlesource.com/aom/+archive/$VERSION.tar.gz"
+cd "/host/$BUILD_STUFF" || exit 2
 if [[ -d "$NAME-build-$1" ]]; then
   echo "Cache found for lib$NAME, install it..."
   cd "$NAME-build-$1" || exit 102
 else
   echo "No cache found for lib$NAME, build it..."
   mkdir "$NAME-build-$1" "$NAME-$1" && cd "$NAME-$1" || exit 104
-  wget -q --no-check-certificate -O "$NAME.tar.gz" "https://aomedia.googlesource.com/aom/+archive/$1.tar.gz" \
+  wget -q --no-check-certificate -O "$NAME.tar.gz" "$URL" \
   && tar xf "$NAME-$1.tar.gz" \
   && rm -f "$NAME-$1.tar.gz" \
   && cd "../$NAME-build-$1" \
