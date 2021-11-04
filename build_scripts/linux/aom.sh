@@ -8,12 +8,9 @@ if [[ -d "$NAME" ]]; then
 else
   echo "No cache found for lib$NAME, build it..."
   mkdir "$NAME" "$NAME/build" "$NAME/$NAME" && cd "$NAME" || exit 104
-  wget --no-check-certificate -O "$NAME.tar.gz" "$URL"
-  ls -la
-  tar xf "$NAME.tar.gz" -C "$NAME"
-  ls -la
-  ls -la "$NAME"
-  rm -f "$NAME.tar.gz" \
+  wget -q --no-check-certificate -O "$NAME.tar.gz" "$URL" \
+  && tar xf "$NAME.tar.gz" -C "$NAME" \
+  && rm -f "$NAME.tar.gz" \
   && cd "./build" \
   && cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1 "../$NAME" \
   && make -j4

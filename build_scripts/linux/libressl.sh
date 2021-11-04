@@ -17,4 +17,3 @@ else
   && make -j4
 fi
 make install
-# TEST VERSION2

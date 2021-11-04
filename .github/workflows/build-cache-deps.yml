@@ -122,9 +122,9 @@ jobs:
           echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
           echo "CIBW_BUILD=cp38-manylinux_aarch64" >> $GITHUB_ENV
 
-      - name: DEBUG1
+      - name: CACHES_BEFORE
         run: |
-          echo "Lets see(1):"
+          echo "Lets see:"
           du -h --max-depth=1 "$BUILD_STUFF"
 
       - name: Start test build
@@ -136,9 +136,9 @@ jobs:
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }}
 
-      - name: DEBUG2
+      - name: CACHES_AFTER
         run: |
-          echo "Lets see(2):"
+          echo "Lets see:"
           du -h --max-depth=1 "$BUILD_STUFF"
 
       - name: Check builded wheel

@@ -17,4 +17,3 @@ else
 fi
 make install \
 && pkg-config --version
-# TEST VERSION2
