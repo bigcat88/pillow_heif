@@ -1,3 +1,4 @@
+#          VERSION: "3.21.2"
 NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
 os_architecture=$(uname -m)
 cd /host/build-stuff || exit 2

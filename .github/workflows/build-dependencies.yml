@@ -17,6 +17,7 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
     env:
       BUILD_STUFF: "/build-stuff"
+      SCRIPTS_PATH: "./build_scripts/linux"
 
     steps:
       - name: Checkout code
@@ -27,179 +28,80 @@ jobs:
       - name: Make preparations
         run: |
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
+          OS_PACKAGES="yum install -y -q wget libtool git-all"
+          SCRIPTS_ORDER="pkg-config,cmake,autoconf,automake,libressl,nasm,libde265,aom,libheif,libffi"
+          echo BUILD_COMMAND="$OS_PACKAGES && set -ex && cd build_scripts/linux $BUILD_LIST" >> $GITHUB_ENV
 
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo BUILD_CMD_LIST="$BUILD_CMD" >> $GITHUB_ENV
-# TWO POSSIBLE WAYS:
-# 1. MOVE VERSION to sh file and here do cashkey=hash by content of sh file.
-# 2. read in sh file this file that contains version and parse it. look like first will be clear to understand.
+
+#          BUILD_LIST="&& sh pkg-config.sh
+#                      && sh cmake.sh
+#                      && sh autoconf.sh
+#                      && sh automake.sh
+#                      && sh libressl.sh
+#                      && sh nasm.sh
+#                      && sh libde265.sh
+#                      && sh aom.sh
+#                      && sh libheif.sh
+#                      && sh libffi.sh"
+
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/pkg-config
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/pkg-config.sh') }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(join(env.SCRIPTS_PATH,'/linux/pkg-config.sh')) }}
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/libffi
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/libffi.sh') }}
+          path: ${{ env.BUILD_STUFF }}/cmake
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/cmake.sh') }}
 
-#       ${{ env.SCRIPTS_DIR }}/${{ env.NAME }}
-#      - name: cmake
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "cmake"
-#          VERSION: "3.21.2"
-#
-#      - name: autoconf
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "autoconf"
-#          VERSION: "2.71"
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/autoconf
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/autoconf.sh') }}
 #
 #      - uses: actions/cache@v2
 #        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-#
-#      - name: automake
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "automake"
-#          VERSION: "1.16.4"
+#          path: ${{ env.BUILD_STUFF }}/automake
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/automake.sh') }}
 #
 #      - uses: actions/cache@v2
 #        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-#
-#      - name: LibreSSL
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "libressl"
-#          VERSION: "3.1.5"
+#          path: ${{ env.BUILD_STUFF }}/libressl
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/libressl.sh') }}
 #
 #      - uses: actions/cache@v2
 #        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-#
-#      - name: nasm
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-tools/$NAME-$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "nasm"
-#          VERSION: "2.15.05"
+#          path: ${{ env.BUILD_STUFF }}/nasm
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/nasm.sh') }}
 #
 #      - uses: actions/cache@v2
 #        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-#
-#      - name: x265
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "x265"
-#          VERSION: "3.5"
+#          path: ${{ env.BUILD_STUFF }}/libde265
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/libde265.sh') }}
 #
 #      - uses: actions/cache@v2
 #        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-#
-#      - name: libde265
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "libde265"
-#          VERSION: "1.0.8"
+#          path: |
+#            ${{ env.BUILD_STUFF }}/aom
+#            ${{ env.BUILD_STUFF }}/aom-build
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/aom.sh') }}
 #
 #      - uses: actions/cache@v2
 #        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
+#          path: ${{ env.BUILD_STUFF }}/libheif
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/libheif.sh') }}
+#
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/libffi
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles('./build_scripts/linux/libffi.sh') }}
 
-#      - name: aom
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-deps/$NAME*$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "aom"
-#          VERSION: "bb35ba9148543f22ba7d8642e4fbd29ae301f5dc"
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-#
-#      - name: libheif
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "libheif"
-#          VERSION: "1.12.0"
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-#
-#      - name: libffi
-#        run: |
-#          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
-#          echo STUFF_PATH="/build-deps/$NAME-$VERSION" >> $GITHUB_ENV
-#          echo CACHE_KEY=${{ env.NAME }}-${{ env.VERSION }}-${{ env.CACHE_RND }} >> $GITHUB_ENV
-#          echo BUILD_CMD_LIST="$BUILD_CMD_LIST $BUILD_CMD" >> $GITHUB_ENV
-#        env:
-#          NAME: "libffi"
-#          VERSION: "3.3"
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.STUFF_PATH }}
-#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ env.CACHE_KEY }}
-#
 #      - name: Set up QEMU
 #        if: matrix.cibw-arch == 'manylinux_aarch64'
 #        uses: docker/setup-qemu-action@v1
 #        with:
 #          platforms: arm64
-#
-#      - name: Prepare cibuildwheel
-#        run: |
-#          python -m pip install cibuildwheel twine
-#          OS_PACKAGES="yum install -y -q wget libtool git-all"
-#          echo BUILD_COMMAND="$OS_PACKAGES && set -ex $BUILD_CMD_LIST" >> $GITHUB_ENV
 #
 #      - name: x64 linux pre configure enviroment
 #        if: matrix.cibw-arch == 'manylinux_x86_64'
@@ -216,6 +118,7 @@ jobs:
 #
 #      - name: Start test build
 #        run: |
+#          python -m pip install cibuildwheel twine
 #          cibuildwheel
 #        env:
 #          CIBW_TEST_SKIP: "*"

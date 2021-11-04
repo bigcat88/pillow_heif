@@ -1,4 +1,5 @@
-NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
+#          VERSION: "1.12.0"
+#          NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
 cd /host/build-stuff || exit 2
 if [[ -d "$NAME-$1" ]]; then
   echo "Cache found for $NAME, install it..."

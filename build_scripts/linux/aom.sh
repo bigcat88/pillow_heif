@@ -1,3 +1,4 @@
+#          VERSION: "bb35ba9148543f22ba7d8642e4fbd29ae301f5dc"
 NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
 cd /host/build-stuff || exit 2
 if [[ -d "$NAME-build-$1" ]]; then
