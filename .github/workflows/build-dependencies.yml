@@ -43,7 +43,7 @@ jobs:
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles( format('{0}', env.CACHE_KEY) ) }}
         env:
           NAME: "pkg-config"
-          CACHE_KEY: ''${{ env.SCRIPTS_DIR }}/${{ env.NAME }}''
+          CACHE_KEY: 12345
 
 
       - name: libffi_test
@@ -53,9 +53,9 @@ jobs:
           key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles( format('{0}', env.CACHE_KEY) ) }}
         env:
           NAME: "libffi"
-          CACHE_KEY: ${{ env.SCRIPTS_DIR }}/${{ env.NAME }}
+          CACHE_KEY: 5555
 
-
+#       ${{ env.SCRIPTS_DIR }}/${{ env.NAME }}
 #      - name: cmake
 #        run: |
 #          BUILD_CMD="&& sh $SCRIPTS_DIR/$NAME.sh $VERSION"
