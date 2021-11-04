@@ -48,14 +48,14 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format( '{0}{1}',env.SCRIPTS, env.NAME)) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format( '{0}{1}{2}',env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: pkg-config
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format( '{0}{1}',env.SCRIPTS, env.NAME)) }}
+          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format( '{0}{1}{2}',env.SCRIPTS, env.NAME, '.sh')) }}
         env:
           NAME: cmake
 
