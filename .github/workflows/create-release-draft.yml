@@ -92,10 +92,10 @@ jobs:
           python -m pip install cibuildwheel twine
           cibuildwheel
         env:
-          CIBW_BUILD: "*"
+          CIBW_BUILD: ${{ format(*-'{0}', matrix.cibw-arch) }}
           CIBW_SKIP: "pp*"
-          CIBW_TEST_COMMAND: pytest {project}
-          CIBW_TEST_REQUIRES: pytest piexif
+          CIBW_TEST_COMMAND: "pytest {project}"
+          CIBW_TEST_REQUIRES: "pytest piexif"
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Check built wheels
@@ -116,8 +116,8 @@ jobs:
         include:
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_x86_64
-#          - runs-on: ubuntu-latest
-#            cibw-arch: manylinux_aarch64
+          - runs-on: ubuntu-latest
+            cibw-arch: manylinux_aarch64
     name: Wheels • ${{ matrix.cibw-arch }}
     runs-on: ${{ matrix.runs-on }}
     env:
@@ -232,7 +232,7 @@ jobs:
         env:
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }}
-          CIBW_BUILD: "*"
+          CIBW_BUILD: ${{ format(*-'{0}', matrix.cibw-arch) }}
           CIBW_SKIP: "pp*"
           CIBW_TEST_COMMAND: "pytest {project}"
           CIBW_TEST_REQUIRES: "pytest piexif"
