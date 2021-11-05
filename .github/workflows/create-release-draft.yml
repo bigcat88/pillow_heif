@@ -92,7 +92,7 @@ jobs:
           python -m pip install cibuildwheel twine
           cibuildwheel
         env:
-          CIBW_BUILD: ${{ format(*-'{0}', matrix.cibw-arch) }}
+          CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
           CIBW_SKIP: "pp*"
           CIBW_TEST_COMMAND: "pytest {project}"
           CIBW_TEST_REQUIRES: "pytest piexif"
@@ -232,7 +232,7 @@ jobs:
         env:
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }}
-          CIBW_BUILD: ${{ format(*-'{0}', matrix.cibw-arch) }}
+          CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
           CIBW_SKIP: "pp*"
           CIBW_TEST_COMMAND: "pytest {project}"
           CIBW_TEST_REQUIRES: "pytest piexif"
