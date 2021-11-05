@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.4 - 2021-11-01]
+## [0.1.4 - 2021-11-05]
+
+### Added
+
+- GitHub build Actions now use cache.
+- Added `libaom` library to linux build.
+- More tests. 
 
 ### Changed
 
