@@ -9,9 +9,13 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.8']
-        platform: [ubuntu-latest]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
   
     steps:
-      - name: print cpu flags
+      - name: print cpu flags linux
+        if: matrix.platform == 'ubuntu-latest'
         run: cat /proc/cpuinfo | grep flags
-      
+        
+      - name: print cpu flags mac os
+        if: matrix.platform == 'macos-latest'
+        run: sysctl -a | grep machdep.cpu.features  
