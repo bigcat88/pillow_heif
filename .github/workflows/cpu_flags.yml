@@ -5,13 +5,13 @@ on:
 
 jobs:
   test:
-  runs-on: ${{ matrix.platform }}
-  strategy:
+    runs-on: ${{ matrix.platform }}
+    strategy:
       matrix:
         python-version: ['3.8']
         platform: [ubuntu-latest]
   
-  steps:
-    - name: print cpu flags
-      run: cat /proc/cpuinfo | grep flags
+    steps:
+      - name: print cpu flags
+        run: cat /proc/cpuinfo | grep flags
       
