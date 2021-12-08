@@ -1,0 +1,17 @@
+name: Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+  runs-on: ${{ matrix.platform }}
+  strategy:
+      matrix:
+        python-version: ['3.8']
+        platform: [ubuntu-latest]
+  
+  steps:
+    - name: print cpu flags
+      run: cat /proc/cpuinfo | grep flags
+      
