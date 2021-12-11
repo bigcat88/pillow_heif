@@ -37,7 +37,11 @@ pip install git+https://github.com/bigcat88/pillow_heif.git
 ##### MacOS
 ```
 brew install libffi libheif
-pip install git+https://github.com/bigcat88/pillow_heif.git
+pip3 install git+https://github.com/bigcat88/pillow_heif.git
+```
+If on MacOs it fails with installing from source, just try second time(helps me on M1 with Monerey):
+```
+pip3 install git+https://github.com/bigcat88/pillow_heif.git
 ```
 
 ##### Windows
