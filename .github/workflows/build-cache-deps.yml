@@ -18,7 +18,7 @@ jobs:
     env:
       BUILD_STUFF: "/build-stuff"
       SCRIPTS: "./build_scripts/linux/"
-      BUILD_ORDER: "pkg-config,cmake,autoconf,automake,libressl,nasm,libde265,aom,libheif,libffi"
+      BUILD_ORDER: "pkg-config,libressl,nasm,libde265,aom,libheif,libffi"
       OS_PACKAGES: "wget libtool git-all"
 
     steps:
@@ -40,26 +40,26 @@ jobs:
         env:
           NAME: pkg-config
 
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: cmake
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+#        env:
+#          NAME: cmake
 
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: autoconf
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+#        env:
+#          NAME: autoconf
 
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: automake
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+#          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+#        env:
+#          NAME: automake
 
       - uses: actions/cache@v2
         with:

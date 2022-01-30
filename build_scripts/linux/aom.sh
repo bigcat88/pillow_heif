@@ -1,4 +1,4 @@
-VERSION="bb35ba9148543f22ba7d8642e4fbd29ae301f5dc"
+VERSION="v2.0.0"
 NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
 URL="https://aomedia.googlesource.com/aom/+archive/$VERSION.tar.gz"
 cd "/host/$BUILD_STUFF" || exit 2
@@ -12,7 +12,8 @@ else
   && tar xf "$NAME.tar.gz" -C "$NAME" \
   && rm -f "$NAME.tar.gz" \
   && cd "./build" \
-  && cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1 "../$NAME" \
+  && MINIMAL_INSTALL="-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0" \
+  && cmake "$MINIMAL_INSTALL" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1 "../$NAME" \
   && make -j4
 fi
 make install && ldconfig

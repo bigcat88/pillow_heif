@@ -293,7 +293,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=120
+max-line-length=130
 
 # Maximum number of lines in a module.
 max-module-lines=1000
@@ -340,7 +340,7 @@ ignore-docstrings=yes
 ignore-imports=no
 
 # Minimum lines number of a similarity.
-min-similarity-lines=4
+min-similarity-lines=16
 
 
 [IMPORTS]
@@ -375,7 +375,7 @@ known-third-party=enchant
 [DESIGN]
 
 # Maximum number of arguments for function / method.
-max-args=5
+max-args=8
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes=9
