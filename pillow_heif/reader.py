@@ -9,7 +9,7 @@ from . import _libheif  # pylint: disable=no-name-in-module
 
 
 class HeifFile:
-    def __init__(self, *, size, has_alpha, bit_depth, metadata, color_profile, data, stride):
+    def __init__(self, *, size, has_alpha, bit_depth, metadata=None, color_profile=None, data=None, stride=None):
         self.size = size
         self.brand = _constants.heif_brand_unknown_brand
         self.has_alpha = has_alpha

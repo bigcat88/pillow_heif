@@ -2,18 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.5 - 2022-01-31]
+## [0.1.5 - 2022-02-01]
 
 ### Added
 
 - Apple M1 binary wheels.
 - Alpine Linux binary wheels.
-- xxx 
+- More auto tests before publishing.
 
 ### Changed
 
 - Python 3.6 is no longer supported.
 - libaom bumped from 2.0.0 to 3.2.0
+- HeifFile(metadata, color_profile, data,stride) - are now optional arguments.
 
 ### Fixed
 
