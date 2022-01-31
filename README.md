@@ -8,7 +8,7 @@
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads/Month)](https://pepy.tech/project/pillow-heif)
 
 
-A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`, with binary wheels (Python 3.6-3.9, linux/macos - x64, aarch64).
+A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`, with binary wheels (Python 3.7-3.10, linux/macos - x64/aarch64).
 
 Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
 The idea for this plugin came from Christian Bianciotto's [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener).
