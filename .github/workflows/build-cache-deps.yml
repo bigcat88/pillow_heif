@@ -12,22 +12,20 @@ jobs:
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_x86_64
             many-linux: manylinux2014
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_aarch64
-            many-linux: manylinux2014
+#          - runs-on: ubuntu-latest
+#            cibw-arch: manylinux_aarch64
+#            many-linux: manylinux2014
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_x86_64
             many-linux: musllinux_1_1
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_aarch64
-            many-linux: musllinux_1_1
-    name: Dependecies • ${{ matrix.cibw-arch }}
+#          - runs-on: ubuntu-latest
+#            cibw-arch: manylinux_aarch64
+#            many-linux: musllinux_1_1
+    name: ${{ matrix.cibw-arch }} • ${{ matrix.many-linux }}
     runs-on: ${{ matrix.runs-on }}
     env:
       BUILD_STUFF: "/build-stuff"
       SCRIPTS: "./build_scripts/linux/"
-      BUILD_ORDER: "pkg-config,libressl,nasm,libde265,aom,libheif,libffi"
-      OS_PACKAGES: "wget libtool git-all"
       KEY_HEAD: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ matrix.many-linux }}
 
     steps:
@@ -36,12 +34,26 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Make preparations
+      - name: Make preparations(!=Alpine)
+        if: matrix.many-linux != 'musllinux_1_1'
         run: |
-          echo "$KEY_HEAD"
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
           BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
           echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
+        env:
+          BUILD_ORDER: "pkg-config,libressl,nasm,libde265,aom,libheif,libffi"
+          OS_PACKAGES: "wget libtool git-all"
+
+      - name: Make preparations(==Alpine)
+        if: matrix.many-linux == 'musllinux_1_1'
+        run: |
+          apd add py3-pip python3-dev jpeg-dev zlib-dev
+          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
+          BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
+          echo BUILD_COMMAND="apk add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
+        env:
+          BUILD_ORDER: "libressl,nasm,aom,libffi,pkg-config,libde265,libheif"
+          OS_PACKAGES: "libtool git"
 
       - uses: actions/cache@v2
         with:
@@ -133,7 +145,7 @@ jobs:
 
       - name: Start test build
         run: |
-          python -m pip install cibuildwheel twine
+          python3 -m pip install cibuildwheel twine
           cibuildwheel
         env:
           CIBW_TEST_SKIP: "*"
