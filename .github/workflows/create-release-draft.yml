@@ -94,7 +94,7 @@ jobs:
         env:
           CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
           CIBW_SKIP: "pp* cp36-*"
-          CIBW_TEST_COMMAND: "pytest {project}"
+          CIBW_TEST_COMMAND: "pytest -rs {project}"
           CIBW_TEST_REQUIRES: "pytest piexif"
           CIBW_BUILD_VERBOSITY: 1
 
@@ -257,7 +257,7 @@ jobs:
           CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }} LDCONFIG_ARG=${{ env.LDCONFIG_ARG }}
           CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
           CIBW_SKIP: "pp* cp36-*"
-          CIBW_TEST_COMMAND: "pytest {project}"
+          CIBW_TEST_COMMAND: "pytest -rs {project}"
           CIBW_TEST_REQUIRES: "pytest piexif"
           CIBW_BUILD_VERBOSITY: 1
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.many-linux }}

@@ -40,7 +40,7 @@ setup(
         "Operating System :: POSIX :: Linux",
     ],
     license="Apache-2.0",
-    keywords="pillow heif heic",
+    keywords="pillow heif heic avif",
     url="https://github.com/bigcat88/pillow_heif",
     zip_safe=False,
 )
