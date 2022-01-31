@@ -1,5 +1,5 @@
 VERSION="3.5"
-NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
+NAME=$(basename "$0" | cut -f 1 -d '.')
 URL="https://bitbucket.org/multicoreware/x265_git/get/$VERSION.tar.gz"
 cd "/host/$BUILD_STUFF" || exit 2
 if [[ -d "$NAME" ]]; then

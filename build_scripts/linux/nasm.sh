@@ -1,5 +1,5 @@
 VERSION="2.15.05"
-NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
+NAME=$(basename "$0" | cut -f 1 -d '.')
 URL="https://www.nasm.us/pub/nasm/releasebuilds/$VERSION/$NAME-$VERSION.tar.gz"
 cd "/host/$BUILD_STUFF" || exit 2
 if [[ -d "$NAME" ]]; then
