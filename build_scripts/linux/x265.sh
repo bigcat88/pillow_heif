@@ -1,5 +1,5 @@
 VERSION="3.5"
-NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
+NAME=$(basename "$0" | cut -f 1 -d '.')
 URL="https://bitbucket.org/multicoreware/x265_git/get/$VERSION.tar.gz"
 cd "/host/$BUILD_STUFF" || exit 2
 if [[ -d "$NAME" ]]; then
@@ -15,4 +15,8 @@ else
   && cmake -DCMAKE_INSTALL_PREFIX=/usr -G "Unix Makefiles" ./source \
   && make -j4
 fi
-make install && ldconfig
+if [[ -z "$LDCONFIG_ARG" ]]; then
+  make install && ldconfig
+else
+  make install && ldconfig "$LDCONFIG_ARG"
+fi

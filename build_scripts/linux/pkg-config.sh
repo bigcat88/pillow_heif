@@ -1,5 +1,5 @@
 VERSION="0.29.2"
-NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
+NAME=$(basename "$0" | cut -f 1 -d '.')
 URL="https://pkg-config.freedesktop.org/releases/$NAME-$VERSION.tar.gz"
 cd "/host/$BUILD_STUFF" || exit 2
 if [[ -d "$NAME" ]]; then

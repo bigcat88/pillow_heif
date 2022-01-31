@@ -1,12 +1,14 @@
+# pylint: disable=unused-import
 from .constants import *  # pylint: disable=unused-wildcard-import
-from .reader import HeifFile, UndecodedHeifFile, check, read, open  # pylint: disable=redefined-builtin,unused-import
-from .writer import write  # pylint: disable=unused-import
-from .error import HeifError  # pylint: disable=unused-import
-from .as_opener import register_heif_opener, check_heif_magic  # pylint: disable=unused-import
+from .reader import HeifFile, UndecodedHeifFile, check, read, open  # pylint: disable=redefined-builtin
+from .writer import write
+from .error import HeifError
+from .as_opener import register_heif_opener, check_heif_magic
 from . import _libheif   # pylint: disable=import-self
+from . import _version
 
 
-__version__ = "0.1.4"
+__version__ = _version.__version__
 
 
 def libheif_version():

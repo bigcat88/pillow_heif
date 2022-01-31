@@ -1,5 +1,5 @@
 name: Create Release
-#dont have currently aarch64 build for macos, waiting till new macbook will arrive to setup throw self hosted running.
+#Note: Wheels for Apple M1 builds locally and uploaded manually for now.
 
 on:
   workflow_dispatch:
@@ -93,7 +93,7 @@ jobs:
           cibuildwheel
         env:
           CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
-          CIBW_SKIP: "pp*"
+          CIBW_SKIP: "pp* cp36-*"
           CIBW_TEST_COMMAND: "pytest {project}"
           CIBW_TEST_REQUIRES: "pytest piexif"
           CIBW_BUILD_VERBOSITY: 1
@@ -116,15 +116,22 @@ jobs:
         include:
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_x86_64
+            many-linux: manylinux2014
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_aarch64
-    name: Wheels • ${{ matrix.cibw-arch }}
+            many-linux: manylinux2014
+          - runs-on: ubuntu-latest
+            cibw-arch: manylinux_x86_64
+            many-linux: musllinux_1_1
+          - runs-on: ubuntu-latest
+            cibw-arch: manylinux_aarch64
+            many-linux: musllinux_1_1
+    name: Wheels • ${{ matrix.cibw-arch }} • ${{ matrix.many-linux }}
     runs-on: ${{ matrix.runs-on }}
     env:
       BUILD_STUFF: "/build-stuff"
       SCRIPTS: "./build_scripts/linux/"
-      BUILD_ORDER: "pkg-config,cmake,autoconf,automake,libressl,nasm,libde265,aom,libheif,libffi"
-      OS_PACKAGES: "wget libtool git-all"
+      KEY_HEAD: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ matrix.many-linux }}
 
     steps:
       - name: Checkout code
@@ -132,79 +139,96 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Make preparations
+      - name: manylinux2014 preparations
+        if: matrix.many-linux == 'manylinux2014'
         run: |
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
           BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
           echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
+          echo LDCONFIG_ARG="" >> $GITHUB_ENV
+        env:
+          BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
+          OS_PACKAGES: "wget libtool git-all"
+
+      - name: musllinux_1_1 preparations
+        if: matrix.many-linux == 'musllinux_1_1'
+        run: |
+          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
+          BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
+          echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
+          echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
+        env:
+          BUILD_ORDER: "nasm,aom,libffi,pkg-config,libde265,libheif"
+          OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
+          freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: pkg-config
 
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: cmake
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+#        env:
+#          NAME: cmake
+
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+#        env:
+#          NAME: autoconf
+
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+#        env:
+#          NAME: automake
+
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+#        env:
+#          NAME: libressl
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: autoconf
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: automake
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: libressl
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: nasm
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: libde265
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: aom
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: libheif
 
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: libffi
 
@@ -218,7 +242,6 @@ jobs:
         if: matrix.cibw-arch == 'manylinux_x86_64'
         run: |
           echo "CIBW_ARCHS=x86_64" >> $GITHUB_ENV
-          echo "CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014" >> $GITHUB_ENV
 
       - name: Arm linux pre configure enviroment
         if: matrix.cibw-arch == 'manylinux_aarch64'
@@ -231,12 +254,14 @@ jobs:
           cibuildwheel
         env:
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
-          CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }}
+          CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }} LDCONFIG_ARG=${{ env.LDCONFIG_ARG }}
           CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
-          CIBW_SKIP: "pp*"
+          CIBW_SKIP: "pp* cp36-*"
           CIBW_TEST_COMMAND: "pytest {project}"
           CIBW_TEST_REQUIRES: "pytest piexif"
           CIBW_BUILD_VERBOSITY: 1
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.many-linux }}
+          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.many-linux }}
 
       - name: Check builded wheels
         run: |
@@ -310,7 +335,7 @@ jobs:
       - name: Get release info
         id: get_release_info
         run: |
-          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/__init__.py)
+          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
           echo "::set-output name=version::v${RELEASE_VERSION}"
           echo "::set-output name=tag::v${RELEASE_VERSION}"
           CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')

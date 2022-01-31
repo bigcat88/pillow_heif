@@ -17,7 +17,7 @@ jobs:
     - name: Get release info
       id: get_release_info
       run: |
-        RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/__init__.py)
+        RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
         echo "::set-output name=tag::v${RELEASE_VERSION}"
 
     - name: Download Release Assets

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5 - 2022-02-01]
+
+### Added
+
+- Apple M1 binary wheels.
+- Alpine Linux binary wheels.
+- More auto tests before publishing.
+
+### Changed
+
+- Python 3.6 is no longer supported.
+- libaom bumped from 2.0.0 to 3.2.0
+
+### Fixed
+
 ## [0.1.4 - 2021-11-05]
 
 ### Added

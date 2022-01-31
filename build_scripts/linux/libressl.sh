@@ -1,5 +1,5 @@
 VERSION="3.1.5"
-NAME=$(basename "$BASH_SOURCE" | cut -f 1 -d '.')
+NAME=$(basename "$0" | cut -f 1 -d '.')
 URL="https://github.com/libressl-portable/portable/archive/v$VERSION.tar.gz"
 cd "/host/$BUILD_STUFF" || exit 2
 if [[ -d "$NAME" ]]; then
