@@ -16,9 +16,10 @@ else
   && cmake "$MINIMAL_INSTALL" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1 "../$NAME" \
   && make -j4
 fi
-make install
 if [[ ! -v LDCONFIG_ARG ]]; then
-  ldconfig
+  echo "NOT SET!!!"
+  make install && ldconfig
 else
-  ldconfig "$LDCONFIG_ARG"
+  echo "SET!!!, value=$LDCONFIG_ARG"
+  make install && ldconfig "$LDCONFIG_ARG"
 fi
