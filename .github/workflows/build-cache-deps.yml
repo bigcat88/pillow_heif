@@ -34,17 +34,18 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Make preparations(!=Alpine)
-        if: matrix.many-linux != 'musllinux_1_1'
+      - name: manylinux2014 preparations
+        if: matrix.many-linux == 'manylinux2014'
         run: |
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
           BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
           echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
+          echo LDCONFIG_ARG="" >> $GITHUB_ENV
         env:
           BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
           OS_PACKAGES: "wget libtool git-all"
 
-      - name: Make preparations(==Alpine)
+      - name: musllinux_1_1 preparations
         if: matrix.many-linux == 'musllinux_1_1'
         run: |
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"

@@ -15,7 +15,7 @@ else
   && cmake -DCMAKE_INSTALL_PREFIX=/usr -G "Unix Makefiles" ./source \
   && make -j4
 fi
-if [[ ! -v LDCONFIG_ARG ]]; then
+if [[ -z "$LDCONFIG_ARG" ]]; then
   echo "NOT SET!!!"
   make install && ldconfig
 else

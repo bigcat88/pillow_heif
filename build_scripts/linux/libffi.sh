@@ -15,7 +15,7 @@ else
   && ./configure --prefix /usr \
   && make -j4
 fi
-if [[ ! -v LDCONFIG_ARG ]]; then
+if [[ -z "$LDCONFIG_ARG" ]]; then
   echo "NOT SET!!!"
   make install && ldconfig
 else
