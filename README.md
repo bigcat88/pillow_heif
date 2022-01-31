@@ -13,7 +13,7 @@
 
 A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`.
 
-Binary wheels for Python 3.7-3.10. Linux(included Alpine)/macOS - x64/aarch64.
+Binary wheels for Python 3.7-3.10. Linux(+Alpine)/macOS - x64/aarch64(+M1).
 
 Version 0.1.4 was last to support Python 3.6 and still can be used.
 
@@ -46,7 +46,7 @@ pip install git+https://github.com/bigcat88/pillow_heif.git
 brew install libffi libheif
 pip3 install git+https://github.com/bigcat88/pillow_heif.git
 ```
-If on MacOs it fails with installing from source, just try second time(helps me on M1 with Monerey):
+If on macOS it fails with installing from source, just try second time(helps me on M1 with Monterey):
 ```
 pip3 install git+https://github.com/bigcat88/pillow_heif.git
 ```
