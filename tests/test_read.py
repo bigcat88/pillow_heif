@@ -9,9 +9,12 @@ from PIL import Image, ImageCms
 import pillow_heif
 
 
-heic_files = list(Path().glob('tests/images/**/*.heic'))
-hif_files = list(Path().glob('tests/images/**/*.HIF'))
-avif_files = list(Path().glob('tests/images/**/*.avif'))
+TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(TESTS_DIR)
+
+heic_files = list(Path().glob('images/**/*.heic'))
+hif_files = list(Path().glob('images/**/*.HIF'))
+avif_files = list(Path().glob('images/**/*.avif'))
 heif_files = heic_files + hif_files + avif_files
 
 
@@ -98,12 +101,9 @@ def test_open_and_load(path):
 def test_open_and_load_data_not_collected(path):
     data = path.read_bytes()
     heif_file = pillow_heif.open(data)
-    _data = None  # heif_file.load() should work even if there is no other refs to the source data.
+    data = None  # heif_file.load() should work even if there is no other refs to the source data.
     gc.collect()
     heif_file.load()
-
-
-TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def to_pillow_image(heif_file):
