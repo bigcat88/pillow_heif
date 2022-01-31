@@ -14,11 +14,8 @@ All notable changes to this project will be documented in this file.
 
 - Python 3.6 is no longer supported.
 - libaom bumped from 2.0.0 to 3.2.0
-- HeifFile(metadata, color_profile, data,stride) - are now optional arguments.
 
 ### Fixed
-
-- xxx
 
 ## [0.1.4 - 2021-11-05]
 
