@@ -16,4 +16,4 @@ else
   && ./configure --disable-sherlock265 --prefix /usr \
   && make -j4
 fi
-make install && ldconfig
+make install && ldconfig "$LDCONFIG_ARG"

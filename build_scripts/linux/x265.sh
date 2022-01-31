@@ -15,4 +15,4 @@ else
   && cmake -DCMAKE_INSTALL_PREFIX=/usr -G "Unix Makefiles" ./source \
   && make -j4
 fi
-make install && ldconfig
+make install && ldconfig "$LDCONFIG_ARG"
