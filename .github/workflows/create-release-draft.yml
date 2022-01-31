@@ -323,7 +323,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   draft_release:
-    needs: [sdist, wheels_linux, wheels_linux_x_y, wheels_macos]
+    needs: [sdist, wheels_linux, wheels_macos]
     runs-on: ubuntu-latest
     name: Build and create release
 
