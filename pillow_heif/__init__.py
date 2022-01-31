@@ -6,6 +6,8 @@ from .error import HeifError
 from .as_opener import register_heif_opener, check_heif_magic
 from . import _libheif   # pylint: disable=import-self
 from . import _version
+
+
 __version__ = _version.__version__
 
 
