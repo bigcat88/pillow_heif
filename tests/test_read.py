@@ -98,7 +98,7 @@ def test_open_and_load(path):
 def test_open_and_load_data_not_collected(path):
     data = path.read_bytes()
     heif_file = pillow_heif.open(data)
-    data = None  # heif_file.load() should work even if there is no other refs to the source data.
+    _data = None  # heif_file.load() should work even if there is no other refs to the source data.
     gc.collect()
     heif_file.load()
 
@@ -206,7 +206,7 @@ def test_read_icc_color_profile(folder, image_name, expected_color_profile):
         return
     if heif_file.color_profile and heif_file.color_profile['type'] in ['prof', 'rICC', ]:
         profile = io.BytesIO(heif_file.color_profile['data'])
-        cms = ImageCms.getOpenProfile(profile)
+        _cms = ImageCms.getOpenProfile(profile)
 
 
 @pytest.mark.parametrize(
@@ -222,4 +222,4 @@ def test_read_icc_color_profile(folder, image_name, expected_color_profile):
 def test_read_pillow_frombytes(folder, image_name):
     fn = os.path.join(TESTS_DIR, 'images', folder, image_name)
     heif_file = pillow_heif.read(fn)
-    image = to_pillow_image(heif_file)
+    _image = to_pillow_image(heif_file)

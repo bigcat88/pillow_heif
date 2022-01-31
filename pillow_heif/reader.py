@@ -9,11 +9,11 @@ from . import _libheif  # pylint: disable=no-name-in-module
 
 
 class HeifFile:
-    def __init__(self, *, size, has_alpha, bit_depth, metadata=None, color_profile=None, data=None, stride=None):
+    def __init__(self, *, size, has_alpha, bit_depth, metadata, color_profile, data, stride):
         self.size = size
         self.brand = _constants.heif_brand_unknown_brand
         self.has_alpha = has_alpha
-        self.mode = "RGBA" if has_alpha else "RGB"
+        self.mode = 'RGBA' if has_alpha else 'RGB'
         self.bit_depth = bit_depth
         self.metadata = metadata
         self.color_profile = color_profile
@@ -48,7 +48,7 @@ class UndecodedHeifFile(HeifFile):
 
     def close(self):
         # Don't call super().close() here, we don't need to free bytes.
-        if hasattr(self, "_heif_handle"):
+        if hasattr(self, '_heif_handle'):
             del self._heif_handle
 
 
@@ -69,13 +69,10 @@ def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
 
 
 def _get_bytes(fp, length=None):
-    if isinstance(fp, str):
-        with builtins.open(fp, "rb") as f:
+    if isinstance(fp, (str, pathlib.Path)):
+        with builtins.open(fp, 'rb') as f:
             d = f.read(length or -1)
-    elif isinstance(fp, pathlib.Path):
-        with fp.open("rb") as f:
-            d = f.read(length or -1)
-    elif hasattr(fp, "read"):
+    elif hasattr(fp, 'read'):
         d = fp.read(length or -1)
     else:
         d = bytes(fp)[:length]
@@ -87,8 +84,10 @@ def _keep_refs(destructor, **refs):
     Keep refs to passed arguments until `inner` callback exist.
     This prevents collecting parent objects until all children are collected.
     """
+
     def inner(cdata):
         return destructor(cdata)
+
     inner._refs = refs
     return inner
 
@@ -97,9 +96,9 @@ def _read_heif_bytes(d, apply_transformations, convert_hdr_to_8bit):
     magic = d[:12]
     filetype_check = _libheif.lib.heif_check_filetype(magic, len(magic))
     if filetype_check == _constants.heif_filetype_no:
-        raise ValueError("Input is not a HEIF/AVIF file")
+        raise ValueError('Input is not a HEIF/AVIF file')
     if filetype_check == _constants.heif_filetype_yes_unsupported:
-        warnings.warn("Input is an unsupported HEIF/AVIF file type - trying anyway!")
+        warnings.warn('Input is an unsupported HEIF/AVIF file type - trying anyway!')
     brand = _libheif.lib.heif_main_brand(magic, len(magic))
     ctx = _libheif.lib.heif_context_alloc()
     collect = _keep_refs(_libheif.lib.heif_context_free, data=d)
