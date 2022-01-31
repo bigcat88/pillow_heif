@@ -40,9 +40,8 @@ jobs:
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
           BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
           echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
-          echo LDCONFIG_ARG="" >> $GITHUB_ENV
         env:
-          BUILD_ORDER: "pkg-config,libressl,nasm,libde265,aom,libheif,libffi"
+          BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
           OS_PACKAGES: "wget libtool git-all"
 
       - name: Make preparations(==Alpine)
@@ -53,7 +52,7 @@ jobs:
           echo BUILD_COMMAND="apk add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
           echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
         env:
-          BUILD_ORDER: "nasm,libressl,aom,libffi,pkg-config,libde265,libheif"
+          BUILD_ORDER: "nasm,aom,libffi,pkg-config,libde265,libheif"
           OS_PACKAGES: "py3-pip python3-dev jpeg-dev zlib-dev libtool git"
 
       - uses: actions/cache@v2
@@ -84,12 +83,12 @@ jobs:
 #        env:
 #          NAME: automake
 
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: libressl
+#      - uses: actions/cache@v2
+#        with:
+#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+#        env:
+#          NAME: libressl
 
       - uses: actions/cache@v2
         with:

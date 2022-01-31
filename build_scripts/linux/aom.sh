@@ -1,4 +1,4 @@
-VERSION="v2.0.0"
+VERSION="v3.2.0"
 NAME=$(basename "$0" | cut -f 1 -d '.')
 URL="https://aomedia.googlesource.com/aom/+archive/$VERSION.tar.gz"
 cd "/host/$BUILD_STUFF" || exit 2
@@ -16,4 +16,9 @@ else
   && cmake "$MINIMAL_INSTALL" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1 "../$NAME" \
   && make -j4
 fi
-make install && ldconfig "$LDCONFIG_ARG"
+make install
+if [[ ! -v LDCONFIG_ARG ]]; then
+  ldconfig
+else
+  ldconfig "$LDCONFIG_ARG"
+fi
