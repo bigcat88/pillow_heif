@@ -51,8 +51,8 @@ jobs:
           BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
           echo BUILD_COMMAND="apk add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
         env:
-          BUILD_ORDER: "py3-pip,python3-dev,jpeg-dev,zlib-dev,libressl,nasm,aom,libffi,pkg-config,libde265,libheif"
-          OS_PACKAGES: "libtool git"
+          BUILD_ORDER: "libressl,nasm,aom,libffi,pkg-config,libde265,libheif"
+          OS_PACKAGES: "py3-pip python3-dev jpeg-dev zlib-dev libtool git"
 
       - uses: actions/cache@v2
         with:
