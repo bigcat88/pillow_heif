@@ -39,6 +39,7 @@ setup(
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux",
     ],
+    license="Apache-2.0",
     keywords="pillow heif heic",
     url="https://github.com/bigcat88/pillow_heif",
     zip_safe=False,
