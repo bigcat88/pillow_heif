@@ -50,11 +50,11 @@ jobs:
         run: |
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
           BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
-          echo BUILD_COMMAND="apk add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
+          echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
           echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
         env:
           BUILD_ORDER: "nasm,aom,libffi,pkg-config,libde265,libheif"
-          OS_PACKAGES: "py3-pip python3-dev jpeg-dev zlib-dev libtool git"
+          OS_PACKAGES: "py3-pip python3-dev jpeg-dev openjpeg-dev zlib-dev lcms2-dev libtool git"
 
       - uses: actions/cache@v2
         with:
