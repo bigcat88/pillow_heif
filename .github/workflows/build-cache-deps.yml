@@ -15,9 +15,9 @@ jobs:
 #          - runs-on: ubuntu-latest
 #            cibw-arch: manylinux_aarch64
 #            many-linux: manylinux2014
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_x86_64
-            many-linux: musllinux_1_1
+#          - runs-on: ubuntu-latest
+#            cibw-arch: manylinux_x86_64
+#            many-linux: musllinux_1_1
 #          - runs-on: ubuntu-latest
 #            cibw-arch: manylinux_aarch64
 #            many-linux: musllinux_1_1
