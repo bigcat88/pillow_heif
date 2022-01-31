@@ -334,7 +334,7 @@ jobs:
       - name: Get release info
         id: get_release_info
         run: |
-          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/__init__.py)
+          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
           echo "::set-output name=version::v${RELEASE_VERSION}"
           echo "::set-output name=tag::v${RELEASE_VERSION}"
           CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
