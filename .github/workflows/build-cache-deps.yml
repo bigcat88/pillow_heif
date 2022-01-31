@@ -12,15 +12,15 @@ jobs:
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_x86_64
             many-linux: manylinux2014
-#          - runs-on: ubuntu-latest
-#            cibw-arch: manylinux_aarch64
-#            many-linux: manylinux2014
+          - runs-on: ubuntu-latest
+            cibw-arch: manylinux_aarch64
+            many-linux: manylinux2014
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_x86_64
             many-linux: musllinux_1_1
-#          - runs-on: ubuntu-latest
-#            cibw-arch: manylinux_aarch64
-#            many-linux: musllinux_1_1
+          - runs-on: ubuntu-latest
+            cibw-arch: manylinux_aarch64
+            many-linux: musllinux_1_1
     name: ${{ matrix.cibw-arch }} • ${{ matrix.many-linux }}
     runs-on: ${{ matrix.runs-on }}
     env:
@@ -54,7 +54,8 @@ jobs:
           echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
         env:
           BUILD_ORDER: "nasm,aom,libffi,pkg-config,libde265,libheif"
-          OS_PACKAGES: "py3-pip python3-dev jpeg-dev openjpeg-dev zlib-dev lcms2-dev libtool git"
+          OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
+          freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
 
       - uses: actions/cache@v2
         with:

@@ -17,9 +17,7 @@ else
   && make -j4
 fi
 if [[ -z "$LDCONFIG_ARG" ]]; then
-  echo "NOT SET!!!"
   make install && ldconfig
 else
-  echo "SET!!!, value=$LDCONFIG_ARG"
   make install && ldconfig "$LDCONFIG_ARG"
 fi

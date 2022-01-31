@@ -159,7 +159,8 @@ jobs:
           echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
         env:
           BUILD_ORDER: "nasm,aom,libffi,pkg-config,libde265,libheif"
-          OS_PACKAGES: "py3-pip python3-dev jpeg-dev openjpeg-dev zlib-dev lcms2-dev libtool git"
+          OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
+          freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
 
       - uses: actions/cache@v2
         with:
