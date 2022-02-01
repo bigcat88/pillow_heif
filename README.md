@@ -46,10 +46,7 @@ pip install git+https://github.com/bigcat88/pillow_heif.git
 brew install libffi libheif
 pip3 install git+https://github.com/bigcat88/pillow_heif.git
 ```
-If on macOS it fails with installing from source, just try second time(helps me on M1 with Monterey):
-```
-pip3 install git+https://github.com/bigcat88/pillow_heif.git
-```
+
 
 ##### Windows
 With Visual Studio 2015+ C Compiler and SDK installed:
