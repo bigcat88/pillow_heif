@@ -89,7 +89,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python -m pip install cibuildwheel twine
+          python3 -m pip install cibuildwheel twine
           cibuildwheel
         env:
           CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
@@ -291,7 +291,7 @@ jobs:
 
       - name: Install requirements
         run: |
-          pip install --user check-manifest twine
+          pip3 install --user check-manifest twine
 
       - name: Install brew
         run: |
@@ -300,22 +300,22 @@ jobs:
 
       - name: Run check-manifest
         run: |
-          python -m check_manifest
+          python3 -m check_manifest
 
       - name: Build sdist
         run: |
-          python -m pip install --upgrade pip setuptools wheel
-          python -m pip install -r requirements.txt
-          python -m pip install -r requirements_dev.txt
-          python -m build --sdist --outdir wheelhouse
+          python3 -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install -r requirements.txt
+          python3 -m pip install -r requirements_dev.txt
+          python3 -m build --sdist --outdir wheelhouse
 
       - name: Install from sdist
         run: |
-          pip install --user wheelhouse/*.tar.gz
+          pip3 install --user wheelhouse/*.tar.gz
 
       - name: Check sdist
         run: |
-          python -m twine check wheelhouse/*
+          python3 -m twine check wheelhouse/*
 
       - name: Upload sdist
         uses: actions/upload-artifact@v2
