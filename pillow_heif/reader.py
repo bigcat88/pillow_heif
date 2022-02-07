@@ -13,7 +13,7 @@ class HeifFile:
         self.size = size
         self.brand = _constants.heif_brand_unknown_brand
         self.has_alpha = has_alpha
-        self.mode = 'RGBA' if has_alpha else "RGB"
+        self.mode = 'RGBA' if has_alpha else 'RGB'
         self.bit_depth = bit_depth
         self.metadata = metadata
         self.color_profile = color_profile
