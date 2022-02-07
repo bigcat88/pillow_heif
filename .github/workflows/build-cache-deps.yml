@@ -21,6 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'aarch64'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: arm64
+
       - name: Preparations
         run: |
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
@@ -85,12 +91,6 @@ jobs:
           key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: libffi
-
-      - name: Set up QEMU
-        if: matrix.cibw_arch == 'aarch64'
-        uses: docker/setup-qemu-action@v1
-        with:
-          platforms: arm64
 
       - name: Start test build
         run: cibuildwheel
