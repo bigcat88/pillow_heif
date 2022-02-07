@@ -11,7 +11,7 @@ jobs:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "x86_64", "aarch64" ]
     name: ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       BUILD_STUFF: "/build-stuff"
       SCRIPTS: "./build_scripts/linux/"
@@ -20,11 +20,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.8"
-
       - name: Set up QEMU
         if: matrix.cibw_arch == 'aarch64'
         uses: docker/setup-qemu-action@v1
