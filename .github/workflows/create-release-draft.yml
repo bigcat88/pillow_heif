@@ -17,10 +17,10 @@ jobs:
       - name: Install dependencies
         run: |
           git clone https://github.com/microsoft/vcpkg
-          $Env:VCPKG_TARGET_ARCHITECTURE=x64
-          $Env:VCPKG_CRT_LINKAGE=static
-          $Env:VCPKG_LIBRARY_LINKAGE=static
-          $Env:VCPKG_BUILD_TYPE=Release
+          $Env:VCPKG_TARGET_ARCHITECTURE="x64"
+          $Env:VCPKG_CRT_LINKAGE="static"
+          $Env:VCPKG_LIBRARY_LINKAGE="static"
+          $Env:VCPKG_BUILD_TYPE="Release"
           $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
           vcpkg/bootstrap-vcpkg.bat
           vcpkg remove --outdated --recurse
