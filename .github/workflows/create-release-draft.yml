@@ -22,12 +22,13 @@ jobs:
           vcpkg/vcpkg integrate install
           $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
           vcpkg/vcpkg install libpng libjpeg-turbo freetype tiff libwebp aom libffi libheif
-          dir C:\vcpkg\packages
-          dir C:\vcpkg\packages\libheif_x64-windows-static
-          dir C:\vcpkg\packages\libheif_x64-windows-static\include
-          dir C:\vcpkg\packages\libheif_x64-windows-static\include\libheif
-          dir C:\vcpkg\packages\libheif_x64-windows-static\lib
-          dir C:\vcpkg\packages\libheif_x64-windows-static\lib\pkgconfig
+          dir vcpkg/ports/libheif
+          dir vcpkg/packages
+          dir vcpkg/packages/libheif_x64-windows-static
+          dir vcpkg/packages/libheif_x64-windows-static/include
+          dir vcpkg/packages/libheif_x64-windows-static/include/libheif
+          dir vcpkg/packages/libheif_x64-windows-static/lib
+          dir vcpkg/packages/libheif_x64-windows-static/lib/pkgconfig
 
 
       - name: Run cibuildwheel
@@ -36,7 +37,7 @@ jobs:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BUILD_VERBOSITY: 1
-          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="C:\\vcpkg\\packages\\libheif_x64-windows-static"
+          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\packages\\libheif_x64-windows-static"
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
 
