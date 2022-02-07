@@ -5,14 +5,14 @@ from .error import HeifError
 
 
 class HeifImageFile(ImageFile.ImageFile):
-    format = 'HEIF'
-    format_description = 'HEIF/HEIC image'
+    format = "HEIF"
+    format_description = "HEIF/HEIC image"
     color_profile = None
 
     def _open(self):
         data = self.fp.read(16)
         if not check_heif_magic(data):
-            raise SyntaxError('not a HEIF file')
+            raise SyntaxError("not a HEIF file")
         self.fp.seek(0)
         try:
             heif_file = read(self.fp)
@@ -28,16 +28,16 @@ class HeifImageFile(ImageFile.ImageFile):
         # Add Exif
         if heif_file.metadata:
             for data in heif_file.metadata:
-                if data['type'] == 'Exif':
-                    self.info['exif'] = data['data']
+                if data["type"] == "Exif":
+                    self.info["exif"] = data["data"]
                     break
 
         # Add Color Profile
         if heif_file.color_profile:
-            if heif_file.color_profile['type'] != 'unknown':
+            if heif_file.color_profile["type"] != "unknown":
                 self.color_profile = heif_file.color_profile
         offset = self.fp.tell()
-        self.tile = [('heif', (0, 0) + self.size, offset, (heif_file,))]
+        self.tile = [("heif", (0, 0) + self.size, offset, (heif_file,))]
 
 
 class HeifDecoder(ImageFile.PyDecoder):
@@ -46,7 +46,7 @@ class HeifDecoder(ImageFile.PyDecoder):
     def decode(self, buffer):
         heif_file = self.args[0]
         mode = heif_file.mode
-        raw_decoder = Image._getdecoder(mode, 'raw', (mode, heif_file.stride))
+        raw_decoder = Image._getdecoder(mode, "raw", (mode, heif_file.stride))
         raw_decoder.setimage(self.im)
         return raw_decoder.decode(heif_file.data)
 
@@ -79,6 +79,6 @@ def check_heif_magic(data) -> bool:
 
 def register_heif_opener():
     Image.register_open(HeifImageFile.format, HeifImageFile, check_heif_magic)
-    Image.register_decoder('heif', HeifDecoder)
-    Image.register_extensions(HeifImageFile.format, ['.heic', '.heif'])
-    Image.register_mime(HeifImageFile.format, 'image/heif')
+    Image.register_decoder("heif", HeifDecoder)
+    Image.register_extensions(HeifImageFile.format, [".heic", ".heif"])
+    Image.register_mime(HeifImageFile.format, "image/heif")

@@ -1,5 +1,7 @@
 class HeifError(Exception):
-    def __init__(self, *, code, subcode, message):  # pylint: disable=super-init-not-called
+    def __init__(
+        self, *, code, subcode, message
+    ):  # pylint: disable=super-init-not-called
         self.code = code
         self.subcode = subcode
         self.message = message
