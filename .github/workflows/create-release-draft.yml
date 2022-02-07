@@ -7,7 +7,7 @@ on:
 jobs:
 #  wheels_windows:
 #    name: Build Windows wheels
-#    runs-on: windows-latest
+#    runs-on: windows-2019
 #
 #    steps:
 #      - uses: actions/checkout@v2
@@ -17,12 +17,12 @@ jobs:
 #          python-version: "3.8"
 #
 #      - name: Install requirements
-#        run: python -m pip install cibuildwheel twine
+#        run: python3 -m pip install cibuildwheel twine
 #
 #      - name: Run cibuildwheel
 #        run: cibuildwheel
 #        env:
-#          CIBW_BUILD: "cp36-* cp37-* cp38-* cp39-* cp310-*"
+#          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
 #          CIBW_ARCHS_WINDOWS: "AMD64"
 #          CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
 #          CIBW_TEST_COMMAND: "pytest -s {project}"
@@ -82,7 +82,7 @@ jobs:
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "x86_64", "aarch64" ]
-    name: ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
+    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }}
     runs-on: ubuntu-latest
     env:
       BUILD_STUFF: "/build-stuff"
@@ -92,6 +92,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
 
       - name: Set up QEMU
         if: matrix.cibw_arch == 'aarch64'
@@ -168,6 +172,7 @@ jobs:
         run: cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}*', matrix.cibw_buildlinux) }}
+          CIBW_SKIP: "cp36-*"
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG

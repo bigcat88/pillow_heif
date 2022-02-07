@@ -10,12 +10,16 @@
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pillow-heif)
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads/Month)](https://pepy.tech/project/pillow-heif)
 
+![Mac OS](https://img.shields.io/badge/mac%20os-FCC624?style=for-the-badge&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
 A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`.
 
-Binary wheels for Python 3.7-3.10. Linux(included Alpine)/macOS - x64/aarch64.
+Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - x64/aarch64.
 
-Version 0.1.4 was last to support Python 3.6 and still can be used.
+#### **_Version 0.1.4 was last to support Python 3.6 and still can be used._**
 
 Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
 The idea for this plugin came from Christian Bianciotto's [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener).
@@ -28,9 +32,6 @@ Pull requests are greatly welcome.
 
 ```pip install pillow_heif```
 
-or from [GitHub](https://github.com/bigcat88/pillow_heif):
-
-```pip install https://github.com/bigcat88/pillow_heif/archive/master.zip```
 
 ## Installation from source
 
@@ -44,10 +45,6 @@ pip install git+https://github.com/bigcat88/pillow_heif.git
 ##### MacOS
 ```
 brew install libffi libheif
-pip3 install git+https://github.com/bigcat88/pillow_heif.git
-```
-If on MacOs it fails with installing from source, just try second time(helps me on M1 with Monerey):
-```
 pip3 install git+https://github.com/bigcat88/pillow_heif.git
 ```
 

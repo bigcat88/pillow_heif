@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6 - 2022-02-10]
+
+### Added
+
+- Windows binary wheels(IN PROGRESS)
+
+### Changed
+
+- Using code formatting: black(TODO)
+- Build according to PEP 517(TODO)
+
+### Fixed
+
+- Apple M1 binary wheels now build on Monterey 12.01 instead of latest(12.2).
+
 ## [0.1.5 - 2022-02-01]
 
 ### Added
