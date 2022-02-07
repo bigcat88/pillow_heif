@@ -24,6 +24,7 @@ jobs:
           dir C:\vcpkg\packages\libheif_x64-windows-static\include\libheif
           dir C:\vcpkg\packages\libheif_x64-windows-static\lib
           dir C:\vcpkg\packages\libheif_x64-windows-static\lib\pkgconfig
+          C:\vcpkg\vcpkg integrate install
         # $Env:PH_INCLUDE="C:\vcpkg\packages\libheif_x64-windows\include"
         # $Env:PH_LIB="C:\vcpkg\packages\libheif_x64-windows\lib"
 
