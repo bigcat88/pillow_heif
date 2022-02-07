@@ -16,15 +16,18 @@ jobs:
 
       - name: Install dependencies
         run: |
+          git clone https://github.com/microsoft/vcpkg
+          .\bootstrap-vcpkg.bat
+          vcpkg remove --outdated --recurse
           $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
-          C:\vcpkg\vcpkg.exe install libpng libjpeg-turbo freetype tiff libwebp aom libffi libheif
+          vcpkg install libpng libjpeg-turbo freetype tiff libwebp aom libffi libheif
           dir C:\vcpkg\packages
           dir C:\vcpkg\packages\libheif_x64-windows-static
           dir C:\vcpkg\packages\libheif_x64-windows-static\include
           dir C:\vcpkg\packages\libheif_x64-windows-static\include\libheif
           dir C:\vcpkg\packages\libheif_x64-windows-static\lib
           dir C:\vcpkg\packages\libheif_x64-windows-static\lib\pkgconfig
-          C:\vcpkg\vcpkg integrate install
+          vcpkg integrate install
 
       - name: Run cibuildwheel
         run: cibuildwheel
