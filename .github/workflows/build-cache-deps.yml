@@ -25,6 +25,7 @@ jobs:
         run: |
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
           echo BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh" >> $GITHUB_ENV
+          python3 -m pip install cibuildwheel twine
 
       - name: manylinux2014 preparations
         if: matrix.cibw_buildlinux == 'manylinux'
@@ -92,14 +93,11 @@ jobs:
           platforms: arm64
 
       - name: Start test build
-        run: |
-          python3 -m pip install cibuildwheel twine
-          cibuildwheel
+        run: cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp38-{0}*', matrix.cibw_buildlinux) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
-          # CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }} LDCONFIG_ARG=${{ env.LDCONFIG_ARG }}
           CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG
           CIBW_TEST_SKIP: "*"
 
