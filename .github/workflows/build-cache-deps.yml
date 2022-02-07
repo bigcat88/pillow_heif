@@ -96,11 +96,11 @@ jobs:
           python3 -m pip install cibuildwheel twine
           cibuildwheel
         env:
-          CIBW_BUILD: ${{ format('cp38-{0}*', matrix.cibw-arch) }}
+          CIBW_BUILD: ${{ format('cp38-{0}*', matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
-          CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }} LDCONFIG_ARG=${{ env.LDCONFIG_ARG }}
-          #CIBW_ENVIRONMENT_PASS_LINUX
+          # CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }} LDCONFIG_ARG=${{ env.LDCONFIG_ARG }}
+          CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG
           CIBW_TEST_SKIP: "*"
 
       - name: Check builded wheel
