@@ -19,9 +19,11 @@ jobs:
           $Env:VCPKG_DEFAULT_TRIPLET="x64-windows"
           C:\vcpkg\vcpkg.exe install libpng libjpeg-turbo freetype tiff libwebp aom libffi libheif
           dir C:\vcpkg\packages
-          dir C:\vcpkg\packages\libheif
-          set INCLUDE="%INCLUDE%;C:\vcpkg\packages\libheif\source"
-          set LIB="%LIB%;C:\vcpkg\packages\libheif\build"
+          dir C:\vcpkg\packages\libheif_x64-windows
+          dir C:\vcpkg\packages\libheif_x64-windows\include
+          dir C:\vcpkg\packages\libheif_x64-windows\lib
+          set INCLUDE="%INCLUDE%;C:\vcpkg\packages\libheif_x64-windows\include"
+          set LIB="%LIB%;C:\vcpkg\packages\libheif_x64-windows\lib"
 
       - name: Run cibuildwheel
         run: cibuildwheel
