@@ -21,9 +21,12 @@ jobs:
           dir C:\vcpkg\packages
           dir C:\vcpkg\packages\libheif_x64-windows
           dir C:\vcpkg\packages\libheif_x64-windows\include
+          dir C:\vcpkg\packages\libheif_x64-windows\include\libheif
           dir C:\vcpkg\packages\libheif_x64-windows\lib
-          set INCLUDE="%INCLUDE%;C:\vcpkg\packages\libheif_x64-windows\include"
-          set LIB="%LIB%;C:\vcpkg\packages\libheif_x64-windows\lib"
+          dir C:\vcpkg\packages\libheif_x64-windows\lib\pkgconfig
+          $Env:PH_LIBHEIF_PATH="C:\vcpkg\packages\libheif_x64-windows"
+        # $Env:PH_INCLUDE="C:\vcpkg\packages\libheif_x64-windows\include"
+        # $Env:PH_LIB="C:\vcpkg\packages\libheif_x64-windows\lib"
 
       - name: Run cibuildwheel
         run: cibuildwheel

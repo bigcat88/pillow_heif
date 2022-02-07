@@ -26,6 +26,15 @@ if platform.lower() == "darwin":
         homebrew_library = path.join(homebrew_prefix, "lib")
         if homebrew_library not in library_dirs:
             library_dirs.append(homebrew_library)
+if platform.lower() in ("win32", "cygwin"):
+    libheif_path = getenv("PH_LIBHEIF_PATH")
+    if libheif_path:
+        a = path.join(libheif_path, "include")
+        print(f'Adding {a}')
+        include_dirs.append(a)
+        a = path.join(libheif_path, "lib")
+        print(f'Adding {a}')
+        library_dirs.append(path.join(libheif_path, a))
 if platform.lower() in ("darwin", "win32", "cygwin"):
     project_root = path.dirname(path.dirname(path.abspath(__file__)))
     include_dirs.append(project_root)
