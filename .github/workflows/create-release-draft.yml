@@ -22,6 +22,8 @@ jobs:
           $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
           vcpkg/vcpkg install libpng libjpeg-turbo freetype tiff libwebp aom libffi libheif
           vcpkg/vcpkg integrate install
+          dir .
+          dir vcpkg
           dir vcpkg/ports/libheif
           dir vcpkg/packages
           dir vcpkg/packages/libheif_x64-windows-static
@@ -29,7 +31,8 @@ jobs:
           dir vcpkg/packages/libheif_x64-windows-static/include/libheif
           dir vcpkg/packages/libheif_x64-windows-static/lib
           dir vcpkg/packages/libheif_x64-windows-static/lib/pkgconfig
-
+          cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
+          dir .
 
       - name: Run cibuildwheel
         run: cibuildwheel
