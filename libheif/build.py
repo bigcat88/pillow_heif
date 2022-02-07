@@ -16,9 +16,9 @@ library_dirs = ["/usr/local/lib", "/usr/lib", "/lib", "/opt/local/lib"]
 if platform.lower() == "darwin":
     homebrew_prefix = getenv("HOMEBREW_PREFIX")
     if not homebrew_prefix:
-        _result = run(['brew', '--prefix'], stderr=DEVNULL, stdout=PIPE, check=False)
+        _result = run(["brew", "--prefix"], stderr=DEVNULL, stdout=PIPE, check=False)
         if not _result.returncode and _result.stdout is not None:
-            homebrew_prefix = _result.stdout.decode('utf-8').rstrip('\n')
+            homebrew_prefix = _result.stdout.decode("utf-8").rstrip("\n")
     if homebrew_prefix:
         homebrew_include = path.join(homebrew_prefix, "include")
         if homebrew_include not in include_dirs:
@@ -31,14 +31,12 @@ if platform.lower() in ("win32", "cygwin"):
     if libheif_path:
         a = path.join(libheif_path, "include")
         if a not in include_dirs:
-            print(f'Adding {a}')
+            print(f"Adding {a}")
             include_dirs.append(a)
         a = path.join(libheif_path, "lib")
         if a not in library_dirs:
-            print(f'Adding {a}')
+            print(f"Adding {a}")
             library_dirs.append(a)
-    else:
-        print(f'Can not find PH_LIBHEIF_PATH')
 if platform.lower() in ("darwin", "win32", "cygwin"):
     project_root = path.dirname(path.dirname(path.abspath(__file__)))
     include_dirs.append(project_root)
@@ -52,6 +50,7 @@ ffibuilder.set_source(
     include_dirs=include_dirs,
     library_dirs=library_dirs,
     libraries=["heif"],
+    extra_link_args=["/VERBOSE:LIB"],
 )
 
 if __name__ == "__main__":
