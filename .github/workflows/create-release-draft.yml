@@ -19,9 +19,9 @@ jobs:
           git clone https://github.com/microsoft/vcpkg
           vcpkg/bootstrap-vcpkg.bat
           vcpkg remove --outdated --recurse
-          vcpkg/vcpkg integrate install
           $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
           vcpkg/vcpkg install libpng libjpeg-turbo freetype tiff libwebp aom libffi libheif
+          vcpkg/vcpkg integrate install
           dir vcpkg/ports/libheif
           dir vcpkg/packages
           dir vcpkg/packages/libheif_x64-windows-static
