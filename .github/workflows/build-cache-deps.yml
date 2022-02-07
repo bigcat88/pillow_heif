@@ -8,15 +8,15 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        cibw_manylinux: [ manylinux2014, musllinux_1_1 ]
+        cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "x86_64", "aarch64" ]
-    name: ${{ matrix.cibw_arch }} • ${{ matrix.cibw_manylinux }}
+    name: ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
     runs-on: ubuntu-latest
     env:
       BUILD_STUFF: "/build-stuff"
       SCRIPTS: "./build_scripts/linux/"
       BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
-      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_manylinux }}
+      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v2
@@ -27,7 +27,7 @@ jobs:
           echo BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh" >> $GITHUB_ENV
 
       - name: manylinux2014 preparations
-        if: matrix.cibw_manylinux == 'manylinux2014'
+        if: matrix.cibw_buildlinux == 'manylinux'
         run: |
           echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
           echo LDCONFIG_ARG="" >> $GITHUB_ENV
@@ -35,7 +35,7 @@ jobs:
           OS_PACKAGES: "wget libtool git-all"
 
       - name: musllinux_1_1 preparations
-        if: matrix.cibw_manylinux == 'musllinux_1_1'
+        if: matrix.cibw_buildlinux == 'musllinux'
         run: |
           echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
           echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
@@ -96,12 +96,11 @@ jobs:
           python3 -m pip install cibuildwheel twine
           cibuildwheel
         env:
-          CIBW_BUILD: "cp38-*"
-          CIBW_ARCHS_LINUX: ${{ matrix.cibw_arch }}
+          CIBW_BUILD: ${{ format('cp38-{0}*', matrix.cibw-arch) }}
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }} LDCONFIG_ARG=${{ env.LDCONFIG_ARG }}
-          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.cibw_manylinux }}
-          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.cibw_manylinux }}
+          #CIBW_ENVIRONMENT_PASS_LINUX
           CIBW_TEST_SKIP: "*"
 
       - name: Check builded wheel
