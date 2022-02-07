@@ -17,10 +17,12 @@ jobs:
       - name: Install dependencies
         run: |
           $Env:VCPKG_DEFAULT_TRIPLET="x64-windows"
-          C:\vcpkg\vcpkg.exe install libpng libjpeg-turbo freetype tiff libheif libwebp
+          C:\vcpkg\vcpkg.exe install libpng libjpeg-turbo freetype tiff libwebp aom libffi libheif
+          dir C:\vcpkg\packages
+          dir C:\vcpkg\packages\libheif
+          set INCLUDE="%INCLUDE%;C:\vcpkg\packages\libheif\source"
+          set LIB="%LIB%;C:\vcpkg\packages\libheif\build"
 
-
-      # VCPKG_INSTALLATION_ROOT
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
@@ -101,7 +103,7 @@ jobs:
 #          echo BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh" >> $GITHUB_ENV
 #          python3 -m pip install cibuildwheel twine
 #
-#      - name: manylinux2014 preparations
+#      - name: manylinux preparations
 #        if: matrix.cibw_buildlinux == 'manylinux'
 #        run: |
 #          echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
@@ -109,7 +111,7 @@ jobs:
 #        env:
 #          OS_PACKAGES: "wget libtool git-all"
 #
-#      - name: musllinux_1_1 preparations
+#      - name: musllinux preparations
 #        if: matrix.cibw_buildlinux == 'musllinux'
 #        run: |
 #          echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
