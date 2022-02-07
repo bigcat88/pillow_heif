@@ -3,12 +3,13 @@
 ![static-analysis](https://github.com/bigcat88/pillow_heif/actions/workflows/static-analysis.yml/badge.svg)
 ![build](https://github.com/bigcat88/pillow_heif/actions/workflows/create-release-draft.yml/badge.svg)
 ![published](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi.yaml/badge.svg)
-![pypi](https://img.shields.io/pypi/v/pillow_heif.svg)
+![style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
 ![PythonVersion](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)
 ![impl](https://img.shields.io/pypi/implementation/pillow_heif)
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pillow-heif)
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads/Month)](https://pepy.tech/project/pillow-heif)
+![pypi](https://img.shields.io/pypi/v/pillow_heif.svg)
 
 ![Mac OS](https://img.shields.io/badge/mac%20os-FCC624?style=for-the-badge&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)

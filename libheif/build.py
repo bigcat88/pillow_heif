@@ -35,6 +35,8 @@ if platform.lower() in ("win32", "cygwin"):
         a = path.join(libheif_path, "lib")
         print(f'Adding {a}')
         library_dirs.append(path.join(libheif_path, a))
+    else:
+        print(f'Can not find PH_LIBHEIF_PATH')
 if platform.lower() in ("darwin", "win32", "cygwin"):
     project_root = path.dirname(path.dirname(path.abspath(__file__)))
     include_dirs.append(project_root)

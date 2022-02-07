@@ -16,7 +16,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          $Env:VCPKG_DEFAULT_TRIPLET="x64-windows"
+          $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
           C:\vcpkg\vcpkg.exe install libpng libjpeg-turbo freetype tiff libwebp aom libffi libheif
           dir C:\vcpkg\packages
           dir C:\vcpkg\packages\libheif_x64-windows
@@ -24,7 +24,6 @@ jobs:
           dir C:\vcpkg\packages\libheif_x64-windows\include\libheif
           dir C:\vcpkg\packages\libheif_x64-windows\lib
           dir C:\vcpkg\packages\libheif_x64-windows\lib\pkgconfig
-          $Env:PH_LIBHEIF_PATH="C:\vcpkg\packages\libheif_x64-windows"
         # $Env:PH_INCLUDE="C:\vcpkg\packages\libheif_x64-windows\include"
         # $Env:PH_LIB="C:\vcpkg\packages\libheif_x64-windows\lib"
 
@@ -36,6 +35,7 @@ jobs:
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
           CIBW_BUILD_VERBOSITY: 1
+          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="C:\vcpkg\packages\libheif_x64-windows"
 
       - name: Check built wheels
         run: twine check wheelhouse/*
