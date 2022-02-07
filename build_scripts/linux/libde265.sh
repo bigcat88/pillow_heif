@@ -13,7 +13,7 @@ else
   && rm -f "$NAME.tar.gz" \
   && cd "$NAME" \
   && ./autogen.sh \
-  && ./configure --disable-sherlock265 --prefix /usr \
+  && ./configure --disable-sherlock265 --disable-encoder --prefix /usr \
   && make -j4
 fi
 if [[ -z "$LDCONFIG_ARG" ]]; then
