@@ -33,7 +33,7 @@ jobs:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BUILD_VERBOSITY: 1
-          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="C:\vcpkg\packages\libheif_x64-windows-static"
+          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="C:\\vcpkg\\packages\\libheif_x64-windows-static"
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
 
@@ -64,8 +64,15 @@ jobs:
 #          python3 -m pip install cibuildwheel twine
 #          cibuildwheel
 #        env:
+#          CIBW_BEFORE_ALL: >
+#            brew install x265 libjpeg libde265 libheif &&
+#            HOMEBREW_PREFIX=$(brew --prefix) &&
+#            REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
 #          CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
 #          CIBW_SKIP: "pp* cp36-*"
+#          CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
+#            DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} &&
+#            DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
 #          CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
 #          CIBW_TEST_COMMAND: "pytest -s {project}"
 #          CIBW_BUILD_VERBOSITY: 1

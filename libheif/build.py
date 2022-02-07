@@ -30,11 +30,13 @@ if platform.lower() in ("win32", "cygwin"):
     libheif_path = getenv("PH_LIBHEIF_PATH")
     if libheif_path:
         a = path.join(libheif_path, "include")
-        print(f'Adding {a}')
-        include_dirs.append(a)
+        if a not in include_dirs:
+            print(f'Adding {a}')
+            include_dirs.append(a)
         a = path.join(libheif_path, "lib")
-        print(f'Adding {a}')
-        library_dirs.append(path.join(libheif_path, a))
+        if a not in library_dirs:
+            print(f'Adding {a}')
+            library_dirs.append(a)
     else:
         print(f'Can not find PH_LIBHEIF_PATH')
 if platform.lower() in ("darwin", "win32", "cygwin"):
