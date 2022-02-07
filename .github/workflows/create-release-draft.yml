@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
-          %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libpng libjpeg-turbo freetype tiff libwebp aom libffi libheif
+          C:\vcpkg\vcpkg.exe install libpng libjpeg-turbo freetype tiff libwebp aom libffi libheif
           dir C:\vcpkg\packages
           dir C:\vcpkg\packages\libheif_x64-windows-static
           dir C:\vcpkg\packages\libheif_x64-windows-static\include
@@ -33,7 +33,7 @@ jobs:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BUILD_VERBOSITY: 1
-          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="%VCPKG_INSTALLATION_ROOT%\packages\libheif_x64-windows-static"
+          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="C:\vcpkg\packages\libheif_x64-windows-static"
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
 
