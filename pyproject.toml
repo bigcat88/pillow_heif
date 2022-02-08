@@ -1,5 +1,5 @@
 [tool.cibuildwheel]
-before-all = "export SETUPTOOLS_SCM_PRETEND_VERSION=\"0.1.6\""
+environment = "SETUPTOOLS_SCM_PRETEND_VERSION=\"0.1.7\""
 
 [build-system]
 requires = [
@@ -28,6 +28,7 @@ exclude = '''
     \.eggs
   | \.git
   | \.venv
+  | \.vienv
   | \.env
   | \.mypy_cache
   | \.pytest_cache
