@@ -5,18 +5,50 @@
 #    "Pillow>=8.0.1",
 #]
 
+[tool.black]
+line-length = 120
+target-versions = ["py38"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.venv
+  | \.env
+  | \.mypy_cache
+  | \.pytest_cache
+  | __pycache__
+  | build
+  | dist
+  | wheelhouse
+)\
+'''
+
 [tool.flake8]
 max-line-length = 120
-target-version = ['py37']
-ignore=[
+target-version = ["py38"]
+ignore = [
     "C0114",
     "C0115",
     "C0116",
-    "R0401"]
-exclude=[
+    "R0401"
+]
+
+[tool.flake8.per-file-ignores]
+"__init__.py" = "F401"
+exclude = [
+    ".eggs",
     ".git",
     "__pycache__",
-    ".pytest_cache",
-    ".mypy_cache",
+    "build",
+    "dist",
     "wheelhouse",
-    "build"]
+    "*.h",
+    "*.egg"
+]
+
+[tool.mypy]
+ignore_missing_imports = true
+allow_redefinition = true
+warn_no_return = true
+strict_optional = true
