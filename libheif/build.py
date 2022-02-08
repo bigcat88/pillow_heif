@@ -26,17 +26,18 @@ if platform.lower() == "darwin":
         homebrew_library = path.join(homebrew_prefix, "lib")
         if homebrew_library not in library_dirs:
             library_dirs.append(homebrew_library)
+lib_path = ""
 if platform.lower() == "win32":
-    libheif_path = getenv("PH_LIBHEIF_PATH")
+    libheif_path = getenv("PH_LIB_PATH")
     if libheif_path:
         a = path.join(libheif_path, "include")
         if a not in include_dirs:
             print(f"Adding {a}")
             include_dirs.append(a)
-        a = path.join(libheif_path, "lib")
-        if a not in library_dirs:
-            print(f"Adding {a}")
-            library_dirs.append(a)
+        lib_path = path.join(libheif_path, "lib")
+        if lib_path not in library_dirs:
+            print(f"Adding {lib_path}")
+            library_dirs.append(lib_path)
 if platform.lower() in ("darwin", "win32"):
     project_root = path.dirname(path.dirname(path.abspath(__file__)))
     include_dirs.append(project_root)
@@ -51,7 +52,7 @@ ffibuilder.set_source(
     library_dirs=library_dirs,
     libraries=["heif"],
     extra_compile_args=["/d2FH4-"] if platform.lower() == "win32" else [],
-    extra_link_args=["/VERBOSE:LIB"],
+    extra_link_args=["/VERBOSE:LIB", f"/LIBPATH:{lib_path}"],
 )
 
 if __name__ == "__main__":

@@ -49,8 +49,8 @@ jobs:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BUILD_VERBOSITY: 1
-          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows-static-md"
-#          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\packages\\libheif_x64-windows-static"
+          CIBW_ENVIRONMENT_WINDOWS: PH_LIB_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows-static-md"
+#          CIBW_ENVIRONMENT_WINDOWS: PH_LIB_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\packages\\libheif_x64-windows-static"
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
 
