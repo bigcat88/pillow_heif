@@ -19,7 +19,7 @@ jobs:
           git clone https://github.com/microsoft/vcpkg
           vcpkg/bootstrap-vcpkg.bat
           $Env:VCPKG_BUILD_TYPE="release"
-          vcpkg/vcpkg install libheif --triplet=x64-windows
+          vcpkg/vcpkg install aom libheif --triplet=x64-windows
           dir vcpkg/installed/x64-windows
           dir vcpkg/installed/x64-windows/bin
           dir vcpkg/installed/x64-windows/include
