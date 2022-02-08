@@ -8,52 +8,44 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        include:
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_x86_64
-            many-linux: manylinux2014
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_aarch64
-            many-linux: manylinux2014
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_x86_64
-            many-linux: musllinux_1_1
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_aarch64
-            many-linux: musllinux_1_1
-    name: ${{ matrix.cibw-arch }} • ${{ matrix.many-linux }}
-    runs-on: ${{ matrix.runs-on }}
+        cibw_buildlinux: [ manylinux, musllinux ]
+        cibw_arch: [ "x86_64", "aarch64" ]
+    name: ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
+    runs-on: ubuntu-20.04
     env:
       BUILD_STUFF: "/build-stuff"
       SCRIPTS: "./build_scripts/linux/"
-      KEY_HEAD: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ matrix.many-linux }}
+      BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
+      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'aarch64'
+        uses: docker/setup-qemu-action@v1
         with:
-          submodules: recursive
+          platforms: arm64
 
-      - name: manylinux2014 preparations
-        if: matrix.many-linux == 'manylinux2014'
+      - name: Preparations
         run: |
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
-          BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
+          echo BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh" >> $GITHUB_ENV
+          python3 -m pip install cibuildwheel twine
+
+      - name: manylinux2014 preparations
+        if: matrix.cibw_buildlinux == 'manylinux'
+        run: |
           echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
           echo LDCONFIG_ARG="" >> $GITHUB_ENV
         env:
-          BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
           OS_PACKAGES: "wget libtool git-all"
 
       - name: musllinux_1_1 preparations
-        if: matrix.many-linux == 'musllinux_1_1'
+        if: matrix.cibw_buildlinux == 'musllinux'
         run: |
-          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
-          BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
           echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
           echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
         env:
-          BUILD_ORDER: "nasm,aom,libffi,pkg-config,libde265,libheif"
           OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
           freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
 
@@ -63,34 +55,6 @@ jobs:
           key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: pkg-config
-
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: cmake
-
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: autoconf
-
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: automake
-
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: libressl
 
       - uses: actions/cache@v2
         with:
@@ -127,38 +91,17 @@ jobs:
         env:
           NAME: libffi
 
-      - name: Set up QEMU
-        if: matrix.cibw-arch == 'manylinux_aarch64'
-        uses: docker/setup-qemu-action@v1
-        with:
-          platforms: arm64
-
-      - name: x64 linux pre configure enviroment
-        if: matrix.cibw-arch == 'manylinux_x86_64'
-        run: |
-          echo "CIBW_ARCHS=x86_64" >> $GITHUB_ENV
-          echo "CIBW_BUILD=cp38-manylinux_x86_64" >> $GITHUB_ENV
-
-      - name: Arm linux pre configure enviroment
-        if: matrix.cibw-arch == 'manylinux_aarch64'
-        run: |
-          echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
-          echo "CIBW_BUILD=cp38-manylinux_aarch64" >> $GITHUB_ENV
-
       - name: Start test build
-        run: |
-          python3 -m pip install cibuildwheel twine
-          cibuildwheel
+        run: cibuildwheel
         env:
+          CIBW_BUILD: ${{ format('cp38-{0}*', matrix.cibw_buildlinux) }}
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
+          CIBW_BEFORE_ALL_LINUX: ${{ env.BUILD_COMMAND }}
+          CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG
           CIBW_TEST_SKIP: "*"
-          CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
-          CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }} LDCONFIG_ARG=${{ env.LDCONFIG_ARG }}
-          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.many-linux }}
-          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.many-linux }}
 
       - name: Check builded wheel
-        run: |
-          twine check wheelhouse/*
+        run: twine check wheelhouse/*
 
       - name: Upload builded wheel
         uses: actions/upload-artifact@v2
