@@ -6,7 +6,7 @@ on:
 
 jobs:
   wheels_windows:
-    name: Build Windows wheels
+    name: Wheels • windows • x86_64
     runs-on: windows-2019
     env:
       VCPKG_PREFIX: "C:/vcpkg/installed/x64-windows"
@@ -46,7 +46,7 @@ jobs:
         include:
           - runs-on: macos-11
             cibw-arch: macosx_x86_64
-    name: Wheels • ${{ matrix.cibw-arch }}
+    name: Wheels • macosx • x86_64
     runs-on: ${{ matrix.runs-on }}
 
     steps:
