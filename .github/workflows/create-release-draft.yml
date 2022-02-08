@@ -17,19 +17,9 @@ jobs:
       - name: Install dependencies
         run: |
           git clone https://github.com/microsoft/vcpkg
-          $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
-          $Env:VCPKG_TARGET_ARCHITECTURE="x64"
-          $Env:VCPKG_CRT_LINKAGE="static"
-          $Env:VCPKG_LIBRARY_LINKAGE="static"
-          $Env:VCPKG_BUILD_TYPE="release"
           vcpkg/bootstrap-vcpkg.bat
-          vcpkg remove --outdated --recurse
-          $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
-          $Env:VCPKG_TARGET_ARCHITECTURE="x64"
-          $Env:VCPKG_CRT_LINKAGE="static"
-          $Env:VCPKG_LIBRARY_LINKAGE="static"
-          $Env:VCPKG_BUILD_TYPE="release"
-          vcpkg/vcpkg install libheif
+          vcpkg/vcpkg remove --outdated --recurse
+          vcpkg/vcpkg install libheif --triplet=x64-windows-static-md
           vcpkg/vcpkg integrate install
           dir .
           dir vcpkg
