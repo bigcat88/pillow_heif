@@ -13,6 +13,9 @@ with open("libheif/heif.h", "r", encoding="utf-8") as f:
 include_dirs = ["/usr/local/include", "/usr/include", "/opt/local/include"]
 library_dirs = ["/usr/local/lib", "/usr/lib", "/lib", "/opt/local/lib"]
 
+if platform.lower() in ("darwin", "win32"):
+    include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 include_path_prefix = ""
 if platform.lower() == "darwin":
     include_path_prefix = getenv("HOMEBREW_PREFIX")
@@ -29,9 +32,6 @@ if include_path_prefix:
     include_path_prefix_lib = path.join(include_path_prefix, "lib")
     if include_path_prefix_lib not in library_dirs:
         library_dirs.append(include_path_prefix_lib)
-if platform.lower() in ("darwin", "win32"):
-    project_root = path.dirname(path.dirname(path.abspath(__file__)))
-    include_dirs.append(project_root)
 
 
 ffibuilder.set_source(
