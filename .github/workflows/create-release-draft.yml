@@ -40,14 +40,8 @@ jobs:
           if-no-files-found: error
 
   wheels_macos:
-    strategy:
-      fail-fast: true
-      matrix:
-        include:
-          - runs-on: macos-11
-            cibw-arch: macosx_x86_64
     name: Wheels • macosx • x86_64
-    runs-on: ${{ matrix.runs-on }}
+    runs-on: macos-11
 
     steps:
       - uses: actions/checkout@v2
@@ -60,7 +54,7 @@ jobs:
             brew install x265 libjpeg libde265 libheif &&
             HOMEBREW_PREFIX=$(brew --prefix) &&
             REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
-          CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
+          CIBW_BUILD: "*-macosx_x86_64"
           CIBW_SKIP: "pp* cp36-*"
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} &&
