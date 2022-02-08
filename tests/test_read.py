@@ -3,14 +3,10 @@ import io
 import os
 from pathlib import Path
 
-import piexif
 import pytest
 from PIL import Image, ImageCms
 import pillow_heif
 
-
-TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
-os.chdir(TESTS_DIR)
 
 heic_files = list(Path().glob("images/**/*.heic"))
 hif_files = list(Path().glob("images/**/*.HIF"))
@@ -115,34 +111,9 @@ def to_pillow_image(heif_file):
     )
 
 
-@pytest.mark.parametrize(
-    ["folder", "image_name"],
-    [
-        (
-            "Pug",
-            "PUG1.HEIC",
-        ),
-        (
-            "Pug",
-            "PUG2.HEIC",
-        ),
-        (
-            "Pug",
-            "PUG3.HEIC",
-        ),
-        (
-            "hif",
-            "93FG5559.HIF",
-        ),
-        (
-            "hif",
-            "93FG5564.HIF",
-        ),
-    ],
-)
-def test_read_bytes(folder, image_name):
-    fn = os.path.join(TESTS_DIR, "images", folder, image_name)
-    with open(fn, "rb") as f:
+@pytest.mark.parametrize("path", heic_files)
+def test_read_bytes(path):
+    with open(path, "rb") as f:
         d = f.read()
         heif_file = pillow_heif.read(d)
         assert heif_file is not None
@@ -153,37 +124,11 @@ def test_read_bytes(folder, image_name):
         assert len(heif_file.data) > 0
 
 
-@pytest.mark.parametrize(
-    ["folder", "image_name"],
-    [
-        (
-            "Pug",
-            "PUG1.HEIC",
-        ),
-        (
-            "Pug",
-            "PUG2.HEIC",
-        ),
-        (
-            "Pug",
-            "PUG3.HEIC",
-        ),
-        (
-            "hif",
-            "93FG5559.HIF",
-        ),
-        (
-            "hif",
-            "93FG5564.HIF",
-        ),
-    ],
-)
-def test_read_bytearrays(folder, image_name):
-    fn = os.path.join(TESTS_DIR, "images", folder, image_name)
-    with open(fn, "rb") as f:
+@pytest.mark.parametrize("path", heic_files[:2])
+def test_read_bytearrays(path):
+    with open(path, "rb") as f:
         d = f.read()
-        d = bytearray(d)
-        heif_file = pillow_heif.read(d)
+        heif_file = pillow_heif.read(bytearray(d))
         assert heif_file is not None
         width, height = heif_file.size
         assert width > 0
@@ -193,74 +138,33 @@ def test_read_bytearrays(folder, image_name):
 
 
 @pytest.mark.parametrize(
-    ["folder", "image_name"],
+    ["path", "expected_color_profile"],
     [
         (
-            "Pug",
-            "PUG1.HEIC",
-        ),
-        (
-            "Pug",
-            "PUG2.HEIC",
-        ),
-        (
-            "Pug",
-            "PUG3.HEIC",
-        ),
-        (
-            "hif",
-            "93FG5559.HIF",
-        ),
-        (
-            "hif",
-            "93FG5564.HIF",
-        ),
-    ],
-)
-def test_read_exif_metadata(folder, image_name):
-    fn = os.path.join(TESTS_DIR, "images", folder, image_name)
-    heif_file = pillow_heif.read(fn)
-    for m in heif_file.metadata or []:
-        if m["type"] == "Exif":
-            exif_dict = piexif.load(m["data"])
-            assert "0th" in exif_dict
-            assert len(exif_dict["0th"]) > 0
-            assert "Exif" in exif_dict
-            assert len(exif_dict["Exif"]) > 0
-
-
-@pytest.mark.parametrize(
-    ["folder", "image_name", "expected_color_profile"],
-    [
-        (
-            "Pug",
-            "PUG1.HEIC",
+            "Pug/PUG1.HEIC",
             "prof",
         ),
         (
-            "Pug",
-            "PUG2.HEIC",
+            "Pug/PUG2.HEIC",
             "prof",
         ),
         (
-            "Pug",
-            "PUG3.HEIC",
+            "Pug/PUG3.HEIC",
             None,
         ),
         (
-            "hif",
-            "93FG5559.HIF",
+            "hif/93FG5559.HIF",
             "nclx",
         ),
         (
-            "hif",
-            "93FG5564.HIF",
+            "hif/93FG5564.HIF",
             "nclx",
         ),
     ],
 )
-def test_read_icc_color_profile(folder, image_name, expected_color_profile):
-    fn = os.path.join(TESTS_DIR, "images", folder, image_name)
+def test_read_icc_color_profile(path, expected_color_profile):
+    images_dir = os.path.dirname(os.path.abspath(__file__))
+    fn = os.path.join(images_dir, "images", path)
     heif_file = pillow_heif.read(fn)
     if expected_color_profile:
         assert heif_file.color_profile["type"] is expected_color_profile
@@ -275,32 +179,7 @@ def test_read_icc_color_profile(folder, image_name, expected_color_profile):
         ImageCms.getOpenProfile(profile)
 
 
-@pytest.mark.parametrize(
-    ["folder", "image_name"],
-    [
-        (
-            "Pug",
-            "PUG1.HEIC",
-        ),
-        (
-            "Pug",
-            "PUG2.HEIC",
-        ),
-        (
-            "Pug",
-            "PUG3.HEIC",
-        ),
-        (
-            "hif",
-            "93FG5559.HIF",
-        ),
-        (
-            "hif",
-            "93FG5564.HIF",
-        ),
-    ],
-)
-def test_read_pillow_frombytes(folder, image_name):
-    fn = os.path.join(TESTS_DIR, "images", folder, image_name)
-    heif_file = pillow_heif.read(fn)
+@pytest.mark.parametrize("path", heic_files[:2] + hif_files[:2])
+def test_read_pillow_frombytes(path):
+    heif_file = pillow_heif.read(path)
     to_pillow_image(heif_file)
