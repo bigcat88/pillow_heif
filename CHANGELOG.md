@@ -6,16 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Windows binary wheels(IN PROGRESS)
+- Windows binary wheels.
 
 ### Changed
 
-- Using code formatting: black(TODO)
-- Build according to PEP 517(TODO)
+- Using code formatting: black.
+- Started changing build algorithms to support PEP 517.
 
 ### Fixed
 
-- Apple M1 binary wheels now build on Monterey 12.01 instead of latest(12.2).
+- Apple M1 binary wheels now build on Monterey 12.01 instead of 12.2.
 
 ## [0.1.5 - 2022-02-01]
 
@@ -38,7 +38,7 @@ All notable changes to this project will be documented in this file.
 
 - GitHub build Actions now use cache.
 - Added `libaom` library to linux build.
-- More tests. 
+- More tests.
 
 ### Changed
 
@@ -46,7 +46,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Bug with header check when used as plugin for Pillow with `as_opener` function. Thanks for this to @DimonLavron 
+- Bug with header check when used as plugin for Pillow with `as_opener` function. Thanks for this to @DimonLavron
 
 ## [0.1.3 - 2021-10-25]
 

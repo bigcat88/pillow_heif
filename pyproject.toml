@@ -1,15 +1,15 @@
 [tool.cibuildwheel]
-environment = "SETUPTOOLS_SCM_PRETEND_VERSION=\"0.1.7\""
+environment = "SETUPTOOLS_SCM_PRETEND_VERSION=\"0.1.6\""
 
-[build-system]
-requires = [
-    "setuptools>=41.2.0",
-    "setuptools_scm>=6.2",
-    "cffi>=1.14.0",
-]
-build-backend = "setuptools.build_meta"
-
-[metadata]
+#[build-system]
+#requires = [
+#    "setuptools>=41.2.0",
+#    "setuptools_scm>=6.2",
+#    "cffi>=1.14.0",
+#]
+#build-backend = "setuptools.build_meta"
+#
+#[metadata]
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"

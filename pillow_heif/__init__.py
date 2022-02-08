@@ -11,8 +11,4 @@ from .writer import write
 from .error import HeifError
 from .as_opener import register_heif_opener, check_heif_magic
 from ._version import __version__
-from . import _libheif  # pylint: disable=import-self
-
-
-def libheif_version():
-    return _libheif.ffi.string(_libheif.lib.heif_get_version()).decode()
+from ._lib_version import libheif_version

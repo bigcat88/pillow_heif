@@ -3,11 +3,11 @@ from sys import platform
 from subprocess import run, DEVNULL, PIPE
 from cffi import FFI
 
-ffibuilder = FFI()
+ffi = FFI()
 
 
 with open("libheif/heif.h", "r", encoding="utf-8") as f:
-    ffibuilder.cdef(f.read())
+    ffi.cdef(f.read())
 
 
 include_dirs = ["/usr/local/include", "/usr/include", "/opt/local/include"]
@@ -34,8 +34,8 @@ if include_path_prefix:
         library_dirs.append(include_path_prefix_lib)
 
 
-ffibuilder.set_source(
-    "pillow_heif._libheif",
+ffi.set_source(
+    "_heif",
     """
      #include "libheif/heif.h"
     """,
@@ -46,4 +46,4 @@ ffibuilder.set_source(
 )
 
 if __name__ == "__main__":
-    ffibuilder.compile(verbose=True)
+    ffi.compile(verbose=True)

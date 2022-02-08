@@ -35,6 +35,7 @@ Pull requests are greatly welcome.
 
 
 ## Installation from source
+**(NOT RECOMMENDED)**
 
 ##### Linux Ubuntu
 ```
