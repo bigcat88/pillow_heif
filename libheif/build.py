@@ -35,7 +35,7 @@ if include_path_prefix:
 
 
 ffi.set_source(
-    "_heif",
+    "pillow_heif.libheif",
     """
      #include "libheif/heif.h"
     """,

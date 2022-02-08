@@ -3,7 +3,7 @@ import functools
 import pathlib
 import warnings
 
-from _heif import ffi, lib  # pylint: disable=import-error
+from pillow_heif.libheif import ffi, lib  # pylint: disable=import-error
 
 from . import constants as _constants
 from . import error as _error
