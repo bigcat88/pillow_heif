@@ -2,13 +2,6 @@
 from setuptools import setup
 
 
-def get_version():
-    version_file = "pillow_heif/_version.py"
-    with open(version_file) as f:
-        exec(compile(f.read(), version_file, "exec"))
-    return locals()["__version__"]
-
-
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
@@ -20,7 +13,7 @@ with open("requirements_dev.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="pillow_heif",
-    version=get_version(),
+    use_scm_version=True,
     packages=["pillow_heif"],
     install_requires=["cffi>=1.14.0", *install_requirements],
     setup_requires=["cffi>=1.14.0"],

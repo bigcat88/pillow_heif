@@ -10,11 +10,8 @@ from .reader import (
 from .writer import write
 from .error import HeifError
 from .as_opener import register_heif_opener, check_heif_magic
+from ._version import __version__
 from . import _libheif  # pylint: disable=import-self
-from . import _version
-
-
-__version__ = _version.__version__
 
 
 def libheif_version():

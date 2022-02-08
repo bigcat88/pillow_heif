@@ -13,14 +13,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Install requirements
-        run: python3 -m pip install cibuildwheel twine
-
-#          git clone https://github.com/microsoft/vcpkg
-#          vcpkg/bootstrap-vcpkg.bat
-
-      - name: Install dependencies
-        run: vcpkg install aom libheif --triplet=x64-windows
+      - name: Install requirements and dependencies
+        run: |
+          python3 -m pip install cibuildwheel twine
+          vcpkg install aom libheif --triplet=x64-windows
 
       - name: Run cibuildwheel
         run: cibuildwheel
