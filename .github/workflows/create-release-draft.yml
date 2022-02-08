@@ -27,16 +27,16 @@ jobs:
           dir vcpkg/installed/vcpkg
           dir vcpkg/installed/x64-windows
           dir vcpkg/installed/x64-windows/share
-          dir vcpkg/installed/x64-windows-static
-          dir vcpkg/installed/x64-windows-static/include
-          dir vcpkg/installed/x64-windows-static/lib
+          dir vcpkg/installed/x64-windows-static-md
+          dir vcpkg/installed/x64-windows-static-md/include
+          dir vcpkg/installed/x64-windows-static-md/lib
           dir vcpkg/ports/libheif
           dir vcpkg/packages
-          dir vcpkg/packages/libheif_x64-windows-static
-          dir vcpkg/packages/libheif_x64-windows-static/include
-          dir vcpkg/packages/libheif_x64-windows-static/include/libheif
-          dir vcpkg/packages/libheif_x64-windows-static/lib
-          dir vcpkg/packages/libheif_x64-windows-static/lib/pkgconfig
+#          dir vcpkg/packages/libheif_x64-windows-static
+#          dir vcpkg/packages/libheif_x64-windows-static/include
+#          dir vcpkg/packages/libheif_x64-windows-static/include/libheif
+#          dir vcpkg/packages/libheif_x64-windows-static/lib
+#          dir vcpkg/packages/libheif_x64-windows-static/lib/pkgconfig
 #          mkdir build
 #          cd build
 #          cmake .. -A x64 -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
@@ -49,7 +49,7 @@ jobs:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BUILD_VERBOSITY: 1
-          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows-static"
+          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows-static-md"
 #          CIBW_ENVIRONMENT_WINDOWS: PH_LIBHEIF_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\packages\\libheif_x64-windows-static"
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
