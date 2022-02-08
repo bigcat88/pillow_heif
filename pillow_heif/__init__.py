@@ -1,4 +1,5 @@
 # pylint: disable=unused-import
+# pylint: disable=redefined-builtin
 from .constants import *  # pylint: disable=unused-wildcard-import
 from .reader import (
     HeifFile,
@@ -6,7 +7,7 @@ from .reader import (
     check,
     read,
     open,
-)  # pylint: disable=redefined-builtin
+)
 from .writer import write
 from .error import HeifError
 from .as_opener import register_heif_opener, check_heif_magic
