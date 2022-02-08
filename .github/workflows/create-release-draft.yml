@@ -32,7 +32,7 @@ jobs:
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BUILD_VERBOSITY: 1
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-window\\bin"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows\\bin"
           CIBW_ENVIRONMENT_WINDOWS: PH_LIB_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows"
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
