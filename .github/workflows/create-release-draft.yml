@@ -36,8 +36,10 @@ jobs:
           dir vcpkg/installed
           dir vcpkg/installed/vcpkg
           dir vcpkg/installed/x64-windows
+          dir vcpkg/installed/x64-windows/share
           dir vcpkg/installed/x64-windows-static
-          dir vcpkg/installed/libheif_x64-windows-static
+          dir vcpkg/installed/x64-windows-static/include
+          dir vcpkg/installed/x64-windows-static/lib
           dir vcpkg/ports/libheif
           dir vcpkg/packages
           dir vcpkg/packages/libheif_x64-windows-static
