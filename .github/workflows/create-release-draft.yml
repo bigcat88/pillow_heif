@@ -21,14 +21,17 @@ jobs:
           $Env:VCPKG_CRT_LINKAGE="static"
           $Env:VCPKG_LIBRARY_LINKAGE="static"
           $Env:VCPKG_BUILD_TYPE="release"
-          $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
           vcpkg/bootstrap-vcpkg.bat
           vcpkg remove --outdated --recurse
-          vcpkg/vcpkg install libpng libjpeg-turbo freetype libffi libheif
+          vcpkg/vcpkg install libffi libheif
           vcpkg/vcpkg integrate install
           dir .
           dir vcpkg
           dir vcpkg/installed
+          dir vcpkg/installed/vcpkg
+          dir vcpkg/installed/x64-windows
+          dir vcpkg/installed/x64-windows-static
+          dir vcpkg/installed/libheif_x64-windows-static
           dir vcpkg/ports/libheif
           dir vcpkg/packages
           dir vcpkg/packages/libheif_x64-windows-static
@@ -40,6 +43,7 @@ jobs:
 #          cd build
 #          cmake .. -A x64 -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
 #          dir .
+#  $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
 
       - name: Run cibuildwheel
         run: cibuildwheel
