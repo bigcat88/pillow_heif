@@ -24,7 +24,7 @@ jobs:
           $Env:VCPKG_DEFAULT_TRIPLET="x64-windows-static"
           vcpkg/bootstrap-vcpkg.bat
           vcpkg remove --outdated --recurse
-          vcpkg/vcpkg install libpng libjpeg-turbo freetype tiff libffi libheif
+          vcpkg/vcpkg install libpng libjpeg-turbo freetype libffi libheif
           vcpkg/vcpkg integrate install
           dir .
           dir vcpkg
