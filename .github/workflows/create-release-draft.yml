@@ -18,20 +18,24 @@ jobs:
         run: |
           git clone https://github.com/microsoft/vcpkg
           vcpkg/bootstrap-vcpkg.bat
-          vcpkg/vcpkg remove --outdated --recurse
-          vcpkg/vcpkg install libheif --triplet=x64-windows-static-md
-          vcpkg/vcpkg integrate install
-          dir .
-          dir vcpkg
-          dir vcpkg/installed
-          dir vcpkg/installed/vcpkg
+          vcpkg/vcpkg install libheif --triplet=x64-windows
           dir vcpkg/installed/x64-windows
-          dir vcpkg/installed/x64-windows/share
-          dir vcpkg/installed/x64-windows-static-md
-          dir vcpkg/installed/x64-windows-static-md/include
-          dir vcpkg/installed/x64-windows-static-md/lib
-          dir vcpkg/ports/libheif
-          dir vcpkg/packages
+          dir vcpkg/installed/x64-windows/include
+          dir vcpkg/installed/x64-windows/lib
+#          vcpkg/vcpkg remove --outdated --recurse
+#          vcpkg/vcpkg install libheif --triplet=x64-windows-static-md
+#          vcpkg/vcpkg integrate install
+#          dir .
+#          dir vcpkg
+#          dir vcpkg/installed
+#          dir vcpkg/installed/vcpkg
+#          dir vcpkg/installed/x64-windows
+#          dir vcpkg/installed/x64-windows/share
+#          dir vcpkg/installed/x64-windows-static-md
+#          dir vcpkg/installed/x64-windows-static-md/include
+#          dir vcpkg/installed/x64-windows-static-md/lib
+#          dir vcpkg/ports/libheif
+#          dir vcpkg/packages
 #          dir vcpkg/packages/libheif_x64-windows-static
 #          dir vcpkg/packages/libheif_x64-windows-static/include
 #          dir vcpkg/packages/libheif_x64-windows-static/include/libheif
@@ -49,7 +53,8 @@ jobs:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BUILD_VERBOSITY: 1
-          CIBW_ENVIRONMENT_WINDOWS: PH_LIB_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows-static-md"
+          CIBW_ENVIRONMENT_WINDOWS: PH_LIB_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows"
+#          CIBW_ENVIRONMENT_WINDOWS: PH_LIB_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows-static-md"
 #          CIBW_ENVIRONMENT_WINDOWS: PH_LIB_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\packages\\libheif_x64-windows-static"
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"

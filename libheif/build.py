@@ -52,7 +52,7 @@ ffibuilder.set_source(
     library_dirs=library_dirs,
     libraries=["heif"],
     extra_compile_args=["/d2FH4-"] if platform.lower() == "win32" else [],
-    extra_link_args=["/VERBOSE:LIB", f"/LIBPATH:{lib_path}"],
+    extra_link_args=["/VERBOSE:LIB"],
 )
 
 if __name__ == "__main__":
