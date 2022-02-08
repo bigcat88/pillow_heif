@@ -1,0 +1,22 @@
+#[build-system]
+#requires = [
+#    "setuptools>=41.2.0",
+#    "wheel",
+#    "Pillow>=8.0.1",
+#]
+
+[tool.flake8]
+max-line-length = 120
+target-version = ['py37']
+ignore=[
+    "C0114",
+    "C0115",
+    "C0116",
+    "R0401"]
+exclude=[
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    "wheelhouse",
+    "build"]

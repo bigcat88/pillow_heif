@@ -45,15 +45,15 @@ pip install git+https://github.com/bigcat88/pillow_heif.git
 
 ##### MacOS
 ```
-brew install libffi libheif
+brew install x265 libjpeg libde265 libheif
 pip3 install git+https://github.com/bigcat88/pillow_heif.git
 ```
 
 ##### Windows
-With Visual Studio 2015+ C Compiler and SDK installed:
+With vcpkg and Visual Studio 2015+ Tools installed:
 ```
-set INCLUDE=%INCLUDE%;X:\path\to\libheif\source
-set LIB=%LIB%;X:\path\to\libheif\build
+vcpkg install aom libheif --triplet=x64-windows
+VCPKG_PREFIX="path_to:vcpkg/installed/x64-windows"
 pip install git+https://github.com/bigcat88/pillow_heif.git
 ```
 
@@ -76,8 +76,8 @@ import pillow_heif
 
 heif_file = pillow_heif.read('ABC.HEIC')
 image = Image.frombytes(
-    heif_file.mode, 
-    heif_file.size, 
+    heif_file.mode,
+    heif_file.size,
     heif_file.data,
     'raw',
     heif_file.mode,

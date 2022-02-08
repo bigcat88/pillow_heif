@@ -34,12 +34,15 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     classifiers=[
+        "Intended Audience :: Developers",
+        "Topic :: Software Development",
+        "Topic :: Multimedia :: Graphics",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: Implementation :: CPython",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux",
-        "Operating System :: Microsoft :: Windows"
+        "Operating System :: Microsoft :: Windows",
     ],
     license="Apache-2.0",
     keywords="pillow heif heic avif",
