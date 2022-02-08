@@ -8,6 +8,9 @@ jobs:
   wheels_windows:
     name: Build Windows wheels
     runs-on: windows-2019
+    env:
+      VCPKG_PREFIX: "C:/vcpkg/installed/x64-windows"
+      VCPKG_BUILD_TYPE: release
 
     steps:
       - uses: actions/checkout@v2
@@ -15,25 +18,16 @@ jobs:
         run: python3 -m pip install cibuildwheel twine
 
       - name: Install dependencies
-        run: |
-          git clone https://github.com/microsoft/vcpkg
-          vcpkg/bootstrap-vcpkg.bat
-          $Env:VCPKG_BUILD_TYPE="release"
-          vcpkg/vcpkg install aom libheif --triplet=x64-windows
-          dir vcpkg/installed/x64-windows
-          dir vcpkg/installed/x64-windows/bin
-          dir vcpkg/installed/x64-windows/include
-          dir vcpkg/installed/x64-windows/lib
+        run: vcpkg install aom libheif --triplet=x64-windows
 
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
-          CIBW_BUILD: "cp37-*"   # cp38-* cp39-* cp310-*"
+          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BUILD_VERBOSITY: 1
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows\\bin"
-          CIBW_ENVIRONMENT_WINDOWS: PH_LIB_PATH="D:\\a\\pillow_heif\\pillow_heif\\vcpkg\\installed\\x64-windows"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path $VCPKG_PREFIX/bin"
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
           CIBW_TEST_SKIP: "*"
