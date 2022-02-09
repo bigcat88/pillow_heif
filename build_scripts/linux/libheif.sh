@@ -12,7 +12,7 @@ else
   && tar xf "$NAME.tar.gz" -C "$NAME" --strip-components 1 \
   && rm -f "$NAME.tar.gz" \
   && cd "$NAME" \
-  && ./configure --prefix /usr \
+  && ./configure --prefix /usr --disable-examples \
   && make -j4
 fi
 if [[ -z "$LDCONFIG_ARG" ]]; then

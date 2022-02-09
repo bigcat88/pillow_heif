@@ -5,102 +5,66 @@ on:
   workflow_dispatch:
 
 jobs:
-#  wheels_windows:
-#    strategy:
-#      fail-fast: true
-#      matrix:
-#        include:
-#          - runs-on: windows-latest
-#            cibw-arch: AMD64
-#    name: Wheels • ${{ matrix.cibw-arch }}
-#    runs-on: ${{ matrix.runs-on }}
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#        with:
-#          submodules: recursive
-#
-#      - name: Setup Python
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: '3.8'
-#          architecture: ${{ matrix.python-arch }}
-#
-#      - name: Install requirements
-#        run: |
-#          python -m pip install cibuildwheel twine
-#
-#      - name: macOS x64 pre configure enviroment
-#        if: matrix.cibw-arch == 'AMD64'
-#        shell: cmd
-#        run: |
-#          echo "CIBW_ARCHS_WINDOWS=AMD64" >> $GITHUB_ENV
-#
-#      - name: Configure cibuildwheel
-#        shell: cmd
-#        run: |
-#          echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
-#          echo "CIBW_SKIP=pp*" >> $GITHUB_ENV
-#          echo "CIBW_TEST_REQUIRES=pytest piexif" >> $GITHUB_ENV
-#          echo "CIBW_TEST_COMMAND=pytest {project}" >> $GITHUB_ENV
-#
-#      - name: Run cibuildwheel
-#        run: |
-#          cibuildwheel
-#
-#      - name: Check built wheels
-#        run: |
-#          twine check wheelhouse/*
-#
-#      - name: Upload built wheels
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
-#
-  wheels_macos:
-    strategy:
-      fail-fast: true
-      matrix:
-        include:
-          - runs-on: macos-11
-            cibw-arch: macosx_x86_64
-    name: Wheels • ${{ matrix.cibw-arch }}
-    runs-on: ${{ matrix.runs-on }}
+  wheels_windows:
+    name: Wheels • windows • x86_64
+    runs-on: windows-2019
+    env:
+      VCPKG_PREFIX: "C:/vcpkg/installed/x64-windows"
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-          architecture: ${{ matrix.python-arch }}
-
-      - name: macOS x64 pre configure enviroment
-        if: matrix.cibw-arch == 'macosx_x86_64'
+      - uses: actions/checkout@v2
+      - name: Install requirements and dependencies
         run: |
-          echo "CIBW_ARCHS_MACOS=x86_64" >> $GITHUB_ENV
+          python3 -m pip install cibuildwheel twine
+          vcpkg install aom libheif --triplet=x64-windows
 
+      - name: Run cibuildwheel
+        run: cibuildwheel
+        env:
+          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
+          CIBW_ARCHS_WINDOWS: "AMD64"
+          CIBW_BUILD_VERBOSITY: 1
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
+          CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
+          CIBW_TEST_COMMAND_WINDOWS: "pytest -s {project}"
+
+      - name: Check built wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  wheels_macos:
+    name: Wheels • macosx • x86_64
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v2
       - name: Run cibuildwheel
         run: |
           python3 -m pip install cibuildwheel twine
           cibuildwheel
         env:
-          CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
+          CIBW_BEFORE_BUILD_MACOS: >
+            brew install x265 libjpeg libde265 libheif &&
+            HOMEBREW_PREFIX=$(brew --prefix) &&
+            REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
+          CIBW_BUILD: "*-macosx_x86_64"
           CIBW_SKIP: "pp* cp36-*"
-          CIBW_TEST_COMMAND: "pytest {project}"
-          CIBW_TEST_REQUIRES: "pytest piexif"
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
+            DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} &&
+            DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
+          CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
+          CIBW_TEST_COMMAND: "pytest -s {project}"
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Check built wheels
-        run: |
-          twine check wheelhouse/*
+        run: twine check wheelhouse/*
 
       - name: Upload built wheels
         uses: actions/upload-artifact@v2
@@ -113,52 +77,44 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        include:
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_x86_64
-            many-linux: manylinux2014
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_aarch64
-            many-linux: manylinux2014
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_x86_64
-            many-linux: musllinux_1_1
-          - runs-on: ubuntu-latest
-            cibw-arch: manylinux_aarch64
-            many-linux: musllinux_1_1
-    name: Wheels • ${{ matrix.cibw-arch }} • ${{ matrix.many-linux }}
-    runs-on: ${{ matrix.runs-on }}
+        cibw_buildlinux: [ manylinux, musllinux ]
+        cibw_arch: [ "x86_64", "aarch64" ]
+    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }}
+    runs-on: ubuntu-20.04
     env:
       BUILD_STUFF: "/build-stuff"
       SCRIPTS: "./build_scripts/linux/"
-      KEY_HEAD: ${{ matrix.runs-on }}-${{ matrix.cibw-arch }}-${{ matrix.many-linux }}
+      BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
+      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'aarch64'
+        uses: docker/setup-qemu-action@v1
         with:
-          submodules: recursive
+          platforms: arm64
 
-      - name: manylinux2014 preparations
-        if: matrix.many-linux == 'manylinux2014'
+      - name: Preparations
         run: |
           sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
-          BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
+          echo BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh" >> $GITHUB_ENV
+          python3 -m pip install cibuildwheel twine
+
+      - name: manylinux preparations
+        if: matrix.cibw_buildlinux == 'manylinux'
+        run: |
           echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
           echo LDCONFIG_ARG="" >> $GITHUB_ENV
         env:
-          BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
           OS_PACKAGES: "wget libtool git-all"
 
-      - name: musllinux_1_1 preparations
-        if: matrix.many-linux == 'musllinux_1_1'
+      - name: musllinux preparations
+        if: matrix.cibw_buildlinux == 'musllinux'
         run: |
-          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
-          BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh"
           echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
           echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
         env:
-          BUILD_ORDER: "nasm,aom,libffi,pkg-config,libde265,libheif"
           OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
           freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
 
@@ -168,34 +124,6 @@ jobs:
           key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
         env:
           NAME: pkg-config
-
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: cmake
-
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: autoconf
-
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: automake
-
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: libressl
 
       - uses: actions/cache@v2
         with:
@@ -232,40 +160,19 @@ jobs:
         env:
           NAME: libffi
 
-      - name: Set up QEMU
-        if: matrix.cibw-arch == 'manylinux_aarch64'
-        uses: docker/setup-qemu-action@v1
-        with:
-          platforms: arm64
-
-      - name: x64 linux pre configure enviroment
-        if: matrix.cibw-arch == 'manylinux_x86_64'
-        run: |
-          echo "CIBW_ARCHS=x86_64" >> $GITHUB_ENV
-
-      - name: Arm linux pre configure enviroment
-        if: matrix.cibw-arch == 'manylinux_aarch64'
-        run: |
-          echo "CIBW_ARCHS=aarch64" >> $GITHUB_ENV
-
       - name: Run cibuildwheel
-        run: |
-          python -m pip install cibuildwheel twine
-          cibuildwheel
+        run: cibuildwheel
         env:
-          CIBW_BEFORE_ALL: ${{ env.BUILD_COMMAND }}
-          CIBW_ENVIRONMENT: BUILD_STUFF=${{ env.BUILD_STUFF }} LDCONFIG_ARG=${{ env.LDCONFIG_ARG }}
-          CIBW_BUILD: ${{ format('*-{0}', matrix.cibw-arch) }}
-          CIBW_SKIP: "pp* cp36-*"
-          CIBW_TEST_COMMAND: "pytest {project}"
-          CIBW_TEST_REQUIRES: "pytest piexif"
-          CIBW_BUILD_VERBOSITY: 1
-          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.many-linux }}
-          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.many-linux }}
+          CIBW_BUILD: ${{ format('cp3*-{0}*', matrix.cibw_buildlinux) }}
+          CIBW_SKIP: "cp36-*"
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
+          CIBW_BEFORE_BUILD_LINUX: ${{ env.BUILD_COMMAND }}
+          CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG
+          CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
+          CIBW_TEST_COMMAND: "pytest -s {project}"
 
       - name: Check builded wheels
-        run: |
-          twine check wheelhouse/*
+        run: twine check wheelhouse/*
 
       - name: Upload builded wheels
         uses: actions/upload-artifact@v2
@@ -276,31 +183,20 @@ jobs:
 
   sdist:
     name: Source distribution
-    runs-on: macos-latest
+    runs-on: macos-11
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-
+      - uses: actions/checkout@v2
       - name: Install requirements
-        run: |
-          pip3 install --user check-manifest twine
+        run: pip3 install --user check-manifest twine
+
+      - name: Run check-manifest
+        run: python3 -m check_manifest
 
       - name: Install brew
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           brew install libffi libheif
-
-      - name: Run check-manifest
-        run: |
-          python3 -m check_manifest
 
       - name: Build sdist
         run: |
@@ -309,12 +205,9 @@ jobs:
           python3 -m pip install -r requirements_dev.txt
           python3 -m build --sdist --outdir wheelhouse
 
-      - name: Install from sdist
+      - name: Install and check sdist
         run: |
           pip3 install --user wheelhouse/*.tar.gz
-
-      - name: Check sdist
-        run: |
           python3 -m twine check wheelhouse/*
 
       - name: Upload sdist
@@ -325,13 +218,11 @@ jobs:
 
   draft_release:
     needs: [sdist, wheels_linux, wheels_macos]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     name: Build and create release
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
+      - uses: actions/checkout@v2
       - name: Get release info
         id: get_release_info
         run: |
