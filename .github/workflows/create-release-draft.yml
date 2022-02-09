@@ -114,6 +114,7 @@ jobs:
         run: |
           echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
           echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
+          echo CIBW_SKIP="cp36-*" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
           freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
@@ -164,7 +165,7 @@ jobs:
         run: cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}*', matrix.cibw_buildlinux) }}
-          CIBW_SKIP: ""   # "cp36-*"
+#          CIBW_SKIP: "cp36-*"
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_BUILD_LINUX: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG
