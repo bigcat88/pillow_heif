@@ -23,7 +23,7 @@ jobs:
         env:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
-          CIBW_BUILD_VERBOSITY: 1
+          CIBW_BUILD_VERBOSITY: 2
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
@@ -61,7 +61,7 @@ jobs:
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
           CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
-          CIBW_BUILD_VERBOSITY: 1
+          CIBW_BUILD_VERBOSITY: 2
 
       - name: Check built wheels
         run: twine check wheelhouse/*
@@ -164,12 +164,13 @@ jobs:
         run: cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}*', matrix.cibw_buildlinux) }}
-          CIBW_SKIP: "cp36-*"
+          CIBW_SKIP: ""   # "cp36-*"
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_BUILD_LINUX: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG
           CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
+          CIBW_BUILD_VERBOSITY: 2
 
       - name: Check builded wheels
         run: twine check wheelhouse/*
