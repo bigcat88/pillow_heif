@@ -2,16 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.6 - 2022-02-9]
+## [0.1.6 - 2022-02-10]
 
 ### Added
 
 - Windows binary wheels.
+- More tests to `as_opener` module.
+- Code coverage.
+- Linux binary wheels for Python 3.6(this is last release for Python 3.6).
 
 ### Changed
 
 - Using code formatting: black.
 - Started changing build algorithms to support PEP 517.
+- Speed optimizations and adjustments to `as_opener` module.
+- Added `info[icc_profile]` to `HeifImageFile` when use it as `as_opener`.
+- Adjustments to `reader` module:
+- `pillow_heif.open` is in process of deprecation, still available, but you should use `open_heif` instead.
+- `pillow_heif.check` is in process of deprecation, still available, but you should use `check_heif` instead.
+- `pillow_heif.read` is in process of deprecation, still available, but you should use `read_heif` instead.
 
 ### Fixed
 

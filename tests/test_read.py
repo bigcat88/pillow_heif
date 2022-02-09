@@ -1,6 +1,6 @@
-import gc
-import io
 import os
+from gc import collect
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -8,15 +8,17 @@ from PIL import Image, ImageCms
 import pillow_heif
 
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 heic_files = list(Path().glob("images/**/*.heic"))
-hif_files = list(Path().glob("images/**/*.HIF"))
+hif_files = list(Path().glob("images/**/*.hif"))
 avif_files = list(Path().glob("images/**/*.avif"))
 heif_files = heic_files + hif_files + avif_files
+heif_files_wih_profiles = [heif_file for heif_file in heif_files if heif_file.name.find("__") != -1]
 
 
 @pytest.mark.parametrize("path", heif_files)
 def test_check(path):
-    filetype = pillow_heif.check(path)
+    filetype = pillow_heif.check_heif(path)
     assert pillow_heif.heif_filetype_no != filetype
     unsupported_list = [
         "rally_burst.heic",
@@ -58,12 +60,12 @@ def test_get_bytes_from_bytes(path):
 
 @pytest.fixture(scope="session", params=heif_files)
 def heif_file(request):
-    return pillow_heif.read(request.param)
+    return pillow_heif.read_heif(request.param)
 
 
 @pytest.mark.parametrize("path", heif_files)
 def test_open_and_load(path):
-    heif_file = pillow_heif.open(path)
+    heif_file = pillow_heif.open_heif(path)
     assert heif_file.size[0] > 0
     assert heif_file.size[1] > 0
     assert heif_file.has_alpha is not None
@@ -73,7 +75,7 @@ def test_open_and_load(path):
     assert heif_file.data is None
     assert heif_file.stride is None
 
-    if path.name == "arrow.heic":
+    if path.name == "arrow__prof.heic":
         assert heif_file.metadata
         assert heif_file.color_profile
 
@@ -94,9 +96,9 @@ def test_open_and_load(path):
 @pytest.mark.parametrize("path", heif_files)
 def test_open_and_load_data_not_collected(path):
     data = path.read_bytes()
-    heif_file = pillow_heif.open(data)
+    heif_file = pillow_heif.open_heif(data)
     data = None  # heif_file.load() should work even if there is no other refs to the source data.
-    gc.collect()
+    collect()
     heif_file.load()
 
 
@@ -115,7 +117,7 @@ def to_pillow_image(heif_file):
 def test_read_bytes(path):
     with open(path, "rb") as f:
         d = f.read()
-        heif_file = pillow_heif.read(d)
+        heif_file = pillow_heif.read_heif(d)
         assert heif_file is not None
         width, height = heif_file.size
         assert width > 0
@@ -128,7 +130,7 @@ def test_read_bytes(path):
 def test_read_bytearrays(path):
     with open(path, "rb") as f:
         d = f.read()
-        heif_file = pillow_heif.read(bytearray(d))
+        heif_file = pillow_heif.read_heif(bytearray(d))
         assert heif_file is not None
         width, height = heif_file.size
         assert width > 0
@@ -137,49 +139,25 @@ def test_read_bytearrays(path):
         assert len(heif_file.data) > 0
 
 
-@pytest.mark.parametrize(
-    ["path", "expected_color_profile"],
-    [
-        (
-            "Pug/PUG1.HEIC",
-            "prof",
-        ),
-        (
-            "Pug/PUG2.HEIC",
-            "prof",
-        ),
-        (
-            "Pug/PUG3.HEIC",
-            None,
-        ),
-        (
-            "hif/93FG5559.HIF",
-            "nclx",
-        ),
-        (
-            "hif/93FG5564.HIF",
-            "nclx",
-        ),
-    ],
-)
-def test_read_icc_color_profile(path, expected_color_profile):
-    images_dir = os.path.dirname(os.path.abspath(__file__))
-    fn = os.path.join(images_dir, "images", path)
-    heif_file = pillow_heif.read(fn)
-    if expected_color_profile:
-        assert heif_file.color_profile["type"] is expected_color_profile
-    else:
+@pytest.mark.parametrize("path", heif_files_wih_profiles)
+def test_read_icc_color_profile(path):
+    heif_file = pillow_heif.read_heif(path)
+    i = path.name.find("__")
+    expected_color_profile = path.name[i + 2 : i + 6]
+    if expected_color_profile == "none":
         assert heif_file.color_profile is None
         return
-    if heif_file.color_profile and heif_file.color_profile["type"] in [
+    else:
+        assert heif_file.color_profile["type"] == expected_color_profile
+    if heif_file.color_profile["type"] in [
         "prof",
         "rICC",
     ]:
-        profile = io.BytesIO(heif_file.color_profile["data"])
+        profile = BytesIO(heif_file.color_profile["data"])
         ImageCms.getOpenProfile(profile)
 
 
 @pytest.mark.parametrize("path", heic_files[:2] + hif_files[:2])
 def test_read_pillow_frombytes(path):
-    heif_file = pillow_heif.read(path)
+    heif_file = pillow_heif.read_heif(path)
     to_pillow_image(heif_file)

@@ -5,7 +5,7 @@
 ![published](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi.yaml/badge.svg)
 ![style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
-![PythonVersion](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)
+![PythonVersion](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)
 ![impl](https://img.shields.io/pypi/implementation/pillow_heif)
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pillow-heif)
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads/Month)](https://pepy.tech/project/pillow-heif)
@@ -20,7 +20,7 @@ A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`.
 
 Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - x64/aarch64.
 
-#### **_Version 0.1.4 was last to support Python 3.6 and still can be used._**
+#### **_Version 0.1.6 was last to support Python 3.6._**
 
 Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
 The idea for this plugin came from Christian Bianciotto's [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener).

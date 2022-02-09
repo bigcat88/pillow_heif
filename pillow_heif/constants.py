@@ -1,3 +1,8 @@
+"""
+Constants from libheif that is used by pillow_heif.
+"""
+
+
 # pylint: disable=invalid-name
 heif_chroma_undefined = 99
 heif_chroma_monochrome = 0

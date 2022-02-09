@@ -1,7 +1,12 @@
+"""
+Functions and classes for heif images to read.
+"""
+
+
 import builtins
-import functools
 import pathlib
-import warnings
+from functools import partial
+from warnings import warn
 
 from pillow_heif.libheif import ffi, lib  # pylint: disable=import-error, no-name-in-module
 
@@ -67,24 +72,38 @@ class UndecodedHeifFile(HeifFile):
             del self._heif_handle
 
 
-def check(fp):
+def check_heif(fp):
     magic = _get_bytes(fp, 12)
-    filetype_check = lib.heif_check_filetype(magic, len(magic))
-    return filetype_check
+    return lib.heif_check_filetype(magic, len(magic))
 
 
-def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # pylint: disable=redefined-builtin
+def check(fp):
+    warn("Function `check` is deprecated, use `check_heif` instead.")
+    return check_heif(fp)
+
+
+def open_heif(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
     d = _get_bytes(fp)
     return _read_heif_bytes(d, apply_transformations, convert_hdr_to_8bit)
 
 
-def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
-    heif_file = open(
+def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
+    warn("Function `open` is deprecated, use `open_heif` instead.")
+    return open_heif(fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit)
+
+
+def read_heif(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
+    heif_file = open_heif(
         fp,
         apply_transformations=apply_transformations,
         convert_hdr_to_8bit=convert_hdr_to_8bit,
     )
     return heif_file.load()
+
+
+def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
+    warn("Function `read` is deprecated, use `read_heif` instead.")
+    return read_heif(fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit)
 
 
 def _get_bytes(fp, length=None):
@@ -117,7 +136,7 @@ def _read_heif_bytes(d, apply_transformations, convert_hdr_to_8bit):
     if filetype_check == heif_filetype_no:
         raise ValueError("Input is not a HEIF/AVIF file")
     if filetype_check == heif_filetype_yes_unsupported:
-        warnings.warn("Input is an unsupported HEIF/AVIF file type - trying anyway!")
+        warn("Input is an unsupported HEIF/AVIF file type - trying anyway!")
     brand = lib.heif_main_brand(magic, len(magic))
     ctx = lib.heif_context_alloc()
     collect = _keep_refs(lib.heif_context_free, data=d)
@@ -274,7 +293,7 @@ def _read_heif_image(handle, heif_file):
     stride = p_stride[0]
     data_length = heif_file.size[1] * stride
     # Release image as soon as no references to p_data left
-    collect = functools.partial(_release_heif_image, img)
+    collect = partial(_release_heif_image, img)
     p_data = ffi.gc(p_data, collect, size=data_length)
     # ffi.buffer obligatory keeps a reference to p_data
     data_buffer = ffi.buffer(p_data, data_length)

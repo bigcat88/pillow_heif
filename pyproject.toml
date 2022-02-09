@@ -7,6 +7,10 @@
 #
 #[metadata]
 
+[tool.coverage.run]
+cover_pylib = true
+include = ["*/pillow_heif/*"]
+
 [tool.black]
 line-length = 120
 target-versions = ["py38"]
