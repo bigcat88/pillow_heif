@@ -214,8 +214,8 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          coverage run --rcfile=pillow_heif/pyproject.toml -m pytest pillow_heif
-          coverage xml --data-file=../.coverage
+          cd .. && coverage run --rcfile=pillow_heif/pyproject.toml -m pytest pillow_heif
+          cd - && coverage xml --data-file=../.coverage
 
       - name: Upload report to Codecov
         uses: codecov/codecov-action@v2
