@@ -157,7 +157,7 @@ def test_read_icc_color_profile(path):
         ImageCms.getOpenProfile(profile)
 
 
-@pytest.mark.parametrize("path", heic_files[:2] + hif_files[:2])
+@pytest.mark.parametrize("path", heic_files[:2] + hif_files[:2] + avif_files[:2])
 def test_read_pillow_frombytes(path):
     heif_file = pillow_heif.read_heif(path)
     to_pillow_image(heif_file)

@@ -78,8 +78,8 @@ def check_heif(fp):
 
 
 def check(fp):
-    warn("Function `check` is deprecated, use `check_heif` instead.")
-    return check_heif(fp)
+    warn("Function `check` is deprecated, use `check_heif` instead.")  # pragma: no cover
+    return check_heif(fp)  # pragma: no cover
 
 
 def open_heif(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
@@ -88,8 +88,10 @@ def open_heif(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
 
 
 def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
-    warn("Function `open` is deprecated, use `open_heif` instead.")
-    return open_heif(fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit)
+    warn("Function `open` is deprecated, use `open_heif` instead.")  # pragma: no cover
+    return open_heif(
+        fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
+    )  # pragma: no cover
 
 
 def read_heif(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
@@ -102,8 +104,10 @@ def read_heif(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
 
 
 def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
-    warn("Function `read` is deprecated, use `read_heif` instead.")
-    return read_heif(fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit)
+    warn("Function `read` is deprecated, use `read_heif` instead.")  # pragma: no cover
+    return read_heif(
+        fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
+    )  # pragma: no cover
 
 
 def _get_bytes(fp, length=None):

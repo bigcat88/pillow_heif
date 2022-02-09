@@ -13,7 +13,10 @@ include = ["*/pillow_heif/*"]
 omit = ["*/tests/*"]
 
 [tool.coverage.report]
-exclude_lines = ["raise NotImplementedError"]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError"
+]
 
 [tool.black]
 line-length = 120

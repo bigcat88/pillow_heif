@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 from unittest import mock
 import pytest
-from PIL import Image, ImageCms
+from PIL import Image, ImageCms, UnidentifiedImageError
 from pillow_heif import register_heif_opener, check_heif_magic, HeifError
 
 
@@ -39,7 +39,7 @@ def test_icc_profile(path):
     if path.name.find("__none") == -1 and path.name.find("__nclx") == -1:
         assert image.info.get("icc_profile") is not None
         icc_profile = BytesIO(image.info["icc_profile"])
-        icc_profile = ImageCms.getOpenProfile(icc_profile)
+        ImageCms.getOpenProfile(icc_profile)
     else:
         assert "icc_profile" not in image.info
 
@@ -57,7 +57,7 @@ def test_check_heif_magic_wrong():
 
 
 @mock.patch("pillow_heif.open_heif", side_effect=HeifError(code=1, subcode=2, message="Error"))
-def test_open_image_error(open_mock):
+def test_open_image_error(open_heif_mock):
     with pytest.raises(IOError):
         Image.open("invalid_path.heic")
 
@@ -71,3 +71,8 @@ def test_register_heif_opener(
     register_heif_opener()
     register_open_mock.assert_called_once()
     register_mime_mock.assert_called_once()
+
+
+def test_invalid_data():
+    with pytest.raises(UnidentifiedImageError):
+        Image.open("images/Pug/invalid__fail.HEIC")
