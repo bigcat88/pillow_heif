@@ -10,6 +10,7 @@
 [tool.coverage.run]
 cover_pylib = true
 include = ["*/pillow_heif/*"]
+omit = ["*/tests/*", " writer.py"]
 
 [tool.black]
 line-length = 120

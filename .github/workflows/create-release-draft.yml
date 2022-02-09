@@ -214,15 +214,8 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          ls -la .
-          cd ..
-          ls -la .
           coverage run --rcfile=pillow_heif/pyproject.toml -m pytest pillow_heif
-          ls -la .
-          cd -
-          ls -la .
           coverage xml --data-file=../.coverage
-          ls -la .
 
       - name: Upload report to Codecov
         uses: codecov/codecov-action@v2

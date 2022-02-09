@@ -161,3 +161,16 @@ def test_read_icc_color_profile(path):
 def test_read_pillow_frombytes(path):
     heif_file = pillow_heif.read_heif(path)
     to_pillow_image(heif_file)
+
+
+def test_invalid_data():
+    data = b"    ftypheic    0000"
+    try:
+        pillow_heif.read_heif(data)
+    except pillow_heif.HeifError as exception:
+        assert str(exception).find("Invalid input: No 'ftyp' box") != -1
+        assert str(repr(exception)).startswith("HeifError")
+
+
+def test_lib_version():
+    assert pillow_heif.libheif_version() == "1.12.0"
