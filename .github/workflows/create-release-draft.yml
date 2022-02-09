@@ -212,15 +212,15 @@ jobs:
           pip3 install --user wheelhouse/*.tar.gz
           python3 -m twine check wheelhouse/*
 
-# --data-file=PATH_TO_PROJECT
+# PATH_TO_PROJECT
       - name: Generate coverage report
         run: |
           ls -la .
           cd ..
           ls -la .
-          coverage run --rcfile=pillow_heif_clone/pyproject.toml -m pytest
+          coverage run --rcfile=pillow_heif/pyproject.toml -m pytest pillow_heif
           ls -la .
-          coverage xml
+          coverage xml --data-file=pillow_heif/coverage.xml
           cd -
           ls -la .
 
