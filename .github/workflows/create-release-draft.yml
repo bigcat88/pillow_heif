@@ -212,7 +212,6 @@ jobs:
           pip3 install --user wheelhouse/*.tar.gz
           python3 -m twine check wheelhouse/*
 
-# PATH_TO_PROJECT
       - name: Generate coverage report
         run: |
           ls -la .
@@ -220,9 +219,9 @@ jobs:
           ls -la .
           coverage run --rcfile=pillow_heif/pyproject.toml -m pytest pillow_heif
           ls -la .
-          coverage xml --data-file=pillow_heif/coverage.xml
-          ls -la .
           cd -
+          ls -la .
+          coverage xml --data-file=pillow_heif/coverage.xml
           ls -la .
 
       - name: Upload report to Codecov
