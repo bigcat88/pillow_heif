@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.6 - 2022-02-10]
+## [0.1.6 - 2022-02-9]
 
 ### Added
 
@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Apple M1 binary wheels now build on Monterey 12.01 instead of 12.2.
+- HeifError exception class now calls `super` to init all values.
 
 ## [0.1.5 - 2022-02-01]
 

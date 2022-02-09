@@ -27,12 +27,7 @@ heif_channel_interleaved = 10
 
 
 def encode_fourcc(fourcc):
-    encoded = (
-        ord(fourcc[0]) << 24
-        | ord(fourcc[1]) << 16
-        | ord(fourcc[2]) << 8
-        | ord(fourcc[3])
-    )
+    encoded = ord(fourcc[0]) << 24 | ord(fourcc[1]) << 16 | ord(fourcc[2]) << 8 | ord(fourcc[3])
     return encoded
 
 

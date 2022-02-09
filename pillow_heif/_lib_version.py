@@ -1,4 +1,4 @@
-from pillow_heif.libheif import ffi, lib  # pylint: disable=import-error
+from pillow_heif.libheif import ffi, lib  # pylint: disable=import-error, no-name-in-module
 
 
 def libheif_version():
