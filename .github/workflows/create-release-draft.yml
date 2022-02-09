@@ -184,6 +184,7 @@ jobs:
           if-no-files-found: error
 
   sdist:
+    needs: [wheels_linux, wheels_macos]
     name: Source distribution
     runs-on: macos-11
 
@@ -231,7 +232,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   draft_release:
-    needs: [sdist, wheels_linux, wheels_macos]
+    needs: [sdist]
     runs-on: ubuntu-20.04
     name: Build and create release
 
