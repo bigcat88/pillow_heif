@@ -85,6 +85,7 @@ def test_open_and_load(path):
     assert heif_file.stride is not None
     assert len(heif_file.data) >= heif_file.stride * heif_file.size[1]
     assert type(heif_file.data[:100]) == bytes
+    assert str(heif_file).find("HeifFile") != -1
 
     # Subsequent calls don't change anything
     res = heif_file.load()
@@ -170,6 +171,11 @@ def test_invalid_data():
     except pillow_heif.HeifError as exception:
         assert str(exception).find("Invalid input: No 'ftyp' box") != -1
         assert str(repr(exception)).startswith("HeifError")
+
+
+def test_invalid_file():
+    with pytest.raises(ValueError):
+        pillow_heif.read_heif(os.path.abspath(__file__))
 
 
 def test_lib_version():

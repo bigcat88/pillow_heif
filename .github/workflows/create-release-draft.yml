@@ -5,183 +5,183 @@ on:
   workflow_dispatch:
 
 jobs:
-#  wheels_windows:
-#    name: Wheels • windows • x86_64
-#    runs-on: windows-2019
-#    env:
-#      VCPKG_PREFIX: "C:/vcpkg/installed/x64-windows"
-#
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Install requirements and dependencies
-#        run: |
-#          python3 -m pip install cibuildwheel twine
-#          vcpkg install aom libheif --triplet=x64-windows
-#
-#      - name: Run cibuildwheel
-#        run: cibuildwheel
-#        env:
-#          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
-#          CIBW_ARCHS_WINDOWS: "AMD64"
-#          CIBW_BUILD_VERBOSITY: 2
-#          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-#          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
-#          CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
-#          CIBW_TEST_COMMAND_WINDOWS: "pytest -s {project}"
-#
-#      - name: Check built wheels
-#        run: twine check wheelhouse/*
-#
-#      - name: Upload built wheels
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
-#
-#  wheels_macos:
-#    name: Wheels • macosx • x86_64
-#    runs-on: macos-11
-#
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Run cibuildwheel
-#        run: |
-#          python3 -m pip install cibuildwheel twine
-#          cibuildwheel
-#        env:
-#          CIBW_BEFORE_BUILD_MACOS: >
-#            brew install x265 libjpeg libde265 libheif &&
-#            HOMEBREW_PREFIX=$(brew --prefix) &&
-#            REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
-#          CIBW_BUILD: "*-macosx_x86_64"
-#          CIBW_SKIP: "pp* cp36-*"
-#          CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
-#            DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} &&
-#            DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
-#          CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
-#          CIBW_TEST_COMMAND: "pytest -s {project}"
-#          CIBW_BUILD_VERBOSITY: 2
-#
-#      - name: Check built wheels
-#        run: twine check wheelhouse/*
-#
-#      - name: Upload built wheels
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
-#
-#  wheels_linux:
-#    strategy:
-#      fail-fast: true
-#      matrix:
-#        cibw_buildlinux: [ manylinux, musllinux ]
-#        cibw_arch: [ "x86_64", "aarch64" ]
-#    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }}
-#    runs-on: ubuntu-20.04
-#    env:
-#      BUILD_STUFF: "/build-stuff"
-#      SCRIPTS: "./build_scripts/linux/"
-#      BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
-#      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
-#
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Set up QEMU
-#        if: matrix.cibw_arch == 'aarch64'
-#        uses: docker/setup-qemu-action@v1
-#        with:
-#          platforms: arm64
-#
-#      - name: Preparations
-#        run: |
-#          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
-#          echo BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh" >> $GITHUB_ENV
-#          python3 -m pip install cibuildwheel twine
-#
-#      - name: manylinux preparations
-#        if: matrix.cibw_buildlinux == 'manylinux'
-#        run: |
-#          echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
-#          echo LDCONFIG_ARG="" >> $GITHUB_ENV
-#        env:
-#          OS_PACKAGES: "wget libtool git-all"
-#
-#      - name: musllinux preparations
-#        if: matrix.cibw_buildlinux == 'musllinux'
-#        run: |
-#          echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
-#          echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
-#          echo CIBW_SKIP="cp36-*" >> $GITHUB_ENV
-#        env:
-#          OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
-#          freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: pkg-config
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: nasm
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: libde265
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: aom
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: libheif
-#
-#      - uses: actions/cache@v2
-#        with:
-#          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-#        env:
-#          NAME: libffi
-#
-#      - name: Run cibuildwheel
-#        run: cibuildwheel
-#        env:
-#          CIBW_BUILD: ${{ format('cp3*-{0}*', matrix.cibw_buildlinux) }}
-##          CIBW_SKIP: "cp36-*"
-#          CIBW_ARCHS: ${{ matrix.cibw_arch }}
-#          CIBW_BEFORE_BUILD_LINUX: ${{ env.BUILD_COMMAND }}
-#          CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG
-#          CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
-#          CIBW_TEST_COMMAND: "pytest -s {project}"
-#          CIBW_BUILD_VERBOSITY: 2
-#
-#      - name: Check builded wheels
-#        run: twine check wheelhouse/*
-#
-#      - name: Upload builded wheels
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
+  wheels_windows:
+    name: Wheels • windows • x86_64
+    runs-on: windows-2019
+    env:
+      VCPKG_PREFIX: "C:/vcpkg/installed/x64-windows"
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install requirements and dependencies
+        run: |
+          python3 -m pip install cibuildwheel twine
+          vcpkg install aom libheif --triplet=x64-windows
+
+      - name: Run cibuildwheel
+        run: cibuildwheel
+        env:
+          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
+          CIBW_ARCHS_WINDOWS: "AMD64"
+          CIBW_BUILD_VERBOSITY: 2
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
+          CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
+          CIBW_TEST_COMMAND_WINDOWS: "pytest -s {project}"
+
+      - name: Check built wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  wheels_macos:
+    name: Wheels • macosx • x86_64
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run cibuildwheel
+        run: |
+          python3 -m pip install cibuildwheel twine
+          cibuildwheel
+        env:
+          CIBW_BEFORE_BUILD_MACOS: >
+            brew install x265 libjpeg libde265 libheif &&
+            HOMEBREW_PREFIX=$(brew --prefix) &&
+            REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
+          CIBW_BUILD: "*-macosx_x86_64"
+          CIBW_SKIP: "pp* cp36-*"
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
+            DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} &&
+            DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
+          CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
+          CIBW_TEST_COMMAND: "pytest -s {project}"
+          CIBW_BUILD_VERBOSITY: 2
+
+      - name: Check built wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  wheels_linux:
+    strategy:
+      fail-fast: true
+      matrix:
+        cibw_buildlinux: [ manylinux, musllinux ]
+        cibw_arch: [ "x86_64", "aarch64" ]
+    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }}
+    runs-on: ubuntu-20.04
+    env:
+      BUILD_STUFF: "/build-stuff"
+      SCRIPTS: "./build_scripts/linux/"
+      BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
+      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'aarch64'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: arm64
+
+      - name: Preparations
+        run: |
+          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
+          echo BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh" >> $GITHUB_ENV
+          python3 -m pip install cibuildwheel twine
+
+      - name: manylinux preparations
+        if: matrix.cibw_buildlinux == 'manylinux'
+        run: |
+          echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
+          echo LDCONFIG_ARG="" >> $GITHUB_ENV
+        env:
+          OS_PACKAGES: "wget libtool git-all"
+
+      - name: musllinux preparations
+        if: matrix.cibw_buildlinux == 'musllinux'
+        run: |
+          echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
+          echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
+          echo CIBW_SKIP="cp36-*" >> $GITHUB_ENV
+        env:
+          OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
+          freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+        env:
+          NAME: pkg-config
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+        env:
+          NAME: nasm
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+        env:
+          NAME: libde265
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+        env:
+          NAME: aom
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+        env:
+          NAME: libheif
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
+        env:
+          NAME: libffi
+
+      - name: Run cibuildwheel
+        run: cibuildwheel
+        env:
+          CIBW_BUILD: ${{ format('cp3*-{0}*', matrix.cibw_buildlinux) }}
+#          CIBW_SKIP: "cp36-*"
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
+          CIBW_BEFORE_BUILD_LINUX: ${{ env.BUILD_COMMAND }}
+          CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG
+          CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
+          CIBW_TEST_COMMAND: "pytest -s {project}"
+          CIBW_BUILD_VERBOSITY: 2
+
+      - name: Check builded wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload builded wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
 
   sdist:
     name: Source distribution
@@ -230,43 +230,43 @@ jobs:
           name: wheels
           path: wheelhouse/*.tar.gz
 
-#  draft_release:
-#    needs: [sdist, wheels_linux, wheels_macos]
-#    runs-on: ubuntu-20.04
-#    name: Build and create release
-#
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Get release info
-#        id: get_release_info
-#        run: |
-#          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
-#          echo "::set-output name=version::v${RELEASE_VERSION}"
-#          echo "::set-output name=tag::v${RELEASE_VERSION}"
-#          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
-#          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
-#          if [ "$CHANGELOG" == "" ]; then
-#            echo "changelog is empty!"
-#            exit 1
-#          fi
-#          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-#          echo "$CHANGELOG" >> $GITHUB_ENV
-#          echo "EOF" >> $GITHUB_ENV
-#
-#      - name: Collect sdist and wheels
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: wheels
-#          path: wheelhouse
-#
-#      - name: Create release draft
-#        uses: ncipollo/release-action@v1.8.8
-#        with:
-#          name: ${{ steps.get_release_info.outputs.version }}
-#          tag: ${{ steps.get_release_info.outputs.tag }}
-#          commit: ${{ github.ref }}
-#          draft: true
-#          body: ${{ env.CHANGELOG }}
-#          artifacts: wheelhouse/*
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          artifactErrorsFailBuild: true
+  draft_release:
+    needs: [sdist, wheels_linux, wheels_macos]
+    runs-on: ubuntu-20.04
+    name: Build and create release
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get release info
+        id: get_release_info
+        run: |
+          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
+          echo "::set-output name=version::v${RELEASE_VERSION}"
+          echo "::set-output name=tag::v${RELEASE_VERSION}"
+          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
+          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
+          if [ "$CHANGELOG" == "" ]; then
+            echo "changelog is empty!"
+            exit 1
+          fi
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Collect sdist and wheels
+        uses: actions/download-artifact@v2
+        with:
+          name: wheels
+          path: wheelhouse
+
+      - name: Create release draft
+        uses: ncipollo/release-action@v1.8.8
+        with:
+          name: ${{ steps.get_release_info.outputs.version }}
+          tag: ${{ steps.get_release_info.outputs.tag }}
+          commit: ${{ github.ref }}
+          draft: true
+          body: ${{ env.CHANGELOG }}
+          artifacts: wheelhouse/*
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifactErrorsFailBuild: true
