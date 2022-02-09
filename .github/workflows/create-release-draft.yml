@@ -221,13 +221,15 @@ jobs:
           ls -la .
           cd -
           ls -la .
-          coverage xml --data-file=pillow_heif/coverage.xml
+          coverage xml --data-file=../.coverage
           ls -la .
 
       - name: Upload report to Codecov
         uses: codecov/codecov-action@v2
         with:
           file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
 
       - name: Upload sdist
         uses: actions/upload-artifact@v2
