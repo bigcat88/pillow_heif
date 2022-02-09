@@ -221,13 +221,14 @@ jobs:
           coverage run --rcfile=pillow_heif/pyproject.toml -m pytest pillow_heif
           ls -la .
           coverage xml --data-file=pillow_heif/coverage.xml
+          ls -la .
           cd -
           ls -la .
 
       - name: Upload report to Codecov
         uses: codecov/codecov-action@v2
         with:
-          file: ../coverage.xml
+          file: ./coverage.xml
 
       - name: Upload sdist
         uses: actions/upload-artifact@v2
