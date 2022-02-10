@@ -75,4 +75,4 @@ def test_register_heif_opener(
 
 def test_invalid_data():
     with pytest.raises(UnidentifiedImageError):
-        Image.open("images/Pug/invalid__fail.HEIC")
+        Image.open("images/Pug/invalid__fail.heic")
