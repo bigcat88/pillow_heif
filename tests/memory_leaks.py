@@ -19,15 +19,15 @@ def open_image(image_path):
 
 
 def perform_opens():
-    image_path = path.join(TESTS_DIR, 'images', 'Pug', 'PUG1.HEIC')
+    image_path = path.join(TESTS_DIR, "images", "Pug", "PUG1.HEIC")
     for _ in range(10):
         open_image(image_path)
 
 
-'''To test for memory leaks run 2 times, changing value in perform_opens from '10' to 2-5k, and compare results.'''
-if __name__ == '__main__':
+"""To test for memory leaks run 2 times, changing value in perform_opens from '10' to 2-5k, and compare results."""
+if __name__ == "__main__":
     tr = tracker.SummaryTracker()
     perform_opens()
-    sleep(60*3)
+    sleep(60 * 3)
     garbage_collect()
     tr.print_diff()

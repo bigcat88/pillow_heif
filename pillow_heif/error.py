@@ -1,5 +1,11 @@
+"""
+Exceptions that can be raised during library calls.
+"""
+
+
 class HeifError(Exception):
-    def __init__(self, *, code, subcode, message):  # pylint: disable=super-init-not-called
+    def __init__(self, *, code, subcode, message):
+        super().__init__(code, subcode, message)
         self.code = code
         self.subcode = subcode
         self.message = message

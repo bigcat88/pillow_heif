@@ -1,3 +1,8 @@
+"""
+Constants from libheif that is used by pillow_heif.
+"""
+
+
 # pylint: disable=invalid-name
 heif_chroma_undefined = 99
 heif_chroma_monochrome = 0
@@ -27,12 +32,7 @@ heif_channel_interleaved = 10
 
 
 def encode_fourcc(fourcc):
-    encoded = (
-        ord(fourcc[0]) << 24
-        | ord(fourcc[1]) << 16
-        | ord(fourcc[2]) << 8
-        | ord(fourcc[3])
-    )
+    encoded = ord(fourcc[0]) << 24 | ord(fourcc[1]) << 16 | ord(fourcc[2]) << 8 | ord(fourcc[3])
     return encoded
 
 

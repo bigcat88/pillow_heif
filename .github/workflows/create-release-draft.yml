@@ -23,7 +23,7 @@ jobs:
         env:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
-          CIBW_BUILD_VERBOSITY: 1
+          CIBW_BUILD_VERBOSITY: 2
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
           CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
@@ -61,7 +61,7 @@ jobs:
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
           CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
-          CIBW_BUILD_VERBOSITY: 1
+          CIBW_BUILD_VERBOSITY: 2
 
       - name: Check built wheels
         run: twine check wheelhouse/*
@@ -114,6 +114,7 @@ jobs:
         run: |
           echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
           echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
+          echo CIBW_SKIP="cp36-*" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
           freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
@@ -164,12 +165,13 @@ jobs:
         run: cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}*', matrix.cibw_buildlinux) }}
-          CIBW_SKIP: "cp36-*"
+#          CIBW_SKIP: "cp36-*"
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_BUILD_LINUX: ${{ env.BUILD_COMMAND }}
           CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG
           CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
+          CIBW_BUILD_VERBOSITY: 2
 
       - name: Check builded wheels
         run: twine check wheelhouse/*
@@ -182,6 +184,7 @@ jobs:
           if-no-files-found: error
 
   sdist:
+    needs: [wheels_linux, wheels_macos]
     name: Source distribution
     runs-on: macos-11
 
@@ -196,7 +199,7 @@ jobs:
       - name: Install brew
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install libffi libheif
+          brew install x265 libjpeg libde265 libheif
 
       - name: Build sdist
         run: |
@@ -210,6 +213,18 @@ jobs:
           pip3 install --user wheelhouse/*.tar.gz
           python3 -m twine check wheelhouse/*
 
+      - name: Generate coverage report
+        run: |
+          cd .. && coverage run --rcfile=pillow_heif/pyproject.toml -m pytest pillow_heif
+          cd - && coverage xml --data-file=../.coverage
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
+
       - name: Upload sdist
         uses: actions/upload-artifact@v2
         with:
@@ -217,7 +232,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   draft_release:
-    needs: [sdist, wheels_linux, wheels_macos]
+    needs: [sdist]
     runs-on: ubuntu-20.04
     name: Build and create release
 
