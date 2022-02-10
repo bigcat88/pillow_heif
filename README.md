@@ -55,7 +55,7 @@ pip3 install git+https://github.com/bigcat88/pillow_heif.git
 
 ##### Windows
 With vcpkg and Visual Studio 2015+ Tools installed:
-```cmd
+```bat
 vcpkg install aom libheif --triplet=x64-windows
 VCPKG_PREFIX="path_to:vcpkg/installed/x64-windows"
 pip install git+https://github.com/bigcat88/pillow_heif.git
