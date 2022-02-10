@@ -9,12 +9,11 @@ import pillow_heif
 
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-heic_files = list(Path().glob("images/**/*.heic"))
-hif_files = list(Path().glob("images/**/*.hif"))
-avif_files = list(Path().glob("images/**/*.avif"))
-all_heif_files = heic_files + hif_files + avif_files
-heif_files = [heif_file for heif_file in all_heif_files if heif_file.name.find("__fail") != -1]
-heif_files_wih_profiles = [heif_file for heif_file in heif_files if heif_file.name.find("__") != -1]
+heic_files = [f for f in list(Path().glob("images/**/*.heic")) if f.name.find("__fail") == -1]
+hif_files = [f for f in list(Path().glob("images/**/*.hif")) if f.name.find("__fail") == -1]
+avif_files = [f for f in list(Path().glob("images/**/*.avif")) if f.name.find("__fail") == -1]
+heif_files = heic_files + hif_files + avif_files
+heif_files_wih_profiles = [f for f in heif_files if f.name.find("__") != -1]
 
 
 @pytest.mark.parametrize("path", heif_files)

@@ -3,6 +3,7 @@
 ![static-analysis](https://github.com/bigcat88/pillow_heif/actions/workflows/static-analysis.yml/badge.svg)
 ![build](https://github.com/bigcat88/pillow_heif/actions/workflows/create-release-draft.yml/badge.svg)
 ![published](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi.yaml/badge.svg)
+[![codecov](https://codecov.io/gh/bigcat88/pillow_heif/branch/master/graph/badge.svg?token=JY64F2OL6V)](https://codecov.io/gh/bigcat88/pillow_heif)
 ![style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
 ![PythonVersion](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)
