@@ -19,7 +19,7 @@ class HeifImageFile(ImageFile.ImageFile):
         try:
             heif_file = open_heif(self.fp)
         except HeifError as e:
-            raise SyntaxError(str(e))
+            raise SyntaxError(str(e)) from None
         if getattr(self, "_exclusive_fp", False):
             if hasattr(self, "fp") and self.fp is not None:
                 self.fp.close()

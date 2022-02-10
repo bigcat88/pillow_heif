@@ -87,7 +87,7 @@ def open_heif(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
     return _read_heif_bytes(d, apply_transformations, convert_hdr_to_8bit)
 
 
-def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
+def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # pylint: disable=redefined-builtin
     warn("Function `open` is deprecated, use `open_heif` instead.", DeprecationWarning)
     return open_heif(
         fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
