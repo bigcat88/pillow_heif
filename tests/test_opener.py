@@ -13,7 +13,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 heic_files = list(Path().glob("images/**/*.heic"))
 hif_files = list(Path().glob("images/**/*.hif"))
 avif_files = list(Path().glob("images/**/*.avif"))
-heif_files = heic_files + hif_files + avif_files
+all_heif_files = heic_files + hif_files + avif_files
+heif_files = [heif_file for heif_file in all_heif_files if heif_file.name.find("__fail") != -1]
 heif_exif_test = [heif_file for heif_file in heif_files if heif_file.name.find("__") != -1]
 
 
