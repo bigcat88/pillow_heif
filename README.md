@@ -32,35 +32,37 @@ Pull requests are greatly welcome.
 ## Installation
 (Recommended) From [PyPi](https://pypi.org/project/pillow-heif/):
 
-```pip install pillow_heif```
+```bash
+pip install pillow_heif
+```
 
 
 ## Installation from source
 **(NOT RECOMMENDED)**(Until finished integration of PEP 517)
 
 ##### Linux Ubuntu
-```
+```bash
 sudo add-apt-repository ppa:strukturag/libheif
 apt install libffi libheif-dev libde265-dev
 pip install git+https://github.com/bigcat88/pillow_heif.git
 ```
 
 ##### MacOS
-```
+```bash
 brew install x265 libjpeg libde265 libheif
 pip3 install git+https://github.com/bigcat88/pillow_heif.git
 ```
 
 ##### Windows
 With vcpkg and Visual Studio 2015+ Tools installed:
-```
+```cmd
 vcpkg install aom libheif --triplet=x64-windows
 VCPKG_PREFIX="path_to:vcpkg/installed/x64-windows"
 pip install git+https://github.com/bigcat88/pillow_heif.git
 ```
 
 ## Example of use as opener
-```
+```python3
 from PIL import Image
 from pillow_heif import register_heif_opener
 
@@ -71,8 +73,7 @@ image.load()
 ```
 
 ## Example of use as reader
-
-```
+```python3
 from PIL import Image
 import pillow_heif
 
@@ -84,7 +85,7 @@ image = Image.frombytes(
     'raw',
     heif_file.mode,
     heif_file.stride,
-    )
+)
 ```
 
 ### The HeifFile object
