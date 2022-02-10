@@ -3,19 +3,25 @@
 ![static-analysis](https://github.com/bigcat88/pillow_heif/actions/workflows/static-analysis.yml/badge.svg)
 ![build](https://github.com/bigcat88/pillow_heif/actions/workflows/create-release-draft.yml/badge.svg)
 ![published](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi.yaml/badge.svg)
-![pypi](https://img.shields.io/pypi/v/pillow_heif.svg)
+[![codecov](https://codecov.io/gh/bigcat88/pillow_heif/branch/master/graph/badge.svg?token=JY64F2OL6V)](https://codecov.io/gh/bigcat88/pillow_heif)
+![style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
-![PythonVersion](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)
+![PythonVersion](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)
 ![impl](https://img.shields.io/pypi/implementation/pillow_heif)
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pillow-heif)
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads/Month)](https://pepy.tech/project/pillow-heif)
+![pypi](https://img.shields.io/pypi/v/pillow_heif.svg)
 
+![Mac OS](https://img.shields.io/badge/mac%20os-FCC624?style=for-the-badge&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
 A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`.
 
-Binary wheels for Python 3.7-3.10. Linux(+Alpine)/macOS - x64/aarch64(+M1).
+Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - x64/aarch64.
 
-Version 0.1.4 was last to support Python 3.6 and still can be used.
+#### **_Version 0.1.6 was last to support Python 3.6._**
 
 Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
 The idea for this plugin came from Christian Bianciotto's [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener).
@@ -24,15 +30,13 @@ Many thanks!
 Pull requests are greatly welcome.
 
 ## Installation
-(Recommended) You can install pillow_heif from [PyPi](https://pypi.org/project/pillow-heif/):
+(Recommended) From [PyPi](https://pypi.org/project/pillow-heif/):
 
 ```pip install pillow_heif```
 
-or from [GitHub](https://github.com/bigcat88/pillow_heif):
-
-```pip install https://github.com/bigcat88/pillow_heif/archive/master.zip```
 
 ## Installation from source
+**(NOT RECOMMENDED)**(Until finished integration of PEP 517)
 
 ##### Linux Ubuntu
 ```
@@ -43,16 +47,15 @@ pip install git+https://github.com/bigcat88/pillow_heif.git
 
 ##### MacOS
 ```
-brew install libffi libheif
+brew install x265 libjpeg libde265 libheif
 pip3 install git+https://github.com/bigcat88/pillow_heif.git
 ```
 
-
 ##### Windows
-With Visual Studio 2015+ C Compiler and SDK installed:
+With vcpkg and Visual Studio 2015+ Tools installed:
 ```
-set INCLUDE=%INCLUDE%;X:\path\to\libheif\source
-set LIB=%LIB%;X:\path\to\libheif\build
+vcpkg install aom libheif --triplet=x64-windows
+VCPKG_PREFIX="path_to:vcpkg/installed/x64-windows"
 pip install git+https://github.com/bigcat88/pillow_heif.git
 ```
 
@@ -75,8 +78,8 @@ import pillow_heif
 
 heif_file = pillow_heif.read('ABC.HEIC')
 image = Image.frombytes(
-    heif_file.mode, 
-    heif_file.size, 
+    heif_file.mode,
+    heif_file.size,
     heif_file.data,
     'raw',
     heif_file.mode,
