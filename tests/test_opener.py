@@ -20,8 +20,16 @@ heif_exif_test = [f for f in heif_files if f.name.find("__") != -1]
 @pytest.mark.parametrize("path", heic_files[:6] + hif_files[:6] + avif_files[:6])
 def test_open_image(path):
     image = Image.open(path)
-    image.load()
     assert image is not None
+
+
+@pytest.mark.parametrize("path", heic_files[:2] + hif_files[:2] + avif_files[:2])
+def test_verify(path):
+    image = Image.open(path)
+    image.verify()
+    assert image is not None
+    assert not getattr(image, "fp", None)
+    image.load()
 
 
 @pytest.mark.parametrize("path", heif_exif_test)
