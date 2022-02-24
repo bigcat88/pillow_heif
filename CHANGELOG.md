@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.7 - 2022-02-26]
+
+### Added
+
+- Something
+
+### Changed
+
+- Something
+
+### Fixed
+
+- Fixed `AttributeError` when calling verify. Thanks @zijian-hu for reporting
+
 ## [0.1.6 - 2022-02-10]
 
 ### Added
