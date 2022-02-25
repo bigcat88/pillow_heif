@@ -34,7 +34,7 @@ if platform.lower() in ("darwin", "win32"):
     include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 ffi.set_source(
-    "pillow_heif.libheif",
+    "_pillow_heif_cffi",
     """
      #include "libheif/heif.h"
     """,

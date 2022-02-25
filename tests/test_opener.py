@@ -72,13 +72,16 @@ def test_open_image_error(open_heif_mock):
 
 @mock.patch.object(Image, "register_open")
 @mock.patch.object(Image, "register_mime")
+@mock.patch.object(Image, "register_extensions")
 def test_register_heif_opener(
     register_open_mock,
     register_mime_mock,
+    register_extensions,
 ):
     register_heif_opener()
     register_open_mock.assert_called_once()
-    register_mime_mock.assert_called_once()
+    assert register_mime_mock.call_count == 2
+    register_extensions.assert_called_once()
 
 
 def test_invalid_data():

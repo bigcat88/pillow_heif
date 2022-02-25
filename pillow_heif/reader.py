@@ -8,7 +8,7 @@ import pathlib
 from functools import partial
 from warnings import warn
 
-from pillow_heif.libheif import ffi, lib  # pylint: disable=import-error, no-name-in-module
+from _pillow_heif_cffi import ffi, lib
 
 from .constants import (
     heif_filetype_no,
