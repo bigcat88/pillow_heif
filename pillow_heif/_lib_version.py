@@ -3,7 +3,7 @@ Functions to get version of embedded C libraries.
 """
 
 
-from _pillow_heif_cffi import ffi, lib  # pylint: disable=import-error, no-name-in-module
+from _pillow_heif_cffi import ffi, lib
 
 
 def libheif_version():
