@@ -28,7 +28,7 @@ def download_file(url: str, out_path: str) -> bool:
             break
     for _ in range(2):
         try:
-            run(["curl", url, "-o", out_path], timeout=90, stderr=DEVNULL, stdout=DEVNULL, check=True)
+            run(["curl", "-L", url, "-o", out_path], timeout=90, stderr=DEVNULL, stdout=DEVNULL, check=True)
             return True
         except (CalledProcessError, TimeoutExpired):
             break
