@@ -40,7 +40,7 @@ jobs:
           python3 -m pip install install pylint
 
       - name: Install from source
-        run: sudo -H pip3 install .
+        run: sudo -H pip3 -v install .
 
       - name: Pylint Analysis
         run: pylint --rcfile .pylintrc pillow_heif
