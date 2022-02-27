@@ -32,11 +32,9 @@ jobs:
     name: Analysis & Coverage
     steps:
       - uses: actions/checkout@v2
-
-      - name: pylint installation
+      - name: Prepare for source install
         run: |
           sudo -H python3 -m pip install --upgrade pip
-          sudo -H python3 -m pip install --upgrade cmake
           sudo -H python3 -m pip install -r requirements.txt
           sudo -H python3 -m pip install -r requirements_dev.txt
           sudo -H python3 -m pip install install pylint
