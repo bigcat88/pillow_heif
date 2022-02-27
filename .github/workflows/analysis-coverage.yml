@@ -1,4 +1,4 @@
-name: Static analysis
+name: Analysis & Coverage
 
 on:
   pull_request:
@@ -23,16 +23,17 @@ jobs:
           py_src:
             - 'pillow_heif/*.py'
 
-  python-pylint:
+  build-analysis:
     needs: [changes]
     if: ${{ needs.changes.outputs.py_src == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    name: PyLint
+    name: Analysis & Coverage
     steps:
       - uses: actions/checkout@v2
 
       - name: pylint installation
         run: |
+          sudo apt update
           sudo apt install -y libtool git-all
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
@@ -56,7 +57,7 @@ jobs:
           verbose: true
 
   checks_status:
-    needs: [changes, python-pylint]
+    needs: [changes, build-analysis]
     if: ${{ always() && contains(needs.*.result, 'success') && !(contains(needs.*.result, 'failure')) }}
     name: checks-status
     runs-on: ubuntu-latest
