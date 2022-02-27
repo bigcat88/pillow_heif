@@ -12,7 +12,6 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Making code cleaner, renamed cffi module from `pillow_heif.libheif` to `_pillow_heif_cffi`.
-- libaom bumped from 3.2.0 to 3.3.0
 
 ### Fixed
 

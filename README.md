@@ -46,7 +46,6 @@ _Instructions are valid for version 0.1.7+_
 ```bash
 sudo apt install -y python3-pip libtool git
 sudo -H python3 -m pip install --upgrade pip
-sudo -H python3 -m pip install --upgrade cmake
 sudo -H python3 -m pip install --no-binary pillow_heif
 ```
 
@@ -56,11 +55,12 @@ sudo -H python3 -m pip install --no-binary pillow_heif
 sudo apk --no-cache add py3-pip python3-dev libtool git gcc m4 perl alpine-sdk
 sudo apk --no-cache add freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev
 sudo -H python3 -m pip install --upgrade pip
-sudo -H python3 -m pip install --upgrade cmake
 sudo -H python3 -m pip install --no-binary pillow_heif
 ```
 
 See [build_libs_linux](https://github.com/bigcat88/pillow_heif/blob/master/libheif/build_libs.py) for additional info what will happen during installing from source.
+
+Note: building for first time will take a long time, if in your system `cmake` version `>=3.22.1` is not present.
 
 
 ### MacOS

@@ -93,8 +93,12 @@ def build_tool_linux(url: str, name: str, min_version: str, configure_args: list
     else:
         download_extract_to(url, _tool_path)
         chdir(_tool_path)
-        run(["./configure"] + configure_args, check=True)
-        run("make -j4".split(), check=True)
+        if name == "cmake":
+            run("./bootstrap -- -DCMAKE_USE_OPENSSL=OFF".split(), check=True)
+            run("make".split(), check=True)
+        else:
+            run(["./configure"] + configure_args, check=True)
+            run("make -j4".split(), check=True)
     run("make install".split(), check=True)
     run(f"{name} --version".split(), check=True)
     if chmod:
@@ -110,6 +114,7 @@ def build_tools_linux(musl: bool = False):
     )
     build_tool_linux("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.71")
     build_tool_linux("https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.gz", "automake", "1.16.5")
+    build_tool_linux("https://github.com/Kitware/CMake/archive/refs/tags/v3.22.1.tar.gz", "cmake", "3.22.1")
     build_tool_linux(
         "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz", "nasm", "2.15.05", chmod="774"
     )
@@ -119,10 +124,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
     _lib_path = path.join(BUILD_DIR_LIBS, name)
     if path.isdir(_lib_path):
         print(f"Cache found for {name}", flush=True)
-        if name == "aom":
-            chdir(path.join(_lib_path, "build"))
-        else:
-            chdir(_lib_path)
+        chdir(path.join(_lib_path, "build")) if name == "aom" else chdir(_lib_path)
     else:
         if name == "aom":
             _build_path = path.join(_lib_path, "build")
@@ -135,10 +137,11 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         if name == "libde265":
             run(["./autogen.sh"], check=True)
         if name == "aom":
-            cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0"
-            cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1"
-            cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom"
-            run(f"cmake {cmake_args}", shell=True, check=True)
+            cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0".split()
+            cmake_args += "-DENABLE_TESTDATA=0".split()
+            cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
+            cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
+            run(["cmake"] + cmake_args, check=True)
         else:
             configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
             if name == "libde265":
@@ -168,7 +171,7 @@ def build_libs_linux():
             "libde265",
             _is_musllinux,
         )
-        build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.3.0.tar.gz", "aom", _is_musllinux)
+        build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.2.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
             "libheif",
