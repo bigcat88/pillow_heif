@@ -57,11 +57,12 @@ sudo -H python3 -m pip install --upgrade pip
 sudo -H pip3 install --no-binary pillow_heif
 ```
 
-See [build_libs_linux]() for additional info what will happen during installing from source.
+See [build_libs_linux](https://github.com/andrey18106/pillow_heif/blob/master/libheif/build_libs.py) for additional info what will happen during installing from source.
 
 
 ### MacOS
 ```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 brew install x265 libjpeg libde265 libheif
 pip3 install --no-binary pillow_heif
 ```
