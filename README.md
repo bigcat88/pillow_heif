@@ -33,7 +33,7 @@ Pull requests are greatly welcome.
 (Recommended) From [PyPi](https://pypi.org/project/pillow-heif/):
 
 ```bash
-pip install pillow_heif
+pip3 install pillow_heif
 ```
 
 
@@ -42,7 +42,7 @@ _Instructions are valid for version 0.1.7+_
 
 ### Linux
 
-####Debian(Ubuntu):
+#### Debian(Ubuntu):
 ```bash
 sudo apt install -y python3-pip libtool git
 sudo -H python3 -m pip install --upgrade pip
@@ -50,14 +50,14 @@ sudo -H pip3 install --no-binary pillow_heif
 ```
 
 
-####Alpine:
+#### Alpine:
 ```bash
-sudo apk add --no-cache libtool git freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev
+sudo apk add --no-cache py3-pip python3-dev libtool git freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev
 sudo -H python3 -m pip install --upgrade pip
 sudo -H pip3 install --no-binary pillow_heif
 ```
 
-See [build_libs_linux](https://github.com/andrey18106/pillow_heif/blob/master/libheif/build_libs.py) for additional info what will happen during installing from source.
+See [build_libs_linux](https://github.com/bigcat88/pillow_heif/blob/master/libheif/build_libs.py) for additional info what will happen during installing from source.
 
 
 ### MacOS
