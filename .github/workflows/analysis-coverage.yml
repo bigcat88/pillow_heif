@@ -23,6 +23,7 @@ jobs:
           py_src:
             - 'pillow_heif/*.py'
             - 'libheif/*.py'
+            - 'setup.py'
 
   build-analysis:
     needs: [changes]

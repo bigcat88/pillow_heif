@@ -97,8 +97,9 @@ def is_musllinux() -> bool:
 
 
 def build_tool_linux(url: str, name: str, min_version: str, configure_args: list = None, chmod=None):
-    if tool_check_version(name, min_version):
-        return
+    if min_version:
+        if tool_check_version(name, min_version):
+            return
     if configure_args is None:
         configure_args = []
     _tool_path = path.join(BUILD_DIR_TOOLS, name)
@@ -119,13 +120,13 @@ def build_tools_linux(musl: bool = False):
     build_tool_linux(
         "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz",
         "pkg-config",
-        "0.29.2" if not musl else "99.99.99",
+        "0.29.2" if not musl else "",
         configure_args=["--with-internal-glib"],
     )
     if not musl:
         build_tool_linux("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.71")
         build_tool_linux("https://ftp.gnu.org/gnu/automake/automake-1.16.4.tar.gz", "automake", "1.16.4")
-        install_cmake("3.21.5")
+        install_cmake("3.22.1")
     build_tool_linux(
         "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz", "nasm", "2.15.05", chmod="774"
     )
