@@ -41,6 +41,8 @@ jobs:
 
       - name: Install from source
         run: sudo -H pip3 -v install .
+        env:
+          GITHUB_BUILD: true
 
       - name: Pylint Analysis
         run: pylint --rcfile .pylintrc pillow_heif
