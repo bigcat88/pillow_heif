@@ -69,6 +69,7 @@ def tool_check_version(name: str, min_version: str) -> bool:
     current_version = tuple(map(int, str(m_groups.groups()[0]).split(".")))
     min_version = tuple(map(int, min_version.split(".")))
     if current_version >= min_version:
+        print(f"Tool {name} satisfy requirements. Skip installing it.", flush=True)
         return True
     return False
 
@@ -104,6 +105,7 @@ def build_tool_linux(url: str, name: str, min_version: str, configure_args: list
         configure_args = []
     _tool_path = path.join(BUILD_DIR_TOOLS, name)
     if path.isdir(_tool_path):
+        print(f"Cache found for {name}", flush=True)
         chdir(_tool_path)
     else:
         download_extract_to(url, _tool_path)
@@ -125,7 +127,7 @@ def build_tools_linux(musl: bool = False):
     )
     if not musl:
         build_tool_linux("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.71")
-        build_tool_linux("https://ftp.gnu.org/gnu/automake/automake-1.16.4.tar.gz", "automake", "1.16.4")
+        build_tool_linux("https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.gz", "automake", "1.16.5")
         install_cmake("3.22.1")
     build_tool_linux(
         "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz", "nasm", "2.15.05", chmod="774"
@@ -135,6 +137,7 @@ def build_tools_linux(musl: bool = False):
 def build_lib_linux(url: str, name: str, musl: bool = False):
     _lib_path = path.join(BUILD_DIR_LIBS, name)
     if path.isdir(_lib_path):
+        print(f"Cache found for {name}", flush=True)
         if name == "aom":
             chdir(path.join(_lib_path, "build"))
         else:
@@ -157,8 +160,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             run(["./autogen.sh"], check=True)
         if name == "aom":
             cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0".split()
-            if environ.get("GITHUB_BUILD", False):
-                cmake_args += "-DENABLE_SSE2=0".split()
             cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
             cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
             run(["cmake"] + cmake_args, check=True)
@@ -178,6 +179,10 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
 
 
 def build_libs_linux():
+    _install_flag = path.join(BUILD_DIR_PREFIX, "was_installed.flag")
+    if path.isfile(_install_flag):
+        print("Tools & Libraries already installed.", flush=True)
+        return INSTALL_DIR_LIBS
     _is_musllinux = is_musllinux()
     _original_dir = getcwd()
     try:
@@ -187,13 +192,14 @@ def build_libs_linux():
             "libde265",
             _is_musllinux,
         )
-        build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.2.0.tar.gz", "aom", _is_musllinux)
+        build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.3.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
             "libheif",
             _is_musllinux,
         )
         build_lib_linux("ftp://sourceware.org/pub/libffi/libffi-3.3.tar.gz", "libffi", _is_musllinux)
+        open(_install_flag, "w").close()
     finally:
         chdir(_original_dir)
     return INSTALL_DIR_LIBS
