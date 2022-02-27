@@ -2,26 +2,31 @@ from os import getenv, path
 from sys import platform
 from subprocess import run, DEVNULL, PIPE
 from cffi import FFI
+from libheif import build_libs
+
 
 ffi = FFI()
-
-
 with open("libheif/heif.h", "r", encoding="utf-8") as f:
     ffi.cdef(f.read())
 
-
-include_dirs = ["/usr/local/include", "/usr/include", "/opt/local/include"]
-library_dirs = ["/usr/local/lib", "/usr/lib", "/lib", "/opt/local/lib"]
+include_dirs = ["/usr/local/include", "/usr/include"]
+library_dirs = ["/usr/local/lib", "/usr/lib", "/lib"]
 
 include_path_prefix = ""
+insert = False
 if platform.lower() == "darwin":
     include_path_prefix = getenv("HOMEBREW_PREFIX")
     if not include_path_prefix:
         _result = run(["brew", "--prefix"], stderr=DEVNULL, stdout=PIPE, check=False)
         if not _result.returncode and _result.stdout is not None:
             include_path_prefix = _result.stdout.decode("utf-8").rstrip("\n")
+    if not include_path_prefix:
+        include_path_prefix = "/opt/local"
 elif platform.lower() == "win32":
     include_path_prefix = getenv("VCPKG_PREFIX")
+else:
+    include_path_prefix = build_libs.build_libs_linux()
+
 if include_path_prefix:
     include_path_prefix_include = path.join(include_path_prefix, "include")
     if include_path_prefix_include not in include_dirs:

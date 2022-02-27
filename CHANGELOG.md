@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.7 - 2022-02-27]
+
+### Added
+
+- Added `manylinux2014_i686` wheels.
+- Integration of PEP 517 in progress, added new instructions for building from source.
+
+### Changed
+
+- Making code cleaner, renamed cffi module from `pillow_heif.libheif` to `_pillow_heif_cffi`.
+- libaom bumped from 3.2.0 to 3.3.0
+
+### Fixed
+
+- Fixed `AttributeError` when calling `Image.verify`. Thanks @zijian-hu for reporting.
+
 ## [0.1.6 - 2022-02-10]
 
 ### Added

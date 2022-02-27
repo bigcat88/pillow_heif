@@ -82,9 +82,7 @@ jobs:
     name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }}
     runs-on: ubuntu-20.04
     env:
-      BUILD_STUFF: "/build-stuff"
-      SCRIPTS: "./build_scripts/linux/"
-      BUILD_ORDER: "pkg-config,nasm,libde265,aom,libheif,libffi"
+      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
       KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
 
     steps:
@@ -95,71 +93,30 @@ jobs:
         with:
           platforms: arm64
 
-      - name: Preparations
-        run: |
-          sudo mkdir "$BUILD_STUFF" && sudo chmod 777 "$BUILD_STUFF"
-          echo BUILD_STUFF_CMD="&& sh $(echo "$BUILD_ORDER" | sed 's/,/.sh \&\& sh /g').sh" >> $GITHUB_ENV
-          python3 -m pip install cibuildwheel twine
+      - name: Install cibuildwheel & twine
+        run: python3 -m pip install cibuildwheel twine
 
       - name: manylinux preparations
         if: matrix.cibw_buildlinux == 'manylinux'
-        run: |
-          echo BUILD_COMMAND="yum install -y -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
-          echo LDCONFIG_ARG="" >> $GITHUB_ENV
+        run: echo INSTALL_OS_PACKAGES="yum update -y && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
         env:
-          OS_PACKAGES: "wget libtool git-all"
+          OS_PACKAGES: "git-all"
 
       - name: musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux'
-        run: |
-          echo BUILD_COMMAND="apk --no-cache add -q $OS_PACKAGES && set -ex && cd $SCRIPTS $BUILD_STUFF_CMD" >> $GITHUB_ENV
-          echo LDCONFIG_ARG="/usr/lib" >> $GITHUB_ENV
-          echo CIBW_SKIP="cp36-*" >> $GITHUB_ENV
+        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
-          OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
-          freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
+          OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: pkg-config
+          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
 
       - uses: actions/cache@v2
         with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: nasm
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: libde265
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: aom
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: libheif
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.BUILD_STUFF }}/${{ env.NAME }}
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles(format('{0}{1}.sh', env.SCRIPTS, env.NAME)) }}
-        env:
-          NAME: libffi
+          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
 
       - name: Run cibuildwheel
         run: cibuildwheel
@@ -167,8 +124,8 @@ jobs:
           CIBW_BUILD: ${{ format('cp3*-{0}*', matrix.cibw_buildlinux) }}
 #          CIBW_SKIP: "cp36-*"
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
-          CIBW_BEFORE_BUILD_LINUX: ${{ env.BUILD_COMMAND }}
-          CIBW_ENVIRONMENT_PASS_LINUX: BUILD_STUFF LDCONFIG_ARG
+          CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
+          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
           CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
           CIBW_BUILD_VERBOSITY: 2
@@ -182,6 +139,9 @@ jobs:
           name: wheels
           path: wheelhouse/*.whl
           if-no-files-found: error
+
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
 
   sdist:
     needs: [wheels_linux, wheels_macos]
@@ -214,9 +174,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Generate coverage report
-        run: |
-          cd .. && coverage run --rcfile=pillow_heif/pyproject.toml -m pytest pillow_heif
-          cd - && coverage xml --data-file=../.coverage
+        run: coverage run --rcfile=pyproject.toml -m pytest && coverage xml
 
       - name: Upload report to Codecov
         uses: codecov/codecov-action@v2

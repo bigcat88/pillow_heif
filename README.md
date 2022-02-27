@@ -1,6 +1,6 @@
 # pillow_heif
 
-![static-analysis](https://github.com/bigcat88/pillow_heif/actions/workflows/static-analysis.yml/badge.svg)
+![analysis](https://github.com/bigcat88/pillow_heif/actions/workflows/analysis-coverage.yml/badge.svg)
 ![build](https://github.com/bigcat88/pillow_heif/actions/workflows/create-release-draft.yml/badge.svg)
 ![published](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi.yaml/badge.svg)
 [![codecov](https://codecov.io/gh/bigcat88/pillow_heif/branch/master/graph/badge.svg?token=JY64F2OL6V)](https://codecov.io/gh/bigcat88/pillow_heif)
@@ -17,11 +17,11 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
-A HEIF/HEIC add-on for Pillow using the `libheif` library via `CFFI`.
+A HEIF/HEIC/AVIF add-on for Pillow using the `libheif` library via `CFFI`.
 
-Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - x64/aarch64.
+Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - i686, x86_64 and aarch64.
 
-#### **_Version 0.1.6 was last to support Python 3.6._**
+#### **_Version 0.1.9 will be last to support Python 3.6._**
 
 Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
 The idea for this plugin came from Christian Bianciotto's [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener).
@@ -33,32 +33,48 @@ Pull requests are greatly welcome.
 (Recommended) From [PyPi](https://pypi.org/project/pillow-heif/):
 
 ```bash
-pip install pillow_heif
+pip3 install pillow_heif
 ```
 
 
 ## Installation from source
-**(NOT RECOMMENDED)**(Until finished integration of PEP 517)
+_Instructions are valid for version 0.1.7+_
 
-##### Linux Ubuntu
+### Linux
+
+#### Debian(Ubuntu):
 ```bash
-sudo add-apt-repository ppa:strukturag/libheif
-apt install libffi libheif-dev libde265-dev
-pip install git+https://github.com/bigcat88/pillow_heif.git
+sudo apt install -y python3-pip libtool git cmake
+sudo -H python3 -m pip install --upgrade pip
+sudo -H python3 -m pip install --no-binary pillow_heif
 ```
 
-##### MacOS
+
+#### Alpine:
 ```bash
+sudo apk --no-cache add py3-pip python3-dev libtool git gcc m4 perl alpine-sdk cmake
+sudo apk --no-cache add fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev
+sudo -H python3 -m pip install --upgrade pip
+sudo -H python3 -m pip install --no-binary pillow_heif
+```
+
+See [build_libs_linux](https://github.com/bigcat88/pillow_heif/blob/master/libheif/build_libs.py) for additional info what will happen during installing from source.
+
+Note: building for first time will take a long time, if in your system `cmake` version `>=3.16.1` is not present.
+
+
+### MacOS
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 brew install x265 libjpeg libde265 libheif
-pip3 install git+https://github.com/bigcat88/pillow_heif.git
+pip3 install --no-binary pillow_heif
 ```
 
-##### Windows
-With vcpkg and Visual Studio 2015+ Tools installed:
+### Windows
 ```bat
 vcpkg install aom libheif --triplet=x64-windows
 VCPKG_PREFIX="path_to:vcpkg/installed/x64-windows"
-pip install git+https://github.com/bigcat88/pillow_heif.git
+pip3 install --no-binary pillow_heif
 ```
 
 ## Example of use as opener
