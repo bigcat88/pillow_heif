@@ -24,6 +24,7 @@ jobs:
             - 'pillow_heif/*.py'
             - 'libheif/*.py'
             - 'setup.py'
+            - 'tests/*.py'
 
   build-analysis:
     needs: [changes]
