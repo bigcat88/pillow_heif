@@ -93,7 +93,7 @@ image.load()
 from PIL import Image
 import pillow_heif
 
-heif_file = pillow_heif.read('ABC.HEIC')
+heif_file = pillow_heif.read_heif('ABC.HEIC')
 image = Image.frombytes(
     heif_file.mode,
     heif_file.size,
