@@ -37,8 +37,7 @@ jobs:
         if: matrix.cibw_buildlinux == 'musllinux'
         run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
-          OS_PACKAGES: "sudo py3-pip python3-dev \
-          freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev"
+          OS_PACKAGES: "sudo py3-pip python3-dev ffribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
 
       - uses: actions/cache@v2
         with:
