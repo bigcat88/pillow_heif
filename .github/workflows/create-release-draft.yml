@@ -98,15 +98,15 @@ jobs:
 
       - name: manylinux preparations
         if: matrix.cibw_buildlinux == 'manylinux'
-        run: echo INSTALL_OS_PACKAGES="yum install -y -q $OS_PACKAGES" >> $GITHUB_ENV
+        run: echo INSTALL_OS_PACKAGES="yum update -y && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "wget libtool git-all"
 
       - name: musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux'
-        run: echo INSTALL_OS_PACKAGES="apk add --no-cache -q $OS_PACKAGES" >> $GITHUB_ENV
+        run: echo INSTALL_OS_PACKAGES="apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
-          OS_PACKAGES: "sudo py3-pip python3-dev libtool git \
+          OS_PACKAGES: "sudo py3-pip python3-dev libtool git gcc \
           freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev"
 
       - uses: actions/cache@v2
