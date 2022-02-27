@@ -140,6 +140,9 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+
   sdist:
     needs: [wheels_linux, wheels_macos]
     name: Source distribution

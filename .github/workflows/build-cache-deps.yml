@@ -68,3 +68,6 @@ jobs:
           name: wheels
           path: wheelhouse/*.whl
           if-no-files-found: error
+
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
