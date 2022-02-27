@@ -19,7 +19,7 @@
 
 A HEIF/HEIC/AVIF add-on for Pillow using the `libheif` library via `CFFI`.
 
-Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - i686,x86_64/aarch64.
+Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - i686,x86_64 and aarch64.
 
 #### **_Version 0.1.9 will be last to support Python 3.6._**
 
