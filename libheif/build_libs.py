@@ -1,7 +1,6 @@
 from os import path, chdir, remove, makedirs, environ, getcwd
 from subprocess import run, DEVNULL, PIPE, STDOUT, TimeoutExpired, CalledProcessError
 from re import search, MULTILINE, IGNORECASE
-import sys
 
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
@@ -74,12 +73,6 @@ def tool_check_version(name: str, min_version: str) -> bool:
     return False
 
 
-def install_cmake(version: str):
-    if tool_check_version("cmake", version):
-        return
-    run(f"{sys.executable} -m pip install --upgrade cmake --no-warn-script-location".split(), check=True)
-
-
 def is_musllinux() -> bool:
     _ = run("ldd --version".split(), stdout=PIPE, stderr=STDOUT, check=False)
     if _.stdout and _.stdout.decode("utf-8").find("musl") != -1:
@@ -117,7 +110,6 @@ def build_tools_linux(musl: bool = False):
     )
     build_tool_linux("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.71")
     build_tool_linux("https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.gz", "automake", "1.16.5")
-    install_cmake("3.22.1")
     build_tool_linux(
         "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz", "nasm", "2.15.05", chmod="774"
     )
