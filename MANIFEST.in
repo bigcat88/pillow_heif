@@ -9,5 +9,3 @@ graft tests
 
 exclude .pylintrc
 exclude .pre-commit-config.yaml
-
-prune build_scripts

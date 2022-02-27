@@ -1,6 +1,11 @@
 name: Static analysis
 
 on:
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, edited]
+  push:
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -19,7 +24,7 @@ jobs:
             - 'pillow_heif/*.py'
 
   python-pylint:
-    needs: changes
+    needs: [changes]
     if: ${{ needs.changes.outputs.py_src == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     name: PyLint
@@ -28,13 +33,27 @@ jobs:
 
       - name: pylint installation
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          pip install pylint
+          sudo apt install -y libtool git-all
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements.txt
+          python3 -m pip install -r requirements_dev.txt
+          python3 -m pip install install pylint
 
-      - name: pylint analysis
-        run: |
-           pylint --rcfile .pylintrc pillow_heif/*
+      - name: Install from source
+        run: sudo -H pip3 install .
+
+      - name: Pylint Analysis
+        run: pylint --rcfile .pylintrc pillow_heif
+
+      - name: Generate coverage report
+        run: coverage run --rcfile=pyproject.toml -m pytest && coverage xml
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
 
   checks_status:
     needs: [changes, python-pylint]
