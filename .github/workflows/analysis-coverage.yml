@@ -35,13 +35,14 @@ jobs:
 
       - name: pylint installation
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
-          python3 -m pip install -r requirements_dev.txt
-          python3 -m pip install install pylint
+          sudo -H python3 -m pip install --upgrade pip
+          sudo -H python3 -m pip install --upgrade cmake
+          sudo -H python3 -m pip install -r requirements.txt
+          sudo -H python3 -m pip install -r requirements_dev.txt
+          sudo -H python3 -m pip install install pylint
 
       - name: Install from source
-        run: sudo -H pip3 -v install .
+        run: sudo -H python3 -m pip -v install .
 
       - name: Pylint Analysis
         run: pylint --rcfile .pylintrc pillow_heif
