@@ -119,7 +119,7 @@ def build_tools_linux(musl: bool = False):
     build_tool_linux(
         "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz",
         "pkg-config",
-        "0.29.2",
+        "0.29.2" if not musl else "99.99.99",
         configure_args=["--with-internal-glib"],
     )
     if not musl:
