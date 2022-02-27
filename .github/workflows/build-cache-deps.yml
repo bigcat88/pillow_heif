@@ -58,6 +58,7 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
           CIBW_TEST_SKIP: "*"
+          CIBW_BUILD_VERBOSITY: 1
 
       - name: Check builded wheel
         run: twine check wheelhouse/*
