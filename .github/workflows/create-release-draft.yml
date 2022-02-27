@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
-      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}-1
 
     steps:
       - uses: actions/checkout@v2

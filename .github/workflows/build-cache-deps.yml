@@ -13,7 +13,7 @@ jobs:
     name: ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
     runs-on: ubuntu-20.04
     env:
-      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}-1
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
 
     steps:
