@@ -69,7 +69,7 @@ def tool_check_version(name: str, min_version: str) -> bool:
     current_version = tuple(map(int, str(m_groups.groups()[0]).split(".")))
     min_version = tuple(map(int, min_version.split(".")))
     if current_version >= min_version:
-        print(f"Tool {name} satisfy requirements. Skip installing it.", flush=True)
+        print(f"Tool {name} with version {str(m_groups.groups()[0])} satisfy requirements.", flush=True)
         return True
     return False
 
@@ -146,12 +146,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         if name == "aom":
             _build_path = path.join(_lib_path, "build")
             makedirs(_build_path)
-            run(f"ls -la {_lib_path}".split(), check=True)
-            run(f"ls -la {_build_path}".split(), check=True)
             download_extract_to(url, path.join(_lib_path, "aom"), False)
-            run(f"ls -la {_lib_path}".split(), check=True)
-            run(f"ls -la {_build_path}".split(), check=True)
-            run(f"ls -la {path.join(_lib_path, 'aom')}".split(), check=True)
             chdir(_build_path)
         else:
             download_extract_to(url, _lib_path)

@@ -21,7 +21,7 @@ A HEIF/HEIC/AVIF add-on for Pillow using the `libheif` library via `CFFI`.
 
 Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - i686,x86_64/aarch64.
 
-#### **_Version 0.1.7 was last to support Python 3.6._**
+#### **_Version 0.1.9 will be last to support Python 3.6._**
 
 Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
 The idea for this plugin came from Christian Bianciotto's [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener).
@@ -41,17 +41,24 @@ pip install pillow_heif
 _Instructions are valid for version 0.1.7+_
 
 ### Linux
-####Debian:
+
+####Debian(Ubuntu):
 ```bash
-sudo apt install -y libtool git-all
-pip3 install --no-binary pillow_heif
+sudo apt install -y python3-pip libtool git
+sudo -H python3 -m pip install --upgrade pip
+sudo -H pip3 install --no-binary pillow_heif
 ```
+
 
 ####Alpine:
 ```bash
 sudo apk add --no-cache libtool git freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev
-pip3 install --no-binary pillow_heif
+sudo -H python3 -m pip install --upgrade pip
+sudo -H pip3 install --no-binary pillow_heif
 ```
+
+See [build_libs_linux]() for additional info what will happen during installing from source.
+
 
 ### MacOS
 ```bash
