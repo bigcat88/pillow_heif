@@ -171,7 +171,7 @@ def build_libs_linux():
             "libde265",
             _is_musllinux,
         )
-        build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.2.0.tar.gz", "aom", _is_musllinux)
+        build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.3.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
             "libheif",

@@ -53,7 +53,7 @@ sudo -H python3 -m pip install --no-binary pillow_heif
 #### Alpine:
 ```bash
 sudo apk --no-cache add py3-pip python3-dev libtool git gcc m4 perl alpine-sdk cmake
-sudo apk --no-cache add freetype-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev tiff-dev zlib-dev
+sudo apk --no-cache add fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev
 sudo -H python3 -m pip install --upgrade pip
 sudo -H python3 -m pip install --no-binary pillow_heif
 ```
