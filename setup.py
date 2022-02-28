@@ -22,7 +22,7 @@ setup(
     name="pillow_heif",
     version=get_version(),
     packages=["pillow_heif"],
-    install_requires=["cffi>=1.15.0", *install_requirements],
+    install_requires=install_requirements,
     setup_requires=["cffi>=1.15.0", "setuptools>=41.2.0"],
     cffi_modules=["libheif/build.py:ffi"],
     author="Alexander Piskun",

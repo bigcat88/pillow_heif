@@ -21,7 +21,7 @@ A HEIF/HEIC/AVIF add-on for Pillow using the `libheif` library via `CFFI`.
 
 Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - i686, x86_64 and aarch64.
 
-#### **_Version 0.1.9 will be last to support Python 3.6._**
+#### **_Versions 0.2.x will be last to support Python 3.6._**
 
 Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
 The idea for this plugin came from Christian Bianciotto's [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener).
