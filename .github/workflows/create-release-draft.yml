@@ -144,7 +144,7 @@ jobs:
         run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
 
   sdist:
-    needs: [wheels_linux, wheels_macos]
+    needs: [wheels_linux, wheels_macos, wheels_windows]
     name: Source distribution
     runs-on: macos-11
 

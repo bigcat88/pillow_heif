@@ -6,3 +6,7 @@ include requirements_dev.txt
 include pyproject.toml
 
 graft tests
+
+exclude .pylintrc
+exclude *.yaml
+exclude *.yml
