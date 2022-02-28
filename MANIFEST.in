@@ -9,3 +9,4 @@ graft tests
 
 exclude .pylintrc
 exclude *.yaml
+exclude *.yml
