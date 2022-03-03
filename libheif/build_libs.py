@@ -172,7 +172,7 @@ def build_libs_linux():
             _is_musllinux,
         )
         build_lib_linux(
-            "https://aomedia.googlesource.com/aom/+archive/109d8cf6d91b750c80eb762a4b949eba60fb511f.tar.gz",
+            "https://aomedia.googlesource.com/aom/+archive/c549633e730ebb6f9aaea7ac12de58591f587689.tar.gz",
             "aom",
             _is_musllinux,
         )
