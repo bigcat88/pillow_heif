@@ -1,4 +1,4 @@
-name: Pillow_heif build
+name: Build pillow_heif from src
 
 on:
   workflow_dispatch:
@@ -13,9 +13,7 @@ jobs:
         arch: [linux/amd64, linux/arm64, linux/arm/v7]
 
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v2
-
+      - uses: actions/checkout@v2
       - name: Set up qemu
         run: |
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
