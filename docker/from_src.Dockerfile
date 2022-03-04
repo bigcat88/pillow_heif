@@ -20,8 +20,6 @@ RUN \
     aom aom-dev \
     openjpeg-dev && \
   python3 -m pip install --upgrade pip pytest && \
-  ls -ls . && \
-  ls -ls /pillow_heif && \
   python3 -m pip install install -v pillow_heif/. && \
   echo "**** Build Done ****" && \
   pytest -s pillow_heif && \
