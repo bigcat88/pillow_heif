@@ -120,6 +120,17 @@ def build_tools_linux(musl: bool = False):
     )
 
 
+def is_library_installed(name: str) -> bool:
+    if name.find("main") != -1 and name.find("reference") != -1:
+        raise Exception("`name` param can not contain `main` and `reference` substrings.")
+    _r = run(f"gcc -l{name}".split(), stdout=PIPE, stderr=STDOUT, check=False)
+    if _r.stdout:
+        _ = _r.stdout.decode("utf-8")
+        if _.find("main") != -1 and _.find("reference") != -1:
+            return True
+    return False
+
+
 def build_lib_linux(url: str, name: str, musl: bool = False):
     _lib_path = path.join(BUILD_DIR_LIBS, name)
     if path.isdir(_lib_path):
@@ -171,7 +182,8 @@ def build_libs_linux():
             "libde265",
             _is_musllinux,
         )
-        build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.3.0.tar.gz", "aom", _is_musllinux)
+        if not is_library_installed("aom"):
+            build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.3.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
             "libheif",

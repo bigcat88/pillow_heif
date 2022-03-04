@@ -60,8 +60,11 @@ sudo -H python3 -m pip install pillow_heif
 
 See [build_libs_linux](https://github.com/bigcat88/pillow_heif/blob/master/libheif/build_libs.py) for additional info what will happen during installing from source.
 
-Note: building for first time will take a long time, if in your system `cmake` version `>=3.16.1` is not present.
+Notes:
 
+1. Building for first time will take a long time, if in your system `cmake` version `>=3.16.1` is not present.
+
+2. Arm7(32 bit): On Alpine you need additionally install `aom` and `aom-dev` packages.
 
 ### MacOS
 ```bash
