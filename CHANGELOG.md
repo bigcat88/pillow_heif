@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- `HeifFile` `close` method now free image decoded data.
+- `HeifFile` `close` method now frees image decoded data.
 - Code optimization.
 
 ### Fixed
