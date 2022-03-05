@@ -1,10 +1,12 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
+    rev: v4.1.0
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
+    -   id: check-toml
+    -   id: name-tests-test
 -   repo: https://github.com/psf/black
     rev: 21.6b0
     hooks:
@@ -14,9 +16,12 @@ repos:
     hooks:
     -   id: flake8
         types: [file, python]
-#-   repo: https://github.com/pre-commit/mirrors-mypy
-#    rev: v0.782
-#    hooks:
-#     -  id: mypy
-#        files: pillow_heif/
-#        additional_dependencies: [pytest==6.2.4]
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.930
+    hooks:
+     -  id: mypy
+        files: pillow_heif/
+        additional_dependencies: [pillow, cffi]
+
+default_language_version:
+    python: python3.9
