@@ -17,8 +17,11 @@ repos:
     -   id: flake8
         types: [file, python]
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.782
+    rev: v0.930
     hooks:
      -  id: mypy
         files: pillow_heif/
-        additional_dependencies: [pytest==6.2.4]
+        additional_dependencies: [pillow, cffi]
+
+default_language_version:
+    python: python3.9
