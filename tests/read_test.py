@@ -92,6 +92,7 @@ def test_open_and_load(path):
     assert heif_file is res
     assert heif_file.data is not None
     assert heif_file.stride is not None
+    heif_file.close()
 
 
 @pytest.mark.parametrize("path", heif_files)
@@ -162,6 +163,12 @@ def test_read_icc_color_profile(path):
 def test_read_pillow_frombytes(path):
     heif_file = pillow_heif.read_heif(path)
     to_pillow_image(heif_file)
+
+
+@pytest.mark.parametrize("path", hif_files)
+def test_10bit(path):
+    heif_file = pillow_heif.read_heif(path, convert_hdr_to_8bit=False)
+    heif_file.load()
 
 
 def test_invalid_data():
