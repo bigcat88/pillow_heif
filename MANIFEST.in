@@ -6,7 +6,10 @@ include requirements_dev.txt
 include pyproject.toml
 
 graft tests
+graft examples
 
 exclude .pylintrc
 exclude *.yaml
 exclude *.yml
+
+prune docker
