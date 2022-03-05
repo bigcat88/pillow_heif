@@ -14,13 +14,17 @@ class HeifError(Exception):
         self.message = message
 
     def __str__(self):
-        return f'Code: {self.code}, Subcode: {self.subcode}, Message: "{self.message}"'
+        return f"Code: {self.code}, Subcode: {self.subcode}, Message: `{self.message}`"
 
     def __repr__(self):
-        return f'HeifError({self.code}, {self.subcode}, "{self.message}"'
+        return f"HeifError({self.code}, {self.subcode}, `{self.message}`)"
 
 
 def check_libheif_error(error_struct):
+    """
+    Helper function. Checks returned result error_struct from libheif calls and raise exception if error.
+    """
+
     if not error_struct.code:
         return
     raise HeifError(
