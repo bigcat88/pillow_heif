@@ -223,27 +223,18 @@ def _read_color_profile(handle):
     profile_type = lib.heif_image_handle_get_color_profile_type(handle)
     if profile_type == heif_color_profile_type_not_present:
         return None
-    if profile_type in (
-        heif_color_profile_type_rICC,
-        heif_color_profile_type_prof,
-    ):
-        data_length = lib.heif_image_handle_get_raw_color_profile_size(handle)
-        if data_length == 0:
-            return None
-        p_data = ffi.new("char[]", data_length)
-        error = lib.heif_image_handle_get_raw_color_profile(handle, p_data)
-    elif profile_type == heif_color_profile_type_nclx:
+    if profile_type == heif_color_profile_type_nclx:
         pp_data = ffi.new("struct heif_color_profile_nclx **")
         data_length = ffi.sizeof("struct heif_color_profile_nclx")
         error = lib.heif_image_handle_get_nclx_color_profile(handle, pp_data)
         p_data = pp_data[0]
         ffi.release(pp_data)
     else:
-        raise HeifError(
-            code=10,
-            subcode=0,
-            message="Not supported color profile.",
-        )
+        data_length = lib.heif_image_handle_get_raw_color_profile_size(handle)
+        if data_length == 0:
+            return None
+        p_data = ffi.new("char[]", data_length)
+        error = lib.heif_image_handle_get_raw_color_profile(handle, p_data)
     if error.code != 0:
         raise HeifError(
             code=error.code,
