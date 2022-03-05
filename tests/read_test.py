@@ -171,6 +171,15 @@ def test_10bit(path):
     heif_file.load()
 
 
+@pytest.mark.parametrize("path", heic_files[:1] + hif_files[:1] + avif_files[:1])
+def test_super_heif_close(path):
+    heif_file = pillow_heif.open_heif(path)
+    heif_file.load()
+    pillow_heif.HeifFile.close(heif_file)  # free decoded data.
+    heif_file.close()
+    return heif_file.data is None
+
+
 def test_invalid_data():
     data = b"    ftypheic    0000"
     try:
