@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.8 - 2022-03-05]
+
+### Added
+
+- Ability to build from source on alpine with arm 7.
+
+### Changed
+
+- `HeifFile` `close` method now free image decoded data.
+- Code optimization.
+
+### Fixed
+
 ## [0.1.7 - 2022-02-27]
 
 ### Added
