@@ -34,8 +34,7 @@ class HeifImageFile(ImageFile.ImageFile):
                     break
 
         if heif_file.color_profile:
-            if heif_file.color_profile["type"] != "unknown":
-                self.color_profile = heif_file.color_profile
+            self.color_profile = heif_file.color_profile
             if heif_file.color_profile["type"] in ("rICC", "prof"):
                 self.info["icc_profile"] = heif_file.color_profile["data"]
         self.tile = []

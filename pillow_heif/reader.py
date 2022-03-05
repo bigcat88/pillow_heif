@@ -25,7 +25,7 @@ from .constants import (
     heif_chroma_interleaved_RRGGBB_BE,
     heif_chroma_interleaved_RRGGBBAA_BE,
 )
-from .error import HeifError
+from .error import check_libheif_error
 
 
 class HeifFile:
@@ -152,20 +152,10 @@ def _read_heif_bytes(d, apply_transformations, convert_hdr_to_8bit):
 
 def _read_heif_context(ctx, d, apply_transformations, convert_hdr_to_8bit):
     error = lib.heif_context_read_from_memory_without_copy(ctx, d, len(d), ffi.NULL)
-    if error.code != 0:
-        raise HeifError(
-            code=error.code,
-            subcode=error.subcode,
-            message=ffi.string(error.message).decode(),
-        )
+    check_libheif_error(error)
     p_handle = ffi.new("struct heif_image_handle **")
     error = lib.heif_context_get_primary_image_handle(ctx, p_handle)
-    if error.code != 0:
-        raise HeifError(
-            code=error.code,
-            subcode=error.subcode,
-            message=ffi.string(error.message).decode(),
-        )
+    check_libheif_error(error)
     collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
     handle = ffi.gc(p_handle[0], collect)
     return _read_heif_handle(handle, apply_transformations, convert_hdr_to_8bit)
@@ -205,12 +195,7 @@ def _read_metadata(handle):
         if data_length > 0:
             p_data = ffi.new("char[]", data_length)
             error = lib.heif_image_handle_get_metadata(handle, each_item, p_data)
-            if error.code != 0:
-                raise HeifError(
-                    code=error.code,
-                    subcode=error.subcode,
-                    message=ffi.string(error.message).decode(),
-                )
+            check_libheif_error(error)
             data_buffer = ffi.buffer(p_data, data_length)
             data = bytes(data_buffer)
             if metadata_type == "Exif":
@@ -235,12 +220,7 @@ def _read_color_profile(handle):
             return None
         p_data = ffi.new("char[]", data_length)
         error = lib.heif_image_handle_get_raw_color_profile(handle, p_data)
-    if error.code != 0:
-        raise HeifError(
-            code=error.code,
-            subcode=error.subcode,
-            message=ffi.string(error.message).decode(),
-        )
+    check_libheif_error(error)
     data_buffer = ffi.buffer(p_data, data_length)
     data = bytes(data_buffer)
     if profile_type == heif_color_profile_type_rICC:
@@ -276,12 +256,7 @@ def _read_heif_image(handle, heif_file):
         chroma,
         p_options,
     )
-    if error.code != 0:
-        raise HeifError(
-            code=error.code,
-            subcode=error.subcode,
-            message=ffi.string(error.message).decode(),
-        )
+    check_libheif_error(error)
     img = p_img[0]
     p_stride = ffi.new("int *")
     p_data = lib.heif_image_get_plane_readonly(img, heif_channel_interleaved, p_stride)
