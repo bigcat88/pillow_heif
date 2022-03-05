@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Ability to build from source on alpine with arm 7.
+- Ability to build from source on alpine with arm 7. Thanks to @aptalca
 
 ### Changed
 
