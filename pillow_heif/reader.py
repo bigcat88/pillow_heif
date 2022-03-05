@@ -50,7 +50,7 @@ class HeifFile:
         return self  # already loaded
 
     def close(self):
-        pass
+        self.data = None
 
 
 class UndecodedHeifFile(HeifFile):
