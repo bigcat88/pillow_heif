@@ -1,0 +1,22 @@
+name: Build from src
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    name: ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [linux/amd64, linux/arm64, linux/arm/v7]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up qemu
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - name: Build pillow_heif
+        run: |
+          docker buildx build --platform ${{ matrix.arch }} . -f docker/from_src.Dockerfile
