@@ -12,7 +12,7 @@ jobs:
       VCPKG_PREFIX: "C:/vcpkg/installed/x64-windows"
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install requirements and dependencies
         run: |
           python3 -m pip install cibuildwheel twine
@@ -33,7 +33,7 @@ jobs:
         run: twine check wheelhouse/*
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: wheels
           path: wheelhouse/*.whl
@@ -44,7 +44,7 @@ jobs:
     runs-on: macos-11
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run cibuildwheel
         run: |
           python3 -m pip install cibuildwheel twine
@@ -67,7 +67,7 @@ jobs:
         run: twine check wheelhouse/*
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: wheels
           path: wheelhouse/*.whl
@@ -86,7 +86,7 @@ jobs:
       KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up QEMU
         if: matrix.cibw_arch == 'aarch64'
         uses: docker/setup-qemu-action@v1
@@ -134,7 +134,7 @@ jobs:
         run: twine check wheelhouse/*
 
       - name: Upload builded wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: wheels
           path: wheelhouse/*.whl
@@ -149,7 +149,7 @@ jobs:
     runs-on: macos-11
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install requirements
         run: pip3 install --user check-manifest twine
 
@@ -184,7 +184,7 @@ jobs:
           verbose: true
 
       - name: Upload sdist
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: wheels
           path: wheelhouse/*.tar.gz
@@ -195,7 +195,7 @@ jobs:
     name: Build and create release
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get release info
         id: get_release_info
         run: |
@@ -213,7 +213,7 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Collect sdist and wheels
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: wheels
           path: wheelhouse
