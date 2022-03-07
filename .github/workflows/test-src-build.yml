@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        distro: [ubuntu:focal, alpine:3.14]
-        arch: [linux/amd64, linux/arm64, linux/arm/v7]
+        distro: ["ubuntu:focal", "alpine:3.14"]
+        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
 
     steps:
       - uses: actions/checkout@v2
