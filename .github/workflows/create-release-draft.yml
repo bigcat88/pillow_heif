@@ -78,7 +78,7 @@ jobs:
       fail-fast: true
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
-        cibw_arch: [ "i686", "x86_64", "aarch64" ]
+        cibw_arch: [ "aarch64", "i686", "x86_64" ]
     name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }}
     runs-on: ubuntu-20.04
     env:
@@ -100,7 +100,7 @@ jobs:
         if: matrix.cibw_buildlinux == 'manylinux'
         run: echo INSTALL_OS_PACKAGES="yum update -y && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
         env:
-          OS_PACKAGES: "git-all libjpeg-turbo-devel"
+          OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel"
 
       - name: musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux'
