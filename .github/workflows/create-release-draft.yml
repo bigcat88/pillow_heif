@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
-      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}-1
+      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v3
@@ -98,7 +98,9 @@ jobs:
 
       - name: manylinux preparations
         if: matrix.cibw_buildlinux == 'manylinux'
-        run: echo INSTALL_OS_PACKAGES="yum update -y && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
+        run: |
+          echo INSTALL_OS_PACKAGES="yum update -y && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
+          echo CIBW_SKIP="pp3*-manylinux_aarch64" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel"
 

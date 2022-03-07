@@ -14,7 +14,7 @@ jobs:
     outputs:
       py_src: ${{ steps.filter.outputs.py_src }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: dorny/paths-filter@v2
       id: filter
       with:
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Analysis & Coverage
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Prepare for source install
         run: |
           sudo -H python3 -m pip install --upgrade pip
