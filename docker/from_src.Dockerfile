@@ -27,6 +27,12 @@ RUN \
     apt-get update && \
     apt-get install -y \
       python3-pip \
+      libaom-dev \
+      libfribidi-dev \
+      libharfbuzz-dev \
+      libjpeg-dev \
+      liblcms2-dev \
+      libffi-dev \
       libtool \
       git \
       cmake; \
