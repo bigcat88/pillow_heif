@@ -104,7 +104,9 @@ jobs:
 
       - name: musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux'
-        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
+        run: |
+          echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
+          echo CIBW_SKIP="pp3*" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
 
@@ -122,7 +124,6 @@ jobs:
         run: cibuildwheel
         env:
           CIBW_BUILD: ${{ format('pp3* cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
-#          CIBW_SKIP: "cp36-*"
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
