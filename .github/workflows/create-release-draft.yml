@@ -21,7 +21,7 @@ jobs:
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
-          CIBW_BUILD: "pp37-* pp38-* cp37-* cp38-* cp39-* cp310-*"
+          CIBW_BUILD: "pp38-* cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BUILD_VERBOSITY: 2
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
@@ -59,7 +59,10 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} &&
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
-          CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
+          CIBW_BEFORE_TEST: >
+            brew install little-cms2 libtiff webp &&
+            brew install freetype harfbuzz fribidi &&
+            pip3 install -r requirements_dev.txt
           CIBW_TEST_COMMAND: "pytest -s {project}"
           CIBW_BUILD_VERBOSITY: 2
 
