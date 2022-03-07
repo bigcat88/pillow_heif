@@ -21,7 +21,7 @@ jobs:
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
-          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
+          CIBW_BUILD: "pp37-* pp38-* cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BUILD_VERBOSITY: 2
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
@@ -55,7 +55,7 @@ jobs:
             HOMEBREW_PREFIX=$(brew --prefix) &&
             REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
           CIBW_BUILD: "*-macosx_x86_64"
-          CIBW_SKIP: "pp* cp36-*"
+          CIBW_SKIP: "cp36-*"
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} &&
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
@@ -121,7 +121,7 @@ jobs:
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
-          CIBW_BUILD: ${{ format('cp3*-{0}*', matrix.cibw_buildlinux) }}
+          CIBW_BUILD: ${{ format('pp3* cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
 #          CIBW_SKIP: "cp36-*"
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
