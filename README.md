@@ -115,9 +115,9 @@ image = Image.frombytes(
 
 ### The HeifImageFile object (as Pillow plugin)
 The returned `HeifImageFile` by `Pillow` function `Image.open` has the following additional properties beside regular:
-* `metadata` - the same field as in an `UndecodedHeifFile.metadata`.
-* `info["exif"]` - the same field as in an `UndecodedHeifFile.exif`.
-* `info["color_profile"]` - the same field as in an `UndecodedHeifFile.color_profile`. If there is no profile, then absent.
+* `metadata` - the same as in an `UndecodedHeifFile.metadata`.
+* `info["exif"]` - the same as in an `UndecodedHeifFile.exif`. If there is no exif, then absent.
+* `info["color_profile"]` - the same as in an `UndecodedHeifFile.color_profile`. If there is no profile, then absent.
 * `info["icc_profile"]` - contains data and present only when file has `ICC` color profile(`prof` or `rICC`).
 * `info["nclx_profile"]` - contains data and present only when file has `NCLX` color profile.
 
