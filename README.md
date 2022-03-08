@@ -28,10 +28,10 @@ A HEIF/HEIC/AVIF add-on for Pillow using the [libheif](https://github.com/strukt
 | CPython 3.8   |      ✅      |      N/A      |       ✅       |     ✅     |     ✅     |
 | CPython 3.9   |      ✅      |       ✅       |       ✅       |     ✅     |     ✅     |
 | CPython 3.10  |      ✅      |       ✅       |       ✅       |     ✅     |     ✅     |
-| PyPy 3.7 v7.3 |     N/A     |      N/A      |      N/A      |     ✅     |     ✅     |
-| PyPy 3.8 v7.3 |     N/A     |      N/A      |      N/A      |     ✅     |     ✅     |
+| PyPy 3.7 v7.3 |     N/A     |      N/A      |      N/A      |    N/A    |     ✅     |
+| PyPy 3.8 v7.3 |     N/A     |      N/A      |      N/A      |    N/A    |     ✅     |
 
-#### **_Versions 0.2.9 will be last to support Python 3.6._**
+#### **_Versions 0.2.X will be last to support Python 3.6_**
 
 **Pull requests are greatly welcome.**
 
@@ -102,6 +102,9 @@ image.load()
 from PIL import Image
 import pillow_heif
 
+
+if not pillow_heif.is_supported('ABC.HEIC'):
+  exit(0)
 heif_file = pillow_heif.read_heif('ABC.HEIC')
 image = Image.frombytes(
     heif_file.mode,
@@ -132,7 +135,7 @@ The returned `UndecodedHeifFile` by function `open_heif` has the following prope
 * `bit_depth` - the number of bits in each component of a pixel.
 * `brand` - value from int enum `HeifBrand`.
 * `exif` - exif data or `None`.
-* `metadata` - is a list of metadata dictionaries if any, excluding `exif`. May be empty.
+* `metadata` - is a list of dictionaries with `type` and `data` keys, excluding `exif`. May be empty.
 * `color_profile` - is a dictionary with `type` and `data` keys. May be empty.
 * `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
 * `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
