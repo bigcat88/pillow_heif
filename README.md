@@ -116,8 +116,8 @@ image = Image.frombytes(
 ### The HeifImageFile object (as Pillow plugin)
 The returned `HeifImageFile` by `Pillow` function `Image.open` has the following additional properties beside regular:
 * `metadata` - the same as in an `UndecodedHeifFile.metadata`.
-* `info["exif"]` - the same as in an `UndecodedHeifFile.exif`. If there is no exif, then absent.
-* `info["color_profile"]` - the same as in an `UndecodedHeifFile.color_profile`. If there is no profile, then absent.
+* `info["exif"]` - the same as in an `UndecodedHeifFile.exif`. If there is no, then absent.
+* `info["color_profile"]` - the same as in an `UndecodedHeifFile.color_profile`. If there is no, then absent.
 * `info["icc_profile"]` - contains data and present only when file has `ICC` color profile(`prof` or `rICC`).
 * `info["nclx_profile"]` - contains data and present only when file has `NCLX` color profile.
 
@@ -129,8 +129,8 @@ The returned `UndecodedHeifFile` by function `open_heif` has the following prope
 * `has_alpha`  - (bool)presence of alpha channel.
 * `mode` - the image mode, e.g. 'RGB' or 'RGBA'.
 * `bit_depth` - the number of bits in each component of a pixel.
-* `exif` - exif data or None.
-* `metadata` - a list of metadata dictionaries, excluding `exif`.
+* `exif` - exif data or `None`.
+* `metadata` - a list of metadata dictionaries if any, excluding `exif` or `None`.
 * `color_profile` - `None` or a color profile dictionary with `type` and `data` keys.
 * `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
 * `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
