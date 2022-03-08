@@ -29,8 +29,6 @@ class HeifFile:
         size: tuple,
         has_alpha: bool,
         bit_depth: int,
-        metadata: list,
-        color_profile: dict,
         data,
         stride,
         **kwargs,
@@ -39,11 +37,11 @@ class HeifFile:
         self.has_alpha = has_alpha
         self.mode = "RGBA" if has_alpha else "RGB"
         self.bit_depth = bit_depth
-        self.metadata = metadata
-        self.color_profile = color_profile
         self.data = data
         self.stride = stride
         self.brand = kwargs.get("brand", HeifBrand.UNKNOWN)
+        self.metadata = kwargs.get("metadata", [])
+        self.color_profile = kwargs.get("color_profile", {})
 
     def __repr__(self):
         return (
