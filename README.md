@@ -121,6 +121,7 @@ The returned `HeifImageFile` by `Pillow` function `Image.open` has the following
   * `color_profile` - the same as in an `UndecodedHeifFile.color_profile`.
   * `icc_profile` - contains data and present only when file has `ICC` color profile(`prof` or `rICC`).
   * `nclx_profile` - contains data and present only when file has `NCLX` color profile.
+  * `brand` - the same as in an `UndecodedHeifFile.brand`.
 
 ### An UndecodedHeifFile object
 The returned `UndecodedHeifFile` by function `open_heif` has the following properties:
