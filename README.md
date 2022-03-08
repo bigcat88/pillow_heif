@@ -30,7 +30,7 @@ A HEIF/HEIC/AVIF add-on for Pillow using the [libheif](https://github.com/strukt
 | CPython 3.10  |      ✅      |       ✅       |       ✅       |     ✅     |     ✅     |
 | PyPy 3.7 v7.3 |     N/A     |      N/A      |      N/A      |     ✅     |     ✅     |
 | PyPy 3.8 v7.3 |     N/A     |      N/A      |      N/A      |     ✅     |     ✅     |
-``
+
 #### **_Versions 0.2.9 will be last to support Python 3.6._**
 
 **Pull requests are greatly welcome.**
