@@ -1,16 +1,24 @@
 name: Build from src
 
 on:
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, edited]
+  push:
+    branches: [master]
   workflow_dispatch:
 
 jobs:
 
   build:
-    name: ${{ matrix.arch }}
+    name: ${{ matrix.distro }}-${{ matrix.arch }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [linux/amd64, linux/arm64, linux/arm/v7]
+        distro: ["ubuntu:focal"]
+        arch: ["linux/arm/v7"]
+#        distro: ["ubuntu:focal", "alpine:3.14"]
+#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
 
     steps:
       - uses: actions/checkout@v2
@@ -19,4 +27,4 @@ jobs:
 
       - name: Build pillow_heif
         run: |
-          docker buildx build --platform ${{ matrix.arch }} . -f docker/from_src.Dockerfile
+          docker buildx build --platform ${{ matrix.arch }} --build-arg DISTRO="${{ matrix.distro }}" -f docker/from_src.Dockerfile .
