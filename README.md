@@ -44,7 +44,6 @@ pip3 install pillow_heif
 
 
 ## Installation from source
-_Instructions are valid for version 0.1.7+_
 
 ### Linux
 
@@ -69,8 +68,9 @@ See [build_libs_linux](https://github.com/bigcat88/pillow_heif/blob/master/libhe
 Notes:
 
 1. Building for first time will take a long time, if in your system `cmake` version `>=3.16.1` is not present.
-
 2. Arm7(32 bit): On Alpine you need additionally install `aom` and `aom-dev` packages.
+3. Arm7(32 bit): On Ubuntu(22.04+) you need additionally install `libaom-dev` package.
+4. Arm7(32 bit): Ubuntu < 22.04 is not supported currently.
 
 ### MacOS
 ```bash
@@ -113,16 +113,29 @@ image = Image.frombytes(
 )
 ```
 
+### The HeifImageFile object (as Pillow plugin)
+The returned `HeifImageFile` by `Pillow` function `Image.open` has the following additional properties beside regular:
+* `metadata` - the same field as in an `UndecodedHeifFile.metadata`.
+* `info["exif"]` - the same field as in an `UndecodedHeifFile.exif`.
+* `info["color_profile"]` - the same field as in an `UndecodedHeifFile.color_profile`. If there is no profile, then absent.
+* `info["icc_profile"]` - contains data and present only when file has `ICC` color profile(`prof` or `rICC`).
+* `info["nclx_profile"]` - contains data and present only when file has `NCLX` color profile.
+
+### An UndecodedHeifFile object
+The returned `UndecodedHeifFile` by function `open_heif` has the following properties:
+
+* `size` - the size of the image as a `(width, height)` tuple of integers.
+* `brand` - value from int enum `HeifBrand`.
+* `has_alpha`  - (bool)presence of alpha channel.
+* `mode` - the image mode, e.g. 'RGB' or 'RGBA'.
+* `bit_depth` - the number of bits in each component of a pixel.
+* `exif` - exif data or None.
+* `metadata` - a list of metadata dictionaries, excluding `exif`.
+* `color_profile` - `None` or a color profile dictionary with `type` and `data` keys.
+* `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
+* `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
+
 ### The HeifFile object
 
-The returned `HeifFile` has the following properties:
-
-* `size` - the size of the image as a `(width, height)` tuple of integers
-* `brand` - a list of heif_brand constants
-* `has_alpha`  - (bool)presence of alpha channel
-* `mode` - the image mode, e.g. 'RGB' or 'RGBA'
-* `bit_depth` - the number of bits in each component of a pixel
-* `metadata` - a list of metadata dictionaries
-* `color_profile` - a color profile dictionary
-* `data` - the raw decoded file data, as bytes
-* `stride` - the number of bytes in a row of decoded file data
+`HeifFile` can be obtained by calling `load` method of `UndecodedHeifFile` or by calling `read_heif` function.
+`HeifFile` has all properties of `UndecodedHeifFile` plus filled `data` and `stride`.
