@@ -17,17 +17,23 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
-A HEIF/HEIC/AVIF add-on for Pillow using the `libheif` library via `CFFI`.
+A HEIF/HEIC/AVIF add-on for Pillow using the [libheif](https://github.com/strukturag/libheif) library via [CFFI](https://cffi.readthedocs.io).
 
-Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - i686, x86_64 and aarch64.
+**Wheels table:**
 
-#### **_Versions 0.2.x will be last to support Python 3.6._**
+|               | macOS Intel | macOS Silicon | Windows 64bit | musllinux | manylinux |
+|---------------|:-----------:|:-------------:|:-------------:|:---------:|:---------:|
+| CPython 3.6   |     N/A     |      N/A      |      N/A      |     ✅     |     ✅     |
+| CPython 3.7   |      ✅      |      N/A      |       ✅       |     ✅     |     ✅     |
+| CPython 3.8   |      ✅      |      N/A      |       ✅       |     ✅     |     ✅     |
+| CPython 3.9   |      ✅      |       ✅       |       ✅       |     ✅     |     ✅     |
+| CPython 3.10  |      ✅      |       ✅       |       ✅       |     ✅     |     ✅     |
+| PyPy 3.7 v7.3 |     N/A     |      N/A      |      N/A      |     ✅     |     ✅     |
+| PyPy 3.8 v7.3 |     N/A     |      N/A      |      N/A      |     ✅     |     ✅     |
+``
+#### **_Versions 0.2.9 will be last to support Python 3.6._**
 
-Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
-The idea for this plugin came from Christian Bianciotto's [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener).
-Many thanks!
-
-Pull requests are greatly welcome.
+**Pull requests are greatly welcome.**
 
 ## Installation
 (Recommended) From [PyPi](https://pypi.org/project/pillow-heif/):
