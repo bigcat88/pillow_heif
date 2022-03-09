@@ -67,7 +67,7 @@ def test_load_images(img_info):
     with builtins.open(Path(img_info["file"]), "rb") as f:
         bytes_io = BytesIO(f.read())
     fh = builtins.open(Path(img_info["file"]), "rb")
-    for _as in (Path(img_info["file"]), Path(img_info["file"]).as_posix(), bytes_io, fh):
+    for _as in (Path(img_info["file"]).as_posix(), bytes_io, fh):
         pillow_image = Image.open(_as)
         assert getattr(pillow_image, "heif_file") is not None
         pillow_image.load()

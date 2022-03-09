@@ -82,7 +82,7 @@ def test_open_and_load(img_info):
     pillow_img.close()
 
 
-@pytest.mark.parametrize("img_info", heic_images[:1] + hif_images[:1] + avif_images[:1])
+@pytest.mark.parametrize("img_info", heic_images[:1])
 def test_read_bytes(img_info):
     with open(Path(img_info["file"]), "rb") as f:
         d = f.read()
@@ -101,7 +101,7 @@ def test_10bit(img_info):
     heif_file.load()
 
 
-@pytest.mark.parametrize("img_info", heic_images[:2] + hif_images[:2] + avif_images[:2])
+@pytest.mark.parametrize("img_info", heic_images[:1] + hif_images[:1] + avif_images[:1])
 def test_heif_open_load_close(img_info):
     heif_file = open_heif(Path(img_info["file"]))
     assert isinstance(heif_file, UndecodedHeifFile)
@@ -121,7 +121,7 @@ def test_load_after_fp_close(img_info):
     heif_file.load()
 
 
-@pytest.mark.parametrize("img_info", heic_images[:2] + hif_images[:2] + avif_images[:2])
+@pytest.mark.parametrize("img_info", heic_images[:1] + hif_images[:1] + avif_images[:1])
 def test_load_after_data_free(img_info):
     data = Path(img_info["file"]).read_bytes()
     heif_file = open_heif(data)
@@ -130,7 +130,7 @@ def test_load_after_data_free(img_info):
     heif_file.load()
 
 
-@pytest.mark.parametrize("img_info", heic_images[:1] + hif_images[:1] + avif_images[:1])
+@pytest.mark.parametrize("img_info", heic_images[:2] + avif_images[:1])
 def test_with_file_handle(img_info):
     with builtins.open(Path(img_info["file"]), "rb") as fh:
         assert is_supported(fh)
