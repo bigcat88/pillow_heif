@@ -17,17 +17,23 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
-A HEIF/HEIC/AVIF add-on for Pillow using the `libheif` library via `CFFI`.
+A HEIF/HEIC/AVIF add-on for Pillow using the [libheif](https://github.com/strukturag/libheif) library via [CFFI](https://cffi.readthedocs.io).
 
-Binary wheels for Python 3.6-3.10. Linux(+Alpine)/macOS/Windows - i686, x86_64 and aarch64.
+**Wheels table:**
 
-#### **_Versions 0.2.x will be last to support Python 3.6._**
+|               | macOS Intel | macOS Silicon | Windows 64bit | musllinux | manylinux |
+|---------------|:-----------:|:-------------:|:-------------:|:---------:|:---------:|
+| CPython 3.6   |     N/A     |      N/A      |      N/A      |     ✅     |     ✅     |
+| CPython 3.7   |      ✅      |      N/A      |       ✅       |     ✅     |     ✅     |
+| CPython 3.8   |      ✅      |      N/A      |       ✅       |     ✅     |     ✅     |
+| CPython 3.9   |      ✅      |       ✅       |       ✅       |     ✅     |     ✅     |
+| CPython 3.10  |      ✅      |       ✅       |       ✅       |     ✅     |     ✅     |
+| PyPy 3.7 v7.3 |     N/A     |      N/A      |      N/A      |    N/A    |     ✅     |
+| PyPy 3.8 v7.3 |     N/A     |      N/A      |      N/A      |    N/A    |     ✅     |
 
-Mostly based on David Poirier's [pyheif](https://github.com/carsales/pyheif).
-The idea for this plugin came from Christian Bianciotto's [pyheif-pillow-opener](https://github.com/ciotto/pyheif-pillow-opener).
-Many thanks!
+#### **_Versions 0.2.X will be last to support Python 3.6_**
 
-Pull requests are greatly welcome.
+**Pull requests are greatly welcome.**
 
 ## Installation
 (Recommended) From [PyPi](https://pypi.org/project/pillow-heif/):
@@ -38,7 +44,6 @@ pip3 install pillow_heif
 
 
 ## Installation from source
-_Instructions are valid for version 0.1.7+_
 
 ### Linux
 
@@ -63,8 +68,9 @@ See [build_libs_linux](https://github.com/bigcat88/pillow_heif/blob/master/libhe
 Notes:
 
 1. Building for first time will take a long time, if in your system `cmake` version `>=3.16.1` is not present.
-
 2. Arm7(32 bit): On Alpine you need additionally install `aom` and `aom-dev` packages.
+3. Arm7(32 bit): On Ubuntu(22.04+) you need additionally install `libaom-dev` package.
+4. Arm7(32 bit): Ubuntu < 22.04 is not supported currently.
 
 ### MacOS
 ```bash
@@ -96,6 +102,9 @@ image.load()
 from PIL import Image
 import pillow_heif
 
+
+if not pillow_heif.is_supported('ABC.HEIC'):
+  exit(0)
 heif_file = pillow_heif.read_heif('ABC.HEIC')
 image = Image.frombytes(
     heif_file.mode,
@@ -106,17 +115,31 @@ image = Image.frombytes(
     heif_file.stride,
 )
 ```
+## [More examples](https://github.com/bigcat88/pillow_heif/tree/master/examples)
+
+
+### The HeifImageFile object (as Pillow plugin)
+The returned `HeifImageFile` by `Pillow` function `Image.open` has the following additional properties beside regular:
+* `info` dictionary keys:
+  * `brand` - value from int enum `HeifBrand`.
+  * `exif` - exif data or `None`.
+  * `metadata` - is a list of dictionaries with `type` and `data` keys, excluding `exif`. May be empty.
+  * `color_profile` - is a dictionary with `type` and `data` keys. May be empty.
+  * `icc_profile` - contains data and present only when file has `ICC` color profile(`prof` or `rICC`).
+  * `nclx_profile` - contains data and present only when file has `NCLX` color profile.
+
+### An UndecodedHeifFile object
+The returned `UndecodedHeifFile` by function `open_heif` has the following properties:
+
+* `size` - the size of the image as a `(width, height)` tuple of integers.
+* `has_alpha` - is a boolean indicating the presence of an alpha channel.
+* `mode` - the image mode, e.g. 'RGB' or 'RGBA'.
+* `bit_depth` - the number of bits in each component of a pixel.
+* `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
+* `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
+* `info` dictionary with the same content as in `HeifImageFile.info`.
 
 ### The HeifFile object
 
-The returned `HeifFile` has the following properties:
-
-* `size` - the size of the image as a `(width, height)` tuple of integers
-* `brand` - a list of heif_brand constants
-* `has_alpha`  - (bool)presence of alpha channel
-* `mode` - the image mode, e.g. 'RGB' or 'RGBA'
-* `bit_depth` - the number of bits in each component of a pixel
-* `metadata` - a list of metadata dictionaries
-* `color_profile` - a color profile dictionary
-* `data` - the raw decoded file data, as bytes
-* `stride` - the number of bytes in a row of decoded file data
+`HeifFile` can be obtained by calling `load` method of `UndecodedHeifFile` or by calling `read_heif` function.
+`HeifFile` has all properties of `UndecodedHeifFile` plus filled `data` and `stride`.

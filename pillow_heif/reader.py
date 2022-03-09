@@ -11,34 +11,36 @@ from warnings import warn
 from _pillow_heif_cffi import ffi, lib
 
 from .constants import (
-    heif_filetype_no,
-    heif_filetype_yes_unsupported,
-    heif_color_profile_type_not_present,
-    heif_brand_unknown_brand,
-    heif_color_profile_type_rICC,
-    heif_color_profile_type_prof,
-    heif_color_profile_type_nclx,
-    heif_colorspace_RGB,
-    heif_channel_interleaved,
-    heif_chroma_interleaved_RGB,
-    heif_chroma_interleaved_RGBA,
-    heif_chroma_interleaved_RRGGBB_BE,
-    heif_chroma_interleaved_RRGGBBAA_BE,
+    HeifFiletype,
+    HeifColorProfileType,
+    HeifChroma,
+    HeifChannel,
+    HeifColorspace,
+    HeifBrand,
 )
 from .error import check_libheif_error
+from ._options import OPTIONS
 
 
 class HeifFile:
-    def __init__(self, *, size, has_alpha, bit_depth, metadata, color_profile, data, stride):
+    def __init__(self, *, size: tuple, has_alpha: bool, bit_depth: int, data, stride, **kwargs):
         self.size = size
-        self.brand = heif_brand_unknown_brand
         self.has_alpha = has_alpha
         self.mode = "RGBA" if has_alpha else "RGB"
         self.bit_depth = bit_depth
-        self.metadata = metadata
-        self.color_profile = color_profile
         self.data = data
         self.stride = stride
+        self.info = {
+            "brand": kwargs.get("brand", HeifBrand.UNKNOWN),
+            "exif": kwargs.get("exif", None),
+            "metadata": kwargs.get("metadata", []),
+            "color_profile": kwargs.get("color_profile", {}),
+        }
+        if self.info["color_profile"]:
+            if self.info["color_profile"]["type"] in ("rICC", "prof"):
+                self.info["icc_profile"] = self.info["color_profile"]["data"]
+            else:
+                self.info["nclx_profile"] = self.info["color_profile"]["data"]
 
     def __repr__(self):
         return (
@@ -49,12 +51,12 @@ class HeifFile:
     def load(self):
         return self  # already loaded
 
-    def close(self):
+    def close(self) -> None:
         self.data = None
 
 
 class UndecodedHeifFile(HeifFile):
-    def __init__(self, heif_handle, *, apply_transformations, convert_hdr_to_8bit, **kwargs):
+    def __init__(self, heif_handle, *, apply_transformations: bool, convert_hdr_to_8bit: bool, **kwargs):
         self._heif_handle = heif_handle
         self.apply_transformations = apply_transformations
         self.convert_hdr_to_8bit = convert_hdr_to_8bit
@@ -66,35 +68,54 @@ class UndecodedHeifFile(HeifFile):
         self.__class__ = HeifFile
         return self
 
-    def close(self):
+    def close(self) -> None:
         # Don't call super().close() here, we don't need to free bytes.
         if hasattr(self, "_heif_handle"):
             del self._heif_handle
 
 
 def check_heif(fp):
+    """
+    Wrapper around `libheif.heif_check_filetype`.
+
+    Note: If `fp` contains less 12 bytes, then returns `HeifFiletype.NO`.
+
+    :param fp: A filename (string), pathlib.Path object, file object or bytes.
+       The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
+       and be opened in binary mode.
+    :returns: `HeifFiletype`
+    """
     magic = _get_bytes(fp, 12)
-    return lib.heif_check_filetype(magic, len(magic))
+    return HeifFiletype.NO if len(magic) < 12 else lib.heif_check_filetype(magic, len(magic))
 
 
-def check(fp):
-    warn("Function `check` is deprecated, use `check_heif` instead.", DeprecationWarning)
-    return check_heif(fp)  # pragma: no cover
+def is_supported(fp) -> bool:
+    """
+    Checks if `fp` contains a supported file type, by calling :py:func:`~pillow_heif.reader.check_heif` function.
+    If `heif_filetype_yes_supported` or `heif_filetype_maybe` then returns True.
+    If `heif_filetype_no` then returns False.
+    OPTIONS
+    "strict" value determine what to return for `heif_filetype_yes_unsupported`.
+    "avif" value determine will be `avif` files marked as supported.
+    """
+    magic = _get_bytes(fp, 12)
+    heif_filetype = check_heif(magic)
+    if heif_filetype == HeifFiletype.NO or (not OPTIONS["avif"] and magic[8:12] in (b"avif", b"avis")):
+        return False
+    if heif_filetype in (HeifFiletype.YES_SUPPORTED, HeifFiletype.MAYBE):
+        return True
+    return not OPTIONS["strict"]
 
 
-def open_heif(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
+def open_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> UndecodedHeifFile:
     d = _get_bytes(fp)
-    return _read_heif_bytes(d, apply_transformations, convert_hdr_to_8bit)
+    ctx = lib.heif_context_alloc()
+    collect = _keep_refs(lib.heif_context_free, data=d)
+    ctx = ffi.gc(ctx, collect, size=len(d))
+    return _read_heif_context(ctx, d, apply_transformations, convert_hdr_to_8bit)
 
 
-def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # pylint: disable=redefined-builtin
-    warn("Function `open` is deprecated, use `open_heif` instead.", DeprecationWarning)
-    return open_heif(
-        fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
-    )  # pragma: no cover
-
-
-def read_heif(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
+def read_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> HeifFile:
     heif_file = open_heif(
         fp,
         apply_transformations=apply_transformations,
@@ -103,22 +124,17 @@ def read_heif(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
     return heif_file.load()
 
 
-def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
-    warn("Function `read` is deprecated, use `read_heif` instead.", DeprecationWarning)
-    return read_heif(
-        fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
-    )  # pragma: no cover
-
-
 def _get_bytes(fp, length=None):
     if isinstance(fp, (str, pathlib.Path)):
         with builtins.open(fp, "rb") as f:
-            d = f.read(length or -1)
-    elif hasattr(fp, "read"):
-        d = fp.read(length or -1)
-    else:
-        d = bytes(fp)[:length]
-    return d
+            return f.read(length or -1)
+    if hasattr(fp, "read"):
+        offset = fp.tell() if hasattr(fp, "tell") else None
+        b = fp.read(length or -1)
+        if offset is not None and hasattr(fp, "seek"):
+            fp.seek(offset)
+        return b
+    return bytes(fp)[:length]
 
 
 def _keep_refs(destructor, **refs):
@@ -134,23 +150,8 @@ def _keep_refs(destructor, **refs):
     return inner
 
 
-def _read_heif_bytes(d, apply_transformations, convert_hdr_to_8bit):
-    magic = d[:12]
-    filetype_check = lib.heif_check_filetype(magic, len(magic))
-    if filetype_check == heif_filetype_no:
-        raise ValueError("Input is not a HEIF/AVIF file")
-    if filetype_check == heif_filetype_yes_unsupported:
-        warn("Input is an unsupported HEIF/AVIF file type - trying anyway!")
-    brand = lib.heif_main_brand(magic, len(magic))
-    ctx = lib.heif_context_alloc()
-    collect = _keep_refs(lib.heif_context_free, data=d)
-    ctx = ffi.gc(ctx, collect, size=len(d))
-    heif_file = _read_heif_context(ctx, d, apply_transformations, convert_hdr_to_8bit)
-    heif_file.brand = brand
-    return heif_file
-
-
-def _read_heif_context(ctx, d, apply_transformations, convert_hdr_to_8bit):
+def _read_heif_context(ctx, d, apply_transformations: bool, convert_hdr_to_8bit: bool) -> UndecodedHeifFile:
+    brand = lib.heif_main_brand(d[:12], 12)
     error = lib.heif_context_read_from_memory_without_copy(ctx, d, len(d), ffi.NULL)
     check_libheif_error(error)
     p_handle = ffi.new("struct heif_image_handle **")
@@ -158,30 +159,32 @@ def _read_heif_context(ctx, d, apply_transformations, convert_hdr_to_8bit):
     check_libheif_error(error)
     collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
     handle = ffi.gc(p_handle[0], collect)
-    return _read_heif_handle(handle, apply_transformations, convert_hdr_to_8bit)
+    return _read_heif_handle(handle, apply_transformations, convert_hdr_to_8bit, brand=brand)
 
 
-def _read_heif_handle(handle, apply_transformations, convert_hdr_to_8bit):
-    width = lib.heif_image_handle_get_width(handle)
-    height = lib.heif_image_handle_get_height(handle)
-    has_alpha = bool(lib.heif_image_handle_has_alpha_channel(handle))
-    bit_depth = lib.heif_image_handle_get_luma_bits_per_pixel(handle)
-    metadata = _read_metadata(handle)
-    color_profile = _read_color_profile(handle)
-    heif_file = UndecodedHeifFile(
+def _read_heif_handle(handle, apply_transformations: bool, convert_hdr_to_8bit: bool, **kwargs) -> UndecodedHeifFile:
+    _width = lib.heif_image_handle_get_width(handle)
+    _height = lib.heif_image_handle_get_height(handle)
+    _has_alpha = bool(lib.heif_image_handle_has_alpha_channel(handle))
+    _bit_depth = lib.heif_image_handle_get_luma_bits_per_pixel(handle)
+    _metadata = _read_metadata(handle)
+    _exif = _retrieve_exif(_metadata)
+    _color_profile = _read_color_profile(handle)
+    return UndecodedHeifFile(
         handle,
-        size=(width, height),
-        has_alpha=has_alpha,
-        bit_depth=bit_depth,
-        metadata=metadata,
-        color_profile=color_profile,
+        size=(_width, _height),
+        has_alpha=_has_alpha,
+        bit_depth=_bit_depth,
         apply_transformations=apply_transformations,
         convert_hdr_to_8bit=convert_hdr_to_8bit,
+        exif=_exif,
+        metadata=_metadata,
+        color_profile=_color_profile,
+        **kwargs,
     )
-    return heif_file
 
 
-def _read_metadata(handle):
+def _read_metadata(handle) -> list:
     block_count = lib.heif_image_handle_get_number_of_metadata_blocks(handle, ffi.NULL)
     if block_count == 0:
         return []
@@ -204,62 +207,61 @@ def _read_metadata(handle):
     return metadata
 
 
-def _read_color_profile(handle):
+def _retrieve_exif(metadata: list):
+    _result = None
+    _purge = []
+    for i, v in enumerate(metadata):
+        if v["type"] == "Exif":
+            _purge.append(i)
+            if not _result and v["data"] and v["data"][0:4] == b"Exif":
+                _result = v["data"]
+    for e in reversed(_purge):
+        del metadata[e]
+    return _result
+
+
+def _read_color_profile(handle) -> dict:
     profile_type = lib.heif_image_handle_get_color_profile_type(handle)
-    if profile_type == heif_color_profile_type_not_present:
-        return None
-    if profile_type == heif_color_profile_type_nclx:
+    if profile_type == HeifColorProfileType.NOT_PRESENT:
+        return {}
+    if profile_type == HeifColorProfileType.NCLX:
+        _type = "nclx"
         pp_data = ffi.new("struct heif_color_profile_nclx **")
         data_length = ffi.sizeof("struct heif_color_profile_nclx")
         error = lib.heif_image_handle_get_nclx_color_profile(handle, pp_data)
         p_data = pp_data[0]
         ffi.release(pp_data)
     else:
+        _type = "prof" if profile_type == HeifColorProfileType.PROF else "rICC"
         data_length = lib.heif_image_handle_get_raw_color_profile_size(handle)
         if data_length == 0:
-            return None
+            return {"type": _type, "data": b""}
         p_data = ffi.new("char[]", data_length)
         error = lib.heif_image_handle_get_raw_color_profile(handle, p_data)
     check_libheif_error(error)
     data_buffer = ffi.buffer(p_data, data_length)
-    data = bytes(data_buffer)
-    if profile_type == heif_color_profile_type_rICC:
-        color_profile = {"type": "rICC", "data": data}
-    elif profile_type == heif_color_profile_type_prof:
-        color_profile = {"type": "prof", "data": data}
-    else:
-        color_profile = {"type": "nclx", "data": data}
-    return color_profile
+    return {"type": _type, "data": bytes(data_buffer)}
 
 
-def _read_heif_image(handle, heif_file):
-    colorspace = heif_colorspace_RGB
+def _read_heif_image(handle, heif_file: UndecodedHeifFile):
+    colorspace = HeifColorspace.RGB
     if heif_file.convert_hdr_to_8bit or heif_file.bit_depth <= 8:
-        if heif_file.has_alpha:
-            chroma = heif_chroma_interleaved_RGBA
-        else:
-            chroma = heif_chroma_interleaved_RGB
+        chroma = HeifChroma.INTERLEAVED_RGBA if heif_file.has_alpha else HeifChroma.INTERLEAVED_RGB
     else:
         if heif_file.has_alpha:
-            chroma = heif_chroma_interleaved_RRGGBBAA_BE
+            chroma = HeifChroma.INTERLEAVED_RRGGBBAA_BE
         else:
-            chroma = heif_chroma_interleaved_RRGGBB_BE
+            chroma = HeifChroma.INTERLEAVED_RRGGBB_BE
     p_options = lib.heif_decoding_options_alloc()
     p_options = ffi.gc(p_options, lib.heif_decoding_options_free)
     p_options.ignore_transformations = int(not heif_file.apply_transformations)
     p_options.convert_hdr_to_8bit = int(heif_file.convert_hdr_to_8bit)
     p_img = ffi.new("struct heif_image **")
-    error = lib.heif_decode_image(
-        handle,
-        p_img,
-        colorspace,
-        chroma,
-        p_options,
-    )
+    error = lib.heif_decode_image(handle, p_img, colorspace, chroma, p_options)
     check_libheif_error(error)
     img = p_img[0]
     p_stride = ffi.new("int *")
-    p_data = lib.heif_image_get_plane_readonly(img, heif_channel_interleaved, p_stride)
+    p_data = lib.heif_image_get_plane_readonly(img, HeifChannel.INTERLEAVED, p_stride)
     stride = p_stride[0]
     data_length = heif_file.size[1] * stride
     # Release image as soon as no references to p_data left
@@ -270,5 +272,28 @@ def _read_heif_image(handle, heif_file):
     return data_buffer, stride
 
 
-def _release_heif_image(img, _p_data=None):
+def _release_heif_image(img, _p_data=None) -> None:
     lib.heif_image_release(img)
+
+
+# --------------------------------------------------------------------
+# DEPRECATED FUNCTIONS.
+
+
+def check(fp):
+    warn("Function `check` is deprecated, use `check_heif` instead.", DeprecationWarning)
+    return check_heif(fp)  # pragma: no cover
+
+
+def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # pylint: disable=redefined-builtin
+    warn("Function `open` is deprecated, use `open_heif` instead.", DeprecationWarning)
+    return open_heif(
+        fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
+    )  # pragma: no cover
+
+
+def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
+    warn("Function `read` is deprecated, use `read_heif` instead.", DeprecationWarning)
+    return read_heif(
+        fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
+    )  # pragma: no cover

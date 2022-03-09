@@ -47,7 +47,14 @@ jobs:
         run: pylint --rcfile .pylintrc pillow_heif
 
       - name: Generate coverage report
-        run: coverage run --rcfile=pyproject.toml -m pytest && coverage xml
+        run: coverage run --rcfile=pyproject.toml -m pytest && coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: ./htmlcov
+          if-no-files-found: error
 
       - name: Upload report to Codecov
         uses: codecov/codecov-action@v2
