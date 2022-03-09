@@ -1,7 +1,7 @@
 import os
 import builtins
 
-# from gc import collect
+from gc import collect
 from io import BytesIO
 from pathlib import Path
 from json import load
@@ -9,8 +9,7 @@ from json import load
 import pytest
 
 # from PIL import Image, ImageCms
-from pillow_heif import open_heif, read_heif, HeifFile, UndecodedHeifFile, HeifError, libheif_version
-
+from pillow_heif import open_heif, read_heif, libheif_version, HeifFile, UndecodedHeifFile, HeifError, HeifErrorCode
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 with builtins.open("images_info.json", "rb") as _:
@@ -100,17 +99,17 @@ avif_images = [e for e in heif_images if e["name"].endswith(".avif")]
 #     assert heif_file.data is not None
 #     assert heif_file.stride is not None
 #     heif_file.close()
-#
-#
-# @pytest.mark.parametrize("path", heif_files)
-# def test_open_and_load_data_not_collected(path):
-#     data = path.read_bytes()
-#     heif_file = pillow_heif.open_heif(data)
-#     data = None  # heif_file.load() should work even if there is no other refs to the source data.
-#     collect()
-#     heif_file.load()
-#
-#
+
+
+@pytest.mark.parametrize("img_info", heic_images[:2] + hif_images[:2] + avif_images[:2])
+def test_load_after_data_free_collect(img_info):
+    data = Path(img_info["file"]).read_bytes()
+    heif_file = open_heif(data)
+    data = None
+    collect()
+    heif_file.load()  # should work without refs to the source data.
+
+
 # def to_pillow_image(heif_file):
 #     return Image.frombytes(
 #         heif_file.mode,
@@ -146,24 +145,6 @@ avif_images = [e for e in heif_images if e["name"].endswith(".avif")]
 #         assert height > 0
 #         assert heif_file.brand != pillow_heif.constants.heif_brand_unknown_brand
 #         assert len(heif_file.data) > 0
-#
-#
-# @pytest.mark.parametrize("path", heif_files_wih_profiles)
-# def test_read_icc_color_profile(path):
-#     heif_file = pillow_heif.read_heif(path)
-#     i = path.name.find("__")
-#     expected_color_profile = path.name[i + 2 : i + 6]
-#     if expected_color_profile == "none":
-#         assert heif_file.color_profile is None
-#         return
-#     else:
-#         assert heif_file.color_profile["type"] == expected_color_profile
-#     if heif_file.color_profile["type"] in [
-#         "prof",
-#         "rICC",
-#     ]:
-#         profile = BytesIO(heif_file.color_profile["data"])
-#         ImageCms.getOpenProfile(profile)
 
 
 # @pytest.mark.parametrize("path", heic_files[:2] + hif_files[:2] + avif_files[:2])
@@ -201,6 +182,28 @@ def test_invalid_file(img_info):
     with pytest.raises(HeifError):
         with builtins.open(Path(img_info["file"]), "rb") as f:
             read_heif(f)
+
+
+@pytest.mark.parametrize("img_info", invalid_images)
+def test_heif_error(img_info):
+    try:
+        read_heif(Path(img_info["file"]))
+        assert False
+    except HeifError as exception:
+        assert exception.code == HeifErrorCode.INVALID_INPUT
+        assert repr(exception).find("HeifErrorCode.INVALID_INPUT") != -1
+        assert str(exception).find("Invalid input") != -1
+
+
+@pytest.mark.parametrize("img_info", heic_images[:1] + hif_images[:1] + avif_images[:1])
+def test_multiply_load(img_info):
+    heif_file = open_heif(Path(img_info["file"]))
+    for i in range(4):
+        res = heif_file.load()
+        assert heif_file is res
+        assert heif_file.data is not None
+        assert heif_file.stride is not None
+    heif_file.close()
 
 
 def test_lib_version():

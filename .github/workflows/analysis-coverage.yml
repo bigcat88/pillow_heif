@@ -53,7 +53,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage
-          path: ./coverage.xml
+          path: ./.coverage
           if-no-files-found: error
 
       - name: Upload report to Codecov
