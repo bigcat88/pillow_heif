@@ -62,13 +62,7 @@ avif_images = [e for e in heif_images if e["name"].endswith(".avif")]
 #     with open(path, "rb") as f:
 #         d = pillow_heif.reader._get_bytes(f.read())
 #     assert d == path.read_bytes()
-#
-#
-# @pytest.fixture(scope="session", params=heif_files)
-# def heif_file(request):
-#     return pillow_heif.read_heif(request.param)
-#
-#
+
 # @pytest.mark.parametrize("path", heif_files)
 # def test_open_and_load(path):
 #     heif_file = pillow_heif.open_heif(path)
