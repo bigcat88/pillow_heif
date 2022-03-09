@@ -1,11 +1,11 @@
 name: Build from src
 
 on:
-  pull_request:
-    branches: [master]
-    types: [opened, reopened, edited]
-  push:
-    branches: [master]
+#  pull_request:
+#    branches: [master]
+#    types: [opened, reopened, edited]
+#  push:
+#    branches: [master]
   workflow_dispatch:
 
 jobs:
