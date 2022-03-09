@@ -21,7 +21,7 @@ All notable changes to this project will be documented in this file.
 
 - `register_heif_opener` optionally accepts `**kwargs` as parameter, for overwriting values in config, when used as `opener`.
 - `check_heif_magic` marked as deprecated. Use `is_supported` function instead.
-- `check_heif` always return `heif_filetype_no` when there are less 12 bytes in input.
+- `check_heif` always return `HeifFiletype.NO` when there are less 12 bytes in input.
 - Warning(`Unssuported HEIF... trying anyway`) was removed.
 - `(Undecoded)HeifFile` and `HeifImageFile` classes was slightly changed(more consistent now). See new description in README.md.
 - Many other improvements and optimizations.

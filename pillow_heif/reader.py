@@ -30,10 +30,12 @@ class HeifFile:
         self.bit_depth = bit_depth
         self.data = data
         self.stride = stride
-        self.brand = kwargs.get("brand", HeifBrand.UNKNOWN)
-        self.exif = kwargs.get("exif", None)
-        self.metadata = kwargs.get("metadata", [])
-        self.color_profile = kwargs.get("color_profile", {})
+        self.info = {
+            "brand": kwargs.get("brand", HeifBrand.UNKNOWN),
+            "exif": kwargs.get("exif", None),
+            "metadata": kwargs.get("metadata", []),
+            "color_profile": kwargs.get("color_profile", {}),
+        }
 
     def __repr__(self):
         return (

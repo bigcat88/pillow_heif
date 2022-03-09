@@ -135,12 +135,13 @@ The returned `UndecodedHeifFile` by function `open_heif` has the following prope
 * `has_alpha` - is a boolean indicating the presence of an alpha channel.
 * `mode` - the image mode, e.g. 'RGB' or 'RGBA'.
 * `bit_depth` - the number of bits in each component of a pixel.
-* `brand` - value from int enum `HeifBrand`.
-* `exif` - exif data or `None`.
-* `metadata` - is a list of dictionaries with `type` and `data` keys, excluding `exif`. May be empty.
-* `color_profile` - is a dictionary with `type` and `data` keys. May be empty.
 * `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
 * `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
+* `info` dictionary keys:
+  * `brand` - value from int enum `HeifBrand`.
+  * `exif` - exif data or `None`.
+  * `metadata` - is a list of dictionaries with `type` and `data` keys, excluding `exif`. May be empty.
+  * `color_profile` - is a dictionary with `type` and `data` keys. May be empty.
 
 ### The HeifFile object
 

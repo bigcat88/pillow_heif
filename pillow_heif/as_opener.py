@@ -32,16 +32,13 @@ class HeifImageFile(ImageFile.ImageFile):
     def _init_from_undecoded_heif(self, heif_file: UndecodedHeifFile) -> None:
         self._size = heif_file.size
         self.mode = heif_file.mode
-        self.metadata = heif_file.metadata
-        self.info["brand"] = heif_file.brand
-        self.info["exif"] = heif_file.exif
-        self.info["metadata"] = heif_file.metadata
-        self.info["color_profile"] = heif_file.color_profile
-        if heif_file.color_profile:
-            if heif_file.color_profile["type"] in ("rICC", "prof"):
-                self.info["icc_profile"] = heif_file.color_profile["data"]
+        for k in ("brand", "exif", "metadata", "color_profile"):
+            self.info[k] = heif_file.info[k]
+        if heif_file.info["color_profile"]:
+            if heif_file.info["color_profile"]["type"] in ("rICC", "prof"):
+                self.info["icc_profile"] = heif_file.info["color_profile"]["data"]
             else:
-                self.info["nclx_profile"] = heif_file.color_profile["data"]
+                self.info["nclx_profile"] = heif_file.info["color_profile"]["data"]
 
     def verify(self) -> None:
         pass  # we already check this in `_open`, no need to check second time.
