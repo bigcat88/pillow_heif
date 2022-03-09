@@ -23,6 +23,29 @@
     "nclx_profile": null
   },
   {
+    "name": "lego.heic",
+    "file": "images/lego.heic",
+    "hash": "7e289ecfc7ad9fd049577641be4eb5ee",
+    "size": 1759185,
+    "strict": true,
+    "valid": true,
+    "brand": "HEIC",
+    "exif_length": 2124,
+    "exif": {
+      "0th": 11,
+      "Exif": 32,
+      "GPS": 15,
+      "Interop": null,
+      "1st": null,
+      "thumbnail": null
+    },
+    "metadata": {},
+    "color_profile": "prof",
+    "color_profile_length": 548,
+    "icc_profile": 548,
+    "nclx_profile": null
+  },
+  {
     "name": "parfait.heic",
     "file": "images/parfait.heic",
     "hash": "50f57413c791cc036e32a6365ce56684",
@@ -60,31 +83,8 @@
     "nclx_profile": null
   },
   {
-    "name": "lego__prof.heic",
-    "file": "images/lego__prof.heic",
-    "hash": "7e289ecfc7ad9fd049577641be4eb5ee",
-    "size": 1759185,
-    "strict": true,
-    "valid": true,
-    "brand": "HEIC",
-    "exif_length": 2124,
-    "exif": {
-      "0th": 11,
-      "Exif": 32,
-      "GPS": 15,
-      "Interop": null,
-      "1st": null,
-      "thumbnail": null
-    },
-    "metadata": {},
-    "color_profile": "prof",
-    "color_profile_length": 548,
-    "icc_profile": 548,
-    "nclx_profile": null
-  },
-  {
-    "name": "arrow__prof.heic",
-    "file": "images/arrow__prof.heic",
+    "name": "arrow.heic",
+    "file": "images/arrow.heic",
     "hash": "d7d9cbc00e6fe00b0b377f757322a597",
     "size": 792052,
     "strict": true,
@@ -106,8 +106,8 @@
     "nclx_profile": null
   },
   {
-    "name": "93FG5564__nclx.hif",
-    "file": "images/hif/93FG5564__nclx.hif",
+    "name": "93FG5564.hif",
+    "file": "images/hif/93FG5564.hif",
     "hash": "1d4f73c77b7877e9be29c344464b0bc1",
     "size": 6069895,
     "strict": true,
@@ -131,8 +131,8 @@
     "nclx_profile": 52
   },
   {
-    "name": "93FG5559__nclx.hif",
-    "file": "images/hif/93FG5559__nclx.hif",
+    "name": "93FG5559.hif",
+    "file": "images/hif/93FG5559.hif",
     "hash": "2e9ec4d5f547cb95f3ac5a9a6433797c",
     "size": 6261974,
     "strict": true,
@@ -156,25 +156,10 @@
     "nclx_profile": 52
   },
   {
-    "name": "PUG3__none.heic",
-    "file": "images/Pug/PUG3__none.heic",
-    "hash": "3a0ab942c6f2544d3e635e866ae0a67b",
-    "size": 2131494,
-    "strict": true,
-    "valid": true,
-    "brand": "HEIC",
-    "exif_length": null,
-    "metadata": {},
-    "color_profile": "prof",
-    "color_profile_length": 0,
-    "icc_profile": 0,
-    "nclx_profile": null
-  },
-  {
-    "name": "PUG1__prof.heic",
-    "file": "images/Pug/PUG1__prof.heic",
-    "hash": "67e125fc6e3786de25460a66fcb24d02",
-    "size": 2128452,
+    "name": "PUG2.heic",
+    "file": "images/Pug/PUG2.heic",
+    "hash": "8e05b594cd3fda0d6c9d33e54a6c12b2",
+    "size": 2109114,
     "strict": true,
     "valid": true,
     "brand": "HEIC",
@@ -194,10 +179,25 @@
     "nclx_profile": null
   },
   {
-    "name": "PUG2__prof.heic",
-    "file": "images/Pug/PUG2__prof.heic",
-    "hash": "8e05b594cd3fda0d6c9d33e54a6c12b2",
-    "size": 2109114,
+    "name": "PUG3.heic",
+    "file": "images/Pug/PUG3.heic",
+    "hash": "3a0ab942c6f2544d3e635e866ae0a67b",
+    "size": 2131494,
+    "strict": true,
+    "valid": true,
+    "brand": "HEIC",
+    "exif_length": null,
+    "metadata": {},
+    "color_profile": "prof",
+    "color_profile_length": 0,
+    "icc_profile": 0,
+    "nclx_profile": null
+  },
+  {
+    "name": "PUG1.heic",
+    "file": "images/Pug/PUG1.heic",
+    "hash": "67e125fc6e3786de25460a66fcb24d02",
+    "size": 2128452,
     "strict": true,
     "valid": true,
     "brand": "HEIC",
