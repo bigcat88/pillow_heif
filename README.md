@@ -121,10 +121,10 @@ image = Image.frombytes(
 ### The HeifImageFile object (as Pillow plugin)
 The returned `HeifImageFile` by `Pillow` function `Image.open` has the following additional properties beside regular:
 * `info` dictionary keys:
-  * `brand` - the same as in an `UndecodedHeifFile.brand`.
-  * `exif` - the same as in an `UndecodedHeifFile.exif`.
-  * `metadata` - the same as in an `UndecodedHeifFile.metadata`.
-  * `color_profile` - the same as in an `UndecodedHeifFile.color_profile`.
+  * `brand` - value from int enum `HeifBrand`.
+  * `exif` - exif data or `None`.
+  * `metadata` - is a list of dictionaries with `type` and `data` keys, excluding `exif`. May be empty.
+  * `color_profile` - is a dictionary with `type` and `data` keys. May be empty.
   * `icc_profile` - contains data and present only when file has `ICC` color profile(`prof` or `rICC`).
   * `nclx_profile` - contains data and present only when file has `NCLX` color profile.
 
@@ -137,11 +137,7 @@ The returned `UndecodedHeifFile` by function `open_heif` has the following prope
 * `bit_depth` - the number of bits in each component of a pixel.
 * `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
 * `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
-* `info` dictionary keys:
-  * `brand` - value from int enum `HeifBrand`.
-  * `exif` - exif data or `None`.
-  * `metadata` - is a list of dictionaries with `type` and `data` keys, excluding `exif`. May be empty.
-  * `color_profile` - is a dictionary with `type` and `data` keys. May be empty.
+* `info` dictionary with the same content as in `HeifImageFile.info`.
 
 ### The HeifFile object
 

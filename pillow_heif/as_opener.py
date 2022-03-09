@@ -33,11 +33,9 @@ class HeifImageFile(ImageFile.ImageFile):
         self.mode = heif_file.mode
         for k in ("brand", "exif", "metadata", "color_profile"):
             self.info[k] = heif_file.info[k]
-        if heif_file.info["color_profile"]:
-            if heif_file.info["color_profile"]["type"] in ("rICC", "prof"):
-                self.info["icc_profile"] = heif_file.info["color_profile"]["data"]
-            else:
-                self.info["nclx_profile"] = heif_file.info["color_profile"]["data"]
+        for k in ("icc_profile", "nclx_profile"):
+            if k in heif_file.info:
+                self.info[k] = heif_file.info[k]
 
     def verify(self) -> None:
         pass  # we already check this in `_open`, no need to check second time.

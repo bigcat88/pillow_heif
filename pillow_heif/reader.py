@@ -36,6 +36,11 @@ class HeifFile:
             "metadata": kwargs.get("metadata", []),
             "color_profile": kwargs.get("color_profile", {}),
         }
+        if self.info["color_profile"]:
+            if self.info["color_profile"]["type"] in ("rICC", "prof"):
+                self.info["icc_profile"] = self.info["color_profile"]["data"]
+            else:
+                self.info["nclx_profile"] = self.info["color_profile"]["data"]
 
     def __repr__(self):
         return (
