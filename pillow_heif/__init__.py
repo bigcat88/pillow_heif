@@ -9,6 +9,7 @@ from .constants import *  # pylint: disable=unused-wildcard-import
 from .reader import (
     HeifFile,
     UndecodedHeifFile,
+    is_supported,
     check_heif,
     read_heif,
     open_heif,
@@ -18,6 +19,7 @@ from .reader import (
 )
 from .writer import write_heif
 from .error import HeifError
-from .as_opener import register_heif_opener, check_heif_magic
+from .as_opener import register_heif_opener, check_heif_magic, HeifImageFile
 from ._version import __version__
 from ._lib_version import libheif_version
+from ._options import get_cfg_options, reset_cfg_options

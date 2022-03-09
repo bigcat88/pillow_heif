@@ -23,16 +23,7 @@ from ._options import OPTIONS
 
 
 class HeifFile:
-    def __init__(
-        self,
-        *,
-        size: tuple,
-        has_alpha: bool,
-        bit_depth: int,
-        data,
-        stride,
-        **kwargs,
-    ):
+    def __init__(self, *, size: tuple, has_alpha: bool, bit_depth: int, data, stride, **kwargs):
         self.size = size
         self.has_alpha = has_alpha
         self.mode = "RGBA" if has_alpha else "RGB"
@@ -40,6 +31,7 @@ class HeifFile:
         self.data = data
         self.stride = stride
         self.brand = kwargs.get("brand", HeifBrand.UNKNOWN)
+        self.exif = kwargs.get("exif", None)
         self.metadata = kwargs.get("metadata", [])
         self.color_profile = kwargs.get("color_profile", {})
 
@@ -160,21 +152,23 @@ def _read_heif_context(ctx, d, apply_transformations: bool, convert_hdr_to_8bit:
 
 
 def _read_heif_handle(handle, apply_transformations: bool, convert_hdr_to_8bit: bool, **kwargs) -> UndecodedHeifFile:
-    width = lib.heif_image_handle_get_width(handle)
-    height = lib.heif_image_handle_get_height(handle)
-    has_alpha = bool(lib.heif_image_handle_has_alpha_channel(handle))
-    bit_depth = lib.heif_image_handle_get_luma_bits_per_pixel(handle)
-    metadata = _read_metadata(handle)
-    color_profile = _read_color_profile(handle)
+    _width = lib.heif_image_handle_get_width(handle)
+    _height = lib.heif_image_handle_get_height(handle)
+    _has_alpha = bool(lib.heif_image_handle_has_alpha_channel(handle))
+    _bit_depth = lib.heif_image_handle_get_luma_bits_per_pixel(handle)
+    _metadata = _read_metadata(handle)
+    _exif = _retrieve_exif(_metadata)
+    _color_profile = _read_color_profile(handle)
     return UndecodedHeifFile(
         handle,
-        size=(width, height),
-        has_alpha=has_alpha,
-        bit_depth=bit_depth,
-        metadata=metadata,
-        color_profile=color_profile,
+        size=(_width, _height),
+        has_alpha=_has_alpha,
+        bit_depth=_bit_depth,
         apply_transformations=apply_transformations,
         convert_hdr_to_8bit=convert_hdr_to_8bit,
+        exif=_exif,
+        metadata=_metadata,
+        color_profile=_color_profile,
         **kwargs,
     )
 
@@ -202,6 +196,19 @@ def _read_metadata(handle) -> list:
     return metadata
 
 
+def _retrieve_exif(metadata: list):
+    _result = None
+    _purge = []
+    for i, v in enumerate(metadata):
+        if v["type"] == "Exif":
+            _purge.append(i)
+            if not _result and v["data"] and v["data"][0:4] == b"Exif":
+                _result = v["data"]
+    for e in reversed(_purge):
+        del metadata[e]
+    return _result
+
+
 def _read_color_profile(handle) -> dict:
     profile_type = lib.heif_image_handle_get_color_profile_type(handle)
     if profile_type == HeifColorProfileType.NOT_PRESENT:
@@ -225,7 +232,7 @@ def _read_color_profile(handle) -> dict:
     return {"type": _type, "data": bytes(data_buffer)}
 
 
-def _read_heif_image(handle, heif_file):
+def _read_heif_image(handle, heif_file: UndecodedHeifFile):
     colorspace = HeifColorspace.RGB
     if heif_file.convert_hdr_to_8bit or heif_file.bit_depth <= 8:
         chroma = HeifChroma.INTERLEAVED_RGBA if heif_file.has_alpha else HeifChroma.INTERLEAVED_RGB
@@ -239,13 +246,7 @@ def _read_heif_image(handle, heif_file):
     p_options.ignore_transformations = int(not heif_file.apply_transformations)
     p_options.convert_hdr_to_8bit = int(heif_file.convert_hdr_to_8bit)
     p_img = ffi.new("struct heif_image **")
-    error = lib.heif_decode_image(
-        handle,
-        p_img,
-        colorspace,
-        chroma,
-        p_options,
-    )
+    error = lib.heif_decode_image(handle, p_img, colorspace, chroma, p_options)
     check_libheif_error(error)
     img = p_img[0]
     p_stride = ffi.new("int *")

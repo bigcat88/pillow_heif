@@ -7,14 +7,14 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Linux PyPy 3.7 & 3.8 wheels.
-- Added `cfg_options` function, to change config when used not as `opener`. Look at `_options.py` for more info.
-- OPTIONS: `strict` and `avif` - look at `reader.is_supported` function description.
-- `class HeifErrorCode(Enum)`
 - IMPORTANT! `heif_filetype_*` constants will be deprecated in the future. Use `class HeifFiletype(IntEnum)`.
 - IMPORTANT! `heif_brand_*` constants will be deprecated in the future. Use `class HeifBrand(IntEnum)`.
-- IMPORTANT! `heif_colorspace_*` constants will be deprecated in the future. Use `class HeifColorspace(IntEnum)`.
-- IMPORTANT! `heif_channel_*` constants will be deprecated in the future. Use `class HeifChannel(IntEnum)`.
-- IMPORTANT! `heif_chroma_*` constants will be deprecated in the future. Use `class HeifChroma(IntEnum)`.
+- Added `cfg_options` function, to change config when used not as `opener`. Look at `_options.py` for more info.
+- OPTIONS: `strict` and `avif` - look at `reader.is_supported` function description.
+- `class HeifErrorCode(IntEnum)` to use in custom exception handler.
+- `class HeifColorspace(IntEnum)` instead of `heif_colorspace_*` constants.
+- `class HeifChannel(IntEnum)` instead of `heif_channel_*` constants.
+- `class HeifChroma(IntEnum)` instead of `heif_chroma_*` constants.
 - A few examples how to use.
 
 ### Changed
@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Warning(`Unssuported HEIF... trying anyway`) was removed.
 - `(Undecoded)HeifFile` and `HeifImageFile` classes was slightly changed(more consistent now). See new description in README.md.
 - Many other improvements and optimizations.
+- When used as reader, functions `open_heif` and `read_heif` raise `HeifError` exception if file is not valid or broken.
 
 ### Fixed
 
