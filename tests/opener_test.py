@@ -64,13 +64,20 @@ def test_open_images(img_info):
 
 @pytest.mark.parametrize("img_info", heic_images[:4] + hif_images[:4] + avif_images[:4])
 def test_load_images(img_info):
-    pillow_image = Image.open(Path(img_info["file"]))
-    pillow_image.load()
-    assert getattr(pillow_image, "heif_file") is None
+    with builtins.open(Path(img_info["file"]), "rb") as f:
+        bytes_io = BytesIO(f.read())
+    fh = builtins.open(Path(img_info["file"]), "rb")
+    for _as in (Path(img_info["file"]), Path(img_info["file"]).as_posix(), bytes_io, fh):
+        pillow_image = Image.open(_as)
+        assert getattr(pillow_image, "heif_file") is not None
+        pillow_image.load()
+        assert getattr(pillow_image, "heif_file") is None
 
 
 @pytest.mark.parametrize("img_info", invalid_images)
 def test_invalid_data(img_info):
+    with pytest.raises(UnidentifiedImageError):
+        Image.open(Path(img_info["file"]).as_posix())
     with pytest.raises(UnidentifiedImageError):
         Image.open(Path(img_info["file"]))
     with pytest.raises(UnidentifiedImageError):
