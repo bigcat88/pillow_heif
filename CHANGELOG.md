@@ -29,7 +29,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- If `color_profile` is `prof` or `rICC` and data empty, `color_profile` will contain with `data`=`None` instead of `color_profile`=`None`.
+- If `color_profile` is `prof` or `rICC` and data empty, `color_profile` will contain `data`=`None` instead of `color_profile`=`None`.
+- `check_heif`, `is_supported`, `open_heif` and `read_heif` now preserves file pointer, if input was file handle.
 
 ## [0.1.8 - 2022-03-05]
 

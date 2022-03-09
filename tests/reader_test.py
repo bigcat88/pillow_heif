@@ -9,7 +9,18 @@ from json import load
 import pytest
 
 # from PIL import Image, ImageCms
-from pillow_heif import open_heif, read_heif, libheif_version, HeifFile, UndecodedHeifFile, HeifError, HeifErrorCode
+from pillow_heif import (
+    check_heif,
+    is_supported,
+    open_heif,
+    read_heif,
+    libheif_version,
+    HeifFile,
+    UndecodedHeifFile,
+    HeifFiletype,
+    HeifError,
+    HeifErrorCode,
+)
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 with builtins.open("images_info.json", "rb") as _:
@@ -187,6 +198,23 @@ def test_heif_error(img_info):
         assert exception.code == HeifErrorCode.INVALID_INPUT
         assert repr(exception).find("HeifErrorCode.INVALID_INPUT") != -1
         assert str(exception).find("Invalid input") != -1
+
+
+@pytest.mark.parametrize("img_info", heic_images[:1] + hif_images[:1] + avif_images[:1])
+def test_with_file_handle(img_info):
+    with builtins.open(Path(img_info["file"]), "rb") as fh:
+        assert is_supported(fh)
+        assert check_heif(fh) != HeifFiletype.NO
+        heif_file_1 = open_heif(fh)
+        heif_file_2 = open_heif(fh)
+        heif_file_1.load()
+        heif_file_2.load()
+        assert repr(heif_file_1) == repr(heif_file_2)
+        heif_file_1.close()
+        assert repr(heif_file_1) != repr(heif_file_2)
+        heif_file_2.close()
+        assert repr(heif_file_1) == repr(heif_file_2)
+        assert fh.tell() == 0
 
 
 @pytest.mark.parametrize("img_info", heic_images[:1] + hif_images[:1] + avif_images[:1])

@@ -76,7 +76,7 @@ def check_heif(fp):
     Note: If `fp` contains less 12 bytes, then returns `HeifFiletype.NO`.
 
     :param fp: A filename (string), pathlib.Path object, file object or bytes.
-       The file object must implement ``file.read`` and ``file.seek`` methods,
+       The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
        and be opened in binary mode.
     :returns: `HeifFiletype`
     """
@@ -124,7 +124,11 @@ def _get_bytes(fp, length=None):
         with builtins.open(fp, "rb") as f:
             return f.read(length or -1)
     if hasattr(fp, "read"):
-        return fp.read(length or -1)
+        offset = fp.tell() if hasattr(fp, "tell") else None
+        b = fp.read(length or -1)
+        if offset is not None and hasattr(fp, "seek"):
+            fp.seek(offset)
+        return b
     return bytes(fp)[:length]
 
 
