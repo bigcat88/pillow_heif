@@ -1,1 +1,2 @@
 *.h linguist-vendored=false
+*.Dockerfile linguist-vendored=false
