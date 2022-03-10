@@ -158,6 +158,21 @@ class HeifErrorCode(IntEnum):
     """Application has asked for a color profile type that does not exist."""
 
 
+class HeifCompressionFormat(IntEnum):
+    """Possible HEIF compression formats."""
+
+    UNDEFINED = 0
+    """The compression format is not defined."""
+    HEVC = 1
+    """The compression format is HEVC."""
+    AVC = 2
+    """The compression format is AVC."""
+    JPEG = 3
+    """The compression format is JPEG."""
+    AV1 = 4
+    """The compression format is AV1."""
+
+
 # --------------------------------------------------------------------
 # DEPRECATED FUNCTIONS.
 # pylint: disable=invalid-name

@@ -1,6 +1,7 @@
 from os import path, chdir, remove, makedirs, environ, getcwd
 from subprocess import run, DEVNULL, PIPE, STDOUT, TimeoutExpired, CalledProcessError
 from re import search, MULTILINE, IGNORECASE
+from platform import machine
 
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
@@ -182,7 +183,8 @@ def build_libs_linux():
             "libde265",
             _is_musllinux,
         )
-        if not is_library_installed("aom"):
+        # Don't try to build aom on armv7, it fails to build anyway.
+        if machine().find("armv7") == -1 and not is_library_installed("aom"):
             build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.3.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",

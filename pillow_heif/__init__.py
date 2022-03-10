@@ -21,5 +21,5 @@ from .writer import write_heif
 from .error import HeifError
 from .as_opener import register_heif_opener, check_heif_magic, HeifImageFile
 from ._version import __version__
-from ._lib_version import libheif_version
+from ._lib_info import libheif_version, have_decoder_for_format, have_encoder_for_format, libheif_info
 from ._options import get_cfg_options, reset_cfg_options

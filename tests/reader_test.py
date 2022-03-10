@@ -1,13 +1,12 @@
 import os
 import builtins
-
+from warnings import warn
 from gc import collect
 from io import BytesIO
 from pathlib import Path
 from json import load
 
 import pytest
-
 from PIL import Image, ImageCms
 from pillow_heif import (
     check_heif,
@@ -15,11 +14,13 @@ from pillow_heif import (
     open_heif,
     read_heif,
     libheif_version,
+    libheif_info,
     HeifFile,
     UndecodedHeifFile,
     HeifFiletype,
     HeifError,
     HeifErrorCode,
+    HeifCompressionFormat,
 )
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -31,6 +32,9 @@ heif_images = [e for e in all_images if e["valid"]]
 heic_images = [e for e in heif_images if e["name"].endswith(".heic")]
 hif_images = [e for e in heif_images if e["name"].endswith(".hif")]
 avif_images = [e for e in heif_images if e["name"].endswith(".avif")]
+if not libheif_info()["en_de_coders"][HeifCompressionFormat.AV1.name]:
+    warn("Skipping tests for `AV1` format, no codecs support.")
+    avif_images.clear()
 
 
 @pytest.mark.parametrize("img_info", heif_images)

@@ -6,9 +6,11 @@ Opener for Pillow library.
 from warnings import warn
 from PIL import Image, ImageFile
 
+from .constants import HeifCompressionFormat
 from .reader import is_supported, open_heif, UndecodedHeifFile
 from .error import HeifError
 from ._options import get_cfg_options
+from ._lib_info import have_decoder_for_format
 
 
 class HeifImageFile(ImageFile.ImageFile):
@@ -57,7 +59,7 @@ def register_heif_opener(**kwargs):
     Image.register_open(HeifImageFile.format, HeifImageFile, is_supported)
     extensions = [".heic", ".hif"]
     Image.register_mime(HeifImageFile.format, "image/heif")
-    if __options["avif"]:
+    if __options["avif"] and have_decoder_for_format(HeifCompressionFormat.AV1):
         extensions.append(".avif")
         Image.register_mime(HeifImageFile.format, "image/avif")
     Image.register_extensions(HeifImageFile.format, extensions)

@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.10 - 2022-03-1x]
+
+### Added
+
+- class `HeifCompressionFormat(IntEnum)`. `have_decoder_for_format` and `have_encoder_for_format` functions.
+- function `libheif_info` that returns dictionary with version and avalaible (en)/(de)coders.
+
+### Changed
+
+### Fixed
+
 ## [0.1.9 - 2022-03-10]
 
 ### Added
