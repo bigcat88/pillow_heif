@@ -1,0 +1,21 @@
+name: Feature request
+description: Suggest a new feature, enhancement to an existing, etc.
+labels: ['New Feature', 'Needs Triage']
+
+body:
+- type: textarea
+  attributes:
+    label: Describe why it is important and where it will be useful
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Describe your proposed solution
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Describe alternatives you've considered, if relevant
+- type: textarea
+  attributes:
+    label: Additional context

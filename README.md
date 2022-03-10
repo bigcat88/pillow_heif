@@ -41,7 +41,7 @@ Note: **CPython** **musllinux**/**manylinux** wheels for **i686**, **x64_86** an
 (Recommended) From [PyPi](https://pypi.org/project/pillow-heif/):
 
 ```bash
-pip3 install pillow_heif
+python3 -m pip install pillow_heif
 ```
 
 
