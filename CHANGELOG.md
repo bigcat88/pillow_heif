@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- if OPTIONS["avif"] is False from start, then pillow_heif was build from source without codecs for AVIF(sometimes happens on armv7) and you should not set it to true.
+
 ### Fixed
 
 ## [0.1.9 - 2022-03-10]

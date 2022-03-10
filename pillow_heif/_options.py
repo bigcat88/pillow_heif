@@ -3,9 +3,13 @@ Options to change pillow_heif runtime behaviour.
 """
 
 
+from .constants import HeifCompressionFormat
+from ._lib_info import have_decoder_for_format
+
+
 def _get_default_cfg_options() -> dict:
     return {
-        "avif": True,
+        "avif": have_decoder_for_format(HeifCompressionFormat.AV1),
         "strict": False,
     }
 

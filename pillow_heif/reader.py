@@ -95,8 +95,9 @@ def is_supported(fp) -> bool:
     If `heif_filetype_yes_supported` or `heif_filetype_maybe` then returns True.
     If `heif_filetype_no` then returns False.
     OPTIONS
-    "strict" value determine what to return for `heif_filetype_yes_unsupported`.
-    "avif" value determine will be `avif` files marked as supported.
+    "strict": `bool` determine what to return for `heif_filetype_yes_unsupported`.
+    "avif": `bool` determine will be `avif` files marked as supported.
+    If it is False from start, then pillow_heif was build without codecs for AVIF and you should not set it to true.
     """
     magic = _get_bytes(fp, 12)
     heif_filetype = check_heif(magic)
@@ -276,6 +277,9 @@ def _release_heif_image(img, _p_data=None) -> None:
     lib.heif_image_release(img)
 
 
+# heif_image_handle_get_number_of_thumbnails
+# heif_image_handle_get_list_of_thumbnail_IDs
+# heif_image_handle_get_thumbnail
 # --------------------------------------------------------------------
 # DEPRECATED FUNCTIONS.
 
