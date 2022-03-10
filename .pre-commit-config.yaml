@@ -8,7 +8,7 @@ repos:
     -   id: check-toml
     -   id: name-tests-test
 -   repo: https://github.com/psf/black
-    rev: 21.6b0
+    rev: 22.1.0
     hooks:
     -   id: black
 -   repo: https://gitlab.com/pycqa/flake8
@@ -17,11 +17,11 @@ repos:
     -   id: flake8
         types: [file, python]
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.930
+    rev: v0.931
     hooks:
      -  id: mypy
         files: pillow_heif/
-        additional_dependencies: [pillow, cffi]
+        additional_dependencies: [pillow, cffi, pytest]
 
 default_language_version:
     python: python3.9

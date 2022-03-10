@@ -52,9 +52,9 @@ body:
     label: Versions
     render: shell
     description: |
-      Please run the following and paste the output below.
+      Please run the following and paste the output below(python, os, cpu, pillow_heif and libheif versions).
       ```python
-      import pillow_heif; pillow_heif.libheif_version(); pillow_heif.__version__
+      import platform, sys, pillow_heif; print(sys.version, platform.platform(), pillow_heif.__version__, pillow_heif.libheif_version(), sep='\n')
       ```
   validations:
     required: true
