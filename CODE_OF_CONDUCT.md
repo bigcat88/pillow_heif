@@ -6,5 +6,5 @@ Treat everybody equally, and value their contributions.
 
 Decisions are made based on technical merit and consensus.
 
-Follow by the principles of openness, respect, and consideration of others of
-the Python Software Foundation: https://www.python.org/psf/codeofconduct/
+Follow by the principles of openness, respect, and consideration of others.
+Try to follow most principles described here: https://nextcloud.com/code-of-conduct/
