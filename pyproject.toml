@@ -1,7 +1,7 @@
 #[build-system]
 #requires = [
 #    "setuptools>=41.2.0",
-#    "cffi>=1.15.0",
+#    "cffi>=1.14.0",
 #]
 #build-backend = "setuptools.build_meta"
 #
@@ -49,4 +49,3 @@ minversion = "6.0"
 testpaths = [
     "tests",
 ]
-addopts = "--ignore=memory_leaks.py"

@@ -23,12 +23,13 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 with builtins.open("images_info.json", "rb") as _:
     all_images = load(_)
+
+if libheif_info()["en_de_coders"][HeifCompressionFormat.AV1.name]:
+    warn("Skipping tests for `AV1` format due to lack of codecs.")
+    all_images = [e for e in all_images if not e["name"].endswith(".avif")]
+
 invalid_images = [e for e in all_images if not e["valid"]]
 heif_images = [e for e in all_images if e["valid"]]
-
-if not libheif_info()["en_de_coders"][HeifCompressionFormat.AV1.name]:
-    warn("Skipping tests for `AV1` format due to lack of codecs.")
-    heif_images = [e for e in heif_images if not e["name"].endswith(".avif")]
 
 heic_images = [e for e in heif_images if e["name"].endswith(".heic")]
 hif_images = [e for e in heif_images if e["name"].endswith(".hif")]
@@ -104,13 +105,15 @@ def test_invalid_data(img_info):
 def test_cfg_options(img_info_list):
     try:
         get_cfg_options()["avif"] = False
-        avif_skipped = 0
+        avif_files = skipped_files = 0
         for img_info in img_info_list:
             try:
+                if img_info["name"].endswith(".avif"):
+                    avif_files += 1
                 Image.open(Path(img_info["file"]))
             except UnidentifiedImageError:
-                avif_skipped += 1
-        assert avif_skipped == 2
+                skipped_files += 1
+        assert skipped_files == avif_files
     finally:
         reset_cfg_options()
 
@@ -131,7 +134,7 @@ def test_cfg_options(img_info_list):
 @mock.patch.object(Image, "register_open")
 def test_register_heif_opener(register_open, register_mime, register_extensions, params):
     reset_cfg_options()
-    mime_call_count = 2 if params.get("avif", True) else 1
+    mime_call_count = 2 if params.get("avif", True) and len(avif_images) else 1
     register_heif_opener(**params)
     register_open.assert_called_once()
     assert register_mime.call_count == mime_call_count

@@ -27,12 +27,13 @@ from pillow_heif import (
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 with builtins.open("images_info.json", "rb") as _:
     all_images = load(_)
+
+if libheif_info()["en_de_coders"][HeifCompressionFormat.AV1.name]:
+    warn("Skipping tests for `AV1` format due to lack of codecs.")
+    all_images = [e for e in all_images if not e["name"].endswith(".avif")]
+
 invalid_images = [e for e in all_images if not e["valid"]]
 heif_images = [e for e in all_images if e["valid"]]
-
-if not libheif_info()["en_de_coders"][HeifCompressionFormat.AV1.name]:
-    warn("Skipping tests for `AV1` format due to lack of codecs.")
-    heif_images = [e for e in heif_images if not e["name"].endswith(".avif")]
 
 heic_images = [e for e in heif_images if e["name"].endswith(".heic")]
 hif_images = [e for e in heif_images if e["name"].endswith(".hif")]
