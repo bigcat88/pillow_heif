@@ -26,12 +26,13 @@ with builtins.open("images_info.json", "rb") as _:
 invalid_images = [e for e in all_images if not e["valid"]]
 heif_images = [e for e in all_images if e["valid"]]
 
+if not libheif_info()["en_de_coders"][HeifCompressionFormat.AV1.name]:
+    warn("Skipping tests for `AV1` format due to lack of codecs.")
+    heif_images = [e for e in heif_images if not e["name"].endswith(".avif")]
+
 heic_images = [e for e in heif_images if e["name"].endswith(".heic")]
 hif_images = [e for e in heif_images if e["name"].endswith(".hif")]
 avif_images = [e for e in heif_images if e["name"].endswith(".avif")]
-if not libheif_info()["en_de_coders"][HeifCompressionFormat.AV1.name]:
-    warn("Skipping tests for `AV1` format, no codecs support.")
-    avif_images.clear()
 
 
 @pytest.mark.parametrize("img_info", heif_images)
