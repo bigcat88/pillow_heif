@@ -147,7 +147,6 @@ jobs:
         run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
 
   sdist:
-    needs: [wheels_linux, wheels_macos, wheels_windows]
     name: Source distribution
     runs-on: macos-11
 
@@ -193,7 +192,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   draft_release:
-    needs: [sdist]
+    needs: [sdist, wheels_linux, wheels_macos, wheels_windows]
     runs-on: ubuntu-20.04
     name: Build and create release
 
