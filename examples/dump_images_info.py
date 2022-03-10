@@ -87,3 +87,4 @@ if __name__ == "__main__":
     finally:
         with builtins.open("images_info.json", "w") as f:
             dump(expected_data, f, indent=2, skipkeys=True)
+            print("", file=f)

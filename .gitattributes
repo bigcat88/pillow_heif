@@ -1,2 +1,2 @@
-libheif/heif.h linguist-vendored=false
-*.Dockerfile linguist-vendored=false
+*.h linguist-vendored=true
+*.Dockerfile linguist-vendored=true
