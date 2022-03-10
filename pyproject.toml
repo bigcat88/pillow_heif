@@ -49,4 +49,3 @@ minversion = "6.0"
 testpaths = [
     "tests",
 ]
-addopts = "--ignore=memory_leaks.py"
