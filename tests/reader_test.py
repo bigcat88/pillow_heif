@@ -207,7 +207,7 @@ def test_heif_error(img_info):
 def test_libheif_info():
     info = libheif_info()
     assert info["decoders"]["HEVC"]
-    assert info["encoders"]["HEVC"]
+    # assert info["encoders"]["HEVC"]
     if machine().find("armv7") == -1:
         assert info["decoders"]["AV1"]
         # assert info["encoders"]["AV1"]
