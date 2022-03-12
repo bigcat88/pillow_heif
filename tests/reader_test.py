@@ -178,6 +178,19 @@ def test_invalid_file(img_info):
             read_heif(f)
 
 
+@pytest.mark.parametrize("img_info", all_images)
+def test_heif_check_filetype(img_info: dict):
+    with builtins.open(Path(img_info["file"]), "rb") as fh:
+        assert check_heif(fh) == img_info["check_heif"]
+        assert is_supported(fh) == img_info["supported"]
+        try:
+            if img_info["name"].endswith(".avif"):
+                options().avif = False
+                assert not is_supported(fh)
+        finally:
+            options().avif = True
+
+
 @pytest.mark.parametrize("img_info", invalid_images)
 def test_heif_error(img_info):
     try:

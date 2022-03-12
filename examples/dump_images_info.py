@@ -62,6 +62,7 @@ if __name__ == "__main__":
                 "file": image_path.as_posix(),
                 "hash": _hash,
                 "size": image_path.stat().st_size,
+                "check_heif": pillow_heif.check_heif(image_path),
             }
             # Try to open it in strict mode first.
             pillow_heif.options().strict = True
@@ -74,6 +75,7 @@ if __name__ == "__main__":
                 img_info["strict"] = False
             # Now we know, can be the file opened in `strict` mode or not.
             pillow_heif.options().strict = img_info["strict"]
+            img_info["supported"] = pillow_heif.is_supported(image_path)
             try:
                 img = Image.open(image_path)
                 img_info["valid"] = True
