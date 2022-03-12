@@ -13,14 +13,13 @@ from pillow_heif import (
     is_supported,
     open_heif,
     read_heif,
+    options,
     libheif_version,
-    libheif_info,
     HeifFile,
     UndecodedHeifFile,
     HeifFiletype,
     HeifError,
     HeifErrorCode,
-    HeifCompressionFormat,
 )
 
 
@@ -28,7 +27,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 with builtins.open("images_info.json", "rb") as _:
     all_images = load(_)
 
-if not libheif_info()["decoders"][HeifCompressionFormat.AV1.name]:
+if not options().avif:
     warn("Skipping tests for `AV1` format due to lack of codecs.")
     all_images = [e for e in all_images if not e["name"].endswith(".avif")]
 
@@ -177,6 +176,19 @@ def test_invalid_file(img_info):
     with pytest.raises(HeifError):
         with builtins.open(Path(img_info["file"]), "rb") as f:
             read_heif(f)
+
+
+@pytest.mark.parametrize("img_info", all_images)
+def test_heif_check_filetype(img_info: dict):
+    with builtins.open(Path(img_info["file"]), "rb") as fh:
+        assert check_heif(fh) == img_info["check_heif"]
+        assert is_supported(fh) == img_info["supported"]
+        try:
+            if img_info["name"].endswith(".avif"):
+                options().avif = False
+                assert not is_supported(fh)
+        finally:
+            options().avif = True
 
 
 @pytest.mark.parametrize("img_info", invalid_images)

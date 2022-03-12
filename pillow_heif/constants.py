@@ -2,7 +2,6 @@
 Enums from libheif that can be used.
 """
 
-
 from enum import IntEnum
 
 

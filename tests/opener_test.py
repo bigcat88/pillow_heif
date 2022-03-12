@@ -10,11 +10,8 @@ import pytest
 from PIL import Image, ImageCms, UnidentifiedImageError
 from pillow_heif import (
     register_heif_opener,
-    get_cfg_options,
-    reset_cfg_options,
+    options,
     HeifBrand,
-    libheif_info,
-    HeifCompressionFormat,
 )
 
 
@@ -24,7 +21,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 with builtins.open("images_info.json", "rb") as _:
     all_images = load(_)
 
-if not libheif_info()["decoders"][HeifCompressionFormat.AV1.name]:
+if not options().avif:
     warn("Skipping tests for `AV1` format due to lack of codecs.")
     all_images = [e for e in all_images if not e["name"].endswith(".avif")]
 
@@ -39,7 +36,7 @@ avif_images = [e for e in heif_images if e["name"].endswith(".avif")]
 @pytest.mark.parametrize("img_info", heif_images)
 def test_open_images(img_info):
     try:
-        get_cfg_options()["strict"] = img_info["strict"]
+        options().strict = img_info["strict"]
         pillow_image = Image.open(Path(img_info["file"]))
         assert getattr(pillow_image, "fp") is None
         assert getattr(pillow_image, "heif_file") is not None
@@ -72,7 +69,7 @@ def test_open_images(img_info):
         pillow_image.verify()
         # Here we must check verify, but currently verify do nothing.
     finally:
-        reset_cfg_options()
+        options().reset()
 
 
 @pytest.mark.parametrize("img_info", heic_images[:4] + hif_images[:4] + avif_images[:4])
@@ -104,7 +101,7 @@ def test_invalid_data(img_info):
 @pytest.mark.parametrize("img_info_list", [heic_images[:2] + hif_images[:2] + avif_images[:2]])
 def test_cfg_options(img_info_list):
     try:
-        get_cfg_options()["avif"] = False
+        options().avif = False
         avif_files = skipped_files = 0
         for img_info in img_info_list:
             try:
@@ -115,7 +112,7 @@ def test_cfg_options(img_info_list):
                 skipped_files += 1
         assert skipped_files == avif_files
     finally:
-        reset_cfg_options()
+        options().reset()
 
 
 @pytest.mark.parametrize(
@@ -133,9 +130,11 @@ def test_cfg_options(img_info_list):
 @mock.patch.object(Image, "register_mime")
 @mock.patch.object(Image, "register_open")
 def test_register_heif_opener(register_open, register_mime, register_extensions, params):
-    reset_cfg_options()
-    mime_call_count = 2 if params.get("avif", True) and len(avif_images) else 1
+    options().reset()
+    asser_value = options().avif and params.get("avif", options().avif)
     register_heif_opener(**params)
+    assert options().avif == asser_value
+    mime_call_count = 2 if options().avif else 1
     register_open.assert_called_once()
     assert register_mime.call_count == mime_call_count
     register_extensions.assert_called_once()
