@@ -27,7 +27,6 @@ RUN \
     apt-get update && \
     apt-get install -y \
       python3-pip \
-      libaom-dev \
       libfribidi-dev \
       libharfbuzz-dev \
       libjpeg-dev \
@@ -35,7 +34,11 @@ RUN \
       libffi-dev \
       libtool \
       git \
-      cmake; \
+      cmake && \
+      echo $(lsb_release -d) && \
+    if [$(lsb_release -d) ~= "22.04"]; then \
+      echo "URA"; \
+    fi \
   fi && \
   python3 -m pip install --upgrade pip pytest && \
   python3 -m pip install -v pillow_heif/. && \

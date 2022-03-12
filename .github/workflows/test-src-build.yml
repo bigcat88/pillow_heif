@@ -1,6 +1,7 @@
 name: Build from src
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: [Analysis & Coverage]
     types:
