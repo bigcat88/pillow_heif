@@ -131,7 +131,7 @@ def test_cfg_options(img_info_list):
 @mock.patch.object(Image, "register_open")
 def test_register_heif_opener(register_open, register_mime, register_extensions, params):
     options().reset()
-    asser_value = params.get("avif", options().avif)
+    asser_value = options().avif and params.get("avif", options().avif)
     register_heif_opener(**params)
     assert options().avif == asser_value
     mime_call_count = 2 if options().avif else 1
