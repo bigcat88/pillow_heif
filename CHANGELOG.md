@@ -7,11 +7,11 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - class `HeifCompressionFormat(IntEnum)`. `have_decoder_for_format` and `have_encoder_for_format` functions.
-- function `libheif_info` that returns dictionary with version and avalaible (en)/(de)coders.
+- function `libheif_info` that returns dictionary with version and avalaible (en)(de)coders.
 
 ### Changed
 
-- if OPTIONS["avif"] is False from start, then pillow_heif was build from source without codecs for AVIF(sometimes happens on armv7) and you should not set it to true.
+- OPTIONS["avif"] and OPTIONS["strict"] replaced with `options` function, that returns `PyLibHeifOptions` class with that properties.
 
 ### Fixed
 
