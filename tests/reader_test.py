@@ -5,6 +5,7 @@ from gc import collect
 from io import BytesIO
 from pathlib import Path
 from json import load
+from platform import machine
 
 import pytest
 from PIL import Image, ImageCms
@@ -15,6 +16,7 @@ from pillow_heif import (
     read_heif,
     options,
     libheif_version,
+    libheif_info,
     HeifFile,
     UndecodedHeifFile,
     HeifFiletype,
@@ -200,6 +202,15 @@ def test_heif_error(img_info):
         assert exception.code == HeifErrorCode.INVALID_INPUT
         assert repr(exception).find("HeifErrorCode.INVALID_INPUT") != -1
         assert str(exception).find("Invalid input") != -1
+
+
+def test_libheif_info():
+    info = libheif_info()
+    assert info["decoders"]["HEVC"]
+    assert info["encoders"]["HEVC"]
+    if machine().find("armv7") == -1:
+        assert info["decoders"]["AV1"]
+        # assert info["encoders"]["AV1"]
 
 
 def test_lib_version():
