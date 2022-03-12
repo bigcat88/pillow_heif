@@ -2,15 +2,12 @@
 Opener for Pillow library.
 """
 
-
 from warnings import warn
 from PIL import Image, ImageFile
 
-from .constants import HeifCompressionFormat
 from .reader import is_supported, open_heif, UndecodedHeifFile
 from .error import HeifError
-from ._options import get_cfg_options
-from ._lib_info import have_decoder_for_format
+from ._options import options
 
 
 class HeifImageFile(ImageFile.ImageFile):
@@ -53,13 +50,11 @@ class HeifImageFile(ImageFile.ImageFile):
 
 
 def register_heif_opener(**kwargs):
-    __options = get_cfg_options()
-    if kwargs:
-        __options.update(**kwargs)
+    options().update(**kwargs)
     Image.register_open(HeifImageFile.format, HeifImageFile, is_supported)
     extensions = [".heic", ".hif"]
     Image.register_mime(HeifImageFile.format, "image/heif")
-    if __options["avif"] and have_decoder_for_format(HeifCompressionFormat.AV1):
+    if options().avif:
         extensions.append(".avif")
         Image.register_mime(HeifImageFile.format, "image/avif")
     Image.register_extensions(HeifImageFile.format, extensions)

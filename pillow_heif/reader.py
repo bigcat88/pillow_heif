@@ -2,7 +2,6 @@
 Functions and classes for heif images to read.
 """
 
-
 import builtins
 import pathlib
 from functools import partial
@@ -19,7 +18,7 @@ from .constants import (
     HeifBrand,
 )
 from .error import check_libheif_error
-from ._options import OPTIONS
+from ._options import options
 
 
 class HeifFile:
@@ -101,11 +100,11 @@ def is_supported(fp) -> bool:
     """
     magic = _get_bytes(fp, 12)
     heif_filetype = check_heif(magic)
-    if heif_filetype == HeifFiletype.NO or (not OPTIONS["avif"] and magic[8:12] in (b"avif", b"avis")):
+    if heif_filetype == HeifFiletype.NO or (not options().avif and magic[8:12] in (b"avif", b"avis")):
         return False
     if heif_filetype in (HeifFiletype.YES_SUPPORTED, HeifFiletype.MAYBE):
         return True
-    return not OPTIONS["strict"]
+    return not options().strict
 
 
 def open_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> UndecodedHeifFile:
