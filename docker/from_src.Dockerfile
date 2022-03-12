@@ -34,7 +34,8 @@ RUN \
       libffi-dev \
       libtool \
       git \
-      cmake && \
+      cmake \
+      lsb-release && \
       echo $(lsb_release -d) && \
     if [$(lsb_release -d) ~= "22.04"]; then \
       echo "URA"; \
