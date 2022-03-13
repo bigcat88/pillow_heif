@@ -13,9 +13,9 @@ class PyLibHeifOptions:
         self._cfg = {}
         self.reset()
 
-    @property
-    def avif_enc(self):
-        return self._avif_enc
+    # @property
+    # def avif_enc(self):
+    #     return self._avif_enc
 
     @property
     def avif_dec(self):
@@ -27,9 +27,7 @@ class PyLibHeifOptions:
 
     @avif.setter
     def avif(self, value: bool):
-        if value and not self._avif_dec:
-            return
-        self._cfg["avif"] = value
+        self._cfg["avif"] = value if self._avif_dec else False
 
     @property
     def strict(self) -> bool:
@@ -55,5 +53,4 @@ CFG_OPTIONS: PyLibHeifOptions = PyLibHeifOptions()
 
 
 def options() -> PyLibHeifOptions:
-    """Returns class for runtime behaviour configuration."""
     return CFG_OPTIONS

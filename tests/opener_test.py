@@ -99,7 +99,7 @@ def test_invalid_data(img_info):
 
 
 @pytest.mark.parametrize("img_info_list", [heic_images[:2] + hif_images[:2] + avif_images[:2]])
-def test_cfg_options(img_info_list):
+def test_avif_cfg_option(img_info_list):
     try:
         options().avif = False
         avif_files = skipped_files = 0
@@ -111,6 +111,18 @@ def test_cfg_options(img_info_list):
             except UnidentifiedImageError:
                 skipped_files += 1
         assert skipped_files == avif_files
+    finally:
+        options().reset()
+
+
+@pytest.mark.parametrize("img_info", [e for e in heif_images if not e["strict"]])
+def test_strict_cfg_option(img_info):
+    try:
+        options().update(strict=True)
+        with pytest.raises(UnidentifiedImageError):
+            Image.open(Path(img_info["file"]))
+        options().update(strict=False)
+        Image.open(Path(img_info["file"]))
     finally:
         options().reset()
 
