@@ -41,5 +41,6 @@ RUN \
   python3 -m pip install --upgrade pip pytest && \
   python3 -m pip install -v pillow_heif/. && \
   echo "**** Build Done ****" && \
+  python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
   pytest -s pillow_heif && \
   echo "**** Test Done ****"

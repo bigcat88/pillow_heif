@@ -70,9 +70,10 @@ See [build_libs_linux](https://github.com/bigcat88/pillow_heif/blob/master/libhe
 Notes:
 
 1. Building for first time will take a long time, if in your system `cmake` version `>=3.16.1` is not present.
-2. Arm7(32 bit): On Alpine you need additionally install `aom` and `aom-dev` packages.
-3. Arm7(32 bit): On Ubuntu(22.04+) you need additionally install `libaom-dev` package for `AV1` codecs.
-4. Arm7(32 bit): On <Ubuntu(22.04+) you can compile it from source, but `AV1` codecs will be not avalaible.
+2. Arm7(32 bit):
+   * On Alpine you need additionally install `aom` and `aom-dev` packages.
+   * On Ubuntu(22.04+) you need additionally install `libaom-dev` package for `AV1` codecs.
+   * On Ubuntu less then 22.04 you can compile it from source, but `AV1` codecs will be not avalaible.
 
 ### MacOS
 ```bash
