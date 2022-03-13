@@ -4,31 +4,24 @@ on:
   pull_request:
     branches: [master]
     types: [opened, reopened, edited]
+    paths:
+      - 'pillow_heif/*.py'
+      - 'libheif/*.py'
+      - 'setup.*'
+      - 'pyproject.toml'
+      - 'tests/**'
   push:
     branches: [master]
+    paths:
+      - 'pillow_heif/*.py'
+      - 'libheif/*.py'
+      - 'setup.*'
+      - 'pyproject.toml'
+      - 'tests/**'
   workflow_dispatch:
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      py_src: ${{ steps.filter.outputs.py_src }}
-    steps:
-    - uses: actions/checkout@v3
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        base: ${{ github.ref }}
-        filters: |
-          py_src:
-            - 'pillow_heif/*.py'
-            - 'libheif/*.py'
-            - 'setup.py'
-            - 'tests/*.py'
-
   build-analysis:
-    needs: [changes]
-    if: ${{ needs.changes.outputs.py_src == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     name: Analysis & Coverage
     steps:
@@ -62,12 +55,3 @@ jobs:
           file: ./coverage.xml
           fail_ci_if_error: true
           verbose: true
-
-  checks_status:
-    needs: [changes, build-analysis]
-    if: ${{ always() && contains(needs.*.result, 'success') && !(contains(needs.*.result, 'failure')) }}
-    name: checks-status
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checks passed
-        run: echo "Checks passed"
