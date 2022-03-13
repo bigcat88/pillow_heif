@@ -36,5 +36,5 @@ RUN \
       git \
       cmake \
       lsb-release; \
-      lsb_release -r | grep -q "22.04" && apt-get install -y libaom-dev; \
+      lsb_release -r | grep -q "20.04" || apt-get install -y libaom-dev; \
   fi
