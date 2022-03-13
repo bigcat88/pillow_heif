@@ -36,13 +36,8 @@ RUN \
       git \
       cmake \
       lsb-release && \
-      echo $(lsb_release -d) && \
-    if [$(lsb_release -d) ~= "22.04"]; then \
+      echo "$(lsb_release -d)" && \
+    if [$(lsb_release -d) ~= "ammy"]; then \
       echo "URA"; \
     fi \
-  fi && \
-  python3 -m pip install --upgrade pip pytest && \
-  python3 -m pip install -v pillow_heif/. && \
-  echo "**** Build Done ****" && \
-  pytest -s pillow_heif && \
-  echo "**** Test Done ****"
+  fi
