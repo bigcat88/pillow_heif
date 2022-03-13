@@ -27,7 +27,6 @@ RUN \
     apt-get update && \
     apt-get install -y \
       python3-pip \
-      libaom-dev \
       libfribidi-dev \
       libharfbuzz-dev \
       libjpeg-dev \
@@ -35,7 +34,9 @@ RUN \
       libffi-dev \
       libtool \
       git \
-      cmake; \
+      cmake \
+      lsb-release; \
+      lsb_release -r | grep -q "20.04" || apt-get install -y libaom-dev; \
   fi && \
   python3 -m pip install --upgrade pip pytest && \
   python3 -m pip install -v pillow_heif/. && \
