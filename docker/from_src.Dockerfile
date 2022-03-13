@@ -34,7 +34,7 @@ RUN \
       libffi-dev \
       libtool \
       git \
-      cmake; \
-      lsb-release && \
+      cmake \
+      lsb-release; \
       lsb_release -r | grep -q "22.04" && apt-get install -y libaom-dev ; \
   fi
