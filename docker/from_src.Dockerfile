@@ -26,9 +26,15 @@ RUN \
   elif [ -f /usr/bin/apt ]; then \
     apt-get update && \
     apt-get install -y \
+      python3-pip \
+      libfribidi-dev \
+      libharfbuzz-dev \
+      libjpeg-dev \
+      liblcms2-dev \
+      libffi-dev \
+      libtool \
+      git \
       cmake \
       lsb-release && \
-    if [lsb_release -d ~= "ammy"]; then \
-      echo "URA"; \
-    fi \
+      lsb_release -r | grep -q "22.04" && apt-get install -y libaom-dev ; \
   fi
