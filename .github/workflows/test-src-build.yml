@@ -1,16 +1,16 @@
 name: Build from src
 
 on:
-  pull_request:
-    branches: [master]
-    types: [opened, reopened, edited]
-  push:
-    branches: [master]
   workflow_dispatch:
+  workflow_run:
+    workflows: [Analysis & Coverage]
+    types:
+      - completed
 
 jobs:
 
   build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     name: ${{ matrix.distro }}-${{ matrix.arch }}
     runs-on: ubuntu-latest
     strategy:
