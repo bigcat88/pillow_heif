@@ -22,7 +22,7 @@ jobs:
         if: matrix.cibw_arch == 'aarch64'
         uses: docker/setup-qemu-action@v1
         with:
-          platforms: arm64
+          platforms: arm64 amd64
 
       - name: Install cibuildwheel & twine
         run: python3 -m pip install cibuildwheel twine
