@@ -154,6 +154,9 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
             cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
             run(["cmake"] + cmake_args, check=True)
+        elif name == "x265":
+            cmake_args = '-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} -G "Unix Makefiles" ./source'.split()
+            run(["cmake"] + cmake_args, check=True)
         else:
             configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
             if name == "libde265":
@@ -178,6 +181,11 @@ def build_libs_linux():
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
+        build_lib_linux(
+            "https://bitbucket.org/multicoreware/x265_git/get/3.5.tar.gz",
+            "x265",
+            _is_musllinux,
+        )
         build_lib_linux(
             "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
             "libde265",
