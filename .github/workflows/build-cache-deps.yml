@@ -18,10 +18,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up QEMU
+      - name: Set up QEMU ARM64
+        if: matrix.cibw_arch == 'aarch64'
         uses: docker/setup-qemu-action@v1
         with:
-          platforms: arm64 amd64
+          platforms: arm64
+
+      - name: Set up QEMU AMD64
+        if: matrix.cibw_arch == 'aarch64'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: amd64
 
       - name: Install cibuildwheel & twine
         run: python3 -m pip install cibuildwheel twine
