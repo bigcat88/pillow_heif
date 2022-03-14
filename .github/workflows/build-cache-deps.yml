@@ -25,7 +25,7 @@ jobs:
           platforms: arm64
 
       - name: Set up QEMU AMD64
-        if: matrix.cibw_arch == 'aarch64'
+        if: matrix.cibw_arch == 'x86_64'
         uses: docker/setup-qemu-action@v1
         with:
           platforms: amd64
