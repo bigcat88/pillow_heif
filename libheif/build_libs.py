@@ -155,7 +155,8 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
             run(["cmake"] + cmake_args, check=True)
         elif name == "x265":
-            cmake_args = '-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} -G "Unix Makefiles" ./source'.split()
+            cmake_args = "-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ./source".split()
+            cmake_args += ["-G", "Unix Makefiles"]
             run(["cmake"] + cmake_args, check=True)
         else:
             configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
