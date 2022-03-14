@@ -115,7 +115,7 @@ def build_tools_linux(musl: bool = False):
     )
     build_tool_linux("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.71")
     build_tool_linux("https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.gz", "automake", "1.16.5")
-    build_tool_linux("https://github.com/Kitware/CMake/archive/refs/tags/v3.22.1.tar.gz", "cmake", "3.16.1")
+    build_tool_linux("https://github.com/Kitware/CMake/archive/refs/tags/v3.22.3.tar.gz", "cmake", "3.16.1")
     build_tool_linux(
         "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz", "nasm", "2.15.05", chmod="774"
     )
@@ -132,12 +132,20 @@ def is_library_installed(name: str) -> bool:
     return False
 
 
+def run_print_if_error(args) -> None:
+    _ = run(args, stdout=PIPE, stderr=STDOUT, check=False)
+    if _.returncode != 0:
+        print(_.stdout.decode("utf-8"), flush=True)
+        raise ChildProcessError(f"Failed: {args}")
+
+
 def build_lib_linux(url: str, name: str, musl: bool = False):
     _lib_path = path.join(BUILD_DIR_LIBS, name)
     if path.isdir(_lib_path):
         print(f"Cache found for {name}", flush=True)
         chdir(path.join(_lib_path, "build")) if name == "aom" else chdir(_lib_path)
     else:
+        _hide_build_process = False
         if name == "aom":
             _build_path = path.join(_lib_path, "build")
             makedirs(_build_path)
@@ -148,20 +156,33 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             chdir(_lib_path)
         if name == "libde265":
             run(["./autogen.sh"], check=True)
+        print(f"Preconfiguring {name}...", flush=True)
         if name == "aom":
             cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0".split()
             cmake_args += "-DENABLE_TESTDATA=0 -DCONFIG_AV1_ENCODER=0".split()
             cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
             cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
             run(["cmake"] + cmake_args, check=True)
+            _hide_build_process = True
+        elif name == "x265":
+            cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ./source".split()
+            cmake_args += ["-G", "Unix Makefiles"]
+            run(["cmake"] + cmake_args, check=True)
+            _hide_build_process = True
         else:
             configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
             if name == "libde265":
-                configure_args += "--disable-sherlock265 --disable-encoder".split()
+                configure_args += "--disable-sherlock265".split()
             elif name == "libheif":
                 configure_args += "--disable-examples".split()
             run(["./configure"] + configure_args, check=True)
-        run("make -j4".split(), check=True)
+        print(f"{name} configured.", flush=True)
+        print(f"{name} build started.", flush=True)
+        if _hide_build_process:
+            run_print_if_error("make -j4".split())
+        else:
+            run("make -j4".split(), check=True)
+        print(f"{name} build success.", flush=True)
     run("make install".split(), check=True)
     if musl:
         run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
@@ -178,6 +199,13 @@ def build_libs_linux():
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
+        # Are not trying to build aom on armv7, and are not trying to build if it is present in system already.
+        if machine().find("armv7") == -1 and not is_library_installed("x265"):
+            build_lib_linux(
+                "https://bitbucket.org/multicoreware/x265_git/get/3.5.tar.gz",
+                "x265",
+                _is_musllinux,
+            )
         build_lib_linux(
             "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
             "libde265",

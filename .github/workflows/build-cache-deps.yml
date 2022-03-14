@@ -1,6 +1,12 @@
 name: Build cache for dependecies
 
 on:
+  push:
+    branches: [master]
+    paths:
+      - 'libheif/**'
+  schedule:
+    - cron: '59 23 * * 5' # Every Friday at 23:59 (GMT+2)
   workflow_dispatch:
 
 jobs:
@@ -56,7 +62,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
-          CIBW_TEST_SKIP: "*"
+          CIBW_TEST_COMMAND: "python3 -c 'import pillow_heif; print(pillow_heif.libheif_info())'"
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Check builded wheel
