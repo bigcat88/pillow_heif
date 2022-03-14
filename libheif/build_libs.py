@@ -182,11 +182,13 @@ def build_libs_linux():
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        build_lib_linux(
-            "https://bitbucket.org/multicoreware/x265_git/get/3.5.tar.gz",
-            "x265",
-            _is_musllinux,
-        )
+        # Are not trying to build aom on armv7, and are not trying to build if it is present in system already.
+        if machine().find("armv7") == -1 and not is_library_installed("x265"):
+            build_lib_linux(
+                "https://bitbucket.org/multicoreware/x265_git/get/3.5.tar.gz",
+                "x265",
+                _is_musllinux,
+            )
         build_lib_linux(
             "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
             "libde265",

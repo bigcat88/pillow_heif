@@ -22,7 +22,8 @@ RUN \
       lcms2-dev \
       aom \
       aom-dev \
-      openjpeg-dev; \
+      openjpeg-dev \
+      x265; \
   elif [ -f /usr/bin/apt ]; then \
     apt-get update && \
     apt-get install -y \
@@ -37,6 +38,7 @@ RUN \
       cmake \
       lsb-release; \
       lsb_release -r | grep -q "20.04" || apt-get install -y libaom-dev; \
+      lsb_release -r | grep -q "20.04" || apt-get install -y libx265-dev; \
   fi && \
   python3 -m pip install --upgrade pip pytest && \
   python3 -m pip install -v pillow_heif/. && \
