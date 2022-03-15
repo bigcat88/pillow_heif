@@ -11,6 +11,8 @@ graft examples
 exclude .pylintrc
 exclude *.yaml
 exclude *.yml
+exclude CODE_OF_CONDUCT.md
 exclude SECURITY.md
 
+prune docs
 prune docker
