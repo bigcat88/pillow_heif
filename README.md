@@ -77,7 +77,7 @@ for img in heif_file:       # you still can use it without iteration, like befor
         img.stride,
     )
 ```
-## [More examples](https://github.com/bigcat88/pillow_heif/tree/master/examples)
+### [More examples](https://github.com/bigcat88/pillow_heif/tree/master/examples)
 
 
 ### The HeifImageFile object (as Pillow plugin)
