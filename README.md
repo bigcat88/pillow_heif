@@ -17,7 +17,8 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
-A HEIF/HEIC/AVIF add-on for Pillow using the [libheif](https://github.com/strukturag/libheif) library via [CFFI](https://cffi.readthedocs.io).
+Library to work with HEIF files and an add-on for Pillow.
+Using the [libheif](https://github.com/strukturag/libheif) library via [CFFI](https://cffi.readthedocs.io).
 
 **Wheels table:**
 
@@ -30,6 +31,7 @@ A HEIF/HEIC/AVIF add-on for Pillow using the [libheif](https://github.com/strukt
 | CPython 3.10  |      ✅      |       ✅       |       ✅       |     ✅     |     ✅     |
 | PyPy 3.7 v7.3 |     N/A     |      N/A      |      N/A      |    N/A    |     ✅     |
 | PyPy 3.8 v7.3 |     N/A     |      N/A      |      N/A      |    N/A    |     ✅     |
+| PyPy 3.9 v7.3 |     N/A     |      N/A      |      N/A      |    N/A    |    N/A    |
 
 Note: **CPython** **musllinux**/**manylinux** wheels for **i686**, **x64_86** and **aarch64**(arm8)
 
@@ -71,8 +73,8 @@ Notes:
 
 1. Building for first time will take a long time, if in your system `cmake` version `>=3.16.1` is not present.
 2. Arm7(32 bit):
-   * On Alpine you need additionally install `aom` and `aom-dev` packages.
-   * On Ubuntu(22.04+) you need additionally install `libaom-dev` package for `AV1` codecs.
+   * On Alpine you need install `aom-dev`.
+   * On Ubuntu(22.04+) you need install `libaom-dev`.
    * On Ubuntu less then 22.04 you can compile it from source, but `AV1` codecs will be not avalaible.
 
 ### MacOS
@@ -105,18 +107,18 @@ image.load()
 from PIL import Image
 import pillow_heif
 
-
 if not pillow_heif.is_supported('ABC.HEIC'):
   exit(0)
 heif_file = pillow_heif.read_heif('ABC.HEIC')
-image = Image.frombytes(
-    heif_file.mode,
-    heif_file.size,
-    heif_file.data,
-    'raw',
-    heif_file.mode,
-    heif_file.stride,
-)
+for img in heif_file:       # you still can use it without iteration, like before.
+    image = Image.frombytes(
+        img.mode,
+        img.size,
+        img.data,
+        'raw',
+        img.mode,
+        img.stride,
+    )
 ```
 ## [More examples](https://github.com/bigcat88/pillow_heif/tree/master/examples)
 
@@ -140,9 +142,41 @@ The returned `UndecodedHeifFile` by function `open_heif` has the following prope
 * `bit_depth` - the number of bits in each component of a pixel.
 * `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
 * `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
+* `id` - id of image, will be needed for encoding operations later.
+* `main` - is a boolean indicating, if it is a default picture.
 * `info` dictionary with the same content as in `HeifImageFile.info`.
+* `thumbnails` - list of `HeifThumbnail` or `UndecodedHeifThumbnail` classes.
+* `top_lvl_images` - list of `UndecodedHeifFile` or `HeifFile` classes, excluding main image.
+* class supports `len` and `iter` methods:
+  * `len` - returns number of top level images including main.
+  * `iter` - returns a generator to iterate through all images, first image will be main.
 
 ### The HeifFile object
 
 `HeifFile` can be obtained by calling `load` method of `UndecodedHeifFile` or by calling `read_heif` function.
 `HeifFile` has all properties of `UndecodedHeifFile` plus filled `data` and `stride`.
+
+## Thumbnails
+To enable thumbnails, set `thumbnails` property in `options` to True:
+```python3
+import pillow_heif
+
+pillow_heif.options().thumbnails = True
+pillow_heif.options().thumbnails_autoload = True # if you wish
+# or
+pillow_heif.register_heif_opener(thumbnails=True, thumbnails_autoload=True)
+```
+
+### The UndecodedHeifThumbnail object
+* `size` - the size of the image as a `(width, height)` tuple of integers.
+* `has_alpha` - is a boolean indicating the presence of an alpha channel.
+* `mode` - the image mode, e.g. 'RGB' or 'RGBA'.
+* `bit_depth` - the number of bits in each component of a pixel.
+* `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
+* `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
+* `id` - id of thumbnail, will be needed for encoding operations later.
+
+### The HeifThumbnail object
+
+`HeifThumbnail` can be obtained by calling `load` method of `UndecodedHeifThumbnail` or by setting `thumbnails_autoload` property to `True`.
+`HeifThumbnail` has all properties of `UndecodedHeifThumbnail` plus filled `data` and `stride`.
