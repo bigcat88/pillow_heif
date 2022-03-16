@@ -5,7 +5,7 @@ Functions and classes for heif images to read.
 import builtins
 import pathlib
 from functools import partial
-from typing import Union
+from typing import Union, List
 from warnings import warn
 
 from _pillow_heif_cffi import ffi, lib
@@ -356,12 +356,12 @@ def _release_heif_image(img, _p_data=None) -> None:
 
 
 def _read_thumbnails(handle, transforms: bool, to_8bit: bool) -> list:
-    _result: list[Union[UndecodedHeifThumbnail, HeifThumbnail]] = []
+    result: List[Union[UndecodedHeifThumbnail, HeifThumbnail]] = []
     if not options().thumbnails:
-        return _result
+        return result
     n = lib.heif_image_handle_get_number_of_thumbnails(handle)
     if n == 0:
-        return _result
+        return result
     thumbnails_ids = ffi.new("heif_item_id[]", n)
     lib.heif_image_handle_get_list_of_thumbnail_IDs(handle, thumbnails_ids, n)
     for thumbnail_id in thumbnails_ids:
@@ -372,10 +372,10 @@ def _read_thumbnails(handle, transforms: bool, to_8bit: bool) -> list:
             _thumbnail = _read_thumbnail_handle(p_handle[0], transforms, to_8bit, img_id=thumbnail_id)
             if options().thumbnails_autoload:
                 _thumbnail.load()
-            _result.append(_thumbnail)
+            result.append(_thumbnail)
         except HeifError:
             warn(f"Error during thumbnail({thumbnail_id}) reading. {HeifError}")
-    return _result
+    return result
 
 
 def _read_thumbnail_handle(handle, transforms: bool, to_8bit: bool, **kwargs) -> UndecodedHeifThumbnail:
@@ -393,7 +393,7 @@ def _read_thumbnail_handle(handle, transforms: bool, to_8bit: bool, **kwargs) ->
 
 
 def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: HeifBrand) -> list:
-    _result: list[UndecodedHeifFile] = []
+    _result: List[UndecodedHeifFile] = []
     n = lib.heif_context_get_number_of_top_level_images(ctx)
     if not n > 1:
         return _result

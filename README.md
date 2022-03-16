@@ -39,13 +39,13 @@ Note: **CPython** **musllinux**/**manylinux** wheels for **i686**, **x64_86** an
 **Pull requests are greatly welcome.**
 
 ## Installation
-(Recommended) From [PyPi](https://pypi.org/project/pillow-heif/):
+From [PyPi](https://pypi.org/project/pillow-heif/):
 
 ```bash
 python3 -m pip install pillow_heif
 ```
 
-### [Building from source](https://github.com/bigcat88/pillow_heif/blob/master/docs/BUILDING.md)
+#### Or [Building from source](https://github.com/bigcat88/pillow_heif/blob/master/docs/BUILDING.md)
 
 ## Example of use as opener
 ```python3
@@ -98,9 +98,8 @@ The returned `UndecodedHeifFile` by function `open_heif` has the following prope
 * `bit_depth` - the number of bits in each component of a pixel.
 * `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
 * `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
-* `id` - id of image, will be needed for encoding operations later.
-* `main` - is a boolean indicating, if it is a default picture.
-* `info` dictionary with the same content as in `HeifImageFile.info`.
+* `img_id` - id of image, will be needed for encoding operations later.
+* `info` dictionary with the same content as in `HeifImageFile.info` plus `main` - a boolean indicating is this a default picture.
 * `thumbnails` - list of `HeifThumbnail` or `UndecodedHeifThumbnail` classes.
 * `top_lvl_images` - list of `UndecodedHeifFile` or `HeifFile` classes, excluding main image.
 * class supports `len` and `iter` methods:
@@ -130,7 +129,7 @@ pillow_heif.register_heif_opener(thumbnails=True, thumbnails_autoload=True)
 * `bit_depth` - the number of bits in each component of a pixel.
 * `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
 * `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
-* `id` - id of thumbnail, will be needed for encoding operations later.
+* `img_id` - id of thumbnail, will be needed for encoding operations later.
 
 ### The HeifThumbnail object
 
