@@ -30,7 +30,7 @@ class HeifFile:
         self.bit_depth = bit_depth
         self.data = data
         self.stride = stride
-        self.id = kwargs["id"]
+        self.img_id = kwargs["img_id"]
         self.main = kwargs["main"]
         self.top_lvl_images = kwargs.get("top_lvl_images", [])
         self.thumbnails = kwargs.get("thumbnails", [])
@@ -90,10 +90,10 @@ class UndecodedHeifFile(HeifFile):
 
     def close(self) -> None:
         for top_lvl_image in self.top_lvl_images:
-            if type(top_lvl_image) == UndecodedHeifFile:
+            if top_lvl_image.__class__ == UndecodedHeifFile:
                 top_lvl_image.close()
         for thumbnail in self.thumbnails:
-            if type(thumbnail) == UndecodedHeifThumbnail:
+            if thumbnail.__class__ == UndecodedHeifThumbnail:
                 thumbnail.close()
         if hasattr(self, "_handle"):
             del self._handle
@@ -107,7 +107,7 @@ class HeifThumbnail:
         self.bit_depth = bit_depth
         self.data = data
         self.stride = stride
-        self.id = kwargs["id"]
+        self.img_id = kwargs["img_id"]
 
     def __repr__(self):
         return (
@@ -224,23 +224,22 @@ def _read_heif_context(ctx, d, transforms: bool, to_8bit: bool) -> UndecodedHeif
     p_main_id = ffi.new("heif_item_id *")
     error = lib.heif_context_get_primary_image_ID(ctx, p_main_id)
     check_libheif_error(error)
-    id = p_main_id[0]
     p_main_handle = ffi.new("struct heif_image_handle **")
     error = lib.heif_context_get_primary_image_handle(ctx, p_main_handle)
     check_libheif_error(error)
     collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
     handle = ffi.gc(p_main_handle[0], collect)
-    return _read_heif_handle(ctx, id, handle, transforms, to_8bit, brand=brand)
+    return _read_heif_handle(ctx, p_main_id[0], handle, transforms, to_8bit, brand=brand)
 
 
-def _read_heif_handle(ctx, id, handle, transforms: bool, to_8bit: bool, **kwargs) -> UndecodedHeifFile:
+def _read_heif_handle(ctx, img_id, handle, transforms: bool, to_8bit: bool, **kwargs) -> UndecodedHeifFile:
     _width = lib.heif_image_handle_get_width(handle)
     _height = lib.heif_image_handle_get_height(handle)
     _metadata = _read_metadata(handle)
     _exif = _retrieve_exif(_metadata)
     _color_profile = _read_color_profile(handle)
     _thumbnails = _read_thumbnails(handle, transforms, to_8bit)
-    _images = [] if ctx is None else _get_other_top_imgs(ctx, id, transforms, to_8bit, kwargs["brand"])
+    _images = [] if ctx is None else _get_other_top_imgs(ctx, img_id, transforms, to_8bit, kwargs["brand"])
     return UndecodedHeifFile(
         handle,
         size=(_width, _height),
@@ -253,8 +252,8 @@ def _read_heif_handle(ctx, id, handle, transforms: bool, to_8bit: bool, **kwargs
         color_profile=_color_profile,
         thumbnails=_thumbnails,
         top_lvl_images=_images,
-        id=id,
-        main=True if ctx is not None else False,
+        img_id=img_id,
+        main=bool(ctx),
         **kwargs,
     )
 
@@ -370,7 +369,7 @@ def _read_thumbnails(handle, transforms: bool, to_8bit: bool) -> list[Union[Unde
         error = lib.heif_image_handle_get_thumbnail(handle, thumbnail_id, p_handle)
         try:
             check_libheif_error(error)
-            _thumbnail = _read_thumbnail_handle(p_handle[0], transforms, to_8bit, id=thumbnail_id)
+            _thumbnail = _read_thumbnail_handle(p_handle[0], transforms, to_8bit, img_id=thumbnail_id)
             if options().thumbnails_autoload:
                 _thumbnail.load()
             _result.append(_thumbnail)
@@ -396,7 +395,7 @@ def _read_thumbnail_handle(handle, transforms: bool, to_8bit: bool, **kwargs) ->
 def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: HeifBrand) -> list[UndecodedHeifFile]:
     _result: list[UndecodedHeifFile] = []
     n = lib.heif_context_get_number_of_top_level_images(ctx)
-    if not (n > 1):
+    if not n > 1:
         return _result
     top_lvl_image_ids = ffi.new("heif_item_id[]", n)
     lib.heif_context_get_list_of_top_level_image_IDs(ctx, top_lvl_image_ids, n)

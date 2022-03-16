@@ -30,7 +30,7 @@ if __name__ == "__main__":
                     thumb.mode,
                     thumb.stride,
                 )
-                thumbnail_img.show(title=f"Thumbnail {thumb.id}")
+                thumbnail_img.show(title=f"Thumbnail {thumb.img_id}")
             _img = Image.frombytes(
                 image.mode,
                 image.size,
@@ -39,7 +39,7 @@ if __name__ == "__main__":
                 image.mode,
                 image.stride,
             )
-            _img.show(title=f"Image {image.id}")
+            _img.show(title=f"Image {image.img_id}")
     except Exception as e:
         print(f"{repr(e)} during processing {image_path.as_posix()}", file=sys.stderr)
         print(traceback.format_exc())
