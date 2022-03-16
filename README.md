@@ -9,7 +9,7 @@
 ![PythonVersion](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)
 ![impl](https://img.shields.io/pypi/implementation/pillow_heif)
 ![pypi](https://img.shields.io/pypi/v/pillow_heif.svg)
-[![Downloads](https://img.shields.io/pypi/dm/pillow_heif?color=orange)](https://pypistats.org/packages/pillow-heif)
+[![Downloads](https://img.shields.io/pypi/dm/pillow_heif?color=orange)](https://pypi.org/project/pillow-heif/)
 
 ![Mac OS](https://img.shields.io/badge/mac%20os-FCC624?style=for-the-badge&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)

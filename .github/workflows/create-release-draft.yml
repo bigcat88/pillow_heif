@@ -51,7 +51,7 @@ jobs:
           cibuildwheel
         env:
           CIBW_BEFORE_ALL_MACOS: >
-            brew install x265 libjpeg libde265 libheif &&
+            brew install x265 libjpeg libde265 libheif little-cms2 &&
             HOMEBREW_PREFIX=$(brew --prefix) &&
             REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
           CIBW_BUILD: "*-macosx_x86_64"
