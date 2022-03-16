@@ -8,14 +8,14 @@ from ._lib_info import have_decoder_for_format, have_encoder_for_format
 
 class PyLibHeifOptions:
     def __init__(self):
-        self._avif_enc = have_encoder_for_format(HeifCompressionFormat.AV1)
+        self._hevc_enc = have_encoder_for_format(HeifCompressionFormat.HEVC)
         self._avif_dec = have_decoder_for_format(HeifCompressionFormat.AV1)
         self._cfg = {}
         self.reset()
 
-    # @property
-    # def avif_enc(self):
-    #     return self._avif_enc
+    @property
+    def hevc_enc(self):
+        return self._hevc_enc
 
     @property
     def avif_dec(self):
@@ -37,16 +37,33 @@ class PyLibHeifOptions:
     def strict(self, value: bool):
         self._cfg["strict"] = value
 
+    @property
+    def thumbnails(self) -> bool:
+        return self._cfg["thumbnails"]
+
+    @thumbnails.setter
+    def thumbnails(self, value: bool):
+        self._cfg["thumbnails"] = value
+
+    @property
+    def thumbnails_autoload(self) -> bool:
+        return self._cfg["thumbnails_autoload"]
+
+    @thumbnails_autoload.setter
+    def thumbnails_autoload(self, value: bool):
+        self._cfg["thumbnails_autoload"] = value
+
     def update(self, **kwargs) -> None:
         _keys = kwargs.keys()
-        if "avif" in _keys:
-            self.avif = kwargs["avif"]
-        if "strict" in _keys:
-            self.strict = kwargs["strict"]
+        for k in ("avif", "strict", "thumbnails", "thumbnails_autoload"):
+            if k in _keys:
+                setattr(self, k, kwargs[k])
 
     def reset(self) -> None:
         self._cfg["avif"] = self.avif_dec
         self._cfg["strict"] = False
+        self._cfg["thumbnails"] = True
+        self._cfg["thumbnails_autoload"] = True
 
 
 CFG_OPTIONS: PyLibHeifOptions = PyLibHeifOptions()

@@ -8,8 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - class `HeifCompressionFormat(IntEnum)`. `have_decoder_for_format` and `have_encoder_for_format` functions.
 - function `libheif_info` that returns dictionary with version and avalaible (en)(de)coders.
-- class `HeifThumbnail` for thumbnails, see new examples.
-- top images support(`burst`), see in examples.
+- class `HeifThumbnail` for thumbnails, see new examples. Only for reader now, in next version will be for Pillow plugin as well.
+- top images support(`burst`), see in examples. Only for reader now, in next version will be for Pillow plugin as well.
 
 ### Changed
 

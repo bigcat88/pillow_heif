@@ -105,7 +105,7 @@ def test_read_bytes(img_info):
 @pytest.mark.parametrize("img_info", hif_images)
 def test_10bit(img_info):
     heif_file = open_heif(Path(img_info["file"]), convert_hdr_to_8bit=False)
-    assert not heif_file.convert_hdr_to_8bit
+    assert not heif_file.to_8bit
     heif_file.load()
 
 
@@ -207,10 +207,12 @@ def test_heif_error(img_info):
 def test_libheif_info():
     info = libheif_info()
     assert info["decoders"]["HEVC"]
-    # assert info["encoders"]["HEVC"]
-    if machine().find("armv7") == -1:
-        assert info["decoders"]["AV1"]
-        # assert info["encoders"]["AV1"]
+    if machine().find("armv7") != -1:
+        return
+    assert info["decoders"]["AV1"]
+    assert options().avif_dec
+    assert info["encoders"]["HEVC"]
+    assert options().hevc_enc
 
 
 def test_lib_version():

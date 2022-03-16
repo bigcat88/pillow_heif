@@ -35,6 +35,8 @@ class HeifImageFile(ImageFile.ImageFile):
         for k in ("icc_profile", "nclx_profile"):
             if k in heif_file.info:
                 self.info[k] = heif_file.info[k]
+        self.info["thumbnails"] = heif_file.thumbnails
+        self.info["top_lvl_images"] = heif_file.top_lvl_images
 
     def verify(self) -> None:
         pass  # we already check this in `_open`, no need to check second time.
