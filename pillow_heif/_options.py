@@ -62,8 +62,8 @@ class PyLibHeifOptions:
     def reset(self) -> None:
         self._cfg["avif"] = self.avif_dec
         self._cfg["strict"] = False
-        self._cfg["thumbnails"] = True
-        self._cfg["thumbnails_autoload"] = True
+        self._cfg["thumbnails"] = False
+        self._cfg["thumbnails_autoload"] = False
 
 
 CFG_OPTIONS: PyLibHeifOptions = PyLibHeifOptions()

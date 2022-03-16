@@ -59,7 +59,7 @@ def _dump_info(result: dict, _img: ImageFile):
 if __name__ == "__main__":
     # Change directory to project root.
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
-    pillow_heif.register_heif_opener(thumbnails_autoload=False)
+    pillow_heif.register_heif_opener(thumbnails=True, thumbnails_autoload=False)
     expected_data = []
     image_path = Path(".")
     try:

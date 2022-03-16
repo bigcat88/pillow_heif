@@ -27,7 +27,7 @@ if __name__ == "__main__":
                 thumb.stride,
             )
             thumbnail_img.show(title=f"Thumbnail {id}")
-        # This is a temporary workaround. Standard says that app must ignore EXIF orientation.
+        # This is a temporary workaround. Standard says that app must ignore EXIF orientation, if `irot` present.
         img.info["exif"] = None
         img.show(title="Main")
     except Exception as e:

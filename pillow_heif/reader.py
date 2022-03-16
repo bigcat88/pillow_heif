@@ -32,7 +32,7 @@ class HeifFile:
         self.stride = stride
         self.img_id = kwargs["img_id"]
         self.top_lvl_images = kwargs.get("top_lvl_images", [])
-        self.thumbnails = kwargs.get("thumbnails", [])
+        self.thumbnails: List[Union[UndecodedHeifThumbnail, HeifThumbnail]] = kwargs["thumbnails"]
         self.info = {
             "main": kwargs["main"],
             "brand": kwargs.get("brand", HeifBrand.UNKNOWN),
