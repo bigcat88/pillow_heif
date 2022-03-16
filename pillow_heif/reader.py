@@ -18,7 +18,7 @@ from .constants import (
     HeifColorspace,
     HeifBrand,
 )
-from .error import check_libheif_error, HeifError
+from .error import check_libheif_error
 from ._options import options
 
 
@@ -374,14 +374,11 @@ def _read_thumbnails(handle, transforms: bool, to_8bit: bool) -> list:
     for thumbnail_id in thumbnails_ids:
         p_handle = ffi.new("struct heif_image_handle **")
         error = lib.heif_image_handle_get_thumbnail(handle, thumbnail_id, p_handle)
-        try:
-            check_libheif_error(error)
-            _thumbnail = _read_thumbnail_handle(p_handle[0], transforms, to_8bit, img_id=thumbnail_id)
-            if options().thumbnails_autoload:
-                _thumbnail.load()
-            result.append(_thumbnail)
-        except HeifError as e:
-            warn(f"Error during thumbnail({thumbnail_id}) reading. {str(e)}")
+        check_libheif_error(error)
+        _thumbnail = _read_thumbnail_handle(p_handle[0], transforms, to_8bit, img_id=thumbnail_id)
+        if options().thumbnails_autoload:
+            _thumbnail.load()
+        result.append(_thumbnail)
     return result
 
 
@@ -411,14 +408,11 @@ def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: He
             continue
         p_handle = ffi.new("struct heif_image_handle **")
         error = lib.heif_context_get_image_handle(ctx, _image_id, p_handle)
-        try:
-            check_libheif_error(error)
-            collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
-            handle = ffi.gc(p_handle[0], collect)
-            _image = _read_heif_handle(None, _image_id, handle, transforms, to_8bit, brand=brand)
-            _result.append(_image)
-        except HeifError as e:
-            warn(f"Error during top_lvl image({_image_id}) reading. {str(e)}")
+        check_libheif_error(error)
+        collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
+        handle = ffi.gc(p_handle[0], collect)
+        _image = _read_heif_handle(None, _image_id, handle, transforms, to_8bit, brand=brand)
+        _result.append(_image)
     return _result
 
 
