@@ -31,10 +31,10 @@ class HeifFile:
         self.data = data
         self.stride = stride
         self.img_id = kwargs["img_id"]
-        self.main = kwargs["main"]
         self.top_lvl_images = kwargs.get("top_lvl_images", [])
         self.thumbnails = kwargs.get("thumbnails", [])
         self.info = {
+            "main": kwargs["main"],
             "brand": kwargs.get("brand", HeifBrand.UNKNOWN),
             "exif": kwargs.get("exif", None),
             "metadata": kwargs.get("metadata", []),
@@ -355,7 +355,7 @@ def _release_heif_image(img, _p_data=None) -> None:
     lib.heif_image_release(img)
 
 
-def _read_thumbnails(handle, transforms: bool, to_8bit: bool) -> list[Union[UndecodedHeifThumbnail, HeifThumbnail]]:
+def _read_thumbnails(handle, transforms: bool, to_8bit: bool) -> list:
     _result: list[Union[UndecodedHeifThumbnail, HeifThumbnail]] = []
     if not options().thumbnails:
         return _result
@@ -392,7 +392,7 @@ def _read_thumbnail_handle(handle, transforms: bool, to_8bit: bool, **kwargs) ->
     )
 
 
-def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: HeifBrand) -> list[UndecodedHeifFile]:
+def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: HeifBrand) -> list:
     _result: list[UndecodedHeifFile] = []
     n = lib.heif_context_get_number_of_top_level_images(ctx)
     if not n > 1:
