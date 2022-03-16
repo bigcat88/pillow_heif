@@ -225,6 +225,15 @@ def test_thumbnails(img_info):
         assert len(list(heif_file.thumbnails_all())) == img_info["thumbnails_count"]
         if img_info["thumbnails_count"] > 1 and img_info["all_top_lvl_images_count"] == 1:
             assert len(list(heif_file.thumbnails_all(one_for_image=True))) == 1
+        if img_info["thumbnails_count"] > 1:
+            assert heif_file.thumbnails[0].data is None
+            heif_file.thumbnails[0].load()
+            assert heif_file.thumbnails[0].data is not None
+            heif_file.thumbnails[0].load()
+            heif_file.thumbnails[0].close()
+            assert heif_file.thumbnails[0].data is None
+        heif_file.load()
+        heif_file.load()
         heif_file.close()
     finally:
         options().reset()
