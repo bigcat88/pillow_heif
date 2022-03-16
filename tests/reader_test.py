@@ -5,7 +5,7 @@ from gc import collect
 from io import BytesIO
 from pathlib import Path
 from json import load
-from platform import machine
+
 
 import pytest
 from PIL import Image, ImageCms
@@ -15,8 +15,6 @@ from pillow_heif import (
     open_heif,
     read_heif,
     options,
-    libheif_version,
-    libheif_info,
     HeifFile,
     UndecodedHeifFile,
     HeifFiletype,
@@ -39,6 +37,11 @@ heif_images = [e for e in all_images if e["valid"]]
 heic_images = [e for e in heif_images if e["name"].endswith(".heic")]
 hif_images = [e for e in heif_images if e["name"].endswith(".hif")]
 avif_images = [e for e in heif_images if e["name"].endswith(".avif")]
+thumbnails_dataset = (
+    [e for e in heif_images if e["thumbnails_count"] == 0][:2]
+    + [e for e in heif_images if e["thumbnails_count"] == 1][:2]  # noqa
+    + [e for e in heif_images if e["thumbnails_count"] > 1][:2]  # noqa
+)
 
 
 @pytest.mark.parametrize("img_info", heif_images)
@@ -204,16 +207,24 @@ def test_heif_error(img_info):
         assert str(exception).find("Invalid input") != -1
 
 
-def test_libheif_info():
-    info = libheif_info()
-    assert info["decoders"]["HEVC"]
-    if machine().find("armv7") != -1:
-        return
-    assert info["decoders"]["AV1"]
-    assert options().avif_dec
-    assert info["encoders"]["HEVC"]
-    assert options().hevc_enc
+@pytest.mark.parametrize("img_info", [e for e in heif_images if e["all_top_lvl_images_count"] > 1])
+def test_burst_image(img_info: dict):
+    heif_file = open_heif(Path(img_info["file"]))
+    assert len(heif_file) == 1 + len(img_info["top_lvl_images"])
+    for i, image in enumerate(heif_file):
+        assert image.data is None
+        assert image.info["main"] != bool(i)
+    heif_file.close()
 
 
-def test_lib_version():
-    assert libheif_version() == "1.12.0"
+@pytest.mark.parametrize("img_info", thumbnails_dataset)
+def test_thumbnails(img_info):
+    try:
+        options().thumbnails = True
+        heif_file = open_heif(Path(img_info["file"]))
+        assert len(list(heif_file.thumbnails_all())) == img_info["thumbnails_count"]
+        if img_info["thumbnails_count"] > 1 and img_info["all_top_lvl_images_count"] == 1:
+            assert len(list(heif_file.thumbnails_all(one_for_image=True))) == 1
+        heif_file.close()
+    finally:
+        options().reset()

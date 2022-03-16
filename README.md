@@ -102,9 +102,11 @@ The returned `UndecodedHeifFile` by function `open_heif` has the following prope
 * `info` dictionary with the same content as in `HeifImageFile.info` plus `main` - a boolean indicating is this a default picture.
 * `thumbnails` - list of `HeifThumbnail` or `UndecodedHeifThumbnail` classes.
 * `top_lvl_images` - list of `UndecodedHeifFile` or `HeifFile` classes, excluding main image.
-* class supports `len` and `iter` methods:
+* class supports `len` and `iter`:
   * `len` - returns number of top level images including main.
   * `iter` - returns a generator to iterate through all images, first image will be main.
+* other useful class methods:
+  * `thumbnails_all` - returns an iterator to access thumbnails for all images in file.
 
 ### The HeifFile object
 

@@ -5,7 +5,7 @@ Functions and classes for heif images to read.
 import builtins
 import pathlib
 from functools import partial
-from typing import Union, List
+from typing import Union, List, Iterator
 from warnings import warn
 
 from _pillow_heif_cffi import ffi, lib
@@ -20,6 +20,47 @@ from .constants import (
 )
 from .error import check_libheif_error, HeifError
 from ._options import options
+
+
+class HeifThumbnail:
+    def __init__(self, *, size: tuple, has_alpha: bool, bit_depth: int, data, stride, **kwargs):
+        self.size = size
+        self.has_alpha = has_alpha
+        self.mode = "RGBA" if has_alpha else "RGB"
+        self.bit_depth = bit_depth
+        self.data = data
+        self.stride = stride
+        self.img_id = kwargs["img_id"]
+
+    def __repr__(self):
+        return (
+            f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
+            f"with {str(len(self.data)) + ' bytes' if self.data else 'no'} data>"
+        )
+
+    def load(self):
+        return self  # already loaded
+
+    def close(self) -> None:
+        self.data = None
+
+
+class UndecodedHeifThumbnail(HeifThumbnail):
+    def __init__(self, thumb_handle, *, transforms: bool, to_8bit: bool, **kwargs):
+        self._handle = thumb_handle
+        self.transforms = transforms
+        self.to_8bit = to_8bit
+        super().__init__(data=None, stride=None, **kwargs)
+
+    def load(self):
+        self.data, self.stride = _read_heif_image(self._handle, self)
+        self.close()
+        self.__class__ = HeifThumbnail
+        return self
+
+    def close(self) -> None:
+        if hasattr(self, "_handle"):
+            del self._handle
 
 
 class HeifFile:
@@ -70,6 +111,13 @@ class HeifFile:
         for i in range(len(self)):
             yield self if not i else self.top_lvl_images[i - 1]
 
+    def thumbnails_all(self, one_for_image=False) -> Iterator[Union[UndecodedHeifThumbnail, HeifThumbnail]]:
+        for i in self:
+            for t in i.thumbnails:
+                yield t
+                if one_for_image:
+                    break
+
 
 class UndecodedHeifFile(HeifFile):
     def __init__(self, heif_handle, *, transforms: bool, to_8bit: bool, **kwargs):
@@ -95,47 +143,6 @@ class UndecodedHeifFile(HeifFile):
         for thumbnail in self.thumbnails:
             if thumbnail.__class__ == UndecodedHeifThumbnail:
                 thumbnail.close()
-        if hasattr(self, "_handle"):
-            del self._handle
-
-
-class HeifThumbnail:
-    def __init__(self, *, size: tuple, has_alpha: bool, bit_depth: int, data, stride, **kwargs):
-        self.size = size
-        self.has_alpha = has_alpha
-        self.mode = "RGBA" if has_alpha else "RGB"
-        self.bit_depth = bit_depth
-        self.data = data
-        self.stride = stride
-        self.img_id = kwargs["img_id"]
-
-    def __repr__(self):
-        return (
-            f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
-            f"with {str(len(self.data)) + ' bytes' if self.data else 'no'} data>"
-        )
-
-    def load(self):
-        return self  # already loaded
-
-    def close(self) -> None:
-        self.data = None
-
-
-class UndecodedHeifThumbnail(HeifThumbnail):
-    def __init__(self, thumb_handle, *, transforms: bool, to_8bit: bool, **kwargs):
-        self._handle = thumb_handle
-        self.transforms = transforms
-        self.to_8bit = to_8bit
-        super().__init__(data=None, stride=None, **kwargs)
-
-    def load(self):
-        self.data, self.stride = _read_heif_image(self._handle, self)
-        self.close()
-        self.__class__ = HeifThumbnail
-        return self
-
-    def close(self) -> None:
         if hasattr(self, "_handle"):
             del self._handle
 
@@ -373,8 +380,8 @@ def _read_thumbnails(handle, transforms: bool, to_8bit: bool) -> list:
             if options().thumbnails_autoload:
                 _thumbnail.load()
             result.append(_thumbnail)
-        except HeifError:
-            warn(f"Error during thumbnail({thumbnail_id}) reading. {HeifError}")
+        except HeifError as e:
+            warn(f"Error during thumbnail({thumbnail_id}) reading. {str(e)}")
     return result
 
 
@@ -410,8 +417,8 @@ def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: He
             handle = ffi.gc(p_handle[0], collect)
             _image = _read_heif_handle(None, _image_id, handle, transforms, to_8bit, brand=brand)
             _result.append(_image)
-        except HeifError:
-            warn(f"Error during top_lvl image({_image_id}) reading. {HeifError}")
+        except HeifError as e:
+            warn(f"Error during top_lvl image({_image_id}) reading. {str(e)}")
     return _result
 
 

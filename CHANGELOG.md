@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - function `libheif_info` that returns dictionary with version and avalaible (en)(de)coders.
 - class `HeifThumbnail` for thumbnails, see new examples. Only for reader now, in next version will be for Pillow plugin as well.
 - top lvl images support(`burst`), see in examples. Only for reader now, in next version will be for Pillow plugin as well.
+- method `thumbnails_all` returning an iterator for thumbnails in all images in `HeifFile`.
 
 ### Changed
 

@@ -11,7 +11,7 @@ import pillow_heif
 if __name__ == "__main__":
     # Change directory to project root.
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
-    pillow_heif.register_heif_opener(thumbnails_autoload=False)
+    pillow_heif.register_heif_opener(thumbnails=True, thumbnails_autoload=False)
     image_path = Path("images/hif/93FG5564.hif")
     try:
         img = Image.open(image_path)
