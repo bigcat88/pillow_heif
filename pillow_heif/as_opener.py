@@ -20,12 +20,12 @@ class HeifImageFile(ImageFile.ImageFile):
             heif_file = open_heif(self.fp)
         except HeifError as e:
             raise SyntaxError(str(e)) from None
-        if hasattr(self, "_exclusive_fp") and self._exclusive_fp and self.fp:
-            self.fp.close()
-        self.fp = None
         self.heif_file = heif_file
         self._init_from_undecoded_heif(heif_file)
         self.tile = []
+        if getattr(self, "_exclusive_fp", False) and getattr(self, "fp", None):
+            self.fp.close()
+        self.fp = None
 
     def _init_from_undecoded_heif(self, heif_file: UndecodedHeifFile) -> None:
         self._size = heif_file.size
@@ -35,6 +35,8 @@ class HeifImageFile(ImageFile.ImageFile):
         for k in ("icc_profile", "nclx_profile"):
             if k in heif_file.info:
                 self.info[k] = heif_file.info[k]
+        self.info["thumbnails"] = heif_file.thumbnails
+        self.info["top_lvl_images"] = heif_file.top_lvl_images
 
     def verify(self) -> None:
         pass  # we already check this in `_open`, no need to check second time.

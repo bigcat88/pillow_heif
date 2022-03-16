@@ -2,17 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.10 - 2022-03-1x]
+## [0.1.10 - 2022-03-17]
 
 ### Added
 
+- macOS Intel PyPy3.7 & PyPy3.8 v7.3 wheels.
 - class `HeifCompressionFormat(IntEnum)`. `have_decoder_for_format` and `have_encoder_for_format` functions.
 - function `libheif_info` that returns dictionary with version and avalaible (en)(de)coders.
-- thumbnails support, see new examples.
+- class `HeifThumbnail` for thumbnails, see in examples. Only for reader now, in next version will be for Pillow plugin as well.
+- top lvl images support(`burst`), see in examples. Only for reader now, in next version will be for Pillow plugin as well.
+- method `thumbnails_all` returning an iterator for getting thumbnails in all images in `HeifFile`.
 
 ### Changed
 
 - OPTIONS["avif"] and OPTIONS["strict"] replaced with `options` function, that returns `PyLibHeifOptions` class with that properties.
+- if avalaible, functions to check if image is supported `HEIF` will try get 16 bytes instead of 12.
 
 ### Fixed
 

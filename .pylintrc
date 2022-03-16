@@ -169,7 +169,7 @@ function-naming-style=snake_case
 #function-rgx=
 
 # Good variable names which should always be accepted, separated by a comma.
-good-names=a,b,c,d,e,f,i,j,k,v,t,
+good-names=a,b,c,d,e,f,i,j,k,v,t,n,
            ex,
            Run,
            _,
@@ -376,7 +376,7 @@ known-third-party=enchant
 max-args=8
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=9
+max-attributes=10
 
 # Maximum number of boolean expressions in an if statement.
 max-bool-expr=5

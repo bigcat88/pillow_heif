@@ -2,7 +2,7 @@ blank_issues_enabled: true
 contact_links:
   - name: Discussions
     url: https://github.com/bigcat88/pillow_heif/discussions/new
-    about: Ask questions and discuss with other scikit-learn community members
+    about: Ask questions and discuss
   - name: Blank issue
     url: https://github.com/bigcat88/pillow_heif/issues/new
     about: Please note that Github Discussions should be used in most cases instead

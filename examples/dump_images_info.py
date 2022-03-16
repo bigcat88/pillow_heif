@@ -40,12 +40,26 @@ def _dump_info(result: dict, _img: ImageFile):
     # nclx_profile
     nclx_profile = _img.info.get("nclx_profile", None)
     result["nclx_profile"] = len(nclx_profile) if nclx_profile is not None else None
+    result["dimensions"] = str(_img.size)
+    # temporary code till 0.1.11 version...
+    result["all_top_lvl_images_count"] = 1 + len(_img.info["top_lvl_images"])
+    result["top_lvl_images"] = [str(_e) for _e in _img.info["top_lvl_images"]]
+    n = 0
+    t = []
+    for _ in _img.info["top_lvl_images"]:
+        n += len(_.thumbnails)
+        for _t in _.thumbnails:
+            t.append(str(_t))
+    result["thumbnails_count"] = len(_img.info["thumbnails"]) + n
+    if _img.info["thumbnails"]:
+        t.append(str(_img.info["thumbnails"][0]))
+    result["thumbnails"] = t
 
 
 if __name__ == "__main__":
     # Change directory to project root.
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
-    pillow_heif.register_heif_opener()
+    pillow_heif.register_heif_opener(thumbnails=True, thumbnails_autoload=False)
     expected_data = []
     image_path = Path(".")
     try:
@@ -80,6 +94,16 @@ if __name__ == "__main__":
                 img = Image.open(image_path)
                 img_info["valid"] = True
                 _dump_info(img_info, img)
+                try:
+                    img.load()
+                    img_info["load"] = True
+                    # img_info["thumbnails_loaded"] = [str(_e) for _e in img.info["thumbnails"]]
+                    # img_info["top_lvl_images_loaded"] = [str(_e) for _e in img.info["top_lvl_images"]]
+                except pillow_heif.HeifError as e:
+                    print(str(e))
+                    img_info["load"] = False
+                    # img_info["thumbnails_loaded"] = []
+                    # img_info["top_lvl_images_loaded"] = []
             except UnidentifiedImageError:
                 img_info["valid"] = False
             expected_data.append(img_info)
