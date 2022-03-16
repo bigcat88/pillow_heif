@@ -8,6 +8,8 @@ from .constants import *  # pylint: disable=unused-wildcard-import
 from .reader import (
     HeifFile,
     UndecodedHeifFile,
+    HeifThumbnail,
+    UndecodedHeifThumbnail,
     is_supported,
     check_heif,
     read_heif,
