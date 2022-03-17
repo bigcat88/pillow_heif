@@ -54,39 +54,95 @@ jobs:
 #
 #      - name: Test wheel
 #        run: cd .. && python3 -m pytest -s pillow_heif
-
-  manylinux-wheels:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-    name: Focal-${{ matrix.python-version }}
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        python-version: ["pypy-3.7", "pypy-3.8", "3.6", "3.7", "3.8", "3.9", "3.10"]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Preparations
-        run: |
-          sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
-          python3 -m pip install pytest piexif pillow cffi
-          python3 -m pip install --only-binary=:all: pillow_heif
-
-      - name: Test wheel
-        run: cd .. && python3 -m pytest -s pillow_heif
-
-#  docker-tests:
+#
+#  manylinux-wheels:
 #    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-#    name: ${{ matrix.docker-image }}
-#    runs-on: ubuntu-latest
+#    name: Focal-${{ matrix.python-version }}
+#    runs-on: ubuntu-20.04
 #    strategy:
 #      matrix:
-#        docker-image: []
 #        python-version: ["pypy-3.7", "pypy-3.8", "3.6", "3.7", "3.8", "3.9", "3.10"]
 #
 #    steps:
 #      - uses: actions/checkout@v3
+#      - name: Set up Python
+#        uses: actions/setup-python@v3
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#
+#      - name: Preparations
+#        run: |
+#          sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
+#          python3 -m pip install pytest piexif pillow cffi
+#          python3 -m pip install --only-binary=:all: pillow_heif
+#
+#      - name: Test wheel
+#        run: cd .. && python3 -m pytest -s pillow_heif
+
+  docker-tests:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    name: 🐍 • ${{ matrix.i['os'] }} • ${{ matrix.i['ver'] }} • ${{ matrix.i['arch'] }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        i: [
+          { "os": "alpine", "ver": "3.13", "arch": "amd64", "ex_pckgs": "" },
+          { "os": "alpine", "ver": "3.13", "arch": "arm64", "ex_pckgs": "" },
+          { "os": "alpine", "ver": "3.15", "arch": "amd64", "ex_pckgs": "" },
+          { "os": "alpine", "ver": "3.15", "arch": "arm64", "ex_pckgs": "" },
+          { "os": "amazonlinux", "ver": "latest", "arch": "amd64", "ex_pckgs": ""  },
+          { "os": "amazonlinux", "ver": "latest", "arch": "arm64", "ex_pckgs": ""  },
+          { "os": "oraclelinux", "ver": "8", "arch": "amd64", "ex_pckgs": "" },
+          { "os": "oraclelinux", "ver": "8", "arch": "arm64", "ex_pckgs": "" },
+          { "os": "photon", "ver": "latest", "arch": "amd64", "ex_pckgs": "" },
+          { "os": "photon", "ver": "latest", "arch": "arm64", "ex_pckgs": "" },
+          { "os": "fedora", "ver": "35", "arch": "amd64", "ex_pckgs": "" },
+          { "os": "fedora", "ver": "35", "arch": "arm64", "ex_pckgs": "" },
+          { "os": "centos", "ver": "7", "arch": "amd64", "ex_pckgs": "" },
+          { "os": "centos", "ver": "7", "arch": "arm64", "ex_pckgs": "" },
+          { "os": "debian", "ver": "10.11", "arch": "amd64", "ex_pckgs": "libjpeg-dev liblcms2-dev" },
+          { "os": "debian", "ver": "10.11", "arch": "arm64", "ex_pckgs": "libjpeg-dev liblcms2-dev" },
+          { "os": "debian", "ver": "11.2", "arch": "amd64", "ex_pckgs": "libjpeg-dev liblcms2-dev" },
+          { "os": "debian", "ver": "11.2", "arch": "arm64", "ex_pckgs": "libjpeg-dev liblcms2-dev" },
+        ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        if: matrix.i['arch'] == 'arm64'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: arm64
+
+      - name: Preparing debian
+        if: matrix.i['os'] == 'debian' || matrix.i['os'] == 'ubuntu'
+        run: |
+          echo OS_PACKAGES="sudo python3-minimal python3-distutils" >> $GITHUB_ENV
+          echo UPDATE_CMD="apt update" >> $GITHUB_ENV
+          echo INSTALL_CMD="apt install -y" >> $GITHUB_ENV
+          echo PIP_NAME="python3-pip" >> $GITHUB_ENV
+
+      - name: Preparing musli
+        if: matrix.i['os'] == 'alpine'
+        run: |
+          echo OS_PACKAGES="sudo python3 py3-cffi" >> $GITHUB_ENV
+          echo UPDATE_CMD="apk update" >> $GITHUB_ENV
+          echo INSTALL_CMD="apk add --no-cache" >> $GITHUB_ENV
+          echo PIP_NAME="py3-pip" >> $GITHUB_ENV
+
+      - name: Preparing centos
+        if: matrix.i['os'] != 'debian' && matrix.i['os'] != 'ubuntu' && matrix.i['os'] != 'alpine'
+        run: |
+          echo OS_PACKAGES="sudo python3" >> $GITHUB_ENV
+          echo UPDATE_CMD="yum update -y" >> $GITHUB_ENV
+          echo INSTALL_CMD="yum install -y" >> $GITHUB_ENV
+          echo PIP_NAME="python3-pip" >> $GITHUB_ENV
+
+      - name: Build image
+        run: |
+          docker buildx build --platform ${{ i.arch }} --build-arg \
+            BASE_IMAGE=${{ matrix.i['os'] }}:${{ matrix.i['ver'] }} \
+            UPDATE_CMD=${{ env.UPDATE_CMD }} \
+            INSTALL_CMD=${{ env.INSTALL_CMD }} \
+            OS_PACKAGES=${{ env.OS_PACKAGES }} ${{ matrix.i['ex_pckgs'] }} \
+            -f docker/test_wheels.Dockerfile .
