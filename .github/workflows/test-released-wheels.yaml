@@ -72,9 +72,21 @@ jobs:
 
       - name: Preparations
         run: |
-          sudo apt update && sudo apt install libjpeg-turbo-devel lcms2-devel
+          sudo apt update && sudo apt install libjpeg-dev lcms2-dev
           python3 -m pip install pytest piexif pillow cffi
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Test wheel
         run: cd .. && python3 -m pytest -s pillow_heif
+
+#  docker-tests:
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+#    name: ${{ matrix.docker-image }}
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        docker-image: []
+#        python-version: ["pypy-3.7", "pypy-3.8", "3.6", "3.7", "3.8", "3.9", "3.10"]
+#
+#    steps:
+#      - uses: actions/checkout@v3
