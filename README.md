@@ -21,17 +21,15 @@ Using the [libheif](https://github.com/strukturag/libheif) library via [CFFI](ht
 
 **Wheels table:**
 
-|               | macOS Intel | macOS Silicon | Windows 64bit | musllinux* | manylinux* |
-|---------------|:-----------:|:-------------:|:-------------:|:----------:|:----------:|
-| CPython 3.6   |     N/A     |      N/A      |      N/A      |     ✅      |     ✅      |
-| CPython 3.7   |      ✅      |      N/A      |       ✅       |     ✅      |     ✅      |
-| CPython 3.8   |      ✅      |      N/A      |       ✅       |     ✅      |     ✅      |
-| CPython 3.9   |      ✅      |       ✅       |       ✅       |     ✅      |     ✅      |
-| CPython 3.10  |      ✅      |       ✅       |       ✅       |     ✅      |     ✅      |
-| PyPy 3.7 v7.3 |      ✅      |      N/A      |      N/A      |    N/A     |     ✅      |
-| PyPy 3.8 v7.3 |      ✅      |      N/A      |      N/A      |    N/A     |     ✅      |
-
- &ast; - i686, x86_64, aarch64
+|               | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux<br/>i686 x86_64 | musllinux<br/>aarch64 | manylinux<br/>i686 x86_64 | manylinux<br/>aarch64 |
+|---------------|:---------------:|:-----------------:|:-----------------:|:-------------------------:|:---------------------:|:-------------------------:|:---------------------:|
+| CPython 3.6   |       N/A       |        N/A        |        N/A        |             ✅             |           ✅           |             ✅             |           ✅           |
+| CPython 3.7   |        ✅        |        N/A        |         ✅         |             ✅             |           ✅           |             ✅             |           ✅           |
+| CPython 3.8   |        ✅        |        N/A        |         ✅         |             ✅             |           ✅           |             ✅             |           ✅           |
+| CPython 3.9   |        ✅        |         ✅         |         ✅         |             ✅             |           ✅           |             ✅             |           ✅           |
+| CPython 3.10  |        ✅        |         ✅         |         ✅         |             ✅             |           ✅           |             ✅             |           ✅           |
+| PyPy 3.7 v7.3 |        ✅        |        N/A        |        N/A        |            N/A            |          N/A          |             ✅             |           ✅           |
+| PyPy 3.8 v7.3 |        ✅        |        N/A        |        N/A        |            N/A            |          N/A          |             ✅             |           ✅           |
 
 #### **_Versions 0.2.X will be last to support Python 3.6_**
 
