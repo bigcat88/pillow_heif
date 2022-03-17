@@ -141,8 +141,8 @@ jobs:
       - name: Build image
         run: |
           docker buildx build --platform ${{ matrix.i.arch }} \
-            --build-arg BASE_IMAGE=${{ matrix.i['os'] }}:${{ matrix.i['ver'] }} \
-            --build-arg UPDATE_CMD=${{ env.UPDATE_CMD }} \
-            --build-arg INSTALL_CMD=${{ env.INSTALL_CMD }} \
-            --build-arg OS_PACKAGES=${{ env.OS_PACKAGES }} ${{ matrix.i['ex_pckgs'] }} \
+            --build-arg BASE_IMAGE="${{ matrix.i['os'] }}:${{ matrix.i['ver'] }}" \
+            --build-arg UPDATE_CMD="${{ env.UPDATE_CMD }}" \
+            --build-arg INSTALL_CMD="${{ env.INSTALL_CMD }}" \
+            --build-arg OS_PACKAGES="${{ env.OS_PACKAGES }} ${{ matrix.i['ex_pckgs'] }}" \
             -f docker/test_wheels.Dockerfile .
