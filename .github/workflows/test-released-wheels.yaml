@@ -121,7 +121,7 @@ jobs:
       - name: Preparing debian
         if: matrix.i['os'] == 'debian' || matrix.i['os'] == 'ubuntu'
         run: |
-          eccho PREPARE_CMD="apt update" >> $GITHUB_ENV
+          echo PREPARE_CMD="apt update" >> $GITHUB_ENV
           echo INSTALL_CMD="apt install -y python3-minimal python3-distutils python3-pip" >> $GITHUB_ENV
 
       - name: Preparing musli
