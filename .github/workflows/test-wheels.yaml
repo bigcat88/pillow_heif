@@ -86,12 +86,6 @@ jobs:
     strategy:
       matrix:
         i: [
-          { "os": "alpine", "ver": "3.14", "arch": "386" },
-          { "os": "alpine", "ver": "3.14", "arch": "amd64" },
-          { "os": "alpine", "ver": "3.14", "arch": "arm64" },
-          { "os": "alpine", "ver": "3.15", "arch": "386" },
-          { "os": "alpine", "ver": "3.15", "arch": "amd64" },
-          { "os": "alpine", "ver": "3.15", "arch": "arm64" },
           { "os": "amazonlinux", "ver": "latest", "arch": "amd64" },
           { "os": "amazonlinux", "ver": "latest", "arch": "arm64" },
           { "os": "oraclelinux", "ver": "8", "arch": "amd64" },
@@ -107,6 +101,12 @@ jobs:
           { "os": "debian", "ver": "11.2", "arch": "386" },
           { "os": "debian", "ver": "11.2", "arch": "amd64" },
           { "os": "debian", "ver": "11.2", "arch": "arm64" },
+          { "os": "alpine", "ver": "3.14", "arch": "386" },
+          { "os": "alpine", "ver": "3.14", "arch": "amd64" },
+          { "os": "alpine", "ver": "3.14", "arch": "arm64" },
+          { "os": "alpine", "ver": "3.15", "arch": "386" },
+          { "os": "alpine", "ver": "3.15", "arch": "amd64" },
+          { "os": "alpine", "ver": "3.15", "arch": "arm64" },
         ]
 
     steps:
