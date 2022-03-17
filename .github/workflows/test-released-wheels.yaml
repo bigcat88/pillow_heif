@@ -140,7 +140,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker buildx build --platform ${{ i.arch }} --build-arg \
+          docker buildx build --platform ${{ matrix.i.arch }} --build-arg \
             BASE_IMAGE=${{ matrix.i['os'] }}:${{ matrix.i['ver'] }} \
             UPDATE_CMD=${{ env.UPDATE_CMD }} \
             INSTALL_CMD=${{ env.INSTALL_CMD }} \
