@@ -19,17 +19,15 @@
 Library to work with HEIF files and an add-on for Pillow.
 Using the [libheif](https://github.com/strukturag/libheif) library via [CFFI](https://cffi.readthedocs.io).
 
-**Wheels table:**
-
-|               | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
-|---------------|:---------------:|:-----------------:|:-----------------:|:----------:|:----------:|
-| CPython 3.6   |       N/A       |        N/A        |        N/A        |     ✅      |     ✅      |
-| CPython 3.7   |        ✅        |        N/A        |         ✅         |     ✅      |     ✅      |
-| CPython 3.8   |        ✅        |        N/A        |         ✅         |     ✅      |     ✅      |
-| CPython 3.9   |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
-| CPython 3.10  |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
-| PyPy 3.7 v7.3 |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
-| PyPy 3.8 v7.3 |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
+| **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
+|--------------------|:---------------:|:-----------------:|:-----------------:|:----------:|:----------:|
+| CPython 3.6        |       N/A       |        N/A        |        N/A        |     ✅      |     ✅      |
+| CPython 3.7        |        ✅        |        N/A        |         ✅         |     ✅      |     ✅      |
+| CPython 3.8        |        ✅        |        N/A        |         ✅         |     ✅      |     ✅      |
+| CPython 3.9        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
+| CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
+| PyPy 3.7 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
+| PyPy 3.8 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
