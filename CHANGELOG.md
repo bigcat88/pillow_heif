@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.11 - 2022-03-2x]
+
+### Added
+
+- Linux aarch64 PyPy 3.7 & 3.8 wheels.
+
+### Changed
+
+### Fixed
+
 ## [0.1.10 - 2022-03-17]
 
 ### Added

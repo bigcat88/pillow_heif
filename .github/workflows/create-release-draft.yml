@@ -77,8 +77,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-#        cibw_buildlinux: [ manylinux, musllinux ]
-        cibw_buildlinux: [ manylinux ]
+        cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "aarch64", "i686", "x86_64" ]
     name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }}
     runs-on: ubuntu-20.04
@@ -101,7 +100,6 @@ jobs:
         if: matrix.cibw_buildlinux == 'manylinux'
         run: |
           echo INSTALL_OS_PACKAGES="yum update -y && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-#          echo CIBW_SKIP="pp3*-manylinux_aarch64" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel"
 
@@ -126,7 +124,7 @@ jobs:
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
-          CIBW_BUILD: ${{ format('pp3*', matrix.cibw_buildlinux, matrix.cibw_arch) }}
+          CIBW_BUILD: ${{ format('pp37* pp38* cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
