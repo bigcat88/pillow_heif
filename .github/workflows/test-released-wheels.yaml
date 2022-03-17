@@ -124,9 +124,8 @@ jobs:
       - name: Preparing musli
         if: matrix.i['os'] == 'alpine'
         run: |
-          echo OS_PACKAGES="sudo python3 py3-pip py3-cffi py3-pillow" >> $GITHUB_ENV
-          echo UPDATE_CMD="apk update && python3 -m pip install --upgrade pip" >> $GITHUB_ENV
-          echo INSTALL_CMD="apk add --no-cache" >> $GITHUB_ENV
+          echo INSTALL_CMD="apk add --no-cache python3 py3-pip py3-cffi py3-pillow" >> $GITHUB_ENV
+          echo UPDATE_CMD="python3 -m pip install --upgrade pip" >> $GITHUB_ENV
 
       - name: Preparing centos
         if: matrix.i['os'] != 'debian' && matrix.i['os'] != 'ubuntu' && matrix.i['os'] != 'alpine'
