@@ -8,54 +8,30 @@ on:
       - completed
 
 jobs:
-  windows-wheels:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-    name: Windows-${{ matrix.python-version }}
-    runs-on: windows-2019
-    strategy:
-      matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Preparations
-        run: |
-          python3 -m pip install pytest piexif pillow cffi
-          python3 -m pip install --only-binary=:all: pillow_heif
-
-      - name: Test wheel
-        run: cd .. && python3 -m pytest -s pillow_heif
-
-  macos-wheels:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-    name: macOS-${{ matrix.python-version }}
-    runs-on: macos-11
-    strategy:
-      matrix:
-        python-version: ["pypy-3.7", "pypy-3.8", "3.7", "3.8", "3.9", "3.10"]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Preparations
-        run: |
-          brew install libjpeg little-cms2
-          python3 -m pip install pytest piexif pillow cffi
-          python3 -m pip install --only-binary=:all: pillow_heif
-
-      - name: Test wheel
-        run: cd .. && python3 -m pytest -s pillow_heif
+#  windows-wheels:
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+#    name: Windows-${{ matrix.python-version }}
+#    runs-on: windows-2019
+#    strategy:
+#      matrix:
+#        python-version: ["3.7", "3.8", "3.9", "3.10"]
 #
-#  linux-wheels:
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Set up Python
+#        uses: actions/setup-python@v3
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#
+#      - name: Preparations
+#        run: |
+#          python3 -m pip install pytest piexif pillow cffi
+#          python3 -m pip install --only-binary=:all: pillow_heif
+#
+#      - name: Test wheel
+#        run: cd .. && python3 -m pytest -s pillow_heif
+#
+#  macos-wheels:
 #    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 #    name: macOS-${{ matrix.python-version }}
 #    runs-on: macos-11
@@ -78,3 +54,27 @@ jobs:
 #
 #      - name: Test wheel
 #        run: cd .. && python3 -m pytest -s pillow_heif
+
+  manylinux-wheels:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    name: Focal-${{ matrix.python-version }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: ["pypy-3.7", "pypy-3.8", "3.6", "3.7", "3.8", "3.9", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Preparations
+        run: |
+          sudo apt update && sudo apt install libjpeg-turbo-devel lcms2-devel
+          python3 -m pip install pytest piexif pillow cffi
+          python3 -m pip install --only-binary=:all: pillow_heif
+
+      - name: Test wheel
+        run: cd .. && python3 -m pytest -s pillow_heif
