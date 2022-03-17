@@ -30,7 +30,8 @@ Using the [libheif](https://github.com/strukturag/libheif) library via [CFFI](ht
 | CPython 3.10  |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | PyPy 3.7 v7.3 |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 | PyPy 3.8 v7.3 |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
-  &ast; - i686, x86_64, aarch64
+
+&ast; **i686**, **x86_64**, **aarch64** wheels.
 
 #### **_Versions 0.2.X will be last to support Python 3.6_**
 
