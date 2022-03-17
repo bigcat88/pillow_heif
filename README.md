@@ -33,8 +33,6 @@ Using the [libheif](https://github.com/strukturag/libheif) library via [CFFI](ht
 
 #### **_Versions 0.2.X will be last to support Python 3.6_**
 
-**Pull requests are greatly welcome.**
-
 ## Installation
 From [PyPi](https://pypi.org/project/pillow-heif/):
 
@@ -42,7 +40,7 @@ From [PyPi](https://pypi.org/project/pillow-heif/):
 python3 -m pip install pillow_heif
 ```
 
-#### Or [Building from source](https://github.com/bigcat88/pillow_heif/blob/master/docs/BUILDING.md)
+#### Or [Build from source](https://github.com/bigcat88/pillow_heif/blob/master/docs/BUILDING.md)
 
 ## Example of use as opener
 ```python3
