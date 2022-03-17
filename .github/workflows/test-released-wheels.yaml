@@ -125,14 +125,14 @@ jobs:
         if: matrix.i['os'] == 'alpine'
         run: |
           echo OS_PACKAGES="sudo python3 py3-pip py3-cffi py3-pillow" >> $GITHUB_ENV
-          echo UPDATE_CMD="apk update" >> $GITHUB_ENV
+          echo UPDATE_CMD="apk update && python3 -m pip install --upgrade pip" >> $GITHUB_ENV
           echo INSTALL_CMD="apk add --no-cache" >> $GITHUB_ENV
 
       - name: Preparing centos
         if: matrix.i['os'] != 'debian' && matrix.i['os'] != 'ubuntu' && matrix.i['os'] != 'alpine'
         run: |
           echo OS_PACKAGES="sudo python3 python3-pip" >> $GITHUB_ENV
-          echo UPDATE_CMD="yum update -y" >> $GITHUB_ENV
+          echo UPDATE_CMD="yum makecache" >> $GITHUB_ENV
           echo INSTALL_CMD="yum install -y" >> $GITHUB_ENV
 
       - name: Build image & Run tests
