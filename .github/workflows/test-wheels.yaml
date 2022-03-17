@@ -1,4 +1,4 @@
-name: Test wheels from PyPI
+name: Wheels test
 
 on:
   workflow_dispatch:
