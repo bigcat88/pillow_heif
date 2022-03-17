@@ -86,8 +86,10 @@ jobs:
     strategy:
       matrix:
         i: [
+          { "os": "alpine", "ver": "3.14", "arch": "386", "ex_pckgs": "" },
           { "os": "alpine", "ver": "3.14", "arch": "amd64", "ex_pckgs": "" },
           { "os": "alpine", "ver": "3.14", "arch": "arm64", "ex_pckgs": "" },
+          { "os": "alpine", "ver": "3.15", "arch": "386", "ex_pckgs": "" },
           { "os": "alpine", "ver": "3.15", "arch": "amd64", "ex_pckgs": "" },
           { "os": "alpine", "ver": "3.15", "arch": "arm64", "ex_pckgs": "" },]
 #          { "os": "amazonlinux", "ver": "latest", "arch": "amd64", "ex_pckgs": ""  },
