@@ -91,7 +91,6 @@ jobs:
           { "os": "oraclelinux", "ver": "8", "arch": "amd64" },
           { "os": "oraclelinux", "ver": "8", "arch": "arm64" },
           { "os": "fedora", "ver": "35", "arch": "amd64" },
-          { "os": "fedora", "ver": "35", "arch": "arm64" },
           { "os": "centos", "ver": "7", "arch": "386" },
           { "os": "centos", "ver": "7", "arch": "amd64" },
           { "os": "centos", "ver": "7", "arch": "arm64" },
