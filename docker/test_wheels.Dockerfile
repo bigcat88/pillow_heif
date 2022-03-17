@@ -8,4 +8,7 @@ RUN $UPDATE_CMD
 
 RUN python3 -m pip install pytest piexif cffi Pillow
 RUN python3 -m pip install --no-deps --only-binary=:all: pillow_heif
+
+COPY . /pillow_heif
+
 RUN ls -la && ls -la pillow_heif/. && python3 -m pytest -s -v pillow_heif/. && echo "**** Test Done ****"
