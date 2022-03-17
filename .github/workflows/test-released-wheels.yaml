@@ -96,8 +96,6 @@ jobs:
           { "os": "amazonlinux", "ver": "latest", "arch": "arm64" },
           { "os": "oraclelinux", "ver": "8", "arch": "amd64" },
           { "os": "oraclelinux", "ver": "8", "arch": "arm64" },
-          { "os": "photon", "ver": "latest", "arch": "amd64" },
-          { "os": "photon", "ver": "latest", "arch": "arm64" },
           { "os": "fedora", "ver": "35", "arch": "amd64" },
           { "os": "fedora", "ver": "35", "arch": "arm64" },
           { "os": "centos", "ver": "7", "arch": "386" },
