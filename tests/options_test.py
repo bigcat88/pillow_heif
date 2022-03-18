@@ -1,17 +1,13 @@
-import os
 import builtins
-from pathlib import Path
+import os
 from json import load
+from pathlib import Path
 from warnings import warn
 
 import pytest
 from PIL import Image, UnidentifiedImageError
-from pillow_heif import (
-    register_heif_opener,
-    options,
-    open_heif,
-)
 
+from pillow_heif import open_heif, options, register_heif_opener
 
 register_heif_opener()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))

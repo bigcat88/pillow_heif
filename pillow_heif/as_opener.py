@@ -3,11 +3,12 @@ Opener for Pillow library.
 """
 
 from warnings import warn
+
 from PIL import Image, ImageFile
 
-from .reader import is_supported, open_heif, UndecodedHeifFile
-from .error import HeifError
 from ._options import options
+from .error import HeifError
+from .reader import UndecodedHeifFile, is_supported, open_heif
 
 
 class HeifImageFile(ImageFile.ImageFile):

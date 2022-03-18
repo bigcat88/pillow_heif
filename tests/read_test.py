@@ -1,27 +1,26 @@
-import os
 import builtins
-from warnings import warn
+import os
 from gc import collect
 from io import BytesIO
-from pathlib import Path
 from json import load
-
+from pathlib import Path
+from warnings import warn
 
 import pytest
 from PIL import Image, ImageCms
+
 from pillow_heif import (
+    HeifError,
+    HeifErrorCode,
+    HeifFile,
+    HeifFiletype,
+    UndecodedHeifFile,
     check_heif,
     is_supported,
     open_heif,
-    read_heif,
     options,
-    HeifFile,
-    UndecodedHeifFile,
-    HeifFiletype,
-    HeifError,
-    HeifErrorCode,
+    read_heif,
 )
-
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 with builtins.open("images_info.json", "rb") as _:

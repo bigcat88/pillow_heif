@@ -22,6 +22,7 @@ exclude_lines = [
 [tool.black]
 line-length = 120
 target-versions = ["py37"]
+preview = true
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -38,6 +39,9 @@ exclude = '''
   | wheelhouse
 )\
 '''
+
+[tool.isort]
+profile = "black"
 
 [tool.mypy]
 ignore_missing_imports = true

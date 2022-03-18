@@ -1,10 +1,6 @@
 from platform import machine
 
-from pillow_heif import (
-    libheif_version,
-    libheif_info,
-    options,
-)
+from pillow_heif import libheif_info, libheif_version, options
 
 
 def test_libheif_info():

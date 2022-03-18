@@ -1,8 +1,7 @@
-from os import path, chdir, remove, makedirs, environ, getcwd
-from subprocess import run, DEVNULL, PIPE, STDOUT, TimeoutExpired, CalledProcessError
-from re import search, MULTILINE, IGNORECASE
+from os import chdir, environ, getcwd, makedirs, path, remove
 from platform import machine
-
+from re import IGNORECASE, MULTILINE, search
+from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
 BUILD_DIR_TOOLS = path.join(BUILD_DIR_PREFIX, "build-tools")

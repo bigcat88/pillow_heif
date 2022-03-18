@@ -1,11 +1,11 @@
-import sys
 import os
+import sys
 import traceback
 from pathlib import Path
 
 from PIL import Image
-import pillow_heif
 
+import pillow_heif
 
 # This demo displays all thumbnails and first main image.
 if __name__ == "__main__":

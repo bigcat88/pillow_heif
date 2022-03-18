@@ -1,13 +1,14 @@
-import sys
-import os
 import builtins
-import traceback
-from pathlib import Path
-from json import dump
 import hashlib
+import os
+import sys
+import traceback
+from json import dump
+from pathlib import Path
 
-from PIL import Image, UnidentifiedImageError, ImageFile
 import piexif
+from PIL import Image, ImageFile, UnidentifiedImageError
+
 import pillow_heif
 
 

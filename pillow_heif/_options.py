@@ -2,8 +2,8 @@
 Options to change pillow_heif runtime behaviour.
 """
 
-from .constants import HeifCompressionFormat
 from ._lib_info import have_decoder_for_format, have_encoder_for_format
+from .constants import HeifCompressionFormat
 
 
 class PyLibHeifOptions:
