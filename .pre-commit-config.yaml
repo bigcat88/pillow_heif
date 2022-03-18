@@ -7,6 +7,7 @@ repos:
     -   id: trailing-whitespace
     -   id: check-toml
     -   id: name-tests-test
+    - id: mixed-line-ending
 -   repo: https://github.com/psf/black
     rev: 22.1.0
     hooks:
