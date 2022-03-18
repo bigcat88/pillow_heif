@@ -43,6 +43,23 @@ exclude = '''
 [tool.isort]
 profile = "black"
 
+[tool.pylint]
+master.py-version = "3.6"
+master.unsafe-load-any-extension = "yes"
+design.max-attributes = 10
+classes.exclude-protected = [
+    "_refs",
+]
+reports.output-format = "colorized"
+similarities.ignore-imports = "yes"
+messages_control.disable = [
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "line-too-long",
+    "invalid-name",
+]
+
 [tool.mypy]
 ignore_missing_imports = true
 warn_no_return = true

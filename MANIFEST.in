@@ -8,7 +8,6 @@ include pyproject.toml
 graft tests
 graft examples
 
-exclude .pylintrc
 exclude *.yaml
 exclude *.yml
 exclude CODE_OF_CONDUCT.md

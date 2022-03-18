@@ -37,7 +37,7 @@ jobs:
         run: sudo -H python3 -m pip -v install .
 
       - name: Pylint Analysis
-        run: pylint --rcfile .pylintrc pillow_heif
+        run: pylint pillow_heif
 
       - name: Generate coverage report
         run: coverage run --rcfile=pyproject.toml -m pytest && coverage xml && coverage html
