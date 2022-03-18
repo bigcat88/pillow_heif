@@ -2,7 +2,7 @@
 
 ![analysis](https://github.com/bigcat88/pillow_heif/actions/workflows/analysis-coverage.yml/badge.svg)
 ![build](https://github.com/bigcat88/pillow_heif/actions/workflows/create-release-draft.yml/badge.svg)
-![published](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi.yaml/badge.svg)
+![wheels test](https://github.com/bigcat88/pillow_heif/actions/workflows/test-wheels.yaml/badge.svg)
 [![codecov](https://codecov.io/gh/bigcat88/pillow_heif/branch/master/graph/badge.svg?token=JY64F2OL6V)](https://codecov.io/gh/bigcat88/pillow_heif)
 ![style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
@@ -19,32 +19,23 @@
 Library to work with HEIF files and an add-on for Pillow.
 Using the [libheif](https://github.com/strukturag/libheif) library via [CFFI](https://cffi.readthedocs.io).
 
-**Wheels table:**
+## Installation
+From [PyPi](https://pypi.org/project/pillow-heif/) or [Build from source](https://github.com/bigcat88/pillow_heif/blob/master/docs/BUILDING.md)
 
-|               | macOS Intel | macOS Silicon | Windows 64bit | musllinux | manylinux |
-|---------------|:-----------:|:-------------:|:-------------:|:---------:|:---------:|
-| CPython 3.6   |     N/A     |      N/A      |      N/A      |     ✅     |     ✅     |
-| CPython 3.7   |      ✅      |      N/A      |       ✅       |     ✅     |     ✅     |
-| CPython 3.8   |      ✅      |      N/A      |       ✅       |     ✅     |     ✅     |
-| CPython 3.9   |      ✅      |       ✅       |       ✅       |     ✅     |     ✅     |
-| CPython 3.10  |      ✅      |       ✅       |       ✅       |     ✅     |     ✅     |
-| PyPy 3.7 v7.3 |      ✅      |      N/A      |      N/A      |    N/A    |     ✅     |
-| PyPy 3.8 v7.3 |      ✅      |      N/A      |      N/A      |    N/A    |     ✅     |
+| **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
+|--------------------|:---------------:|:-----------------:|:-----------------:|:----------:|:----------:|
+| CPython 3.6        |       N/A       |        N/A        |        N/A        |     ✅      |     ✅      |
+| CPython 3.7        |        ✅        |        N/A        |         ✅         |     ✅      |     ✅      |
+| CPython 3.8        |        ✅        |        N/A        |         ✅         |     ✅      |     ✅      |
+| CPython 3.9        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
+| CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
+| PyPy 3.7 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
+| PyPy 3.8 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 
-Note: **CPython** **musllinux**/**manylinux** wheels for **i686**, **x64_86** and **aarch64**(arm8)
+&ast; **i686**, **x86_64**, **aarch64** wheels.
 
 #### **_Versions 0.2.X will be last to support Python 3.6_**
 
-**Pull requests are greatly welcome.**
-
-## Installation
-From [PyPi](https://pypi.org/project/pillow-heif/):
-
-```bash
-python3 -m pip install pillow_heif
-```
-
-#### Or [Building from source](https://github.com/bigcat88/pillow_heif/blob/master/docs/BUILDING.md)
 
 ## Example of use as opener
 ```python3
