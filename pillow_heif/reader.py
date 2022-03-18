@@ -11,7 +11,14 @@ from warnings import warn
 from _pillow_heif_cffi import ffi, lib
 
 from ._options import options
-from .constants import HeifBrand, HeifChannel, HeifChroma, HeifColorProfileType, HeifColorspace, HeifFiletype
+from .constants import (
+    HeifBrand,
+    HeifChannel,
+    HeifChroma,
+    HeifColorProfileType,
+    HeifColorspace,
+    HeifFiletype,
+)
 from .error import check_libheif_error
 
 
