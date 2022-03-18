@@ -5,21 +5,14 @@ Functions and classes for heif images to read.
 import builtins
 import pathlib
 from functools import partial
-from typing import Union, List, Iterator
+from typing import Iterator, List, Union
 from warnings import warn
 
 from _pillow_heif_cffi import ffi, lib
 
-from .constants import (
-    HeifFiletype,
-    HeifColorProfileType,
-    HeifChroma,
-    HeifChannel,
-    HeifColorspace,
-    HeifBrand,
-)
-from .error import check_libheif_error
 from ._options import options
+from .constants import HeifBrand, HeifChannel, HeifChroma, HeifColorProfileType, HeifColorspace, HeifFiletype
+from .error import check_libheif_error
 
 
 class HeifThumbnail:

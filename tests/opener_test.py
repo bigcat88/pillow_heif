@@ -1,19 +1,15 @@
-import os
 import builtins
+import os
 from io import BytesIO
-from pathlib import Path
 from json import load
+from pathlib import Path
+from unittest import mock
 from warnings import warn
 
-from unittest import mock
 import pytest
 from PIL import Image, ImageCms, UnidentifiedImageError
-from pillow_heif import (
-    register_heif_opener,
-    options,
-    HeifBrand,
-)
 
+from pillow_heif import HeifBrand, options, register_heif_opener
 
 register_heif_opener()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))

@@ -3,6 +3,7 @@ Exceptions that can be raised during library calls.
 """
 
 from _pillow_heif_cffi import ffi
+
 from .constants import HeifErrorCode
 
 

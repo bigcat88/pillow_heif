@@ -1,9 +1,10 @@
 from os import getenv, path
+from subprocess import DEVNULL, PIPE, run
 from sys import platform
-from subprocess import run, DEVNULL, PIPE
-from cffi import FFI
-from libheif import build_libs
 
+from cffi import FFI
+
+from libheif import build_libs
 
 ffi = FFI()
 with open("libheif/heif.h", "r", encoding="utf-8") as f:
