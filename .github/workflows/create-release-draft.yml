@@ -26,7 +26,7 @@ jobs:
           CIBW_BUILD_VERBOSITY: 2
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
-          CIBW_BEFORE_TEST: pip install -r requirements_dev.txt
+          CIBW_TEST_EXTRAS: tests
           CIBW_TEST_COMMAND_WINDOWS: "pytest -s {project}"
 
       - name: Check built wheels
@@ -59,7 +59,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} &&
             DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
-          CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
+          CIBW_TEST_EXTRAS: tests
           CIBW_TEST_COMMAND: "pytest -s {project}"
           CIBW_BUILD_VERBOSITY: 2
 
@@ -127,7 +127,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
-          CIBW_BEFORE_TEST: pip3 install -r requirements_dev.txt
+          CIBW_TEST_EXTRAS: tests
           CIBW_TEST_COMMAND: "pytest -s {project}"
           CIBW_BUILD_VERBOSITY: 2
 
@@ -151,7 +151,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install requirements
-        run: pip3 install --user check-manifest twine
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --user check-manifest twine
 
       - name: Run check-manifest
         run: python3 -m check_manifest
@@ -163,18 +165,16 @@ jobs:
 
       - name: Build sdist
         run: |
-          python3 -m pip install --upgrade pip setuptools wheel
-          python3 -m pip install -r requirements.txt
-          python3 -m pip install -r requirements_dev.txt
+          python3 -m pip install pytest piexif coverage
           python3 -m build --sdist --outdir wheelhouse
 
       - name: Install and check sdist
         run: |
-          pip3 install --user wheelhouse/*.tar.gz
+          python3 -m pip install --user wheelhouse/*.tar.gz
           python3 -m twine check wheelhouse/*
 
       - name: Generate coverage report
-        run: coverage run --rcfile=pyproject.toml -m pytest && coverage xml
+        run: coverage run -m pytest && coverage xml
 
       - name: Upload report to Codecov
         uses: codecov/codecov-action@v2
