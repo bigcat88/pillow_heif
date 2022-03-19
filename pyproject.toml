@@ -75,6 +75,10 @@ testpaths = [
 [tool.cibuildwheel]
 build-verbosity = "2"
 
+[tool.cibuildwheel.linux]
+test-extras = "tests"
+test-command = "pytest -s {project}"
+
 [tool.cibuildwheel.macos]
 before-all = [
     "brew install x265 libjpeg libde265 libheif little-cms2",
@@ -90,6 +94,5 @@ test-command = "pytest -s {project}"
 
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
-repair-wheel-command = "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
 test-extras = "tests"
 test-command = "pytest -s {project}"

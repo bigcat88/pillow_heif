@@ -23,6 +23,7 @@ jobs:
         env:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
 
       - name: Check built wheels
         run: twine check wheelhouse/*
@@ -112,8 +113,6 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
-          CIBW_TEST_EXTRAS: tests
-          CIBW_TEST_COMMAND: "pytest -s {project}"
 
       - name: Check builded wheels
         run: twine check wheelhouse/*
