@@ -8,6 +8,7 @@ Please send a pull request to the `main` branch.  Feel free to ask questions [vi
 
 - Fork the pillow-heif repository.
 - Create a branch from `main`.
+- Install dev requirements with `pip install ".[dev]"`
 - Develop bug fixes, features, tests, etc.
 - Run the test suite. See [Codecov](https://codecov.io/gh) to see if the changed code is covered by tests.
 - Run PyLint inside project root: `pylint pillow_heif`

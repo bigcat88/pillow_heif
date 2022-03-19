@@ -1,5 +1,0 @@
-pympler
-coverage
-piexif>=1.1.3
-pytest>=6.2.5
-setuptools>=41.2.0

@@ -26,21 +26,16 @@ jobs:
     name: Analysis & Coverage
     steps:
       - uses: actions/checkout@v3
-      - name: Prepare for source install
+      - name: Install from source
         run: |
           sudo -H python3 -m pip install --upgrade pip
-          sudo -H python3 -m pip install -r requirements.txt
-          sudo -H python3 -m pip install -r requirements_dev.txt
-          sudo -H python3 -m pip install install pylint
-
-      - name: Install from source
-        run: sudo -H python3 -m pip -v install .
+          sudo -H python3 -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
         run: pylint pillow_heif
 
       - name: Generate coverage report
-        run: coverage run --rcfile=pyproject.toml -m pytest && coverage xml && coverage html
+        run: coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
