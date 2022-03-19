@@ -11,9 +11,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
+    - uses: actions/checkout@v3
     - name: Get release info
       id: get_release_info
       run: |
@@ -32,7 +30,7 @@ jobs:
 
     - name: Publish wheels to PyPI
       run: |
-          pip install twine
+          python3 -m pip install twine
           ls -la wheelhouse/
           twine upload --skip-existing wheelhouse/*.whl
           twine upload wheelhouse/*tar.gz
