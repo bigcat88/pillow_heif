@@ -23,11 +23,6 @@ jobs:
         env:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
-          CIBW_BUILD_VERBOSITY: 2
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
-          CIBW_TEST_EXTRAS: tests
-          CIBW_TEST_COMMAND_WINDOWS: "pytest -s {project}"
 
       - name: Check built wheels
         run: twine check wheelhouse/*
@@ -50,18 +45,8 @@ jobs:
           python3 -m pip install cibuildwheel twine
           cibuildwheel
         env:
-          CIBW_BEFORE_ALL_MACOS: >
-            brew install x265 libjpeg libde265 libheif little-cms2 &&
-            HOMEBREW_PREFIX=$(brew --prefix) &&
-            REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib
           CIBW_BUILD: "*-macosx_x86_64"
           CIBW_SKIP: "cp36-*"
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
-            DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel} &&
-            DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}
-          CIBW_TEST_EXTRAS: tests
-          CIBW_TEST_COMMAND: "pytest -s {project}"
-          CIBW_BUILD_VERBOSITY: 2
 
       - name: Check built wheels
         run: twine check wheelhouse/*
@@ -129,7 +114,6 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
           CIBW_TEST_EXTRAS: tests
           CIBW_TEST_COMMAND: "pytest -s {project}"
-          CIBW_BUILD_VERBOSITY: 2
 
       - name: Check builded wheels
         run: twine check wheelhouse/*
