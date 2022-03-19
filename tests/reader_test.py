@@ -74,6 +74,7 @@ def test_open_and_load(img_info):
     else:
         assert "nclx_profile" not in heif_file.info
 
+    collect()
     assert heif_file.load() is heif_file
     assert heif_file.data is not None
     assert heif_file.stride is not None
