@@ -27,6 +27,7 @@ RUN \
   elif [ -f /usr/bin/apt ]; then \
     apt-get update && \
     apt-get install -y \
+      pkg-config \
       python3-pip \
       libfribidi-dev \
       libharfbuzz-dev \
