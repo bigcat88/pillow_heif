@@ -37,7 +37,6 @@ RUN \
       libtool \
       git \
       cmake \
-      g++ \
       lsb-release; \
       lsb_release -r | grep -q "20.04" || apt-get install -y nasm; \
       lsb_release -r | grep -q "20.04" || apt-get install -y libaom-dev; \
