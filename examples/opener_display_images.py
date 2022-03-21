@@ -13,6 +13,7 @@ if __name__ == "__main__":
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
     pillow_heif.register_heif_opener(thumbnails=True, thumbnails_autoload=False)
     # "images/hif/93FG5564.hif" - contains 1 image and two thumbnails for it.
+    # "images/hif/93FG5559.hif" - contains 1 image and two thumbnails for it.
     image_path = Path("images/hif/93FG5564.hif")
     try:
         img = Image.open(image_path)
@@ -29,7 +30,7 @@ if __name__ == "__main__":
             )
             thumbnail_img.show(title=f"Thumbnail {id}")
         # This is a temporary workaround. Standard says that app must ignore EXIF orientation, if `irot` present.
-        img.info["exif"] = None
+        # img.info["exif"] = None
         img.show(title="Main")
     except Exception as e:
         print(f"{repr(e)} during processing {image_path.as_posix()}", file=sys.stderr)

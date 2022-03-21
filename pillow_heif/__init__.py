@@ -2,8 +2,6 @@
 Import all possible stuff that can be used.
 """
 
-# pylint: disable=unused-import
-# pylint: disable=redefined-builtin
 
 from ._lib_info import (
     have_decoder_for_format,
@@ -14,8 +12,23 @@ from ._lib_info import (
 from ._options import options
 from ._version import __version__
 from .as_opener import HeifImageFile, check_heif_magic, register_heif_opener
-from .constants import *  # pylint: disable=unused-wildcard-import
+from .constants import (  # DEPRECATED CONSTANTS.
+    HeifBrand,
+    HeifChannel,
+    HeifChroma,
+    HeifColorProfileType,
+    HeifColorspace,
+    HeifCompressionFormat,
+    HeifErrorCode,
+    HeifFiletype,
+    heif_filetype_maybe,
+    heif_filetype_no,
+    heif_filetype_yes_supported,
+    heif_filetype_yes_unsupported,
+)
 from .error import HeifError
+
+# pylint: disable=redefined-builtin
 from .reader import (
     HeifFile,
     HeifThumbnail,

@@ -5,8 +5,6 @@ requires = [
     "cffi>=1.14.6",
 ]
 # build-backend = "setuptools.build_meta"
-#
-#[metadata]
 
 [tool.coverage.run]
 cover_pylib = true
@@ -48,17 +46,19 @@ profile = "black"
 master.py-version = "3.6"
 master.unsafe-load-any-extension = "yes"
 design.max-attributes = 10
+basic.good-names = [
+    "a", "b", "c", "d", "e", "f", "i", "j", "k",
+    "ex", "_", "fp"
+]
 classes.exclude-protected = [
     "_refs",
 ]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
 messages_control.disable = [
-    "missing-module-docstring",
     "missing-class-docstring",
     "missing-function-docstring",
     "line-too-long",
-    "invalid-name",
 ]
 
 [tool.mypy]

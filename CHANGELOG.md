@@ -11,7 +11,13 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- `heif_brand_*` constants was removed, as mentioned in changes for 0.1.9 version.
+
 ### Fixed
+
+- `as_opener` register `image/heic`  mimetype in addition to `image/heif`.
+- `as_opener` removes `orientation` tag from `Exif` to not rotate image twice(`libheif` already do that)
+- for `reader` you can do that manually if needed, with new `reset_orientation` function.
 
 ## [0.1.10 - 2022-03-17]
 
