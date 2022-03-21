@@ -150,6 +150,8 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../{name}".split()
         if name == "libheif":
             cmake_args += "-DWITH_EXAMPLES=NO -DWITH_DAV1D=NO -DWITH_RAV1E=NO".split()
+        if machine().find("armv7") != -1:
+            cmake_args += ["-DCMAKE_CXX_COMPILER_ID=GNU"]
         run(["cmake"] + cmake_args, check=True)
         print(f"{name} configured. starting build.", flush=True)
         run_print_if_error("make -j4".split())
