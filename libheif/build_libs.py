@@ -58,6 +58,8 @@ def tool_check_version(name: str, min_version: str) -> bool:
         return False
     if name == "nasm":
         _regexp = r"version\s*(\d+(\.\d+){2})"
+    elif name == "autoconf":
+        _regexp = r"(\d+(\.\d+){1})$"
     else:
         _regexp = r"(\d+(\.\d+){2})$"
     m_groups = search(_regexp, _.stdout.decode("utf-8"), flags=MULTILINE + IGNORECASE)
@@ -95,14 +97,22 @@ def build_tool_linux(url: str, name: str, min_version: str, configure_args: list
             run("./bootstrap -- -DCMAKE_USE_OPENSSL=OFF".split(), check=True)
         else:
             run(["./configure"] + configure_args, check=True)
-        run("make", check=True)
+        run("make".split(), check=True)
     run("make install".split(), check=True)
     run(f"{name} --version".split(), check=True)
     if chmod:
         run(f"chmod -R {chmod} {_tool_path}".split(), check=True)
 
 
-def build_tools_linux():
+def build_tools_linux(musl: bool = False):
+    build_tool_linux(
+        "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz",
+        "pkg-config",
+        "0.29.2" if not musl else "",
+        configure_args=["--with-internal-glib"],
+    )
+    build_tool_linux("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.71")
+    build_tool_linux("https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.gz", "automake", "1.16.5")
     build_tool_linux("https://github.com/Kitware/CMake/archive/refs/tags/v3.22.3.tar.gz", "cmake", "3.16.1")
     build_tool_linux(
         "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz", "nasm", "2.15.05", chmod="774"
@@ -131,31 +141,44 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
     _lib_path = path.join(BUILD_DIR_LIBS, name)
     if path.isdir(_lib_path):
         print(f"Cache found for {name}", flush=True)
-        chdir(path.join(_lib_path, "build"))
+        chdir(path.join(_lib_path, "build")) if name == "aom" else chdir(_lib_path)
     else:
-        _build_path = path.join(_lib_path, "build")
-        makedirs(_build_path)
-        download_extract_to(url, path.join(_lib_path, name), True if name != "aom" else False)
-        chdir(_build_path)
+        _hide_build_process = False
+        if name == "aom":
+            _build_path = path.join(_lib_path, "build")
+            makedirs(_build_path)
+            download_extract_to(url, path.join(_lib_path, "aom"), False)
+            chdir(_build_path)
+        else:
+            download_extract_to(url, _lib_path)
+            chdir(_lib_path)
+        if name == "libde265":
+            run(["./autogen.sh"], check=True)
         print(f"Preconfiguring {name}...", flush=True)
         if name == "aom":
             cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0".split()
             cmake_args += "-DENABLE_TESTDATA=0 -DCONFIG_AV1_ENCODER=0".split()
             cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
             cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
+            run(["cmake"] + cmake_args, check=True)
+            _hide_build_process = True
         elif name == "x265":
-            cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../x265/source".split()
-            cmake_args += ["-G", "Unix Makefiles", "-DENABLE_ASSEMBLY=NO"]
+            cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ./source".split()
+            cmake_args += ["-G", "Unix Makefiles"]
+            run(["cmake"] + cmake_args, check=True)
+            _hide_build_process = True
         else:
-            cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../{name}".split()
-        if name == "libheif":
-            cmake_args += "-DWITH_EXAMPLES=NO -DWITH_DAV1D=NO -DWITH_RAV1E=NO".split()
-        # Temporary workaround for Ubuntu Focal, need more fresh cmake.
-        if machine().find("armv7") != -1 and not musl:
-            cmake_args += "-DCMAKE_COMPILER_IS_GNUCXX=ON".split()
-        run(["cmake"] + cmake_args, check=True)
-        print(f"{name} configured. starting build.", flush=True)
-        run_print_if_error("make -j4".split())
+            configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
+            if name == "libde265":
+                configure_args += "--disable-sherlock265".split()
+            elif name == "libheif":
+                configure_args += "--disable-examples".split()
+            run(["./configure"] + configure_args, check=True)
+        print(f"{name} configured. building...", flush=True)
+        if _hide_build_process:
+            run_print_if_error("make -j4".split())
+        else:
+            run("make -j4".split(), check=True)
         print(f"{name} build success.", flush=True)
     run("make install".split(), check=True)
     if musl:
@@ -172,7 +195,7 @@ def build_libs_linux():
     _is_musllinux = is_musllinux()
     _original_dir = getcwd()
     try:
-        build_tools_linux()
+        build_tools_linux(_is_musllinux)
         # Are not trying to build aom on armv7, and are not trying to build if it is present in system already.
         if machine().find("armv7") == -1 and not is_library_installed("x265"):
             build_lib_linux(
