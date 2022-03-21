@@ -27,7 +27,6 @@ RUN \
   elif [ -f /usr/bin/apt ]; then \
     apt-get update && \
     apt-get install -y \
-      pkg-config \
       python3-pip \
       libfribidi-dev \
       libharfbuzz-dev \
@@ -40,6 +39,8 @@ RUN \
       lsb-release; \
       lsb_release -r | grep -q "20.04" || apt-get install -y libaom-dev; \
       lsb_release -r | grep -q "20.04" || apt-get install -y libx265-dev; \
+      ls -la /usr/bin/cc; \
+      /usr/bin/cc --version; \
   fi && \
   python3 -m pip install --upgrade pip && \
   python3 -m pip install -v "pillow_heif/.[tests]" && \
