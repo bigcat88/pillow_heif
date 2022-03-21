@@ -9,6 +9,13 @@ from typing import Union
 
 
 def reset_orientation(info: dict) -> Union[int, None]:
+    """
+    Sets `orientation` in `exif` to `1` if any presents. In Pillow plugin mode it called automatically for main image.
+    When `pillow_heif` used as a reader, if you wish you can call it manually.
+
+    :param info: An `info` dictionary from `ImageFile.ImageFile` or `UndecodedHeifImage`.
+    :returns: Original orientation or None if it is absent.
+    """
     if not info.get("exif", None):
         return None
     tif_tag = info["exif"][6:]
