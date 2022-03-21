@@ -95,10 +95,9 @@ def build_tool_linux(url: str, name: str, min_version: str, configure_args: list
         chdir(_tool_path)
         if name == "cmake":
             run("./bootstrap -- -DCMAKE_USE_OPENSSL=OFF".split(), check=True)
-            run("make".split(), check=True)
         else:
             run(["./configure"] + configure_args, check=True)
-            run("make -j4".split(), check=True)
+        run("make".split(), check=True)
     run("make install".split(), check=True)
     run(f"{name} --version".split(), check=True)
     if chmod:
@@ -175,8 +174,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             elif name == "libheif":
                 configure_args += "--disable-examples".split()
             run(["./configure"] + configure_args, check=True)
-        print(f"{name} configured.", flush=True)
-        print(f"{name} build started.", flush=True)
+        print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
             run_print_if_error("make -j4".split())
         else:
@@ -218,7 +216,6 @@ def build_libs_linux():
             "libheif",
             _is_musllinux,
         )
-        build_lib_linux("ftp://sourceware.org/pub/libffi/libffi-3.3.tar.gz", "libffi", _is_musllinux)
         open(_install_flag, "w").close()
     finally:
         chdir(_original_dir)

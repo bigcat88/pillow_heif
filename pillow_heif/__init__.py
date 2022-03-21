@@ -23,6 +23,7 @@ from .reader import (
     UndecodedHeifThumbnail,
     check,
     check_heif,
+    get_file_mimetype,
     is_supported,
     open,
     open_heif,

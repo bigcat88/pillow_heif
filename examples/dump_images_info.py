@@ -94,6 +94,7 @@ if __name__ == "__main__":
             try:
                 img = Image.open(image_path)
                 img_info["valid"] = True
+                img_info["mimetype"] = pillow_heif.get_file_mimetype(image_path)
                 _dump_info(img_info, img)
                 try:
                     img.load()
