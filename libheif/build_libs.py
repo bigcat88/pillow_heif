@@ -152,7 +152,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args += "-DWITH_EXAMPLES=NO -DWITH_DAV1D=NO -DWITH_RAV1E=NO".split()
         # Temporary workaround for Ubuntu Focal, need more fresh cmake.
         if machine().find("armv7") != -1 and not musl:
-            cmake_args += "-DCMAKE_COMPILER_IS_GNUCXX=1".split()
+            cmake_args += "-DCMAKE_COMPILER_IS_GNUCXX=ON".split()
         run(["cmake"] + cmake_args, check=True)
         print(f"{name} configured. starting build.", flush=True)
         run_print_if_error("make -j4".split())
