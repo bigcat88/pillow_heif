@@ -64,7 +64,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        cibw_buildlinux: [ manylinux, musllinux ]
+#        cibw_buildlinux: [ manylinux, musllinux ]
+        cibw_buildlinux: [ manylinux ]
         cibw_arch: [ "aarch64", "i686", "x86_64" ]
     name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }}
     runs-on: ubuntu-20.04
