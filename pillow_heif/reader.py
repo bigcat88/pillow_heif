@@ -181,6 +181,11 @@ def is_supported(fp) -> bool:
     return not options().strict
 
 
+def get_file_mimetype(fp) -> str:
+    __data = _get_bytes(fp, 50)
+    return ffi.string(lib.heif_get_file_mime_type(__data, len(__data))).decode()
+
+
 def open_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> UndecodedHeifFile:
     d = _get_bytes(fp)
     ctx = lib.heif_context_alloc()

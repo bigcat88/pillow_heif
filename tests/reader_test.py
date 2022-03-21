@@ -16,6 +16,7 @@ from pillow_heif import (
     HeifFiletype,
     UndecodedHeifFile,
     check_heif,
+    get_file_mimetype,
     is_supported,
     open_heif,
     options,
@@ -237,3 +238,11 @@ def test_thumbnails(img_info):
         heif_file.close()
     finally:
         options().reset()
+
+
+@pytest.mark.parametrize("img_info", all_images)
+def test_get_file_mimetype(img_info: dict):
+    mimetype = get_file_mimetype(Path(img_info["file"]))
+    expected_mimetype = img_info.get("mimetype", "")
+    if expected_mimetype:
+        assert mimetype == expected_mimetype

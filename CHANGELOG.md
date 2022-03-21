@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Linux aarch64 PyPy 3.7 & 3.8 wheels.
+- wrapper for libheif function `get_file_mimetype`.
 
 ### Changed
 
