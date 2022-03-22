@@ -113,7 +113,7 @@ def test_register_heif_opener(register_open, register_mime, register_extensions,
     asser_value = options().avif and params.get("avif", options().avif)
     register_heif_opener(**params)
     assert options().avif == asser_value
-    mime_call_count = 2 if options().avif else 1
+    mime_call_count = 3 if options().avif else 2
     register_open.assert_called_once()
     assert register_mime.call_count == mime_call_count
     register_extensions.assert_called_once()

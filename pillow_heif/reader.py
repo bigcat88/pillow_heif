@@ -113,8 +113,8 @@ class HeifFile:
 
     def thumbnails_all(self, one_for_image=False) -> Iterator[Union[UndecodedHeifThumbnail, HeifThumbnail]]:
         for i in self:
-            for t in i.thumbnails:
-                yield t
+            for thumb in i.thumbnails:
+                yield thumb
                 if one_for_image:
                     break
 
@@ -195,11 +195,11 @@ def get_file_mimetype(fp) -> str:
 
 
 def open_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> UndecodedHeifFile:
-    d = _get_bytes(fp)
+    file_data = _get_bytes(fp)
     ctx = lib.heif_context_alloc()
-    collect = _keep_refs(lib.heif_context_free, data=d)
-    ctx = ffi.gc(ctx, collect, size=len(d))
-    return _read_heif_context(ctx, d, apply_transformations, convert_hdr_to_8bit)
+    collect = _keep_refs(lib.heif_context_free, data=file_data)
+    ctx = ffi.gc(ctx, collect, size=len(file_data))
+    return _read_heif_context(ctx, file_data, apply_transformations, convert_hdr_to_8bit)
 
 
 def read_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> HeifFile:
@@ -211,16 +211,16 @@ def read_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bo
     return heif_file.load()
 
 
-def _get_bytes(fp, length=None):
+def _get_bytes(fp, length=None) -> bytes:
     if isinstance(fp, (str, pathlib.Path)):
-        with builtins.open(fp, "rb") as f:
-            return f.read(length or -1)
+        with builtins.open(fp, "rb") as file:
+            return file.read(length or -1)
     if hasattr(fp, "read"):
         offset = fp.tell() if hasattr(fp, "tell") else None
-        b = fp.read(length or -1)
+        result = fp.read(length or -1)
         if offset is not None and hasattr(fp, "seek"):
             fp.seek(offset)
-        return b
+        return result
     return bytes(fp)[:length]
 
 
@@ -237,9 +237,9 @@ def _keep_refs(destructor, **refs):
     return inner
 
 
-def _read_heif_context(ctx, d, transforms: bool, to_8bit: bool) -> UndecodedHeifFile:
-    brand = lib.heif_main_brand(d[:12], 12)
-    error = lib.heif_context_read_from_memory_without_copy(ctx, d, len(d), ffi.NULL)
+def _read_heif_context(ctx, data, transforms: bool, to_8bit: bool) -> UndecodedHeifFile:
+    brand = lib.heif_main_brand(data[:12], 12)
+    error = lib.heif_context_read_from_memory_without_copy(ctx, data, len(data), ffi.NULL)
     check_libheif_error(error)
     p_main_id = ffi.new("heif_item_id *")
     error = lib.heif_context_get_primary_image_ID(ctx, p_main_id)
@@ -249,7 +249,7 @@ def _read_heif_context(ctx, d, transforms: bool, to_8bit: bool) -> UndecodedHeif
     check_libheif_error(error)
     collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
     handle = ffi.gc(p_main_handle[0], collect)
-    return _read_heif_handle(ctx, p_main_id[0], handle, transforms, to_8bit, brand=brand)
+    return _read_heif_handle(ctx, p_main_id[0], handle, transforms, to_8bit, brand=brand, main=True)
 
 
 def _read_heif_handle(ctx, img_id, handle, transforms: bool, to_8bit: bool, **kwargs) -> UndecodedHeifFile:
@@ -258,8 +258,8 @@ def _read_heif_handle(ctx, img_id, handle, transforms: bool, to_8bit: bool, **kw
     _metadata = _read_metadata(handle)
     _exif = _retrieve_exif(_metadata)
     _color_profile = _read_color_profile(handle)
-    _thumbnails = _read_thumbnails(handle, transforms, to_8bit)
-    _images = [] if ctx is None else _get_other_top_imgs(ctx, img_id, transforms, to_8bit, kwargs["brand"])
+    _thumbnails = _read_thumbnails(ctx, handle, transforms, to_8bit)
+    _images = _get_other_top_imgs(ctx, img_id, transforms, to_8bit, kwargs["brand"]) if kwargs["main"] else []
     return UndecodedHeifFile(
         handle,
         size=(_width, _height),
@@ -273,7 +273,6 @@ def _read_heif_handle(ctx, img_id, handle, transforms: bool, to_8bit: bool, **kw
         thumbnails=_thumbnails,
         top_lvl_images=_images,
         img_id=img_id,
-        main=bool(ctx),
         **kwargs,
     )
 
@@ -304,13 +303,13 @@ def _read_metadata(handle) -> list:
 def _retrieve_exif(metadata: list):
     _result = None
     _purge = []
-    for i, v in enumerate(metadata):
-        if v["type"] == "Exif":
+    for i, md_block in enumerate(metadata):
+        if md_block["type"] == "Exif":
             _purge.append(i)
-            if not _result and v["data"] and v["data"][0:4] == b"Exif":
-                _result = v["data"]
-    for e in reversed(_purge):
-        del metadata[e]
+            if not _result and md_block["data"] and md_block["data"][0:4] == b"Exif":
+                _result = md_block["data"]
+    for i in reversed(_purge):
+        del metadata[i]
     return _result
 
 
@@ -375,20 +374,22 @@ def _release_heif_image(img, _p_data=None) -> None:
     lib.heif_image_release(img)
 
 
-def _read_thumbnails(handle, transforms: bool, to_8bit: bool) -> list:
+def _read_thumbnails(ctx, handle, transforms: bool, to_8bit: bool) -> list:
     result: List[Union[UndecodedHeifThumbnail, HeifThumbnail]] = []
     if not options().thumbnails:
         return result
-    n = lib.heif_image_handle_get_number_of_thumbnails(handle)
-    if n == 0:
+    thumbs_count = lib.heif_image_handle_get_number_of_thumbnails(handle)
+    if thumbs_count == 0:
         return result
-    thumbnails_ids = ffi.new("heif_item_id[]", n)
-    lib.heif_image_handle_get_list_of_thumbnail_IDs(handle, thumbnails_ids, n)
+    thumbnails_ids = ffi.new("heif_item_id[]", thumbs_count)
+    lib.heif_image_handle_get_list_of_thumbnail_IDs(handle, thumbnails_ids, thumbs_count)
     for thumbnail_id in thumbnails_ids:
-        p_handle = ffi.new("struct heif_image_handle **")
-        error = lib.heif_image_handle_get_thumbnail(handle, thumbnail_id, p_handle)
+        p_thumb_handle = ffi.new("struct heif_image_handle **")
+        error = lib.heif_image_handle_get_thumbnail(handle, thumbnail_id, p_thumb_handle)
         check_libheif_error(error)
-        _thumbnail = _read_thumbnail_handle(p_handle[0], transforms, to_8bit, img_id=thumbnail_id)
+        collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
+        thumb_handle = ffi.gc(p_thumb_handle[0], collect)
+        _thumbnail = _read_thumbnail_handle(thumb_handle, transforms, to_8bit, img_id=thumbnail_id)
         if options().thumbnails_autoload:
             _thumbnail.load()
         result.append(_thumbnail)
@@ -411,11 +412,11 @@ def _read_thumbnail_handle(handle, transforms: bool, to_8bit: bool, **kwargs) ->
 
 def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: HeifBrand) -> list:
     _result: List[UndecodedHeifFile] = []
-    n = lib.heif_context_get_number_of_top_level_images(ctx)
-    if not n > 1:
+    top_img_count = lib.heif_context_get_number_of_top_level_images(ctx)
+    if not top_img_count > 1:
         return _result
-    top_lvl_image_ids = ffi.new("heif_item_id[]", n)
-    lib.heif_context_get_list_of_top_level_image_IDs(ctx, top_lvl_image_ids, n)
+    top_lvl_image_ids = ffi.new("heif_item_id[]", top_img_count)
+    lib.heif_context_get_list_of_top_level_image_IDs(ctx, top_lvl_image_ids, top_img_count)
     for _image_id in top_lvl_image_ids:
         if _image_id == main_id:
             continue
@@ -424,7 +425,7 @@ def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: He
         check_libheif_error(error)
         collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
         handle = ffi.gc(p_handle[0], collect)
-        _image = _read_heif_handle(None, _image_id, handle, transforms, to_8bit, brand=brand)
+        _image = _read_heif_handle(ctx, _image_id, handle, transforms, to_8bit, brand=brand, main=False)
         _result.append(_image)
     return _result
 

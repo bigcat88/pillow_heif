@@ -173,24 +173,10 @@ class HeifCompressionFormat(IntEnum):
 
 
 # --------------------------------------------------------------------
-# DEPRECATED FUNCTIONS.
+# DEPRECATED CONSTANTS.
 # pylint: disable=invalid-name
 
 heif_filetype_no = 0
 heif_filetype_yes_supported = 1
 heif_filetype_yes_unsupported = 2
 heif_filetype_maybe = 3
-
-heif_brand_unknown_brand = 0
-heif_brand_heic = 1
-heif_brand_heix = 2
-heif_brand_hevc = 3
-heif_brand_hevx = 4
-heif_brand_heim = 5
-heif_brand_heis = 6
-heif_brand_hevm = 7
-heif_brand_hevs = 8
-heif_brand_mif1 = 9
-heif_brand_msf1 = 10
-heif_brand_avif = 11
-heif_brand_avis = 12
