@@ -197,7 +197,6 @@ def get_file_mimetype(fp) -> str:
 def open_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> UndecodedHeifFile:
     file_data = _get_bytes(fp)
     ctx = lib.heif_context_alloc()
-    print(f"CTX CONSTRUCTOR:{ctx}")
     collect = _keep_refs(lib.heif_context_free, data=file_data)
     ctx = ffi.gc(ctx, collect, size=len(file_data))
     return _read_heif_context(ctx, file_data, apply_transformations, convert_hdr_to_8bit)
@@ -232,7 +231,6 @@ def _keep_refs(destructor, **refs):
     """
 
     def inner(cdata):
-        print(f"DESTRUCTOR:{cdata}")
         return destructor(cdata)
 
     inner._refs = refs
@@ -251,7 +249,6 @@ def _read_heif_context(ctx, data, transforms: bool, to_8bit: bool) -> UndecodedH
     check_libheif_error(error)
     collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
     handle = ffi.gc(p_main_handle[0], collect)
-    print(f"CONSTRUCTOR(_read_heif_context):{handle}")
     return _read_heif_handle(ctx, p_main_id[0], handle, transforms, to_8bit, brand=brand, main=True)
 
 
@@ -358,7 +355,6 @@ def _read_heif_image(handle, heif_class: Union[UndecodedHeifFile, UndecodedHeifT
     p_options.ignore_transformations = int(not heif_class.transforms)
     p_options.convert_hdr_to_8bit = int(heif_class.to_8bit)
     p_img = ffi.new("struct heif_image **")
-    print(f"CONSTRUCTOR:{handle}")
     error = lib.heif_decode_image(handle, p_img, colorspace, chroma, p_options)
     check_libheif_error(error)
     img = p_img[0]
@@ -393,7 +389,6 @@ def _read_thumbnails(ctx, handle, transforms: bool, to_8bit: bool) -> list:
         check_libheif_error(error)
         collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
         handle = ffi.gc(p_handle[0], collect)
-        print(f"CONSTRUCTOR(_read_thumbnails):{handle}")
         _thumbnail = _read_thumbnail_handle(handle, transforms, to_8bit, img_id=thumbnail_id)
         if options().thumbnails_autoload:
             _thumbnail.load()
@@ -430,7 +425,6 @@ def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: He
         check_libheif_error(error)
         collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
         handle = ffi.gc(p_handle[0], collect)
-        print(f"CONSTRUCTOR(_get_other_top_imgs):{handle}")
         _image = _read_heif_handle(ctx, _image_id, handle, transforms, to_8bit, brand=brand, main=False)
         _result.append(_image)
     return _result

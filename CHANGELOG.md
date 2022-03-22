@@ -15,8 +15,9 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- memory leak when working with thumbnails, now properly release thumbnail handle.
 - `as_opener` register `image/heic`  mimetype in addition to `image/heif`.
-- `as_opener` removes `orientation` tag from `Exif` to not rotate image twice(`libheif` already do that)
+- `as_opener` set `orientation` tag to `1` from `Exif` to not rotate image twice(`libheif` already do transforms)
 - for `reader` you can do that manually if needed, with new `reset_orientation` function.
 
 ## [0.1.10 - 2022-03-17]
