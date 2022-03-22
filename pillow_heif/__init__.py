@@ -12,7 +12,11 @@ from ._lib_info import (
 from ._options import options
 from ._version import __version__
 from .as_opener import HeifImageFile, check_heif_magic, register_heif_opener
-from .constants import (  # DEPRECATED CONSTANTS.
+from .constants import heif_filetype_maybe  # DEPRECATED
+from .constants import heif_filetype_no  # DEPRECATED
+from .constants import heif_filetype_yes_supported  # DEPRECATED
+from .constants import heif_filetype_yes_unsupported  # DEPRECATED
+from .constants import (
     HeifBrand,
     HeifChannel,
     HeifChroma,
@@ -21,12 +25,9 @@ from .constants import (  # DEPRECATED CONSTANTS.
     HeifCompressionFormat,
     HeifErrorCode,
     HeifFiletype,
-    heif_filetype_maybe,
-    heif_filetype_no,
-    heif_filetype_yes_supported,
-    heif_filetype_yes_unsupported,
 )
 from .error import HeifError
+from .misc import reset_orientation
 
 # pylint: disable=redefined-builtin
 from .reader import (
