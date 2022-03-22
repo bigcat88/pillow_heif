@@ -384,12 +384,12 @@ def _read_thumbnails(ctx, handle, transforms: bool, to_8bit: bool) -> list:
     thumbnails_ids = ffi.new("heif_item_id[]", thumbs_count)
     lib.heif_image_handle_get_list_of_thumbnail_IDs(handle, thumbnails_ids, thumbs_count)
     for thumbnail_id in thumbnails_ids:
-        p_handle = ffi.new("struct heif_image_handle **")
-        error = lib.heif_image_handle_get_thumbnail(handle, thumbnail_id, p_handle)
+        p_thumb_handle = ffi.new("struct heif_image_handle **")
+        error = lib.heif_image_handle_get_thumbnail(handle, thumbnail_id, p_thumb_handle)
         check_libheif_error(error)
         collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
-        handle = ffi.gc(p_handle[0], collect)
-        _thumbnail = _read_thumbnail_handle(handle, transforms, to_8bit, img_id=thumbnail_id)
+        thumb_handle = ffi.gc(p_thumb_handle[0], collect)
+        _thumbnail = _read_thumbnail_handle(thumb_handle, transforms, to_8bit, img_id=thumbnail_id)
         if options().thumbnails_autoload:
             _thumbnail.load()
         result.append(_thumbnail)
