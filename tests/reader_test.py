@@ -1,6 +1,7 @@
 import builtins
 import os
-from gc import collect
+
+# from gc import collect
 from io import BytesIO
 from json import load
 
@@ -35,6 +36,7 @@ thumbnails_dataset = (
 
 @pytest.mark.parametrize("img_info", heif_images)
 def test_open_and_load(img_info):
+    print(f"TEST with {img_info['file']}:")
     heif_file = open_heif(img_info["file"])
     assert heif_file.size[0] > 0
     assert heif_file.size[1] > 0
@@ -64,7 +66,6 @@ def test_open_and_load(img_info):
     else:
         assert "nclx_profile" not in heif_file.info
 
-    collect()
     assert heif_file.load() is heif_file
     assert heif_file.data is not None
     assert heif_file.stride is not None

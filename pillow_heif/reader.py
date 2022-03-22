@@ -248,10 +248,10 @@ def _read_heif_context(ctx, data, transforms: bool, to_8bit: bool) -> UndecodedH
     check_libheif_error(error)
     p_main_handle = ffi.new("struct heif_image_handle **")
     error = lib.heif_context_get_primary_image_handle(ctx, p_main_handle)
-    main_handle = p_main_handle[0]
+    # main_handle = p_main_handle[0]
     check_libheif_error(error)
     collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
-    handle = ffi.gc(main_handle, collect)
+    handle = ffi.gc(p_main_handle[0], collect)
     return _read_heif_handle(ctx, p_main_id[0], handle, transforms, to_8bit, brand=brand)
 
 
