@@ -248,11 +248,11 @@ def _read_heif_context(ctx, data, transforms: bool, to_8bit: bool) -> UndecodedH
     check_libheif_error(error)
     p_main_handle = ffi.new("struct heif_image_handle **")
     error = lib.heif_context_get_primary_image_handle(ctx, p_main_handle)
-    # main_handle = p_main_handle[0]
     check_libheif_error(error)
     collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
     handle = ffi.gc(p_main_handle[0], collect)
-    return _read_heif_handle(ctx, p_main_id[0], handle, transforms, to_8bit, brand=brand)
+    print(f"CONSTRUCTOR(_read_heif_context):{handle}")
+    return _read_heif_handle(ctx, p_main_id[0], handle, transforms, to_8bit, brand=brand, main=True)
 
 
 def _read_heif_handle(ctx, img_id, handle, transforms: bool, to_8bit: bool, **kwargs) -> UndecodedHeifFile:
@@ -261,8 +261,8 @@ def _read_heif_handle(ctx, img_id, handle, transforms: bool, to_8bit: bool, **kw
     _metadata = _read_metadata(handle)
     _exif = _retrieve_exif(_metadata)
     _color_profile = _read_color_profile(handle)
-    _thumbnails = _read_thumbnails(handle, transforms, to_8bit)
-    _images = [] if ctx is None else _get_other_top_imgs(ctx, img_id, transforms, to_8bit, kwargs["brand"])
+    _thumbnails = _read_thumbnails(ctx, handle, transforms, to_8bit)
+    _images = _get_other_top_imgs(ctx, img_id, transforms, to_8bit, kwargs["brand"]) if kwargs["main"] else []
     return UndecodedHeifFile(
         handle,
         size=(_width, _height),
@@ -276,7 +276,6 @@ def _read_heif_handle(ctx, img_id, handle, transforms: bool, to_8bit: bool, **kw
         thumbnails=_thumbnails,
         top_lvl_images=_images,
         img_id=img_id,
-        main=bool(ctx),
         **kwargs,
     )
 
@@ -379,7 +378,7 @@ def _release_heif_image(img, _p_data=None) -> None:
     lib.heif_image_release(img)
 
 
-def _read_thumbnails(handle, transforms: bool, to_8bit: bool) -> list:
+def _read_thumbnails(ctx, handle, transforms: bool, to_8bit: bool) -> list:
     result: List[Union[UndecodedHeifThumbnail, HeifThumbnail]] = []
     if not options().thumbnails:
         return result
@@ -392,7 +391,10 @@ def _read_thumbnails(handle, transforms: bool, to_8bit: bool) -> list:
         p_handle = ffi.new("struct heif_image_handle **")
         error = lib.heif_image_handle_get_thumbnail(handle, thumbnail_id, p_handle)
         check_libheif_error(error)
-        _thumbnail = _read_thumbnail_handle(p_handle[0], transforms, to_8bit, img_id=thumbnail_id)
+        collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
+        handle = ffi.gc(p_handle[0], collect)
+        print(f"CONSTRUCTOR(_read_thumbnails):{handle}")
+        _thumbnail = _read_thumbnail_handle(handle, transforms, to_8bit, img_id=thumbnail_id)
         if options().thumbnails_autoload:
             _thumbnail.load()
         result.append(_thumbnail)
@@ -428,7 +430,8 @@ def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: He
         check_libheif_error(error)
         collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
         handle = ffi.gc(p_handle[0], collect)
-        _image = _read_heif_handle(None, _image_id, handle, transforms, to_8bit, brand=brand)
+        print(f"CONSTRUCTOR(_get_other_top_imgs):{handle}")
+        _image = _read_heif_handle(ctx, _image_id, handle, transforms, to_8bit, brand=brand, main=False)
         _result.append(_image)
     return _result
 
