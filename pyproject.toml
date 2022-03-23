@@ -22,22 +22,6 @@ exclude_lines = [
 line-length = 120
 target-versions = ["py37"]
 preview = true
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.venv
-  | \.vienv
-  | \.env
-  | \.mypy_cache
-  | \.pytest_cache
-  | __pycache__
-  | build
-  | dist
-  | wheelhouse
-)\
-'''
 
 [tool.isort]
 profile = "black"
