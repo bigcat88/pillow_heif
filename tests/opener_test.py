@@ -7,7 +7,7 @@ from unittest import mock
 from warnings import warn
 
 import pytest
-from PIL import Image, ImageCms, UnidentifiedImageError
+from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
 from pillow_heif import HeifBrand, options, register_heif_opener
 
@@ -24,7 +24,7 @@ if not options().avif:
 invalid_images = [e for e in all_images if not e["valid"]]
 heif_images = [e for e in all_images if e["valid"]]
 
-heic_images = [e for e in heif_images if e["name"].endswith(".heic")]
+heic_images = [e for e in heif_images if e["name"].endswith(".heic") or e["name"].endswith(".heif")]
 hif_images = [e for e in heif_images if e["name"].endswith(".hif")]
 avif_images = [e for e in heif_images if e["name"].endswith(".avif")]
 
@@ -64,6 +64,11 @@ def test_open_images(img_info):
         # Verify image
         pillow_image.verify()
         # Here we must check verify, but currently verify do nothing.
+        # Check image iteration
+        _last_img_id = -1
+        for frame in ImageSequence.Iterator(pillow_image):
+            assert frame.info["img_id"] != _last_img_id
+            _last_img_id = frame.info["img_id"]
     finally:
         options().reset()
 
@@ -77,7 +82,10 @@ def test_load_images(img_info):
         pillow_image = Image.open(_as)
         assert getattr(pillow_image, "heif_file") is not None
         pillow_image.load()
-        assert getattr(pillow_image, "heif_file") is None
+        if img_info["all_top_lvl_images_count"] > 1:
+            assert getattr(pillow_image, "heif_file") is not None
+        else:
+            assert getattr(pillow_image, "heif_file") is None
 
 
 @pytest.mark.parametrize("img_info", invalid_images)

@@ -34,7 +34,7 @@ if not options().avif:
 invalid_images = [e for e in all_images if not e["valid"]]
 heif_images = [e for e in all_images if e["valid"]]
 
-heic_images = [e for e in heif_images if e["name"].endswith(".heic")]
+heic_images = [e for e in heif_images if e["name"].endswith(".heic") or e["name"].endswith(".heif")]
 hif_images = [e for e in heif_images if e["name"].endswith(".hif")]
 avif_images = [e for e in heif_images if e["name"].endswith(".avif")]
 thumbnails_dataset = (
@@ -211,10 +211,22 @@ def test_heif_error(img_info):
 @pytest.mark.parametrize("img_info", [e for e in heif_images if e["all_top_lvl_images_count"] > 1])
 def test_burst_image(img_info: dict):
     heif_file = open_heif(Path(img_info["file"]))
-    assert len(heif_file) == 1 + len(img_info["top_lvl_images"])
+    assert len(heif_file) == len(img_info["all_top_lvl_images"])
     for i, image in enumerate(heif_file):
         assert image.data is None
         assert image.info["main"] != bool(i)
+    heif_file.close()
+
+
+@pytest.mark.parametrize("img_info", [e for e in heif_images if e["all_top_lvl_images_count"] > 1][:2])
+def test_image_index(img_info: dict):
+    heif_file = open_heif(Path(img_info["file"]))
+    with pytest.raises(IndexError):
+        heif_file[-1].load()
+    with pytest.raises(IndexError):
+        heif_file[len(heif_file)].load()
+    assert heif_file[0].info["main"]
+    assert not heif_file[len(heif_file) - 1].info["main"]
     heif_file.close()
 
 

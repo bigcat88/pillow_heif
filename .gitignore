@@ -25,6 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+converted/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -146,4 +147,3 @@ cython_debug/
 .DS_Store
 
 /out
-/wheelhouse/

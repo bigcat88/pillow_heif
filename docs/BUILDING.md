@@ -19,6 +19,7 @@ sudo -H python3 -m pip install pillow_heif
 ```
 
 See [build_libs_linux](https://github.com/bigcat88/pillow_heif/blob/master/libheif/build_libs.py) for additional info what will happen during installing from source.
+
 Here is a GH Action [Dockerfile](https://github.com/bigcat88/pillow_heif/blob/master/docker/from_src.Dockerfile) for test building from source.
 
 Notes:

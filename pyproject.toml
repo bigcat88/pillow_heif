@@ -5,8 +5,6 @@ requires = [
     "cffi>=1.14.6",
 ]
 # build-backend = "setuptools.build_meta"
-#
-#[metadata]
 
 [tool.coverage.run]
 cover_pylib = true
@@ -24,22 +22,6 @@ exclude_lines = [
 line-length = 120
 target-versions = ["py37"]
 preview = true
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.venv
-  | \.vienv
-  | \.env
-  | \.mypy_cache
-  | \.pytest_cache
-  | __pycache__
-  | build
-  | dist
-  | wheelhouse
-)\
-'''
 
 [tool.isort]
 profile = "black"
@@ -47,18 +29,20 @@ profile = "black"
 [tool.pylint]
 master.py-version = "3.6"
 master.unsafe-load-any-extension = "yes"
-design.max-attributes = 10
+design.max-attributes = 9
+basic.good-names = [
+    "a", "b", "c", "d", "e", "f", "i", "j", "k", "v",
+    "ex", "_", "fp"
+]
 classes.exclude-protected = [
     "_refs",
 ]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
 messages_control.disable = [
-    "missing-module-docstring",
     "missing-class-docstring",
     "missing-function-docstring",
     "line-too-long",
-    "invalid-name",
 ]
 
 [tool.mypy]

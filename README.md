@@ -9,7 +9,8 @@
 ![PythonVersion](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)
 ![impl](https://img.shields.io/pypi/implementation/pillow_heif)
 ![pypi](https://img.shields.io/pypi/v/pillow_heif.svg)
-[![Downloads](https://img.shields.io/pypi/dm/pillow_heif?color=orange)](https://pypi.org/project/pillow-heif/)
+[![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pillow-heif)
+[![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads/Month)](https://pepy.tech/project/pillow-heif)
 
 ![Mac OS](https://img.shields.io/badge/mac%20os-FCC624?style=for-the-badge&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
@@ -39,13 +40,14 @@ From [PyPi](https://pypi.org/project/pillow-heif/) or [Build from source](https:
 
 ## Example of use as opener
 ```python3
-from PIL import Image
+from PIL import Image, ImageSequence
 from pillow_heif import register_heif_opener
 
 register_heif_opener()
 
 image = Image.open('image.heic')
-image.load()
+for frame in ImageSequence.Iterator(image):
+    image.show()
 ```
 
 ## Example of use as reader
@@ -78,6 +80,7 @@ The returned `HeifImageFile` by `Pillow` function `Image.open` has the following
   * `color_profile` - is a dictionary with `type` and `data` keys. May be empty.
   * `icc_profile` - contains data and present only when file has `ICC` color profile(`prof` or `rICC`).
   * `nclx_profile` - contains data and present only when file has `NCLX` color profile.
+  * `img_id` - id of image, will be needed for encoding operations later.
 
 ### An UndecodedHeifFile object
 The returned `UndecodedHeifFile` by function `open_heif` has the following properties:
@@ -88,13 +91,13 @@ The returned `UndecodedHeifFile` by function `open_heif` has the following prope
 * `bit_depth` - the number of bits in each component of a pixel.
 * `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
 * `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
-* `img_id` - id of image, will be needed for encoding operations later.
-* `info` dictionary with the same content as in `HeifImageFile.info` plus `main` - a boolean indicating is this a default picture.
+* `info` - same dictionary as in `HeifImageFile.info` plus `main` - a boolean indicating is this a default picture.
 * `thumbnails` - list of `HeifThumbnail` or `UndecodedHeifThumbnail` classes.
 * `top_lvl_images` - list of `UndecodedHeifFile` or `HeifFile` classes, excluding main image.
-* class supports `len` and `iter`:
+* class supports `len`, `iter` and `__getitem__`:
   * `len` - returns number of top level images including main.
   * `iter` - returns a generator to iterate through all images, first image will be main.
+  * `__getitem__` - return image by index.
 * other useful class methods:
   * `thumbnails_all` - returns an iterator to access thumbnails for all images in file.
 
