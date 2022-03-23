@@ -71,11 +71,11 @@ class HeifFile:
         self.bit_depth = bit_depth
         self.data = data
         self.stride = stride
-        self.img_id = kwargs["img_id"]
         self.top_lvl_images = kwargs.get("top_lvl_images", [])
         self.thumbnails: List[Union[UndecodedHeifThumbnail, HeifThumbnail]] = kwargs["thumbnails"]
         self.info = {
             "main": kwargs["main"],
+            "img_id": kwargs["img_id"],
             "brand": kwargs.get("brand", HeifBrand.UNKNOWN),
             "exif": kwargs.get("exif", None),
             "metadata": kwargs.get("metadata", []),
@@ -110,6 +110,11 @@ class HeifFile:
     def __iter__(self):
         for i in range(len(self)):
             yield self if not i else self.top_lvl_images[i - 1]
+
+    def __getitem__(self, index):
+        if index < 0 or index > len(self.top_lvl_images):
+            raise IndexError("invalid image index")
+        return self if not index else self.top_lvl_images[index - 1]
 
     def thumbnails_all(self, one_for_image=False) -> Iterator[Union[UndecodedHeifThumbnail, HeifThumbnail]]:
         for i in self:

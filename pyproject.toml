@@ -45,9 +45,9 @@ profile = "black"
 [tool.pylint]
 master.py-version = "3.6"
 master.unsafe-load-any-extension = "yes"
-design.max-attributes = 10
+design.max-attributes = 9
 basic.good-names = [
-    "a", "b", "c", "d", "e", "f", "i", "j", "k",
+    "a", "b", "c", "d", "e", "f", "i", "j", "k", "v",
     "ex", "_", "fp"
 ]
 classes.exclude-protected = [

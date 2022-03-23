@@ -26,11 +26,17 @@
     "nclx_profile": null,
     "dimensions": "(4032, 3024)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 4032x3024 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 320x240 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 320x240 RGB with 230400 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -60,11 +66,17 @@
     "nclx_profile": null,
     "dimensions": "(4032, 3024)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 4032x3024 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 320x240 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 320x240 RGB with 230400 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -94,11 +106,17 @@
     "nclx_profile": null,
     "dimensions": "(3024, 4032)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 3024x4032 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x320 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x320 RGB with 230400 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -119,9 +137,41 @@
     "nclx_profile": null,
     "dimensions": "(262, 264)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 262x264 RGBA with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
+    "load": true
+  },
+  {
+    "name": "sample.avif",
+    "file": "images/sample.avif",
+    "hash": "790cb844e79d33b9531445c44052b3f3",
+    "size": 308,
+    "check_heif": 1,
+    "strict": true,
+    "supported": true,
+    "valid": true,
+    "mimetype": "image/avif",
+    "brand": "AVIF",
+    "exif_length": null,
+    "metadata": {},
+    "color_profile": "nclx",
+    "color_profile_length": 52,
+    "icc_profile": null,
+    "nclx_profile": 52,
+    "dimensions": "(128, 128)",
+    "all_top_lvl_images_count": 1,
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 128x128 RGB with no image data and 0 thumbnails>"
+    ],
+    "thumbnails_count": 0,
+    "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -151,11 +201,17 @@
     "nclx_profile": null,
     "dimensions": "(3024, 4032)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 3024x4032 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x320 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x320 RGB with 230400 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -187,11 +243,19 @@
     "nclx_profile": 52,
     "dimensions": "(3648, 5472)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 3648x5472 RGB with no image data and 2 thumbnails>"
+    ],
     "thumbnails_count": 2,
     "thumbnails": [
-      "<UndecodedHeifThumbnail 214x320 RGB with no data>"
+      "<UndecodedHeifThumbnail 214x320 RGB with no data>",
+      "<UndecodedHeifThumbnail 1080x1620 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 214x320 RGB with 307200 bytes data>",
+      "<HeifThumbnail 1080x1620 RGB with 5287680 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -223,11 +287,19 @@
     "nclx_profile": 52,
     "dimensions": "(5472, 3648)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 5472x3648 RGB with no image data and 2 thumbnails>"
+    ],
     "thumbnails_count": 2,
     "thumbnails": [
-      "<UndecodedHeifThumbnail 320x214 RGB with no data>"
+      "<UndecodedHeifThumbnail 320x214 RGB with no data>",
+      "<UndecodedHeifThumbnail 1620x1080 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 320x214 RGB with 205440 bytes data>",
+      "<HeifThumbnail 1620x1080 RGB with 5287680 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -257,11 +329,17 @@
     "nclx_profile": null,
     "dimensions": "(4032, 3024)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 4032x3024 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 320x240 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 320x240 RGB with 230400 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -283,11 +361,17 @@
     "nclx_profile": null,
     "dimensions": "(4032, 3024)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 4032x3024 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 320x240 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 320x240 RGB with 230400 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -317,11 +401,17 @@
     "nclx_profile": null,
     "dimensions": "(4032, 3024)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 4032x3024 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 320x240 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 320x240 RGB with 230400 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -382,7 +472,8 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 4,
-    "top_lvl_images": [
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>",
       "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>",
       "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>",
       "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
@@ -394,6 +485,13 @@
       "<UndecodedHeifThumbnail 240x160 RGB with no data>",
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<UndecodedHeifThumbnail 240x160 RGB with no data>",
+      "<UndecodedHeifThumbnail 240x160 RGB with no data>",
+      "<UndecodedHeifThumbnail 240x160 RGB with no data>",
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -414,7 +512,8 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 4,
-    "top_lvl_images": [
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>",
       "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>",
       "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>",
       "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
@@ -426,6 +525,13 @@
       "<UndecodedHeifThumbnail 240x160 RGB with no data>",
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<UndecodedHeifThumbnail 240x160 RGB with no data>",
+      "<UndecodedHeifThumbnail 240x160 RGB with no data>",
+      "<UndecodedHeifThumbnail 240x160 RGB with no data>",
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -446,7 +552,8 @@
     "nclx_profile": null,
     "dimensions": "(1200, 800)",
     "all_top_lvl_images_count": 2,
-    "top_lvl_images": [
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1200x800 RGB with no image data and 1 thumbnails>",
       "<UndecodedHeifFile 1200x800 RGB with no image data and 1 thumbnails>"
     ],
     "thumbnails_count": 2,
@@ -454,6 +561,11 @@
       "<UndecodedHeifThumbnail 480x320 RGB with no data>",
       "<UndecodedHeifThumbnail 480x320 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<UndecodedHeifThumbnail 480x320 RGB with no data>",
+      "<HeifThumbnail 480x320 RGB with 460800 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -474,7 +586,8 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 2,
-    "top_lvl_images": [
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>",
       "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
     ],
     "thumbnails_count": 2,
@@ -482,6 +595,11 @@
       "<UndecodedHeifThumbnail 240x160 RGB with no data>",
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<UndecodedHeifThumbnail 240x160 RGB with no data>",
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -502,13 +620,16 @@
     "nclx_profile": null,
     "dimensions": "(1280, 720)",
     "all_top_lvl_images_count": 4,
-    "top_lvl_images": [
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1280x720 RGB with no image data and 0 thumbnails>",
       "<UndecodedHeifFile 1280x720 RGB with no image data and 0 thumbnails>",
       "<UndecodedHeifFile 1280x720 RGB with no image data and 0 thumbnails>",
       "<UndecodedHeifFile 1280x720 RGB with no image data and 0 thumbnails>"
     ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -529,13 +650,16 @@
     "nclx_profile": null,
     "dimensions": "(1280, 720)",
     "all_top_lvl_images_count": 4,
-    "top_lvl_images": [
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1280x720 RGB with no image data and 0 thumbnails>",
       "<UndecodedHeifFile 1280x720 RGB with no image data and 0 thumbnails>",
       "<UndecodedHeifFile 1280x720 RGB with no image data and 0 thumbnails>",
       "<UndecodedHeifFile 1280x720 RGB with no image data and 0 thumbnails>"
     ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -556,11 +680,17 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -581,11 +711,17 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -606,11 +742,17 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -631,11 +773,17 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -656,11 +804,17 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -681,11 +835,17 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -706,11 +866,17 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -731,11 +897,17 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -756,11 +928,17 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -781,11 +959,17 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 1 thumbnails>"
+    ],
     "thumbnails_count": 1,
     "thumbnails": [
       "<UndecodedHeifThumbnail 240x160 RGB with no data>"
     ],
+    "thumbnails_loaded": [
+      "<HeifThumbnail 240x160 RGB with 115200 bytes data>"
+    ],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -806,9 +990,13 @@
     "nclx_profile": null,
     "dimensions": "(256, 144)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 256x144 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -829,9 +1017,13 @@
     "nclx_profile": null,
     "dimensions": "(256, 144)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 256x144 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -852,14 +1044,17 @@
     "nclx_profile": null,
     "dimensions": "(1000, 680)",
     "all_top_lvl_images_count": 5,
-    "top_lvl_images": [
-      "<UndecodedHeifFile 480x320 RGB with no image data and 0 thumbnails>",
-      "<UndecodedHeifFile 480x320 RGB with no image data and 0 thumbnails>",
-      "<UndecodedHeifFile 480x320 RGB with no image data and 0 thumbnails>",
-      "<UndecodedHeifFile 480x320 RGB with no image data and 0 thumbnails>"
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1000x680 RGB with no image data and 0 thumbnails>",
+      "<UndecodedHeifFile 1000x680 RGB with no image data and 0 thumbnails>",
+      "<UndecodedHeifFile 1000x680 RGB with no image data and 0 thumbnails>",
+      "<UndecodedHeifFile 1000x680 RGB with no image data and 0 thumbnails>",
+      "<UndecodedHeifFile 1000x680 RGB with no image data and 0 thumbnails>"
     ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -880,12 +1075,15 @@
     "nclx_profile": null,
     "dimensions": "(1440, 960)",
     "all_top_lvl_images_count": 3,
-    "top_lvl_images": [
+    "all_top_lvl_images": [
       "<UndecodedHeifFile 1440x960 RGB with no image data and 0 thumbnails>",
-      "<UndecodedHeifFile 1440x960 RGBA with no image data and 0 thumbnails>"
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 0 thumbnails>",
+      "<UndecodedHeifFile 1440x960 RGB with no image data and 0 thumbnails>"
     ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -906,14 +1104,17 @@
     "nclx_profile": null,
     "dimensions": "(960, 640)",
     "all_top_lvl_images_count": 5,
-    "top_lvl_images": [
-      "<UndecodedHeifFile 480x320 RGB with no image data and 0 thumbnails>",
-      "<UndecodedHeifFile 480x320 RGB with no image data and 0 thumbnails>",
-      "<UndecodedHeifFile 480x320 RGB with no image data and 0 thumbnails>",
-      "<UndecodedHeifFile 480x320 RGB with no image data and 0 thumbnails>"
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 960x640 RGB with no image data and 0 thumbnails>",
+      "<UndecodedHeifFile 960x640 RGB with no image data and 0 thumbnails>",
+      "<UndecodedHeifFile 960x640 RGB with no image data and 0 thumbnails>",
+      "<UndecodedHeifFile 960x640 RGB with no image data and 0 thumbnails>",
+      "<UndecodedHeifFile 960x640 RGB with no image data and 0 thumbnails>"
     ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -934,9 +1135,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -957,9 +1162,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -980,9 +1189,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1003,9 +1216,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1026,9 +1243,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1049,9 +1270,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1072,9 +1297,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1095,9 +1324,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1118,9 +1351,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1141,9 +1378,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1164,9 +1405,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1187,9 +1432,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1210,9 +1459,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1233,9 +1486,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1256,9 +1513,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   },
   {
@@ -1279,9 +1540,13 @@
     "nclx_profile": null,
     "dimensions": "(1204, 800)",
     "all_top_lvl_images_count": 1,
-    "top_lvl_images": [],
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 1204x800 RGB with no image data and 0 thumbnails>"
+    ],
     "thumbnails_count": 0,
     "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
     "load": true
   }
 ]

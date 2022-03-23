@@ -2,12 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.11 - 2022-03-2x]
+## [0.1.11 - 2022-03-24]
 
 ### Added
 
 - Linux aarch64 PyPy 3.7 & 3.8 wheels.
 - wrapper for libheif function `get_file_mimetype`.
+- `burst`(container) image support(`ImageSequence`) for `heic` and `hif` when using as a pillow plugin.
+- convert to jpg/png example for both `reader` and `plugin` use.
+- in addition to iterator to loop throw all images, `(Undecoded)``HeifFile` class now support access images by index.
 
 ### Changed
 
@@ -16,7 +19,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - memory leak when working with thumbnails, now properly release thumbnail handle.
-- `as_opener` register `image/heic`  mimetype in addition to `image/heif`.
+- rare bug with garbage collector for PyPy.
+- `as_opener` register `image/heic` mimetype in addition to `image/heif`.
 - `as_opener` set `orientation` tag to `1` from `Exif` to not rotate image twice(`libheif` already do transforms)
 - for `reader` you can do that manually if needed, with new `reset_orientation` function.
 
