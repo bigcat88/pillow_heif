@@ -147,34 +147,6 @@
     "load": true
   },
   {
-    "name": "sample.avif",
-    "file": "images/sample.avif",
-    "hash": "790cb844e79d33b9531445c44052b3f3",
-    "size": 308,
-    "check_heif": 1,
-    "strict": true,
-    "supported": true,
-    "valid": true,
-    "mimetype": "image/avif",
-    "brand": "AVIF",
-    "exif_length": null,
-    "metadata": {},
-    "color_profile": "nclx",
-    "color_profile_length": 52,
-    "icc_profile": null,
-    "nclx_profile": 52,
-    "dimensions": "(128, 128)",
-    "all_top_lvl_images_count": 1,
-    "all_top_lvl_images": [
-      "<UndecodedHeifFile 128x128 RGB with no image data and 0 thumbnails>"
-    ],
-    "thumbnails_count": 0,
-    "thumbnails": [],
-    "thumbnails_loaded": [],
-    "all_top_lvl_images_loaded": [],
-    "load": true
-  },
-  {
     "name": "arrow.heic",
     "file": "images/arrow.heic",
     "hash": "d7d9cbc00e6fe00b0b377f757322a597",
