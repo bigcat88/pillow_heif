@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - Linux aarch64 PyPy 3.7 & 3.8 wheels.
 - wrapper for libheif function `get_file_mimetype`.
 - `burst`(container) image support(`ImageSequence`) for `heic` and `hif` when using as a pillow plugin.
-- convert to jpg/png example for both `reader` and `plugin` use.
+- convert to jpg example for both `reader` and `plugin` use.
 - in addition to iterator to loop throw all images, `(Undecoded)``HeifFile` class now support access images by index.
 
 ### Changed
