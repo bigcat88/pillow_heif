@@ -18,10 +18,11 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- memory leak when working with thumbnails, now properly release thumbnail handle.
+- memory leak when working with thumbnails, now properly releases thumbnail handle.
 - rare bug with garbage collector for PyPy.
 - `as_opener` register `image/heic` mimetype in addition to `image/heif`.
-- `as_opener` set `orientation` tag to `1` from `Exif` to not rotate image twice(`libheif` already do transforms)
+- `as_opener` also registers `.heif` extension, thanks @dust-to-dust for pointing that.
+- `as_opener` sets `orientation` tag to `1` from `Exif` to not rotate image twice(`libheif` already do transforms)
 - for `reader` you can do that manually if needed, with new `reset_orientation` function.
 
 ## [0.1.10 - 2022-03-17]
