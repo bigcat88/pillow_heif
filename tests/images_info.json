@@ -347,6 +347,43 @@
     "load": true
   },
   {
+    "name": "PUG4.heif",
+    "file": "images/Pug/PUG4.heif",
+    "hash": "4101f39669790a42fac6254e52848c27",
+    "size": 4414092,
+    "check_heif": 1,
+    "strict": true,
+    "supported": true,
+    "valid": true,
+    "mimetype": "image/heic",
+    "brand": "HEIC",
+    "exif_length": 2778,
+    "exif": {
+      "0th": 14,
+      "Exif": 35,
+      "GPS": 13,
+      "Interop": null,
+      "1st": null,
+      "thumbnail": null
+    },
+    "metadata": {
+      "mime": 2795
+    },
+    "color_profile": null,
+    "icc_profile": null,
+    "nclx_profile": null,
+    "dimensions": "(3024, 4032)",
+    "all_top_lvl_images_count": 1,
+    "all_top_lvl_images": [
+      "<UndecodedHeifFile 3024x4032 RGB with no image data and 0 thumbnails>"
+    ],
+    "thumbnails_count": 0,
+    "thumbnails": [],
+    "thumbnails_loaded": [],
+    "all_top_lvl_images_loaded": [],
+    "load": true
+  },
+  {
     "name": "PUG1.heic",
     "file": "images/Pug/PUG1.heic",
     "hash": "67e125fc6e3786de25460a66fcb24d02",

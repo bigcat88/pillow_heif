@@ -92,7 +92,7 @@ class HeifImageFile(ImageFile.ImageFile):
 def register_heif_opener(**kwargs):
     options().update(**kwargs)
     Image.register_open(HeifImageFile.format, HeifImageFile, is_supported)
-    extensions = [".heic", ".hif"]
+    extensions = [".heic", ".heif", ".hif"]
     Image.register_mime(HeifImageFile.format, "image/heic")
     Image.register_mime(HeifImageFile.format, "image/heif")
     if options().avif:

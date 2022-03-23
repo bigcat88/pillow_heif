@@ -24,7 +24,7 @@ if not options().avif:
 invalid_images = [e for e in all_images if not e["valid"]]
 heif_images = [e for e in all_images if e["valid"]]
 
-heic_images = [e for e in heif_images if e["name"].endswith(".heic")]
+heic_images = [e for e in heif_images if e["name"].endswith(".heic") or e["name"].endswith(".heif")]
 hif_images = [e for e in heif_images if e["name"].endswith(".hif")]
 avif_images = [e for e in heif_images if e["name"].endswith(".avif")]
 
