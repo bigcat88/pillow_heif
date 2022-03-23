@@ -91,7 +91,7 @@ The returned `UndecodedHeifFile` by function `open_heif` has the following prope
 * `bit_depth` - the number of bits in each component of a pixel.
 * `data` - the raw decoded file data, as bytes. Contains `None` until `load` method is called.
 * `stride` - the number of bytes in a row of decoded file data. Contains `None` until `load` method is called.
-* `info` dictionary with the same content as in `HeifImageFile.info` plus `main` - a boolean indicating is this a default picture.
+* `info` - same dictionary as in `HeifImageFile.info` plus `main` - a boolean indicating is this a default picture.
 * `thumbnails` - list of `HeifThumbnail` or `UndecodedHeifThumbnail` classes.
 * `top_lvl_images` - list of `UndecodedHeifFile` or `HeifFile` classes, excluding main image.
 * class supports `len`, `iter` and `__getitem__`:
