@@ -65,7 +65,7 @@ jobs:
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "aarch64", "i686", "x86_64" ]
-        cibw_build: [ "cp36", "cp37", "cp38", "cp39", "cp10", "pp37", "pp38" ]
+        cibw_build: [ "cp36", "cp37", "cp38", "cp39", "cp310", "pp37", "pp38" ]
         exclude:
           - cibw_buildlinux: musllinux
             cibw_build: pp37
