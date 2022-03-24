@@ -75,8 +75,13 @@ def test_open_and_load(img_info):
     else:
         assert "nclx_profile" not in heif_file.info
 
-    collect()
-    assert heif_file.load() is heif_file
+    try:
+        collect()
+        assert heif_file.load() is heif_file
+    except Exception as e:
+        print(e)
+        print(img_info["file"])
+        raise ValueError("STOP")
     assert heif_file.data is not None
     assert heif_file.stride is not None
     assert len(heif_file.data) >= heif_file.stride * heif_file.size[1]
