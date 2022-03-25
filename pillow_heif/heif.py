@@ -12,13 +12,12 @@ from ._options import options
 from .constants import (
     HeifBrand,
     HeifChannel,
-    HeifChroma,
     HeifColorProfileType,
     HeifColorspace,
     HeifFiletype,
 )
 from .error import check_libheif_error
-from .misc import _get_bytes, _keep_refs
+from .misc import _get_bytes, _get_chroma, _keep_refs
 
 
 class HeifThumbnail:
@@ -312,17 +311,6 @@ def _read_color_profile(handle) -> dict:
     check_libheif_error(error)
     data_buffer = ffi.buffer(p_data, data_length)
     return {"type": _type, "data": bytes(data_buffer)}
-
-
-def _get_chroma(hdr_to_8bit: bool, bit_depth: int, has_alpha: bool) -> HeifChroma:
-    if hdr_to_8bit or bit_depth <= 8:
-        chroma = HeifChroma.INTERLEAVED_RGBA if has_alpha else HeifChroma.INTERLEAVED_RGB
-    else:
-        if has_alpha:
-            chroma = HeifChroma.INTERLEAVED_RRGGBBAA_BE
-        else:
-            chroma = HeifChroma.INTERLEAVED_RRGGBB_BE
-    return chroma
 
 
 def _read_heif_image(handle, heif_class: Union[UndecodedHeifFile, UndecodedHeifThumbnail]):

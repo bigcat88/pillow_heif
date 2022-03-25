@@ -81,6 +81,7 @@ def test_open_and_load(img_info):
     except Exception as e:
         print(e)
         print(img_info["file"])
+        # images/nokia/still/spring_1440x960.heic
         raise ValueError("STOP")
     assert heif_file.data is not None
     assert heif_file.stride is not None
