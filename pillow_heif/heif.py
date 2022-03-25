@@ -1,9 +1,7 @@
 """
-Functions and classes for heif images to read.
+Functions and classes for heif images to read and write.
 """
 
-import builtins
-import pathlib
 from functools import partial
 from typing import Iterator, List, Union
 from warnings import warn
@@ -20,6 +18,7 @@ from .constants import (
     HeifFiletype,
 )
 from .error import check_libheif_error
+from .misc import _get_bytes, _keep_refs
 
 
 class HeifThumbnail:
@@ -214,32 +213,6 @@ def read_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bo
         convert_hdr_to_8bit=convert_hdr_to_8bit,
     )
     return heif_file.load()
-
-
-def _get_bytes(fp, length=None) -> bytes:
-    if isinstance(fp, (str, pathlib.Path)):
-        with builtins.open(fp, "rb") as file:
-            return file.read(length or -1)
-    if hasattr(fp, "read"):
-        offset = fp.tell() if hasattr(fp, "tell") else None
-        result = fp.read(length or -1)
-        if offset is not None and hasattr(fp, "seek"):
-            fp.seek(offset)
-        return result
-    return bytes(fp)[:length]
-
-
-def _keep_refs(destructor, **refs):
-    """
-    Keep refs to passed arguments until `inner` callback exist.
-    This prevents collecting parent objects until all children are collected.
-    """
-
-    def inner(cdata):
-        return destructor(cdata)
-
-    inner._refs = refs
-    return inner
 
 
 def _read_heif_context(ctx, data, transforms: bool, to_8bit: bool) -> UndecodedHeifFile:

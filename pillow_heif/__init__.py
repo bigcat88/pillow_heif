@@ -27,10 +27,9 @@ from .constants import (
     HeifFiletype,
 )
 from .error import HeifError
-from .misc import reset_orientation
 
 # pylint: disable=redefined-builtin
-from .reader import (
+from .heif import (
     HeifFile,
     HeifThumbnail,
     UndecodedHeifFile,
@@ -44,4 +43,4 @@ from .reader import (
     read,
     read_heif,
 )
-from .writer import write_heif
+from .misc import reset_orientation

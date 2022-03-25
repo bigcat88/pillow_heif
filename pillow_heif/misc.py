@@ -4,6 +4,8 @@ Different miscellaneous helper functions.
 Mostly for internal use, so prototypes can change between versions.
 """
 
+import builtins
+import pathlib
 from struct import pack, unpack
 from typing import Union
 
@@ -33,3 +35,29 @@ def reset_orientation(info: dict) -> Union[int, None]:
                 info["exif"] = info["exif"][:p_value] + pack(endian_mark + "H", 1) + info["exif"][p_value + 2 :]
             return data
     return None
+
+
+def _keep_refs(destructor, **refs):
+    """
+    Keep refs to passed arguments until `inner` callback exist.
+    This prevents collecting parent objects until all children are collected.
+    """
+
+    def inner(cdata):
+        return destructor(cdata)
+
+    inner._refs = refs
+    return inner
+
+
+def _get_bytes(fp, length=None) -> bytes:
+    if isinstance(fp, (str, pathlib.Path)):
+        with builtins.open(fp, "rb") as file:
+            return file.read(length or -1)
+    if hasattr(fp, "read"):
+        offset = fp.tell() if hasattr(fp, "tell") else None
+        result = fp.read(length or -1)
+        if offset is not None and hasattr(fp, "seek"):
+            fp.seek(offset)
+        return result
+    return bytes(fp)[:length]
