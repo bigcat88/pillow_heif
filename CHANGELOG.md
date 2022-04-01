@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0 - 2022-04-03]
+
+### Added
+
+- encoding of images and thumbnails.
+- `save` and `save_all` method for Pillow plugin.
+- `save` method for `HeifFile` class.
+- `from_pillow` method, to init `HeifFile` class from Pillow.
+- new examples.
+
+### Changed
+
+- `read_heif` in process of deprecation. When you will read `data` or `stride` properties  image will be loaded automatically.
+- `Undecoded*` classes was removed.
+- Input files are now not read to memory first, it will read them from `fp` object only when need something.
+- many other changes.
+
+### Fixed
+
+- Speed and memory optimisations.
+
 ## [0.1.11 - 2022-03-24]
 
 ### Added
