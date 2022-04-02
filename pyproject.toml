@@ -15,7 +15,8 @@ omit = ["*/tests/*"]
 exclude_lines = [
     "pragma: no cover",
     "raise NotImplementedError",
-    "DeprecationWarning"
+    "DeprecationWarning",
+    "DEPRECATED"
 ]
 
 [tool.black]
@@ -30,12 +31,10 @@ profile = "black"
 master.py-version = "3.6"
 master.unsafe-load-any-extension = "yes"
 design.max-attributes = 9
+design.max-args = 8
 basic.good-names = [
     "a", "b", "c", "d", "e", "f", "i", "j", "k", "v",
     "ex", "_", "fp"
-]
-classes.exclude-protected = [
-    "_refs",
 ]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
