@@ -39,3 +39,13 @@ def test_heif_check_filetype():
         with builtins.open(file, "rb") as fh:
             assert pillow_heif.check_heif(fh) != pillow_heif.HeifFiletype.NO
             assert pillow_heif.is_supported(fh)
+
+
+def test_heif_str():
+    heif_file = pillow_heif.open_heif(Path("images/pug_1_1.heic"))
+    assert str(heif_file).find("HeifFile with 1 image") != -1
+    assert str(heif_file).find("no image data") != -1
+    assert str(heif_file[0]).find("HeifImage 445x496 RGB") != -1
+    assert str(heif_file[0]).find("no image data") != -1
+    assert str(heif_file.thumbnails[0]).find("HeifThumbnail 228x256 RGB") != -1
+    assert str(heif_file.thumbnails[0]).find("no image data") != -1
