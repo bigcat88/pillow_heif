@@ -39,9 +39,9 @@ def test_thumbnails_option():
     try:
         heif_file = open_heif(image_path)
         assert heif_file.thumbnails
-        assert str(heif_file.thumbnails[0]).find("bytes thumbnail image data") == -1
+        assert str(heif_file.thumbnails[0]).find("bytes image data") == -1
         assert heif_file.thumbnails[0].data
-        assert str(heif_file.thumbnails[0]).find("bytes thumbnail image data") != -1
+        assert str(heif_file.thumbnails[0]).find("bytes image data") != -1
         heif_file.close()
         options().thumbnails = False
         heif_file = open_heif(image_path)
