@@ -72,6 +72,8 @@ From [PyPi](https://pypi.org/project/pillow-heif/) or [Build from source](https:
 
 #### **_Versions 0.2.X will be last to support Python 3.6_**
 
+## Base objects
+
 ### More documentation will arrive soon, before 0.3.0 version...
 
 ### The HeifImageFile object (as Pillow plugin)

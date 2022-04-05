@@ -172,6 +172,17 @@ class HeifCompressionFormat(IntEnum):
     """The compression format is AV1."""
 
 
+class HeifSaveMask(IntEnum):
+    """Possible mask types for saving HEIC."""
+
+    SAVE_ALL = 0
+    """Mask where all images set to True."""
+    SAVE_ONE = 1
+    """Mask where all images except main is set to False."""
+    SAVE_NONE = 2
+    """Mask where all images set to False."""
+
+
 # --------------------------------------------------------------------
 # DEPRECATED CONSTANTS.
 # pylint: disable=invalid-name

@@ -24,7 +24,8 @@ RUN \
       aom-dev \
       openjpeg-dev \
       x265 \
-      nasm; \
+      nasm \
+      py3-numpy; \
   elif [ -f /usr/bin/apt ]; then \
     apt-get update && \
     apt-get install -y \

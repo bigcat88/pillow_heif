@@ -155,7 +155,7 @@ jobs:
 #
 #      - name: Build sdist
 #        run: |
-#          python3 -m pip install pytest piexif coverage pillow
+#          python3 -m pip install pytest piexif coverage pillow imagehash
 #          python3 -m build --sdist --outdir wheelhouse
 #
 #      - name: Install and check sdist
