@@ -7,7 +7,7 @@ from json import dump
 from pathlib import Path
 
 import piexif
-from PIL import Image, ImageFile, ImageSequence, UnidentifiedImageError
+from PIL import Image, ImageSequence, UnidentifiedImageError
 
 import pillow_heif
 
@@ -19,7 +19,7 @@ import pillow_heif
 # Get all available info for current version about images in tests directory and dump it to images_info.json
 #
 # Function to dump info from Pillow.ImageFile
-def _dump_info(result: dict, _img: ImageFile):
+def _dump_info(result: dict, _img):
     # HEIF brand name.
     result["brand"] = pillow_heif.HeifBrand(_img.info["brand"]).name
     # For exif dump only type and data size.
@@ -29,12 +29,6 @@ def _dump_info(result: dict, _img: ImageFile):
         result["exif"] = {k: len(v) if v else None for k, v in _exif.items()}
     # For metadata dump only type and data size.
     result["metadata"] = {m["type"]: len(m["data"]) for m in _img.info["metadata"]}
-    # For color profile dump only type and data size.
-    if _img.info["color_profile"]:
-        result["color_profile"] = _img.info["color_profile"]["type"]
-        result["color_profile_length"] = len(_img.info["color_profile"]["data"])
-    else:
-        result["color_profile"] = None
     # icc_profile (color_profile is `prof` or `rICC`)
     icc_profile = _img.info.get("icc_profile", None)
     result["icc_profile"] = len(icc_profile) if icc_profile is not None else None
@@ -42,31 +36,34 @@ def _dump_info(result: dict, _img: ImageFile):
     nclx_profile = _img.info.get("nclx_profile", None)
     result["nclx_profile"] = len(nclx_profile) if nclx_profile is not None else None
     result["dimensions"] = str(_img.size)
-    all_top_lvl_images_count = 0
-    top_lvl_images_info = []
-    thumbnails_count = 0
-    thumbnails_info = []
-    for _img_frame in ImageSequence.Iterator(_img):
-        all_top_lvl_images_count += 1
-        top_lvl_images_info.append(str(_img_frame.heif_file))
-        for _ in _img_frame.info["thumbnails"]:
-            thumbnails_count += 1
-            thumbnails_info.append(str(_))
-    result["all_top_lvl_images_count"] = all_top_lvl_images_count
-    result["all_top_lvl_images"] = top_lvl_images_info
-    result["thumbnails_count"] = thumbnails_count
-    result["thumbnails"] = thumbnails_info
+    images_info = []
+    for i, _img_frame in enumerate(ImageSequence.Iterator(_img)):
+        frame_info = {
+            "id": _img_frame.info["img_id"],
+            "index": i,
+            "exif_orientation": _img_frame.info.get("original_orientation", None),
+            "desc": str(_img.heif_file[i]),
+            "thumbnails": [str(_.load()) for _ in _img_frame.info["thumbnails"]],
+            "alpha": _img.heif_file[i].has_alpha,
+            "bit_depth": _img.heif_file[i].bit_depth,
+            "mode": _img.heif_file[i].mode,
+        }
+        images_info.append(frame_info)
+    result["images_count"] = len(images_info)
+    result["images_info"] = images_info
+    result["thumbnails_count"] = len([i for i in _img.heif_file.thumbnails_all()])
 
 
 if __name__ == "__main__":
     # Change directory to project root.
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
-    pillow_heif.register_heif_opener(thumbnails=True, thumbnails_autoload=False)
+    pillow_heif.register_heif_opener()
     expected_data = []
     image_path = Path(".")
     try:
+        exclude_list = (".DS_Store", ".txt", ".jpeg", ".jpg", ".gif")
         for image_path in list(Path().glob("images/**/*.*")):
-            if image_path.name in (".DS_Store", "README.txt", "LICENSE.txt"):
+            if image_path.name.endswith(exclude_list):
                 continue
             # Calculate file md5, it will be the key in dictionary for that file info.
             with builtins.open(image_path, "rb") as _:
@@ -96,22 +93,7 @@ if __name__ == "__main__":
                 img = Image.open(image_path)
                 img_info["valid"] = True
                 img_info["mimetype"] = pillow_heif.get_file_mimetype(image_path)
-                _dump_info(img_info, img)
-                img_info["thumbnails_loaded"] = []
-                img_info["all_top_lvl_images_loaded"] = []
-                try:
-                    img.load()
-                    img_info["load"] = True
-                    for __img_frame in ImageSequence.Iterator(img):
-                        # if __img_frame.heif_file:
-                        #     img_info["all_top_lvl_images_loaded"].append(str(__img_frame.heif_file))
-                        # else:
-                        #     img_info["all_top_lvl_images_loaded"].append("not implemented")
-                        for _ in __img_frame.info["thumbnails"]:
-                            img_info["thumbnails_loaded"].append(str(_))
-                except pillow_heif.HeifError as e:
-                    print(str(e))
-                    img_info["load"] = False
+                _dump_info(img_info, img)  # noqa
             except UnidentifiedImageError:
                 img_info["valid"] = False
             expected_data.append(img_info)
