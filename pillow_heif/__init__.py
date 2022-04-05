@@ -11,7 +11,7 @@ from ._lib_info import (
 )
 from ._options import options
 from ._version import __version__
-from .as_opener import HeifImageFile, check_heif_magic, register_heif_opener
+from .as_opener import HeifImageFile, register_heif_opener
 from .constants import heif_filetype_maybe  # DEPRECATED
 from .constants import heif_filetype_no  # DEPRECATED
 from .constants import heif_filetype_yes_supported  # DEPRECATED
@@ -25,22 +25,21 @@ from .constants import (
     HeifCompressionFormat,
     HeifErrorCode,
     HeifFiletype,
+    HeifSaveMask,
 )
 from .error import HeifError
 
 # pylint: disable=redefined-builtin
 from .heif import (
     HeifFile,
+    HeifImage,
     HeifThumbnail,
-    UndecodedHeifFile,
-    UndecodedHeifThumbnail,
     check,
     check_heif,
-    get_file_mimetype,
     is_supported,
     open,
     open_heif,
     read,
     read_heif,
 )
-from .misc import reset_orientation
+from .misc import get_file_mimetype, reset_orientation

@@ -9,6 +9,8 @@ import pathlib
 from struct import pack, unpack
 from typing import Union
 
+from _pillow_heif_cffi import ffi, lib
+
 from .constants import HeifChroma
 
 
@@ -39,17 +41,17 @@ def reset_orientation(info: dict) -> Union[int, None]:
     return None
 
 
-def _keep_refs(destructor, **refs):
+def get_file_mimetype(fp) -> str:
     """
-    Keep refs to passed arguments until `inner` callback exist.
-    This prevents collecting parent objects until all children are collected.
+    Wrapper around `libheif.get_file_mimetype`.
+
+    :param fp: A filename (string), pathlib.Path object, file object or bytes.
+       The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
+       and be opened in binary mode.
+    :returns: string with `image/*`. If the format could not be detected, an empty string is returned.
     """
-
-    def inner(cdata):
-        return destructor(cdata)
-
-    inner._refs = refs
-    return inner
+    __data = _get_bytes(fp, 50)
+    return ffi.string(lib.heif_get_file_mime_type(__data, len(__data))).decode()
 
 
 def _get_bytes(fp, length=None) -> bytes:

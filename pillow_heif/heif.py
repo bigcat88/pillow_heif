@@ -1,153 +1,500 @@
 """
 Functions and classes for heif images to read and write.
 """
-
-from functools import partial
-from typing import Iterator, List, Union
+import builtins
+from typing import Any, Dict, Iterator, List, Tuple, Union
 from warnings import warn
 
 from _pillow_heif_cffi import ffi, lib
+from PIL import Image, ImageSequence
 
+from ._libheif_ctx import LibHeifCtx, LibHeifCtxWrite
 from ._options import options
 from .constants import (
     HeifBrand,
     HeifChannel,
+    HeifChroma,
     HeifColorProfileType,
     HeifColorspace,
+    HeifCompressionFormat,
     HeifFiletype,
+    HeifSaveMask,
 )
-from .error import check_libheif_error
-from .misc import _get_bytes, _get_chroma, _keep_refs
+from .error import HeifErrorCode, check_libheif_error
+from .misc import _get_bytes, _get_chroma
 
 
-class HeifThumbnail:
-    def __init__(self, *, size: tuple, has_alpha: bool, bit_depth: int, data, stride, **kwargs):
-        self.size = size
-        self.has_alpha = has_alpha
-        self.mode = "RGBA" if has_alpha else "RGB"
-        self.bit_depth = bit_depth
-        self.data = data
-        self.stride = stride
-        self.img_id = kwargs["img_id"]
+class HeifImageBase:
+    def __init__(self, heif_ctx: Union[LibHeifCtx, dict], handle):
+        self._img_data: Dict[str, Any] = {}
+        if isinstance(heif_ctx, LibHeifCtx):
+            self.misc = {
+                "transforms": heif_ctx.misc["transforms"],
+                "to_8bit": heif_ctx.misc["to_8bit"],
+            }
+            self._handle = ffi.gc(handle, lib.heif_image_handle_release)
+            self.size = (
+                lib.heif_image_handle_get_width(self._handle),
+                lib.heif_image_handle_get_height(self._handle),
+            )
+            self.bit_depth = lib.heif_image_handle_get_luma_bits_per_pixel(self._handle)
+            self.has_alpha = bool(lib.heif_image_handle_has_alpha_channel(self._handle))
+        else:
+            self._handle = None
+            self.bit_depth = heif_ctx["bit_depth"]
+            self.size = heif_ctx["size"]
+            self.has_alpha = heif_ctx["mode"] == "RGBA"
+            if self.bit_depth == 8:
+                _chroma = HeifChroma.INTERLEAVED_RGBA if self.has_alpha else HeifChroma.INTERLEAVED_RGB
+            else:
+                _chroma = HeifChroma.INTERLEAVED_RRGGBBAA_BE if self.has_alpha else HeifChroma.INTERLEAVED_RRGGBB_BE
+            _stride = heif_ctx.get("stride", None)
+            _img = _create_image(
+                self.size, HeifColorspace.RGB, _chroma, self.bit_depth, heif_ctx["mode"], heif_ctx["data"], _stride
+            )
+            self._img_to_img_data_dict(_img, HeifColorspace.RGB, _chroma)
+
+    @property
+    def mode(self) -> str:
+        return "RGBA" if self.has_alpha else "RGB"
+
+    @property
+    def heif_img(self):
+        self._load_if_not()
+        return self._img_data.get("img", None)
+
+    @property
+    def data(self):
+        self._load_if_not()
+        return self._img_data.get("data", None)
+
+    @property
+    def stride(self):
+        self._load_if_not()
+        return self._img_data.get("stride", None)
+
+    @property
+    def chroma(self):
+        return self._img_data.get("chroma", HeifChroma.UNDEFINED)
+
+    @property
+    def color(self):
+        return self._img_data.get("color", HeifColorspace.UNDEFINED)
+
+    def _load_if_not(self):
+        if self._img_data or self._handle is None:
+            return
+        colorspace = HeifColorspace.RGB
+        chroma = _get_chroma(self.misc["to_8bit"], self.bit_depth, self.has_alpha)
+        p_options = lib.heif_decoding_options_alloc()
+        p_options = ffi.gc(p_options, lib.heif_decoding_options_free)
+        p_options.ignore_transformations = int(not self.misc["transforms"])
+        p_options.convert_hdr_to_8bit = int(self.misc["to_8bit"])
+        p_img = ffi.new("struct heif_image **")
+        check_libheif_error(lib.heif_decode_image(self._handle, p_img, colorspace, chroma, p_options))
+        heif_img = ffi.gc(p_img[0], lib.heif_image_release)
+        self._img_to_img_data_dict(heif_img, colorspace, chroma)
+
+    def _img_to_img_data_dict(self, heif_img, colorspace, chroma):
+        p_stride = ffi.new("int *")
+        p_data = lib.heif_image_get_plane(heif_img, HeifChannel.INTERLEAVED, p_stride)
+        stride = p_stride[0]
+        data_length = self.size[1] * stride
+        data_buffer = ffi.buffer(p_data, data_length)
+        self._img_data.update(img=heif_img, data=data_buffer, stride=stride, color=colorspace, chroma=chroma)
+
+    def load(self):
+        self._load_if_not()
+        return self
+
+    def unload(self):
+        self._img_data.clear()
+
+    def close(self):
+        self.unload()
+        self._handle = None
+
+
+class HeifThumbnail(HeifImageBase):
+    def __init__(self, heif_ctx: Union[LibHeifCtx, dict], img_handle, thumb_id: int, img_index: int):
+        if isinstance(heif_ctx, LibHeifCtx):
+            p_handle = ffi.new("struct heif_image_handle **")
+            check_libheif_error(lib.heif_image_handle_get_thumbnail(img_handle, thumb_id, p_handle))
+            handle = p_handle[0]
+        else:
+            handle = None
+        super().__init__(heif_ctx, handle)
+        self.info = {
+            "thumb_id": thumb_id,
+            "img_index": img_index,
+        }
 
     def __repr__(self):
+        _bytes = f"{len(self.data)} bytes" if self._img_data else "no"
         return (
             f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
-            f"with {str(len(self.data)) + ' bytes' if self.data else 'no'} data>"
+            f"with id = {self.info['thumb_id']} for img with index = {self.info['img_index']} "
+            f"and with {_bytes} image data>"
+        )
+
+
+class HeifImage(HeifImageBase):
+    def __init__(self, img_id: int, img_index: int, heif_ctx: Union[LibHeifCtx, dict]):
+        additional_info = {}
+        if isinstance(heif_ctx, LibHeifCtx):
+            brand = heif_ctx.misc["brand"]
+            p_handle = ffi.new("struct heif_image_handle **")
+            error = lib.heif_context_get_image_handle(heif_ctx.ctx, img_id, p_handle)
+            if error.code != HeifErrorCode.OK and not img_index:
+                error = lib.heif_context_get_primary_image_handle(heif_ctx.ctx, p_handle)
+            check_libheif_error(error)
+            handle = p_handle[0]
+            _metadata = _read_metadata(handle)
+            _exif = _retrieve_exif(_metadata)
+            additional_info["metadata"] = _metadata
+            _color_profile = _read_color_profile(handle)
+            if _color_profile:
+                if _color_profile["type"] in ("rICC", "prof"):
+                    additional_info["icc_profile"] = _color_profile["data"]
+                    additional_info["icc_profile_type"] = _color_profile["type"]
+                else:
+                    additional_info["nclx_profile"] = _color_profile["data"]
+        else:
+            brand = HeifBrand.UNKNOWN
+            handle = None
+            _exif = None
+            additional_info["metadata"] = []
+            additional_info.update(heif_ctx.get("additional_info", {}))
+        super().__init__(heif_ctx, handle)
+        self.info = {
+            "main": not img_index,
+            "img_id": img_id,
+            "brand": brand,
+            "exif": _exif,
+        }
+        self.info.update(**additional_info)
+        self.thumbnails = _read_thumbnails(heif_ctx, self._handle, img_index)
+
+    def __repr__(self):
+        _bytes = f"{len(self.data)} bytes" if self._img_data else "no"
+        return (
+            f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
+            f"with id = {self.info['img_id']}, {len(self.thumbnails)} thumbnails "
+            f"and with {_bytes} image data>"
         )
 
     def load(self):
-        return self  # already loaded
-
-    def close(self) -> None:
-        self.data = None
-
-
-class UndecodedHeifThumbnail(HeifThumbnail):
-    def __init__(self, thumb_handle, *, transforms: bool, to_8bit: bool, **kwargs):
-        self._handle = thumb_handle
-        self.transforms = transforms
-        self.to_8bit = to_8bit
-        super().__init__(data=None, stride=None, **kwargs)
-
-    def load(self):
-        self.data, self.stride = _read_heif_image(self._handle, self)
-        self.close()
-        self.__class__ = HeifThumbnail
+        super().load()
+        for thumbnail in self.thumbnails:
+            thumbnail.load()
         return self
 
-    def close(self) -> None:
-        if hasattr(self, "_handle"):
-            del self._handle
+    def unload(self):
+        super().unload()
+        for thumbnail in self.thumbnails:
+            thumbnail.unload()
+        return self
+
+    def scale(self, width: int, height: int):
+        self._load_if_not()
+        p_scaled_img = ffi.new("struct heif_image **")
+        check_libheif_error(lib.heif_image_scale_image(self.heif_img, p_scaled_img, width, height, ffi.NULL))
+        scaled_heif_img = ffi.gc(p_scaled_img[0], lib.heif_image_release)
+        self.size = (
+            lib.heif_image_get_primary_width(scaled_heif_img),
+            lib.heif_image_get_primary_height(scaled_heif_img),
+        )
+        self._img_to_img_data_dict(scaled_heif_img, self.color, self.chroma)
+        return self
 
 
 class HeifFile:
-    def __init__(self, *, size: tuple, has_alpha: bool, bit_depth: int, data, stride, **kwargs):
-        self.size = size
-        self.has_alpha = has_alpha
-        self.mode = "RGBA" if has_alpha else "RGB"
-        self.bit_depth = bit_depth
-        self.data = data
-        self.stride = stride
-        self.top_lvl_images = kwargs.get("top_lvl_images", [])
-        self.thumbnails: List[Union[UndecodedHeifThumbnail, HeifThumbnail]] = kwargs["thumbnails"]
-        self.info = {
-            "main": kwargs["main"],
-            "img_id": kwargs["img_id"],
-            "brand": kwargs.get("brand", HeifBrand.UNKNOWN),
-            "exif": kwargs.get("exif", None),
-            "metadata": kwargs.get("metadata", []),
-            "color_profile": kwargs.get("color_profile", {}),
-        }
-        if self.info["color_profile"]:
-            if self.info["color_profile"]["type"] in ("rICC", "prof"):
-                self.info["icc_profile"] = self.info["color_profile"]["data"]
-            else:
-                self.info["nclx_profile"] = self.info["color_profile"]["data"]
+    def __init__(self, heif_ctx: Union[LibHeifCtx, dict], img_ids: list = None):
+        self._images: List[HeifImage] = []
+        self._heif_ctx: Union[LibHeifCtx, dict, None] = heif_ctx
+        if img_ids:
+            for i, img_id in enumerate(img_ids):
+                self._images.append(HeifImage(img_id, i, heif_ctx))
 
-    def __repr__(self):
-        return (
-            f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
-            f"with {str(len(self.data)) + ' bytes' if self.data else 'no'} image data "
-            f"and {len(self.thumbnails)} thumbnails>"
-        )
+    @property
+    def size(self):
+        return self._images[0].size
 
-    def load(self):
-        return self  # already loaded
+    @property
+    def mode(self):
+        return self._images[0].mode
 
-    def close(self) -> None:
-        for top_lvl_image in self.top_lvl_images:
-            top_lvl_image.close()
-        for thumbnail in self.thumbnails:
-            thumbnail.close()
-        self.data = None
+    @property
+    def data(self):
+        return self._images[0].data
 
-    def __len__(self):
-        return 1 + len(self.top_lvl_images)
+    @property
+    def stride(self):
+        return self._images[0].stride
 
-    def __iter__(self):
-        for i in range(len(self)):
-            yield self if not i else self.top_lvl_images[i - 1]
+    @property
+    def chroma(self):
+        return self._images[0].chroma
 
-    def __getitem__(self, index):
-        if index < 0 or index > len(self.top_lvl_images):
-            raise IndexError("invalid image index")
-        return self if not index else self.top_lvl_images[index - 1]
+    @property
+    def color(self):
+        return self._images[0].color
 
-    def thumbnails_all(self, one_for_image=False) -> Iterator[Union[UndecodedHeifThumbnail, HeifThumbnail]]:
+    @property
+    def has_alpha(self):
+        return self._images[0].has_alpha
+
+    @property
+    def bit_depth(self):
+        return self._images[0].bit_depth
+
+    @property
+    def info(self):
+        return self._images[0].info
+
+    @property
+    def thumbnails(self):
+        return self._images[0].thumbnails
+
+    def thumbnails_all(self, one_for_image=False) -> Iterator[HeifThumbnail]:
         for i in self:
             for thumb in i.thumbnails:
                 yield thumb
                 if one_for_image:
                     break
 
-
-class UndecodedHeifFile(HeifFile):
-    def __init__(self, heif_handle, *, transforms: bool, to_8bit: bool, **kwargs):
-        self._handle = heif_handle
-        self.transforms = transforms
-        self.to_8bit = to_8bit
-        super().__init__(data=None, stride=None, **kwargs)
-
-    def load(self):
-        for top_lvl_image in self.top_lvl_images:
-            top_lvl_image.load()
-        for thumbnail in self.thumbnails:
-            thumbnail.load()
-        self.data, self.stride = _read_heif_image(self._handle, self)
-        self.close()
-        self.__class__ = HeifFile
+    def load(self, everything: bool = False):
+        if everything:
+            for img in self:
+                img.load()
+        else:
+            self._images[0].load()
         return self
 
-    def close(self) -> None:
-        for top_lvl_image in self.top_lvl_images:
-            if top_lvl_image.__class__ == UndecodedHeifFile:
-                top_lvl_image.close()
-        for thumbnail in self.thumbnails:
-            if thumbnail.__class__ == UndecodedHeifThumbnail:
-                thumbnail.close()
-        if hasattr(self, "_handle"):
-            del self._handle
+    def unload(self, everything: bool = False):
+        if everything:
+            for img in self:
+                img.unload()
+        else:
+            self._images[0].unload()
+        return self
+
+    def scale(self, width: int, height: int) -> None:
+        self._images[0].scale(width, height)
+
+    def add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
+        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
+        __new_id = 2 + max(__ids)
+        __heif_ctx = self.__heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
+        self._images.append(HeifImage(__new_id, len(self), __heif_ctx))
+        return self
+
+    # def append_image(self):
+    #     pass
+
+    def add_from_pillow(self, pil_image: Image, load_one=False):
+        for frame in ImageSequence.Iterator(pil_image):
+            additional_info = {}
+            for k in ("exif", "icc_profile", "icc_profile_type", "nclx_profile", "metadata", "brand"):
+                if k in frame.info:
+                    additional_info[k] = frame.info[k]
+            if frame.mode == "P":
+                frame = frame.convert(mode="RGB")
+            # How here we can detect bit depth of Pillow image? pallete.rawmode or maybe something else?
+            __bit_depth = 8
+            self.add_frombytes(__bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
+            if load_one:
+                break
+        return self
+
+    def add_from_heif(self, heif_image):
+        if isinstance(heif_image, HeifFile):
+            heif_images = [i for i in heif_image]
+        else:
+            heif_images = [heif_image]
+        for image in heif_images:
+            additional_info = image.info.copy()
+            additional_info.pop("img_id", None)
+            additional_info.pop("main", None)
+            self.add_frombytes(
+                image.bit_depth,
+                image.mode,
+                image.size,
+                image.data,
+                stride=image.stride,
+                add_info={**additional_info},
+            )
+            for thumb in image.thumbnails:
+                self._images[len(self._images) - 1].thumbnails.append(
+                    self.__get_image_thumb_frombytes(
+                        thumb.bit_depth,
+                        thumb.mode,
+                        thumb.size,
+                        thumb.data,
+                        img_index=len(self._images),
+                        stride=thumb.stride,
+                    )
+                )
+
+    def get_img_thumb_mask_for_save(self, mask=HeifSaveMask.SAVE_ALL, thumb_box: int = 0) -> list:
+        if mask == HeifSaveMask.SAVE_ALL:
+            return [[True, [thumb_box if thumb_box else max(_.size) for _ in img.thumbnails]] for img in self._images]
+        result = [[False, [thumb_box if thumb_box else max(_.size) for _ in img.thumbnails]] for img in self._images]
+        if mask == HeifSaveMask.SAVE_ONE:
+            result[0][0] = True
+        return result
+
+    @staticmethod
+    def add_thumbs_to_mask(save_mask: list, thumb_boxes: list) -> None:
+        for i in range(len(save_mask)):
+            save_mask[i][1].extend([_ for _ in thumb_boxes if _ not in save_mask[i][1]])
+
+    def save(self, fp, save_mask: list = None, **kwargs):
+        # append_images = kwargs.get("append_images", [])
+        _save_mask = save_mask if save_mask else self.get_img_thumb_mask_for_save()
+        quality = kwargs.get("quality", None)
+        enc_params = kwargs.get("enc_params", [])
+        _heif_write_ctx = LibHeifCtxWrite(fp)
+        _encoder = self._get_encoder(_heif_write_ctx, quality, enc_params)
+        self._save(_heif_write_ctx, _encoder, _save_mask)
+        error = lib.heif_context_write(_heif_write_ctx.ctx, _heif_write_ctx.writer, _heif_write_ctx.cpointer)
+        check_libheif_error(error)
+        _heif_write_ctx.close()
+
+    def close(self, only_fp: bool = False, thumbnails: bool = True):
+        self._heif_ctx = None
+        if not only_fp:
+            for img in self:
+                if thumbnails:
+                    for thumb in img.thumbnails:
+                        thumb.close()
+                img.close()
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} with {len(self)} images: {[str(i) for i in self]}>"
+
+    def __len__(self):
+        return len(self._images)
+
+    def __iter__(self):
+        for _ in self._images:
+            yield _
+
+    def __getitem__(self, index):
+        if index < 0 or index >= len(self._images):
+            raise IndexError(f"invalid image index: {index}")
+        return self._images[index]
+
+    def __del__(self):
+        self.close()
+
+    def _save(self, out_ctx: LibHeifCtxWrite, encoder, save_mask: list):
+        encoding_options = lib.heif_encoding_options_alloc()
+        encoding_options = ffi.gc(encoding_options, lib.heif_encoding_options_free)
+        for i, img in enumerate(self):
+            if not save_mask[i][0]:
+                continue
+            img.load()
+            # new_img = img.heif_img
+            __bit_depth = 8 if getattr(img, "misc", {}).get("to_8bit", None) else img.bit_depth
+            new_img = _create_image(
+                img.size, HeifColorspace.RGB, img.chroma, __bit_depth, img.mode, img.data, img.stride
+            )
+            __icc_profile = img.info.get("icc_profile", None)
+            if __icc_profile is not None:
+                _prof_type = img.info.get("icc_profile_type", "prof").encode("ascii")
+                error = lib.heif_image_set_raw_color_profile(
+                    new_img, _prof_type, img.info["icc_profile"], len(img.info["icc_profile"])
+                )
+                check_libheif_error(error)
+            elif img.info.get("nclx_profile", None):
+                error = lib.heif_image_set_nclx_color_profile(
+                    new_img,
+                    ffi.cast("const struct heif_color_profile_nclx*", ffi.from_buffer(img.info["nclx_profile"])),
+                )
+                check_libheif_error(error)
+            p_new_img_handle = ffi.new("struct heif_image_handle **")
+            error = lib.heif_context_encode_image(out_ctx.ctx, new_img, encoder, encoding_options, p_new_img_handle)
+            check_libheif_error(error)
+            new_img_handle = ffi.gc(p_new_img_handle[0], lib.heif_image_handle_release)
+            if img.info["exif"] is not None:
+                error = lib.heif_context_add_exif_metadata(
+                    out_ctx.ctx, new_img_handle, img.info["exif"], len(img.info["exif"])
+                )
+                check_libheif_error(error)
+            for metadata in img.info["metadata"]:
+                error = lib.heif_context_add_generic_metadata(
+                    out_ctx.ctx,
+                    new_img_handle,
+                    metadata["data"],
+                    len(metadata["data"]),
+                    metadata["metadata_type"],
+                    metadata["content_type"],
+                )
+                check_libheif_error(error)
+            thumbs_masks = save_mask[i][1]
+            for thumb_i, thumb_box in enumerate(thumbs_masks):
+                if thumb_box:
+                    if max(img.size) > thumb_box > 3:
+                        p_new_thumb_handle = ffi.new("struct heif_image_handle **")
+                        error = lib.heif_context_encode_thumbnail(
+                            out_ctx.ctx,
+                            new_img,
+                            new_img_handle,
+                            encoder,
+                            encoding_options,
+                            thumb_box,
+                            p_new_thumb_handle,
+                        )
+                        check_libheif_error(error)
+                        if p_new_thumb_handle[0] != ffi.NULL:
+                            lib.heif_image_handle_release(p_new_thumb_handle[0])
+
+    @staticmethod
+    def _get_encoder(heif_ctx, quality: int = None, enc_params: List[Tuple[str, str]] = None):
+        p_encoder_descriptor = ffi.new("struct heif_encoder_descriptor **")
+        lib.heif_context_get_encoder_descriptors(
+            heif_ctx.cpointer, HeifCompressionFormat.HEVC, ffi.NULL, p_encoder_descriptor, 1
+        )
+        p_encoder = ffi.new("struct heif_encoder **")
+        error = lib.heif_context_get_encoder(heif_ctx.cpointer, p_encoder_descriptor[0], p_encoder)
+        check_libheif_error(error)
+        encoder = ffi.gc(p_encoder[0], lib.heif_encoder_release)
+        # lib.heif_encoder_set_logging_level(encoder, 4)
+        if quality is None and options().quality is not None:
+            quality = options().quality
+        if quality:
+            lib.heif_encoder_set_lossy_quality(encoder, quality)
+        if enc_params:
+            for enc_param in enc_params:
+                check_libheif_error(
+                    lib.heif_encoder_set_parameter(encoder, enc_param[0].encode("ascii"), enc_param[1].encode("ascii"))
+                )
+        return encoder
+
+    def __get_image_thumb_frombytes(self, bit_depth: int, mode: str, size: tuple, data, img_index: int, **kwargs):
+        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
+        __new_id = 2 + max(__ids)
+        __heif_ctx = self.__heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
+        return HeifThumbnail(__heif_ctx, None, __new_id, img_index)
+
+    @staticmethod
+    def __heif_ctx_as_dict(bit_depth: int, mode: str, size: tuple, data, **kwargs) -> dict:
+        __factor = 1 if bit_depth == 8 else 2
+        __bytes_per_pix = 3 * __factor if mode == "RGB" else 4 * __factor
+        __stride = kwargs.get("stride", None)
+        return {
+            "bit_depth": bit_depth,
+            "mode": mode,
+            "size": size,
+            "data": data,
+            "stride": __stride if __stride else size[0] * __bytes_per_pix,
+            "additional_info": kwargs.get("add_info", {}),
+        }
+
+    def debug_dump(self, file_path="debug_boxes_dump.txt"):
+        with builtins.open(file_path, "wb") as f:
+            lib.heif_context_debug_dump_boxes_to_file(self._heif_ctx.ctx, f.fileno())
 
 
 def check_heif(fp):
@@ -184,74 +531,24 @@ def is_supported(fp) -> bool:
     return not options().strict
 
 
-def get_file_mimetype(fp) -> str:
-    """
-    Wrapper around `libheif.get_file_mimetype`.
-
-    :param fp: A filename (string), pathlib.Path object, file object or bytes.
-       The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
-       and be opened in binary mode.
-    :returns: string with `image/*`. If the format could not be detected, an empty string is returned.
-    """
-    __data = _get_bytes(fp, 50)
-    return ffi.string(lib.heif_get_file_mime_type(__data, len(__data))).decode()
-
-
-def open_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> UndecodedHeifFile:
-    file_data = _get_bytes(fp)
-    ctx = lib.heif_context_alloc()
-    collect = _keep_refs(lib.heif_context_free, data=file_data)
-    ctx = ffi.gc(ctx, collect, size=len(file_data))
-    return _read_heif_context(ctx, file_data, apply_transformations, convert_hdr_to_8bit)
+def open_heif(fp, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> HeifFile:
+    heif_ctx = LibHeifCtx(fp, apply_transformations, convert_hdr_to_8bit)
+    check_libheif_error(lib.heif_context_read_from_reader(heif_ctx.ctx, heif_ctx.reader, heif_ctx.cpointer, ffi.NULL))
+    p_main_image_id = ffi.new("heif_item_id *")
+    check_libheif_error(lib.heif_context_get_primary_image_ID(heif_ctx.ctx, p_main_image_id))
+    main_image_id = p_main_image_id[0]
+    top_img_count = lib.heif_context_get_number_of_top_level_images(heif_ctx.ctx)
+    top_img_ids = ffi.new("heif_item_id[]", top_img_count)
+    top_img_count = lib.heif_context_get_list_of_top_level_image_IDs(heif_ctx.ctx, top_img_ids, top_img_count)
+    img_list = [main_image_id]
+    for i in range(top_img_count):
+        if top_img_ids[i] != main_image_id:
+            img_list.append(top_img_ids[i])
+    return HeifFile(heif_ctx, img_list)
 
 
-def read_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> HeifFile:
-    heif_file = open_heif(
-        fp,
-        apply_transformations=apply_transformations,
-        convert_hdr_to_8bit=convert_hdr_to_8bit,
-    )
-    return heif_file.load()
-
-
-def _read_heif_context(ctx, data, transforms: bool, to_8bit: bool) -> UndecodedHeifFile:
-    brand = lib.heif_main_brand(data[:12], 12)
-    error = lib.heif_context_read_from_memory_without_copy(ctx, data, len(data), ffi.NULL)
-    check_libheif_error(error)
-    p_main_id = ffi.new("heif_item_id *")
-    error = lib.heif_context_get_primary_image_ID(ctx, p_main_id)
-    check_libheif_error(error)
-    p_main_handle = ffi.new("struct heif_image_handle **")
-    error = lib.heif_context_get_primary_image_handle(ctx, p_main_handle)
-    check_libheif_error(error)
-    collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
-    handle = ffi.gc(p_main_handle[0], collect)
-    return _read_heif_handle(ctx, p_main_id[0], handle, transforms, to_8bit, brand=brand, main=True)
-
-
-def _read_heif_handle(ctx, img_id, handle, transforms: bool, to_8bit: bool, **kwargs) -> UndecodedHeifFile:
-    _width = lib.heif_image_handle_get_width(handle)
-    _height = lib.heif_image_handle_get_height(handle)
-    _metadata = _read_metadata(handle)
-    _exif = _retrieve_exif(_metadata)
-    _color_profile = _read_color_profile(handle)
-    _thumbnails = _read_thumbnails(ctx, handle, transforms, to_8bit)
-    _images = _get_other_top_imgs(ctx, img_id, transforms, to_8bit, kwargs["brand"]) if kwargs["main"] else []
-    return UndecodedHeifFile(
-        handle,
-        size=(_width, _height),
-        has_alpha=bool(lib.heif_image_handle_has_alpha_channel(handle)),
-        bit_depth=lib.heif_image_handle_get_luma_bits_per_pixel(handle),
-        transforms=transforms,
-        to_8bit=to_8bit,
-        exif=_exif,
-        metadata=_metadata,
-        color_profile=_color_profile,
-        thumbnails=_thumbnails,
-        top_lvl_images=_images,
-        img_id=img_id,
-        **kwargs,
-    )
+def from_pillow(pil_image: Image, load_one=False) -> HeifFile:
+    return HeifFile({}).add_from_pillow(pil_image, load_one)
 
 
 def _read_metadata(handle) -> list:
@@ -263,7 +560,8 @@ def _read_metadata(handle) -> list:
     lib.heif_image_handle_get_list_of_metadata_block_IDs(handle, ffi.NULL, blocks_ids, block_count)
     for block_id in blocks_ids:
         metadata_type = lib.heif_image_handle_get_metadata_type(handle, block_id)
-        metadata_type = ffi.string(metadata_type).decode()
+        decoded_data_type = ffi.string(metadata_type).decode()
+        content_type = ffi.string(lib.heif_image_handle_get_metadata_content_type(handle, block_id))
         data_length = lib.heif_image_handle_get_metadata_size(handle, block_id)
         if data_length > 0:
             p_data = ffi.new("char[]", data_length)
@@ -271,9 +569,11 @@ def _read_metadata(handle) -> list:
             check_libheif_error(error)
             data_buffer = ffi.buffer(p_data, data_length)
             data = bytes(data_buffer)
-            if metadata_type == "Exif":
+            if decoded_data_type == "Exif":
                 data = data[4:]  # skip TIFF header, first 4 bytes
-            metadata.append({"type": metadata_type, "data": data})
+            metadata.append(
+                {"type": decoded_data_type, "data": data, "metadata_type": metadata_type, "content_type": content_type}
+            )
     return metadata
 
 
@@ -313,87 +613,42 @@ def _read_color_profile(handle) -> dict:
     return {"type": _type, "data": bytes(data_buffer)}
 
 
-def _read_heif_image(handle, heif_class: Union[UndecodedHeifFile, UndecodedHeifThumbnail]):
-    colorspace = HeifColorspace.RGB
-    chroma = _get_chroma(heif_class.to_8bit, heif_class.bit_depth, heif_class.has_alpha)
-    p_options = lib.heif_decoding_options_alloc()
-    p_options = ffi.gc(p_options, lib.heif_decoding_options_free)
-    p_options.ignore_transformations = int(not heif_class.transforms)
-    p_options.convert_hdr_to_8bit = int(heif_class.to_8bit)
-    p_img = ffi.new("struct heif_image **")
-    error = lib.heif_decode_image(handle, p_img, colorspace, chroma, p_options)
-    check_libheif_error(error)
-    img = p_img[0]
-    p_stride = ffi.new("int *")
-    p_data = lib.heif_image_get_plane_readonly(img, HeifChannel.INTERLEAVED, p_stride)
-    stride = p_stride[0]
-    data_length = heif_class.size[1] * stride
-    # Release image as soon as no references to p_data left
-    collect = partial(_release_heif_image, img)
-    p_data = ffi.gc(p_data, collect, size=data_length)
-    # ffi.buffer obligatory keeps a reference to p_data
-    data_buffer = ffi.buffer(p_data, data_length)
-    return data_buffer, stride
-
-
-def _release_heif_image(img, _p_data=None) -> None:
-    lib.heif_image_release(img)
-
-
-def _read_thumbnails(ctx, handle, transforms: bool, to_8bit: bool) -> list:
-    result: List[Union[UndecodedHeifThumbnail, HeifThumbnail]] = []
-    if not options().thumbnails:
+def _read_thumbnails(heif_ctx: Union[LibHeifCtx, dict], img_handle, img_index: int) -> List[HeifThumbnail]:
+    result: List[HeifThumbnail] = []
+    if img_handle is None or not options().thumbnails:
         return result
-    thumbs_count = lib.heif_image_handle_get_number_of_thumbnails(handle)
+    thumbs_count = lib.heif_image_handle_get_number_of_thumbnails(img_handle)
     if thumbs_count == 0:
         return result
     thumbnails_ids = ffi.new("heif_item_id[]", thumbs_count)
-    lib.heif_image_handle_get_list_of_thumbnail_IDs(handle, thumbnails_ids, thumbs_count)
-    for thumbnail_id in thumbnails_ids:
-        p_thumb_handle = ffi.new("struct heif_image_handle **")
-        error = lib.heif_image_handle_get_thumbnail(handle, thumbnail_id, p_thumb_handle)
-        check_libheif_error(error)
-        collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
-        thumb_handle = ffi.gc(p_thumb_handle[0], collect)
-        _thumbnail = _read_thumbnail_handle(thumb_handle, transforms, to_8bit, img_id=thumbnail_id)
-        if options().thumbnails_autoload:
-            _thumbnail.load()
-        result.append(_thumbnail)
+    thumb_count = lib.heif_image_handle_get_list_of_thumbnail_IDs(img_handle, thumbnails_ids, thumbs_count)
+    for i in range(thumb_count):
+        result.append(HeifThumbnail(heif_ctx, img_handle, thumbnails_ids[i], img_index))
     return result
 
 
-def _read_thumbnail_handle(handle, transforms: bool, to_8bit: bool, **kwargs) -> UndecodedHeifThumbnail:
-    _width = lib.heif_image_handle_get_width(handle)
-    _height = lib.heif_image_handle_get_height(handle)
-    return UndecodedHeifThumbnail(
-        handle,
-        size=(_width, _height),
-        has_alpha=bool(lib.heif_image_handle_has_alpha_channel(handle)),
-        bit_depth=lib.heif_image_handle_get_luma_bits_per_pixel(handle),
-        transforms=transforms,
-        to_8bit=to_8bit,
-        **kwargs,
-    )
-
-
-def _get_other_top_imgs(ctx, main_id, transforms: bool, to_8bit: bool, brand: HeifBrand) -> list:
-    _result: List[UndecodedHeifFile] = []
-    top_img_count = lib.heif_context_get_number_of_top_level_images(ctx)
-    if not top_img_count > 1:
-        return _result
-    top_lvl_image_ids = ffi.new("heif_item_id[]", top_img_count)
-    lib.heif_context_get_list_of_top_level_image_IDs(ctx, top_lvl_image_ids, top_img_count)
-    for _image_id in top_lvl_image_ids:
-        if _image_id == main_id:
-            continue
-        p_handle = ffi.new("struct heif_image_handle **")
-        error = lib.heif_context_get_image_handle(ctx, _image_id, p_handle)
-        check_libheif_error(error)
-        collect = _keep_refs(lib.heif_image_handle_release, ctx=ctx)
-        handle = ffi.gc(p_handle[0], collect)
-        _image = _read_heif_handle(ctx, _image_id, handle, transforms, to_8bit, brand=brand, main=False)
-        _result.append(_image)
-    return _result
+def _create_image(
+    size: tuple, color: HeifColorspace, chroma: HeifChroma, bit_depth: int, mode: str, data, stride: int = None
+):
+    width, height = size
+    p_new_img = ffi.new("struct heif_image **")
+    error = lib.heif_image_create(width, height, color, chroma, p_new_img)
+    check_libheif_error(error)
+    new_img = ffi.gc(p_new_img[0], lib.heif_image_release)
+    error = lib.heif_image_add_plane(new_img, HeifChannel.INTERLEAVED, width, height, bit_depth)
+    check_libheif_error(error)
+    p_dest_stride = ffi.new("int *")
+    p_data = lib.heif_image_get_plane(new_img, HeifChannel.INTERLEAVED, p_dest_stride)
+    dest_stride = p_dest_stride[0]
+    p_source = ffi.from_buffer("uint8_t*", data)
+    __factor = 1 if bit_depth == 8 else 2
+    source_stride = stride if stride else width * 3 * __factor if mode == "RGB" else width * 4 * __factor
+    if dest_stride == source_stride:
+        ffi.memmove(p_data, data, len(data))
+    else:
+        for i in range(height):
+            ffi.memmove(p_data + dest_stride * i, p_source + source_stride * i, source_stride)
+    return new_img
 
 
 # --------------------------------------------------------------------
@@ -406,14 +661,23 @@ def check(fp):
 
 
 def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # pylint: disable=redefined-builtin
-    warn("Function `open` is deprecated, use `open_heif` instead.", DeprecationWarning)
+    warn("Function `open` is deprecated and will be removed in 0.2.1, use `open_heif` instead.", DeprecationWarning)
     return open_heif(
         fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
     )  # pragma: no cover
 
 
 def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
-    warn("Function `read` is deprecated, use `read_heif` instead.", DeprecationWarning)
-    return read_heif(
+    warn("Function `read` is deprecated, use `open_heif` instead.", DeprecationWarning)
+    return open_heif(
         fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
+    )  # pragma: no cover
+
+
+def read_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> HeifFile:
+    warn("Function `read_heif` is deprecated, use `open_heif` instead. Read docs, why.", DeprecationWarning)
+    return open_heif(
+        fp,
+        apply_transformations=apply_transformations,
+        convert_hdr_to_8bit=convert_hdr_to_8bit,
     )  # pragma: no cover
