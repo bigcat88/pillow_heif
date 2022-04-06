@@ -23,14 +23,11 @@ from pillow_heif import (
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 register_heif_opener()
 
-images_dataset = (
-    [f for f in list(Path().glob("images/nokia/*.heic"))]
-    + [f for f in list(Path().glob("images/avif/*.avif"))]  # noqa
-    + [f for f in list(Path().glob("images/*.avif"))]  # noqa
-    + [f for f in list(Path().glob("images/*.heic"))]  # noqa
-    + [f for f in list(Path().glob("images/*.hif"))]  # noqa
-    + [f for f in list(Path().glob("images/*.heif"))]  # noqa
-)
+avif_images = [f for f in list(Path().glob("images/avif/*.avif"))] + [f for f in list(Path().glob("images/*.avif"))]
+heic_images = [f for f in list(Path().glob("images/nokia/*.heic"))] + [f for f in list(Path().glob("images/*.heic"))]
+heif_images = [f for f in list(Path().glob("images/*.hif"))] + [f for f in list(Path().glob("images/*.heif"))]
+
+images_dataset = heic_images + avif_images + heif_images
 
 if not options().avif:
     warn("Skipping tests for `AV1` format due to lack of codecs.")
@@ -114,7 +111,7 @@ def test_image_index():
     heif_file.close()
 
 
-@pytest.mark.parametrize("img_path", *[[*Path().glob("images/*.heic")][:4] + [*Path().glob("images/avif/*.avif")][:4]])
+@pytest.mark.parametrize("img_path", avif_images[:4] + heic_images[:4])
 def test_inputs(img_path):
     with builtins.open(img_path, "rb") as f:
         d = f.read()
