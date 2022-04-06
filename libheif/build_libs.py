@@ -169,7 +169,10 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             mkdir("10bit")
             chdir("10bit")
             print("!!!!!-->1", flush=True)
-            run(["cmake"] + ["./../source", "-DENABLE_HDR10_PLUS=ON"] + cmake_high_bits, check=True)
+            run(
+                ["cmake"] + ["./../source"] + ["-G", "Unix Makefiles", "-DENABLE_HDR10_PLUS=ON"] + cmake_high_bits,
+                check=True,
+            )
             run_print_if_error("make -j4".split())
             run("mv libx265.a ../libx265_main10.a".split(), check=True)
             chdir("../12bit")
