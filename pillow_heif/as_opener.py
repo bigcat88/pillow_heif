@@ -36,10 +36,12 @@ class HeifImageFile(ImageFile.ImageFile):
             frame_heif.load()
             self.load_prepare()
             self.frombytes(frame_heif.data, "raw", (self.mode, frame_heif.stride))
-            frame_heif.unload()
-            if not self.is_animated:
+            if self.is_animated:
+                frame_heif.unload()
+            else:
                 self.heif_file.close(only_fp=True)
                 self.fp = None
+                self.heif_file = None
         return super().load()
 
     def seek(self, frame):
