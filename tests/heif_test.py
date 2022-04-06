@@ -3,6 +3,7 @@ import os
 from gc import collect
 from io import SEEK_END, BytesIO
 from pathlib import Path
+from sys import platform
 from warnings import warn
 
 import pytest
@@ -46,6 +47,7 @@ def test_corrupted_open(img_path):
             assert str(exception).find("Invalid input") != -1
 
 
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_get_img_thumb_mask_for_save():
     heif_file = open_heif(Path("images/pug_2_2.heic"))
     mask = heif_file.get_img_thumb_mask_for_save(HeifSaveMask.SAVE_NONE)
@@ -79,6 +81,7 @@ def test_get_img_thumb_mask_for_save():
     assert len(new_heif[1].thumbnails) == 1
 
 
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 @pytest.mark.parametrize(
     "thumbs,expected",
     (
@@ -138,6 +141,7 @@ def test_inputs(img_path):
         f.seek(0)
 
 
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_outputs():
     with builtins.open(Path("images/pug_1_1.heic"), "rb") as f:
         output = BytesIO()
@@ -153,6 +157,7 @@ def test_outputs():
             open_heif(f).save(bytes(b"1234567890"), quality=10)
 
 
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_thumbnails():
     heif_file = open_heif(Path("images/pug_2_3.heic"))
     assert len([_ for _ in heif_file.thumbnails_all(one_for_image=True)]) == 2
@@ -169,7 +174,42 @@ def test_thumbnails():
     heif_file.close()
 
 
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_add_from_heif():
+    def check_equality():
+        assert len(heif_file) == 4
+        assert len([_ for _ in heif_file.thumbnails_all()]) == 6
+        assert heif_file[0].size == heif_file[1].size
+        assert heif_file[0].mode == heif_file[1].mode
+        assert heif_file[0].stride == heif_file[1].stride
+        assert len(heif_file[0].data) == len(heif_file[1].data)
+        assert heif_file[2].size == heif_file[3].size
+        assert heif_file[2].mode == heif_file[3].mode
+        assert heif_file[2].stride == heif_file[3].stride
+        assert len(heif_file[2].data) == len(heif_file[3].data)
+
+    heif_file = open_heif(Path("images/pug_1_1.heic"))
+    heif_file.add_from_heif(heif_file)
+    assert len(heif_file) == 2
+    assert len([_ for _ in heif_file.thumbnails_all()]) == 2
+    heif_file_to_add = open_heif(Path("images/pug_1_2.heic"))
+    heif_file.add_from_heif(heif_file_to_add)
+    heif_file.add_from_heif(heif_file_to_add[0])
+    check_equality()
+    out_buf = BytesIO()
+    heif_file.save(out_buf, quality=10, enc_params=[("x265:ctu", "32")])
+    heif_file.close()
+    heif_file_to_add.close()
+    heif_file = open_heif(out_buf)
+    assert len(heif_file) == 4
+    assert len([_ for _ in heif_file.thumbnails_all()]) == 6
+    heif_file.load(everything=True)
+    check_equality()
+
+
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+@pytest.mark.skipif(platform.lower() == "win32", reason="No 10/12 bit encoder for Windows.")
+def test_add_from_heif_10bit():
     def check_equality():
         assert len(heif_file) == 4
         assert heif_file[0].size == heif_file[1].size
@@ -207,9 +247,10 @@ def test_collect():
     heif_file.load(everything=True)
     heif_file.close(only_fp=True)
     collect()
-    new_heif_image = BytesIO()
-    heif_file.save(new_heif_image, quality=10)
-    assert isinstance(open_heif(new_heif_image), HeifFile)
+    if options().hevc_enc:
+        new_heif_image = BytesIO()
+        heif_file.save(new_heif_image, quality=10)
+        assert isinstance(open_heif(new_heif_image), HeifFile)
     for image in heif_file:
         data = image.data  # noqa
         for thumbnail in image.thumbnails:
@@ -234,7 +275,7 @@ def test_all(image_path):
     heif_file = open_heif(image_path)
     for c, image in enumerate(heif_file):
         image.misc["to_8bit"] = True
-        pass_count = 2 if heif_file.bit_depth > 8 else 1
+        pass_count = 2 if heif_file.bit_depth > 8 and platform.lower() != "win32" else 1
         for i in range(pass_count):
             if i == 1:
                 image.misc["to_8bit"] = False
@@ -258,7 +299,7 @@ def test_all(image_path):
             save_mask = heif_file.get_img_thumb_mask_for_save(mask=HeifSaveMask.SAVE_NONE)
             save_mask[c][0] = True
             new_heif_image = BytesIO()
-            heif_file.save(new_heif_image, quality=100, save_mask=save_mask)
+            heif_file.save(new_heif_image, quality=10, save_mask=save_mask)
             new_heif_file = open_heif(new_heif_image, convert_hdr_to_8bit=image.misc["to_8bit"])
             assert new_heif_file.mode == image.mode
             assert new_heif_file.bit_depth == 8 if image.misc["to_8bit"] else image.bit_depth
