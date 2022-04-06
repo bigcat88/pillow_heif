@@ -6,8 +6,6 @@ from pathlib import Path
 from warnings import warn
 
 import pytest
-from hashes_test import average_hash, colorhash, dhash
-from PIL import Image
 
 from pillow_heif import (
     HeifChroma,
@@ -39,23 +37,16 @@ if not options().avif:
     images_dataset = [e for e in images_dataset if not e.name.endswith(".avif")]
 
 
-def compare_hashes(pillow_images: list, hash_type="average", hash_size=16, max_difference=0):
-    image_hashes = []
-    for pillow_image in pillow_images:
-        if isinstance(pillow_image, (str, Path)):
-            pillow_image = Image.open(pillow_image)
-        elif isinstance(pillow_image, BytesIO):
-            pillow_image = Image.open(pillow_image)
-        if hash_type == "dhash":
-            image_hash = dhash(pillow_image, hash_size)
-        elif hash_type == "colorhash":
-            image_hash = colorhash(pillow_image, hash_size)
-        else:
-            image_hash = average_hash(pillow_image, hash_size)
-        for _ in range(len(image_hashes)):
-            distance = image_hash - image_hashes[_]
-            assert distance <= max_difference
-        image_hashes.append(image_hash)
+@pytest.mark.parametrize("img_path", list(Path().glob("images/invalid/*")))
+def test_corrupted_open(img_path):
+    for input_type in [img_path.read_bytes(), BytesIO(img_path.read_bytes()), img_path, builtins.open(img_path, "rb")]:
+        try:
+            open_heif(input_type).load()
+            assert False
+        except HeifError as exception:
+            assert exception.code == HeifErrorCode.INVALID_INPUT
+            assert repr(exception).find("HeifErrorCode.INVALID_INPUT") != -1
+            assert str(exception).find("Invalid input") != -1
 
 
 def test_get_img_thumb_mask_for_save():
@@ -123,7 +114,7 @@ def test_image_index():
     heif_file.close()
 
 
-@pytest.mark.parametrize("img_path", *[[*Path().glob("images/*.heic")] + [*Path().glob("images/avif/*.avif")][:4]])
+@pytest.mark.parametrize("img_path", *[[*Path().glob("images/*.heic")][:4] + [*Path().glob("images/avif/*.avif")][:4]])
 def test_inputs(img_path):
     with builtins.open(img_path, "rb") as f:
         d = f.read()
@@ -163,26 +154,6 @@ def test_outputs():
         Path("tmp.heic").unlink()
         with pytest.raises(TypeError):
             open_heif(f).save(bytes(b"1234567890"), quality=10)
-
-
-@pytest.mark.parametrize("img_path", list(Path().glob("images/invalid/*")))
-def test_corrupted_open(img_path):
-    for input_type in [img_path.read_bytes(), BytesIO(img_path.read_bytes()), img_path, builtins.open(img_path, "rb")]:
-        try:
-            open_heif(input_type).load()
-            assert False
-        except HeifError as exception:
-            assert exception.code == HeifErrorCode.INVALID_INPUT
-            assert repr(exception).find("HeifErrorCode.INVALID_INPUT") != -1
-            assert str(exception).find("Invalid input") != -1
-
-
-def test_scale():
-    heic_file = open_heif(Path("images/pug_1_0.heic"))
-    heic_file.scale(640, 640)
-    out_buffer = BytesIO()
-    heic_file.save(out_buffer)
-    compare_hashes([Path("images/pug_1_0.heic"), out_buffer], max_difference=1)
 
 
 def test_thumbnails():
