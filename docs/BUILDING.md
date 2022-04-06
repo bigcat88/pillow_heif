@@ -29,6 +29,7 @@ Notes:
    * On Alpine you need install `aom-dev`.
    * On Ubuntu(22.04+) you need install `libaom-dev`.
    * On Ubuntu less then 22.04 you can compile it from source, but `AV1` codecs will be not avalaible.
+   * Encoder will not be available if you did not install `x265`. It is not build from source by default on armv7.
 
 ### MacOS
 ```bash
@@ -43,3 +44,5 @@ vcpkg install aom libheif --triplet=x64-windows
 VCPKG_PREFIX="path_to:vcpkg/installed/x64-windows"
 pip3 install --no-binary pillow_heif
 ```
+
+Note: there is no support for 10/12 bit file formats for encoder now on Windows.
