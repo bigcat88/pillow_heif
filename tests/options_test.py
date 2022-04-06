@@ -51,6 +51,7 @@ def test_thumbnails_option():
         options().reset()
 
 
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_quality_option():
     try:
         image = open_heif(Path("images/pug_1_1.heic"))

@@ -2,10 +2,23 @@ import builtins
 import os
 from pathlib import Path
 from platform import machine
+from warnings import warn
+
+import pytest
 
 import pillow_heif
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+avif_images = [f for f in list(Path().glob("images/avif/*.avif"))] + [f for f in list(Path().glob("images/*.avif"))]
+heic_images = [f for f in list(Path().glob("images/nokia/*.heic"))] + [f for f in list(Path().glob("images/*.heic"))]
+heif_images = [f for f in list(Path().glob("images/*.hif"))] + [f for f in list(Path().glob("images/*.heif"))]
+
+images_dataset = heic_images + avif_images + heif_images
+
+if not pillow_heif.options().avif:
+    warn("Skipping tests for `AV1` format due to lack of codecs.")
+    images_dataset = [e for e in images_dataset if not e.name.endswith(".avif")]
 
 
 def test_libheif_info():
@@ -29,17 +42,17 @@ def test_debug_boxes_dump():
     Path("debug_dump.txt").unlink()
 
 
-def test_get_file_mimetype():
-    for file in [*list(Path().glob("images/[!.]*.[!jt]*")), *list(Path().glob("images/avif/*.avif"))]:
-        mimetype = pillow_heif.get_file_mimetype(file)
-        assert mimetype in ("image/heic", "image/avif")
+@pytest.mark.parametrize("img_path", images_dataset)
+def test_get_file_mimetype(img_path):
+    mimetype = pillow_heif.get_file_mimetype(img_path)
+    assert mimetype in ("image/heic", "image/heif", "image/heif-sequence", "image/avif")
 
 
-def test_heif_check_filetype():
-    for file in [*list(Path().glob("images/[!.]*.[!jt]*")), *list(Path().glob("images/avif/*.avif"))]:
-        with builtins.open(file, "rb") as fh:
-            assert pillow_heif.check_heif(fh) != pillow_heif.HeifFiletype.NO
-            assert pillow_heif.is_supported(fh)
+@pytest.mark.parametrize("img_path", images_dataset)
+def test_heif_check_filetype(img_path):
+    with builtins.open(img_path, "rb") as fh:
+        assert pillow_heif.check_heif(fh) != pillow_heif.HeifFiletype.NO
+        assert pillow_heif.is_supported(fh)
 
 
 def test_heif_str():
