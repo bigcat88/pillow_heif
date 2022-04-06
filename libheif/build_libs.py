@@ -216,8 +216,8 @@ def build_libs_linux():
         build_tools_linux(_is_musllinux)
         if machine().find("armv7") == -1:  # Are not trying to build x265 on armv7.
             build_lib_linux(
-                # "https://bitbucket.org/multicoreware/x265_git/downloads/x265_3.5.tar.gz",
-                "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
+                "https://bitbucket.org/multicoreware/x265_git/get/Release_3.4.tar.gz",
+                # "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                 "x265",
                 _is_musllinux,
             )
