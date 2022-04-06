@@ -17,9 +17,10 @@ pillow_heif.register_heif_opener()
 def perform_opens(value):
     for _ in range(value):
         image = Image.open(Path("images/nokia/alpha_3_2.heic"))
-        assert image
-        out_buf = BytesIO()
-        image.save(out_buf, quality=20, format="HEIF")
+        assert getattr(image, "heif_file") is not None
+        if pillow_heif.options().hevc_enc:
+            out_buf = BytesIO()
+            image.save(out_buf, quality=20, format="HEIF")
 
 
 def test_open_leaks():
