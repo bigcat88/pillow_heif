@@ -18,9 +18,6 @@ jobs:
           python3 -m pip install cibuildwheel twine
           vcpkg install aom libheif --triplet=x64-windows
 
-      - name: WOW
-        run: x265 --version
-
 #      - name: Run cibuildwheel
 #        run: cibuildwheel
 #        env:
