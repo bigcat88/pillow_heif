@@ -1,4 +1,4 @@
-from os import chdir, environ, getcwd, makedirs, path, remove
+from os import chdir, environ, getcwd, makedirs, mkdir, path, remove
 from platform import machine
 from re import IGNORECASE, MULTILINE, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
@@ -165,7 +165,9 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         elif name == "x265":
             cmake_high_bits = "-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF".split()
             cmake_high_bits += "-DENABLE_SHARED=OFF -DENABLE_CLI=OFF".split()
-            run("mkdir 12bit && mkdir 10bit && cd 10bit", check=True)
+            mkdir("12bit")
+            mkdir("10bit")
+            chdir("10bit")
             run(["cmake"] + ["./../source", "-DENABLE_HDR10_PLUS=ON"] + cmake_high_bits, check=True)
             run_print_if_error("make -j4".split())
             run("mv libx265.a ../libx265_main10.a".split(), check=True)
