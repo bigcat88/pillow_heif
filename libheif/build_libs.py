@@ -169,10 +169,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             mkdir("10bit")
             chdir("10bit")
             print("!!!!!-->1", flush=True)
-            run(
-                ["cmake"] + ["./../source"] + ["-G", "Unix Makefiles", "-DENABLE_HDR10_PLUS=ON"] + cmake_high_bits,
-                check=True,
-            )
+            run("cmake ./../source -DENABLE_HDR10_PLUS=ON".split() + cmake_high_bits, check=True)
             run_print_if_error("make -j4".split())
             run("mv libx265.a ../libx265_main10.a".split(), check=True)
             chdir("../12bit")
@@ -219,7 +216,8 @@ def build_libs_linux():
         build_tools_linux(_is_musllinux)
         if machine().find("armv7") == -1:  # Are not trying to build x265 on armv7.
             build_lib_linux(
-                "https://bitbucket.org/multicoreware/x265_git/downloads/x265_3.5.tar.gz",
+                # "https://bitbucket.org/multicoreware/x265_git/downloads/x265_3.5.tar.gz",
+                "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                 "x265",
                 _is_musllinux,
             )
