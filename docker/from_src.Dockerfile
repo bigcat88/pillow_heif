@@ -20,10 +20,7 @@ RUN \
       harfbuzz-dev \
       jpeg-dev \
       lcms2-dev \
-      aom \
-      aom-dev \
       openjpeg-dev \
-      x265 \
       nasm \
       py3-numpy; \
   elif [ -f /usr/bin/apt ]; then \
@@ -40,8 +37,6 @@ RUN \
       cmake \
       lsb-release; \
       lsb_release -r | grep -q "20.04" || apt-get install -y nasm; \
-      lsb_release -r | grep -q "20.04" || apt-get install -y libaom-dev; \
-      lsb_release -r | grep -q "20.04" || apt-get install -y libx265-dev; \
   fi && \
   python3 -m pip install --upgrade pip && \
   python3 -m pip install -v "pillow_heif/.[tests]" && \
