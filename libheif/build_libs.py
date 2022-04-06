@@ -1,4 +1,4 @@
-from os import chdir, environ, getcwd, makedirs, mkdir, path, remove
+from os import chdir, environ, getcwd, makedirs, path, remove
 from platform import machine
 from re import IGNORECASE, MULTILINE, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
@@ -165,9 +165,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         elif name == "x265":
             cmake_high_bits = "-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF".split()
             cmake_high_bits += "-DENABLE_SHARED=OFF -DENABLE_CLI=OFF".split()
-            mkdir("12bit")
-            mkdir("10bit")
-            chdir("10bit")
+            run("mkdir 12bit && mkdir 10bit && cd 10bit", check=True)
             run(["cmake"] + ["./../source", "-DENABLE_HDR10_PLUS=ON"] + cmake_high_bits, check=True)
             run_print_if_error("make -j4".split())
             run("mv libx265.a ../libx265_main10.a".split(), check=True)
@@ -222,7 +220,7 @@ def build_libs_linux():
             "libde265",
             _is_musllinux,
         )
-        if machine().find("armv7") == -1:  # Are not trying to build aom on armv7.
+        if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
             build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.3.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
