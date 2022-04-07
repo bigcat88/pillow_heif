@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from pillow_heif import open_heif, options, register_heif_opener
+from pillow_heif import _options  # noqa
+from pillow_heif import HeifError, open_heif, options, register_heif_opener
 
 imagehash = pytest.importorskip("hashes_test", reason="NumPy not installed")
 
@@ -40,3 +41,14 @@ def test_scale():
     out_buffer = BytesIO()
     heic_file.save(out_buffer)
     compare_hashes([Path("images/pug_1_0.heic"), out_buffer], max_difference=1)
+
+
+def test_no_encoder():
+    try:
+        _options.CFG_OPTIONS._hevc_enc = False
+        heic_file = open_heif(Path("images/pug_1_0.heic"))
+        out_buffer = BytesIO()
+        with pytest.raises(HeifError):
+            heic_file.save(out_buffer)
+    finally:
+        _options.CFG_OPTIONS = _options.PyLibHeifOptions()
