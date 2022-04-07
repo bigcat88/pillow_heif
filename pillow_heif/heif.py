@@ -364,13 +364,15 @@ class HeifFile:
         _heif_write_ctx.close()
 
     def close(self, only_fp: bool = False, thumbnails: bool = True):
-        self._heif_ctx = None
+        if isinstance(self._heif_ctx, LibHeifCtx):
+            self._heif_ctx.close()
         if not only_fp:
             for img in self:
                 if thumbnails:
                     for thumb in img.thumbnails:
                         thumb.close()
                 img.close()
+            self._heif_ctx = None
 
     def __repr__(self):
         return f"<{self.__class__.__name__} with {len(self)} images: {[str(i) for i in self]}>"

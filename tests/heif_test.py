@@ -123,11 +123,10 @@ def test_inputs(img_path):
             assert heif_file.size[1] > 0
             assert heif_file.info
             assert len(heif_file.data) > 0
-            heif_file.load()
+            heif_file.load(everything=True)
             heif_file.close(only_fp=True)
             heif_file.close(only_fp=True)
-            heif_file.unload()
-            assert len(heif_file.data) > 0
+            collect()
             for thumb in heif_file.thumbnails_all():
                 assert len(thumb.data) > 0
                 thumb.close()
@@ -137,6 +136,21 @@ def test_inputs(img_path):
             assert not heif_file.data
             for thumb in heif_file.thumbnails_all():
                 assert not thumb.data
+            heif_file.close()
+        f.seek(0)
+
+
+@pytest.mark.parametrize("img_path", avif_images[:4] + heic_images[:4])
+def test_inputs_collect(img_path):
+    with builtins.open(img_path, "rb") as f:
+        d = f.read()
+        for heif_file in (open_heif(f), open_heif(d), open_heif(BytesIO(d))):
+            heif_file.load(everything=True)
+            heif_file.close(only_fp=True)
+            heif_file.unload()
+            collect()
+            with pytest.raises(HeifError):
+                assert len(heif_file.data) > 0
             heif_file.close()
         f.seek(0)
 
@@ -162,9 +176,11 @@ def test_thumbnails():
     heif_file = open_heif(Path("images/pug_2_3.heic"))
     assert len([_ for _ in heif_file.thumbnails_all(one_for_image=True)]) == 2
     assert len([_ for _ in heif_file.thumbnails_all()]) == 3
+    heif_file.load(everything=True)
     heif_file_to_add = open_heif(Path("images/pug_1_1.heic"))
     heif_file.add_from_heif(heif_file_to_add)
     heif_file.close(only_fp=True)
+    collect()
     out_buf = BytesIO()
     heif_file.save(out_buf)
     out_heif = open_heif(out_buf)
