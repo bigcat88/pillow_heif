@@ -166,8 +166,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         elif name == "x265":
             cmake_high_bits = "-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF".split()
             cmake_high_bits += "-DENABLE_SHARED=OFF -DENABLE_CLI=OFF".split()
-            if sys.maxsize <= 2**32:
-                cmake_high_bits += "-DENABLE_ASSEMBLY=OFF"
             mkdir("12bit")
             mkdir("10bit")
             chdir("10bit")
@@ -214,7 +212,7 @@ def build_libs_linux():
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        if machine().find("armv7") == -1:  # Are not trying to build x265 on armv7.
+        if sys.maxsize > 2**32:  # Build x265 encoder only on 64 bit systems.
             build_lib_linux(
                 "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                 "x265",
