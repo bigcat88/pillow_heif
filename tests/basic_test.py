@@ -14,11 +14,11 @@ avif_images = [f for f in list(Path().glob("images/avif/*.avif"))] + [f for f in
 heic_images = [f for f in list(Path().glob("images/nokia/*.heic"))] + [f for f in list(Path().glob("images/*.heic"))]
 heif_images = [f for f in list(Path().glob("images/*.hif"))] + [f for f in list(Path().glob("images/*.heif"))]
 
-images_dataset = heic_images + avif_images + heif_images
-
 if not pillow_heif.options().avif:
     warn("Skipping tests for `AV1` format due to lack of codecs.")
-    images_dataset = [e for e in images_dataset if not e.name.endswith(".avif")]
+    avif_images.clear()
+
+images_dataset = heic_images + avif_images + heif_images
 
 
 def test_libheif_info():
