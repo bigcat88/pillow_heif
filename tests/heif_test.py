@@ -174,7 +174,6 @@ def test_thumbnails():
     heif_file.close()
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_add_from_heif():
     def check_equality():
         assert len(heif_file) == 4
@@ -196,18 +195,18 @@ def test_add_from_heif():
     heif_file.add_from_heif(heif_file_to_add)
     heif_file.add_from_heif(heif_file_to_add[0])
     check_equality()
-    out_buf = BytesIO()
-    heif_file.save(out_buf, quality=10, enc_params=[("x265:ctu", "32")])
-    heif_file.close()
-    heif_file_to_add.close()
-    heif_file = open_heif(out_buf)
-    assert len(heif_file) == 4
-    assert len([_ for _ in heif_file.thumbnails_all()]) == 6
-    heif_file.load(everything=True)
-    check_equality()
+    if options().hevc_enc:
+        out_buf = BytesIO()
+        heif_file.save(out_buf, quality=10, enc_params=[("x265:ctu", "32")])
+        heif_file.close()
+        heif_file_to_add.close()
+        heif_file = open_heif(out_buf)
+        assert len(heif_file) == 4
+        assert len([_ for _ in heif_file.thumbnails_all()]) == 6
+        heif_file.load(everything=True)
+        check_equality()
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 @pytest.mark.skipif(platform.lower() == "win32", reason="No 10/12 bit encoder for Windows.")
 def test_add_from_heif_10bit():
     def check_equality():
@@ -229,13 +228,14 @@ def test_add_from_heif_10bit():
     heif_file.add_from_heif(heif_file_to_add[0])
     check_equality()
     out_buf = BytesIO()
-    heif_file.save(out_buf, enc_params=[("x265:ctu", "32")])
-    heif_file.close()
-    heif_file_to_add.close()
-    heif_file = open_heif(out_buf, convert_hdr_to_8bit=False)
-    assert len(heif_file) == 4
-    heif_file.load(everything=True)
-    check_equality()
+    if options().hevc_enc:
+        heif_file.save(out_buf, enc_params=[("x265:ctu", "32")])
+        heif_file.close()
+        heif_file_to_add.close()
+        heif_file = open_heif(out_buf, convert_hdr_to_8bit=False)
+        assert len(heif_file) == 4
+        heif_file.load(everything=True)
+        check_equality()
 
 
 def test_collect():
