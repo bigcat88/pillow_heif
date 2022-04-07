@@ -1,10 +1,11 @@
 import gc
+import sys
 from io import BytesIO
 from os import chdir, path
 from pathlib import Path
 
+import pytest
 from PIL import Image
-from pympler import summary, tracker
 
 import pillow_heif
 
@@ -23,7 +24,10 @@ def perform_opens(value):
             image.save(out_buf, quality=20, format="HEIF")
 
 
+@pytest.mark.skipif(sys.executable.lower().find("pypy") != -1, reason="Disabled on PyPy.")
 def test_open_leaks():
+    from pympler import summary, tracker
+
     perform_opens(1)
     gc.collect()
     _summary1 = tracker.SummaryTracker().create_summary()
