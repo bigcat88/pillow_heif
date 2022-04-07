@@ -166,7 +166,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         elif name == "x265":
             cmake_high_bits = "-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF".split()
             cmake_high_bits += "-DENABLE_SHARED=OFF -DENABLE_CLI=OFF".split()
-            if not sys.maxsize > 2**32:
+            if sys.maxsize <= 2**32:
                 cmake_high_bits += "-DENABLE_ASSEMBLY=OFF"
             mkdir("12bit")
             mkdir("10bit")
