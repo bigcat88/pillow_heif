@@ -1,5 +1,6 @@
 import builtins
 import os
+import sys
 from pathlib import Path
 from platform import machine
 from warnings import warn
@@ -27,8 +28,9 @@ def test_libheif_info():
     if machine().find("armv7") != -1:
         return
     assert info["decoders"]["AV1"]
-    assert info["encoders"]["HEVC"]
-    assert pillow_heif.options().hevc_enc
+    if sys.maxsize > 2**32:
+        assert info["encoders"]["HEVC"]
+        assert pillow_heif.options().hevc_enc
 
 
 def test_lib_version():
