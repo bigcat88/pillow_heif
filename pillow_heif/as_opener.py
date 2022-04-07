@@ -64,14 +64,14 @@ class HeifImageFile(ImageFile.ImageFile):
 
     @property
     def n_frames(self):
-        return len(self.heif_file) if self.heif_file else False
+        return len(self.heif_file) if self.heif_file else 1
 
     @property
     def is_animated(self):
         return self.n_frames > 1
 
     def _seek_check(self, frame):
-        if not self.heif_file or frame < 0 or frame >= len(self.heif_file):
+        if frame < 0 or frame >= self.n_frames:
             raise EOFError("attempt to seek outside sequence")
         return self.tell() != frame
 
