@@ -20,7 +20,7 @@ from .constants import (
     HeifFiletype,
     HeifSaveMask,
 )
-from .error import HeifErrorCode, check_libheif_error
+from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, _get_chroma
 
 
@@ -351,6 +351,8 @@ class HeifFile:
 
     def save(self, fp, save_mask: list = None, **kwargs):
         # append_images = kwargs.get("append_images", [])
+        if not options().hevc_enc:
+            raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
         _save_mask = save_mask if save_mask else self.get_img_thumb_mask_for_save()
         quality = kwargs.get("quality", None)
         enc_params = kwargs.get("enc_params", [])

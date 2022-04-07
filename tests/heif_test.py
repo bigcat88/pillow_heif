@@ -296,6 +296,8 @@ def test_all(image_path):
             assert image.color == HeifColorspace.RGB
             assert isinstance(image.load(), HeifImage)
 
+            if not options().hevc_enc:
+                continue
             save_mask = heif_file.get_img_thumb_mask_for_save(mask=HeifSaveMask.SAVE_NONE)
             save_mask[c][0] = True
             new_heif_image = BytesIO()
