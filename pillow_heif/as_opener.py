@@ -36,7 +36,7 @@ class HeifImageFile(ImageFile.ImageFile):
             frame_heif.load()
             self.load_prepare()
             self.frombytes(frame_heif.data, "raw", (self.mode, frame_heif.stride))
-            if self.is_animated:
+            if self.is_animated or self.info["thumbnails"]:
                 frame_heif.unload()
             else:
                 self.heif_file = None

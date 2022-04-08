@@ -1,5 +1,6 @@
 import builtins
 import os
+from gc import collect
 from io import BytesIO
 from pathlib import Path
 from warnings import warn
@@ -42,7 +43,7 @@ def test_open_images(image_path):
             assert image.info["main"]
         image.load()
     assert getattr(pillow_image, "fp") is not None
-    if images_count > 1:
+    if images_count > 1 or len(pillow_image.info["thumbnails"]):
         assert getattr(pillow_image, "heif_file") is not None
     else:
         assert getattr(pillow_image, "heif_file") is None
@@ -67,3 +68,27 @@ def test_inputs(img_path):
         assert getattr(pillow_image, "fp") is not None
         pillow_image.load()
         pillow_image.load()
+
+
+def test_after_load():
+    img = Image.open(Path("images/pug_1_0.heic"))
+    img.load()
+    collect()
+    for i, frame in enumerate(ImageSequence.Iterator(img)):
+        assert len(frame.tobytes()) > 0
+        for thumb in img.info["thumbnails"]:
+            assert len(thumb.data) > 0
+    img = Image.open(Path("images/pug_1_1.heic"))
+    img.load()
+    collect()
+    for i, frame in enumerate(ImageSequence.Iterator(img)):
+        assert len(frame.tobytes()) > 0
+        for thumb in img.info["thumbnails"]:
+            assert len(thumb.data) > 0
+    img = Image.open(Path("images/pug_2_2.heic"))
+    img.load()
+    collect()
+    for i, frame in enumerate(ImageSequence.Iterator(img)):
+        assert len(frame.tobytes()) > 0
+        for thumb in img.info["thumbnails"]:
+            assert len(thumb.data) > 0

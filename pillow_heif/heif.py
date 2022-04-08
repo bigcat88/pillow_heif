@@ -189,10 +189,11 @@ class HeifImage(HeifImageBase):
             thumbnail.load()
         return self
 
-    def unload(self):
+    def unload(self, thumbnails: bool = True):
         super().unload()
-        for thumbnail in self.thumbnails:
-            thumbnail.unload()
+        if thumbnails:
+            for thumbnail in self.thumbnails:
+                thumbnail.unload()
         return self
 
     def scale(self, width: int, height: int):
@@ -256,7 +257,7 @@ class HeifFile:
     def thumbnails(self):
         return self._images[0].thumbnails
 
-    def thumbnails_all(self, one_for_image=False) -> Iterator[HeifThumbnail]:
+    def thumbnails_all(self, one_for_image: bool = False) -> Iterator[HeifThumbnail]:
         for i in self:
             for thumb in i.thumbnails:
                 yield thumb
