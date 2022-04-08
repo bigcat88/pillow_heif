@@ -104,4 +104,5 @@ def register_heif_opener(**kwargs):
     extensions = [".heic", ".heif", ".hif"]
     Image.register_mime(HeifImageFile.format, "image/heic")
     Image.register_mime(HeifImageFile.format, "image/heif")
+    Image.register_mime(HeifImageFile.format, "image/heif-sequence")
     Image.register_extensions(HeifImageFile.format, extensions)

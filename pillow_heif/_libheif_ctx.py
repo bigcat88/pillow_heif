@@ -30,16 +30,20 @@ class LibHeifCtx:
         return self.fp.tell()
 
     def seek(self, position):
+        if self.fp is None:
+            return 0
         self.fp.seek(position)
         return 0
 
     def read(self, data, size):
+        if self.fp is None:
+            return 0
         read_data = self.fp.read(size)
         ffi.memmove(data, read_data, len(read_data))
         return 0
 
     def wait_for_file_size(self, target_size):
-        return 2 if target_size > self.fp_size else 0
+        return 2 if target_size > self.fp_size and self.fp else 0
 
     def close(self):
         if self._fp_close_after and self.fp and hasattr(self.fp, "close"):

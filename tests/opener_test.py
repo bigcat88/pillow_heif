@@ -41,11 +41,10 @@ def test_open_images(image_path):
         if not i:
             assert image.info["main"]
         image.load()
+    assert getattr(pillow_image, "fp") is not None
     if images_count > 1:
-        assert getattr(pillow_image, "fp") is not None
         assert getattr(pillow_image, "heif_file") is not None
     else:
-        assert getattr(pillow_image, "fp") is None
         assert getattr(pillow_image, "heif_file") is None
 
 

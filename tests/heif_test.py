@@ -150,7 +150,7 @@ def test_inputs_collect(img_path):
             heif_file.unload()
             collect()
             with pytest.raises(HeifError):
-                assert len(heif_file.data) > 0
+                assert heif_file.data
             heif_file.close()
         f.seek(0)
 
