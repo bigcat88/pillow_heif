@@ -39,8 +39,6 @@ class HeifImageFile(ImageFile.ImageFile):
             if self.is_animated:
                 frame_heif.unload()
             else:
-                self.heif_file.close(only_fp=True)
-                self.fp = None
                 self.heif_file = None
         return super().load()
 
