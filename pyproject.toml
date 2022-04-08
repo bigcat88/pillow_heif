@@ -32,9 +32,10 @@ master.py-version = "3.6"
 master.unsafe-load-any-extension = "yes"
 design.max-attributes = 9
 design.max-args = 8
+design.max-locals = 20
 basic.good-names = [
     "a", "b", "c", "d", "e", "f", "i", "j", "k", "v",
-    "ex", "_", "fp"
+    "ex", "_", "fp", "im"
 ]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"

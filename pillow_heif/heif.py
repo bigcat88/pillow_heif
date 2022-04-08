@@ -283,7 +283,7 @@ class HeifFile:
     def scale(self, width: int, height: int) -> None:
         self._images[0].scale(width, height)
 
-    def add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
+    def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
         __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
         __new_id = 2 + max(__ids)
         __heif_ctx = self.__heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
@@ -303,21 +303,21 @@ class HeifFile:
                 frame = frame.convert(mode="RGB")
             # How here we can detect bit depth of Pillow image? pallete.rawmode or maybe something else?
             __bit_depth = 8
-            self.add_frombytes(__bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
+            self._add_frombytes(__bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
             if load_one:
                 break
         return self
 
     def add_from_heif(self, heif_image):
         if isinstance(heif_image, HeifFile):
-            heif_images = [i for i in heif_image]
+            heif_images = list(heif_image)
         else:
             heif_images = [heif_image]
         for image in heif_images:
             additional_info = image.info.copy()
             additional_info.pop("img_id", None)
             additional_info.pop("main", None)
-            self.add_frombytes(
+            self._add_frombytes(
                 image.bit_depth,
                 image.mode,
                 image.size,
@@ -347,8 +347,8 @@ class HeifFile:
 
     @staticmethod
     def add_thumbs_to_mask(save_mask: list, thumb_boxes: list) -> None:
-        for i in range(len(save_mask)):
-            save_mask[i][1].extend([_ for _ in thumb_boxes if _ not in save_mask[i][1]])
+        for _mask in save_mask:
+            _mask[1].extend([_ for _ in thumb_boxes if _ not in _mask[1]])
 
     def save(self, fp, save_mask: list = None, **kwargs):
         # append_images = kwargs.get("append_images", [])
@@ -438,7 +438,7 @@ class HeifFile:
                 )
                 check_libheif_error(error)
             thumbs_masks = save_mask[i][1]
-            for thumb_i, thumb_box in enumerate(thumbs_masks):
+            for thumb_box in thumbs_masks:
                 if thumb_box:
                     if max(img.size) > thumb_box > 3:
                         p_new_thumb_handle = ffi.new("struct heif_image_handle **")
@@ -497,7 +497,7 @@ class HeifFile:
             "additional_info": kwargs.get("add_info", {}),
         }
 
-    def debug_dump(self, file_path="debug_boxes_dump.txt"):
+    def _debug_dump(self, file_path="debug_boxes_dump.txt"):
         with builtins.open(file_path, "wb") as f:
             lib.heif_context_debug_dump_boxes_to_file(self._heif_ctx.ctx, f.fileno())
 

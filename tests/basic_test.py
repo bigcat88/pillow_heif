@@ -39,7 +39,7 @@ def test_lib_version():
 
 def test_debug_boxes_dump():
     heif_file = pillow_heif.open_heif(list(Path().glob("images/*.heic"))[0])
-    heif_file.debug_dump("debug_dump.txt")
+    heif_file._debug_dump("debug_dump.txt")
     assert Path("debug_dump.txt").stat().st_size > 100
     Path("debug_dump.txt").unlink()
 

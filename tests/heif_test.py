@@ -85,6 +85,7 @@ def test_get_img_thumb_mask_for_save():
 @pytest.mark.parametrize(
     "thumbs,expected",
     (
+        ([-1], 1),
         ([0], 1),
         ([1], 1),
         ([256], 1),
