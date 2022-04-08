@@ -47,7 +47,7 @@ jobs:
           cibuildwheel
         env:
           CIBW_BUILD: "*-macosx_x86_64"
-          CIBW_SKIP: "cp36-*"
+          CIBW_SKIP: "cp36-* pp39-*"
 
       - name: Check built wheels
         run: twine check wheelhouse/*
@@ -65,7 +65,13 @@ jobs:
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "aarch64", "i686", "x86_64" ]
-    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }}
+        cibw_build: [ "cp36", "cp37", "cp38", "cp39", "cp310", "pp37", "pp38" ]
+        exclude:
+          - cibw_buildlinux: musllinux
+            cibw_build: pp37
+          - cibw_buildlinux: musllinux
+            cibw_build: pp38
+    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
@@ -90,9 +96,7 @@ jobs:
 
       - name: musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux'
-        run: |
-          echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
-          echo CIBW_SKIP="pp3*" >> $GITHUB_ENV
+        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
 
@@ -109,7 +113,7 @@ jobs:
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
-          CIBW_BUILD: ${{ format('pp37* pp38* cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
+          CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
@@ -148,7 +152,7 @@ jobs:
 
       - name: Build sdist
         run: |
-          python3 -m pip install pytest piexif coverage pillow
+          python3 -m pip install pytest piexif coverage pillow numpy pympler
           python3 -m build --sdist --outdir wheelhouse
 
       - name: Install and check sdist

@@ -1,4 +1,5 @@
-from os import chdir, environ, getcwd, makedirs, path, remove
+import sys
+from os import chdir, environ, getcwd, makedirs, mkdir, path, remove
 from platform import machine
 from re import IGNORECASE, MULTILINE, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
@@ -163,8 +164,23 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             run(["cmake"] + cmake_args, check=True)
             _hide_build_process = True
         elif name == "x265":
+            cmake_high_bits = "-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF".split()
+            cmake_high_bits += "-DENABLE_SHARED=OFF -DENABLE_CLI=OFF".split()
+            mkdir("12bit")
+            mkdir("10bit")
+            chdir("10bit")
+            run("cmake ./../source -DENABLE_HDR10_PLUS=ON".split() + cmake_high_bits, check=True)
+            run_print_if_error("make -j4".split())
+            run("mv libx265.a ../libx265_main10.a".split(), check=True)
+            chdir("../12bit")
+            run(["cmake"] + ["./../source", "-DMAIN12=ON"] + cmake_high_bits, check=True)
+            run_print_if_error("make -j4".split())
+            run("mv libx265.a ../libx265_main12.a".split(), check=True)
+            chdir("..")
             cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ./source".split()
             cmake_args += ["-G", "Unix Makefiles"]
+            cmake_args += "-DLINKED_10BIT=ON -DLINKED_12BIT=ON -DEXTRA_LINK_FLAGS=-L.".split()
+            cmake_args += "-DEXTRA_LIB='x265_main10.a;x265_main12.a'".split()
             run(["cmake"] + cmake_args, check=True)
             _hide_build_process = True
         else:
@@ -196,10 +212,9 @@ def build_libs_linux():
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        # Are not trying to build aom on armv7, and are not trying to build if it is present in system already.
-        if machine().find("armv7") == -1 and not is_library_installed("x265"):
+        if sys.maxsize > 2**32:  # Build x265 encoder only on 64 bit systems.
             build_lib_linux(
-                "https://bitbucket.org/multicoreware/x265_git/get/3.5.tar.gz",
+                "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                 "x265",
                 _is_musllinux,
             )
@@ -208,8 +223,7 @@ def build_libs_linux():
             "libde265",
             _is_musllinux,
         )
-        # Are not trying to build aom on armv7, and are not trying to build if it is present in system already.
-        if machine().find("armv7") == -1 and not is_library_installed("aom"):
+        if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
             build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.3.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",

@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import traceback
 from pathlib import Path
 
@@ -21,20 +22,21 @@ if __name__ == "__main__":
     try:
         if not pillow_heif.is_supported(image_path):
             raise ValueError("Unsupported image.")
-        heif_image = pillow_heif.read_heif(image_path)
+        startTime = time.time()
+        heif_image = pillow_heif.open_heif(image_path)
         print(f"number of images in file: {len(heif_image)}")
         for image in heif_image:
-            for thumb in image.thumbnails:
-                thumb_img = Image.frombytes(
-                    thumb.mode,
-                    thumb.size,
-                    thumb.data,
-                    "raw",
-                    thumb.mode,
-                    thumb.stride,
-                )
-                result_path = os.path.join(target_folder, f"thumb_{thumb.img_id}_{image_path.stem}.png")
-                thumb_img.save(result_path)
+            # for thumb in image.thumbnails:
+            #     thumb_img = Image.frombytes(
+            #         thumb.mode,
+            #         thumb.size,
+            #         thumb.data,
+            #         "raw",
+            #         thumb.mode,
+            #         thumb.stride,
+            #     )
+            #     result_path = os.path.join(target_folder, f"thumb_{thumb.img_id}_{image_path.stem}.png")
+            #     thumb_img.save(result_path)
             _img = Image.frombytes(
                 image.mode,
                 image.size,
@@ -45,6 +47,8 @@ if __name__ == "__main__":
             )
             result_path = os.path.join(target_folder, f"img_{image.info['img_id']}_{image_path.stem}.png")
             _img.save(result_path)
+        executionTime = time.time() - startTime
+        print("Execution time in seconds: " + str(executionTime))
     except Exception as e:
         print(f"{repr(e)} during processing {image_path.as_posix()}", file=sys.stderr)
         print(traceback.format_exc())

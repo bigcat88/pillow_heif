@@ -2,6 +2,8 @@
 Options to change pillow_heif runtime behaviour.
 """
 
+from warnings import warn
+
 from ._lib_info import have_decoder_for_format, have_encoder_for_format
 from .constants import HeifCompressionFormat
 
@@ -16,10 +18,6 @@ class PyLibHeifOptions:
     @property
     def hevc_enc(self):
         return self._hevc_enc
-
-    @property
-    def avif_dec(self):
-        return self._avif_dec
 
     @property
     def avif(self) -> bool:
@@ -47,23 +45,34 @@ class PyLibHeifOptions:
 
     @property
     def thumbnails_autoload(self) -> bool:
-        return self._cfg["thumbnails_autoload"]
+        warn("Property `thumbnails_autoload` is deprecated.", DeprecationWarning)
+        return self._cfg["thumbnails_autoload"]  # pragma: no cover
 
     @thumbnails_autoload.setter
     def thumbnails_autoload(self, value: bool):
-        self._cfg["thumbnails_autoload"] = value
+        warn("Property `thumbnails_autoload` is deprecated.", DeprecationWarning)
+        self._cfg["thumbnails_autoload"] = value  # pragma: no cover
+
+    @property
+    def quality(self):
+        return self._cfg["quality"]
+
+    @quality.setter
+    def quality(self, value):
+        self._cfg["quality"] = value
 
     def update(self, **kwargs) -> None:
         _keys = kwargs.keys()
-        for k in ("avif", "strict", "thumbnails", "thumbnails_autoload"):
+        for k in ("avif", "strict", "thumbnails", "quality"):
             if k in _keys:
                 setattr(self, k, kwargs[k])
 
     def reset(self) -> None:
-        self._cfg["avif"] = self.avif_dec
+        self._cfg["avif"] = self._avif_dec
         self._cfg["strict"] = False
-        self._cfg["thumbnails"] = False
-        self._cfg["thumbnails_autoload"] = False
+        self._cfg["thumbnails"] = True
+        self._cfg["quality"] = None
+        self._cfg["thumbnails_autoload"] = False  # DEPRECATED
 
 
 CFG_OPTIONS: PyLibHeifOptions = PyLibHeifOptions()
