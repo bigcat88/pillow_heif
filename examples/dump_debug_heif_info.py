@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # from pathlib import Path
     # boxes_name = Path(file).stem + ".txt"
     # print(f"Saving debug boxes to {boxes_name}")
-    heif_file.debug_dump(boxes_name)  # noqa
+    # heif_file._debug_dump(boxes_name)  # noqa
     print("Number of images:", len(heif_file))
     print("Number of thumbnails:", len([i for i in heif_file.thumbnails_all()]))
     print("Information about each image:")
