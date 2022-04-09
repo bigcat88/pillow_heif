@@ -7,7 +7,7 @@ ARG INSTALL_CMD
 RUN $INSTALL_CMD
 
 RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install pytest piexif cffi pillow numpy pympler
+RUN python3 -m pip install pytest piexif cffi pillow
 RUN python3 -m pip install --no-deps --only-binary=:all: pillow_heif
 
 COPY . /pillow_heif
