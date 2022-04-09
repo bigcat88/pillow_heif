@@ -91,32 +91,6 @@ class ImageHash(object):
         return self.hash.size
 
 
-def hex_to_hash(hexstr):
-    """
-    Convert a stored hash (hex, as retrieved from str(Imagehash))
-    back to a Imagehash object.
-
-    Notes:
-    1. This algorithm assumes all hashes are either
-       bidimensional arrays with dimensions hash_size * hash_size,
-       or onedimensional arrays with dimensions binbits * 14.
-    2. This algorithm does not work for hash_size < 2.
-    """
-    hash_size = int(numpy.sqrt(len(hexstr) * 4))
-    # assert hash_size == numpy.sqrt(len(hexstr)*4)
-    binary_array = "{:0>{width}b}".format(int(hexstr, 16), width=hash_size * hash_size)
-    bit_rows = [binary_array[i : i + hash_size] for i in range(0, len(binary_array), hash_size)]
-    hash_array = numpy.array([[bool(int(d)) for d in row] for row in bit_rows])
-    return ImageHash(hash_array)
-
-
-def hex_to_flathash(hexstr, hashsize):
-    hash_size = int(len(hexstr) * 4 / (hashsize))
-    binary_array = "{:0>{width}b}".format(int(hexstr, 16), width=hash_size * hashsize)
-    hash_array = numpy.array([[bool(int(d)) for d in binary_array]])[-hash_size * hashsize :]
-    return ImageHash(hash_array)
-
-
 def average_hash(image, hash_size=8, mean=numpy.mean):
     """
     Average Hash computation
