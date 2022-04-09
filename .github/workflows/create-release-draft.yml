@@ -100,6 +100,10 @@ jobs:
         env:
           OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
 
+      - name: Only minimal testing on aarch64
+        if: matrix.cibw_arch == 'aarch64'
+        run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
+
       - uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-tools

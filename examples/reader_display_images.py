@@ -14,13 +14,11 @@ if __name__ == "__main__":
     # "images/hif/93FG5564.hif" - contains 1 image and two thumbnails for it.
     # "images/hif/93FG5559.hif" - contains 1 image and two thumbnails for it.
     # "images/nokia/collection/season_collection_1440x960.heic" - contains 4 images and 4 thumbnails.
-    image_path = Path("images/nokia/collection/season_collection_1440x960.heic")
-    pillow_heif.options().thumbnails = True
-    pillow_heif.options().thumbnails_autoload = True
+    image_path = Path("../converted/alpha_.heic")
     try:
         if not pillow_heif.is_supported(image_path):
             raise ValueError("Unsupported image.")
-        heif_image = pillow_heif.read_heif(image_path)
+        heif_image = pillow_heif.open_heif(image_path)
         print(f"number of images in file: {len(heif_image)}")
         for image in heif_image:
             for thumb in image.thumbnails:
@@ -32,7 +30,7 @@ if __name__ == "__main__":
                     thumb.mode,
                     thumb.stride,
                 )
-                thumbnail_img.show(title=f"Thumbnail {thumb.img_id}")
+                thumbnail_img.show(title=f"Thumbnail {thumb.info['thumb_id']}")
             _img = Image.frombytes(
                 image.mode,
                 image.size,
