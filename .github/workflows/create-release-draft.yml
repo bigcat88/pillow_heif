@@ -96,11 +96,13 @@ jobs:
 
       - name: musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux'
-        run: |
-          echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
-          echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
+        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
+
+      - name: Only minimal testing on aarch64
+        if: matrix.cibw_arch == 'aarch64'
+        run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
 
       - uses: actions/cache@v3
         with:
