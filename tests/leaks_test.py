@@ -9,6 +9,8 @@ from PIL import Image
 
 import pillow_heif
 
+pytest.importorskip("pympler", reason="`pympler` not installed")
+
 print(pillow_heif.libheif_info())
 
 chdir(path.join(path.dirname(path.dirname(path.abspath(__file__))), "tests"))
