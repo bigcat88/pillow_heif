@@ -1,9 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
-import numpy
+import pytest
 from PIL import Image, ImageFilter
 
 __version__ = "4.2.1"
+
+numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
 """
 You may copy this file, if you keep the copyright information below:
