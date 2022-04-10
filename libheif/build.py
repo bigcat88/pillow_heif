@@ -1,6 +1,7 @@
 from os import getenv, path
 from subprocess import DEVNULL, PIPE, run
 from sys import platform
+from warnings import warn
 
 from cffi import FFI
 
@@ -35,6 +36,9 @@ if platform.lower() == "darwin":
         include_path_prefix = "/opt/local"
 elif platform.lower() == "win32":
     include_path_prefix = getenv("VCPKG_PREFIX")
+    if include_path_prefix is None:
+        include_path_prefix = "C:\\vcpkg\\installed\\x64-windows"
+        warn(f"VCPKG_PREFIX environment variable is not set. Assuming `VCPKG_PREFIX={include_path_prefix}`")
 else:
     include_path_prefix = build_libs.build_libs_linux()
 
