@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1 - 2022-04-2x]
+
+### Added
+
+### Changed
+
+### Fixed
+
 ## [0.2.0 - 2022-04-09]
 
 ### Added

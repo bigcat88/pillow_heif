@@ -31,6 +31,3 @@ repos:
      -  id: mypy
         files: pillow_heif/
         additional_dependencies: [pillow, cffi, pytest]
-
-default_language_version:
-    python: python3.9
