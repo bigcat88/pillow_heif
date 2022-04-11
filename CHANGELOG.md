@@ -6,11 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- todo.
+- (Windows) Build script by default assumes that `libheif ` installed in `C:\vcpkg\installed\x64-windows`, if `VCPKG_PREFIX` environment is missing.
 
 ### Changed
 
 ### Fixed
+
+- (Heif) Raises `ValueError` when trying to save empty(no images) file.
+- (HeifImagePlugin) Skips images with sizes = `0` during save, if there is no images, raise `ValueError`.
+- Added licenses for libraries in binary wheels.
 
 ## [0.2.0 - 2022-04-09]
 

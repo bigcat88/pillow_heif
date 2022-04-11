@@ -6,7 +6,13 @@ import pytest
 from PIL import Image
 
 from pillow_heif import _options  # noqa
-from pillow_heif import HeifError, open_heif, options, register_heif_opener
+from pillow_heif import (
+    HeifError,
+    HeifSaveMask,
+    open_heif,
+    options,
+    register_heif_opener,
+)
 
 imagehash = pytest.importorskip("hashes_test", reason="NumPy not installed")
 
@@ -41,6 +47,15 @@ def test_scale():
     out_buffer = BytesIO()
     heic_file.save(out_buffer)
     compare_hashes([Path("images/pug_1_0.heic"), out_buffer], max_difference=1)
+
+
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+def test_save_empty():
+    heic_file = open_heif(Path("images/pug_1_0.heic"))
+    save_mask = heic_file.get_img_thumb_mask_for_save(HeifSaveMask.SAVE_NONE)
+    out_buffer = BytesIO()
+    with pytest.raises(ValueError):
+        heic_file.save(out_buffer, save_mask=save_mask)
 
 
 def test_no_encoder():

@@ -26,9 +26,9 @@ Notes:
 
 1. Building for first time will take a long time, if in your system `cmake` version `>=3.16.1` is not present.
 2. Arm7(32 bit):
-   * On Alpine you need install `aom-dev`.
+   * On Alpine need install `aom-dev`.
    * On Ubuntu(22.04+) you need install `libaom-dev`.
-   * On Ubuntu less then 22.04 you can compile it from source, but `AV1` codecs will be not avalaible.
+   * On Ubuntu less 22.04 you can compile it from source, but `AV1` codecs will be not available.
    * Encoder will not be available if you did not install `x265`. It is not build from source by default on armv7.
 
 ### MacOS

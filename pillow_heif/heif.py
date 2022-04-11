@@ -295,15 +295,16 @@ class HeifFile:
 
     def add_from_pillow(self, pil_image: Image, load_one=False):
         for frame in ImageSequence.Iterator(pil_image):
-            additional_info = {}
-            for k in ("exif", "icc_profile", "icc_profile_type", "nclx_profile", "metadata", "brand"):
-                if k in frame.info:
-                    additional_info[k] = frame.info[k]
-            if frame.mode == "P":
-                frame = frame.convert(mode="RGB")
-            # How here we can detect bit depth of Pillow image? pallete.rawmode or maybe something else?
-            __bit_depth = 8
-            self._add_frombytes(__bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
+            if frame.width > 0 and frame.height > 0:
+                additional_info = {}
+                for k in ("exif", "icc_profile", "icc_profile_type", "nclx_profile", "metadata", "brand"):
+                    if k in frame.info:
+                        additional_info[k] = frame.info[k]
+                if frame.mode == "P":
+                    frame = frame.convert(mode="RGB")
+                # How here we can detect bit-depth of Pillow image? pallete.rawmode or maybe something else?
+                __bit_depth = 8
+                self._add_frombytes(__bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
             if load_one:
                 break
         return self
@@ -359,7 +360,8 @@ class HeifFile:
         enc_params = kwargs.get("enc_params", [])
         _heif_write_ctx = LibHeifCtxWrite(fp)
         _encoder = self._get_encoder(_heif_write_ctx, quality, enc_params)
-        self._save(_heif_write_ctx, _encoder, _save_mask)
+        if not self._save(_heif_write_ctx, _encoder, _save_mask):
+            raise ValueError("Cannot write empty image as HEIF.")
         error = lib.heif_context_write(_heif_write_ctx.ctx, _heif_write_ctx.writer, _heif_write_ctx.cpointer)
         check_libheif_error(error)
         _heif_write_ctx.close()
@@ -393,9 +395,10 @@ class HeifFile:
     def __del__(self):
         self.close()
 
-    def _save(self, out_ctx: LibHeifCtxWrite, encoder, save_mask: list):
+    def _save(self, out_ctx: LibHeifCtxWrite, encoder, save_mask: list) -> int:
         encoding_options = lib.heif_encoding_options_alloc()
         encoding_options = ffi.gc(encoding_options, lib.heif_encoding_options_free)
+        saved_img_count = 0
         for i, img in enumerate(self):
             if not save_mask[i][0]:
                 continue
@@ -454,6 +457,7 @@ class HeifFile:
                         check_libheif_error(error)
                         if p_new_thumb_handle[0] != ffi.NULL:
                             lib.heif_image_handle_release(p_new_thumb_handle[0])
+        return saved_img_count
 
     @staticmethod
     def _get_encoder(heif_ctx, quality: int = None, enc_params: List[Tuple[str, str]] = None):

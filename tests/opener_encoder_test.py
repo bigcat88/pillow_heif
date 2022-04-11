@@ -88,6 +88,15 @@ def test_gif():
 
 
 @pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+@pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+def test_zero(size: tuple):
+    out_heif = BytesIO()
+    im = Image.new("RGB", size)
+    with pytest.raises(ValueError):
+        im.save(out_heif, format="HEIF")
+
+
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_alpha_channel():
     # saving heic to png
     heic_pillow = Image.open(Path("images/nokia/alpha_3_2.heic"))
