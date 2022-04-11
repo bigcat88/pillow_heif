@@ -39,9 +39,10 @@ pip3 install --no-binary pillow_heif
 ```
 
 ### Windows
+By default, build script assumes that `vcpkg` builds libs in `C:\vcpkg\installed\x64-windows`.
+If not, then set `VCPKG_PREFIX` environment variable to your custom path, e.g. `setx VCPKG_PREFIX "D:\vcpkg\installed\x64-windows"`
 ```bat
 vcpkg install aom libheif --triplet=x64-windows
-VCPKG_PREFIX="path_to:vcpkg/installed/x64-windows"
 pip3 install --no-binary pillow_heif
 ```
 
