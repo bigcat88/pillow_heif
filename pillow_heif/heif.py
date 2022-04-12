@@ -22,6 +22,7 @@ from .constants import (
 )
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, _get_chroma
+from .private import copy_image_data, get_stride, heif_ctx_as_dict
 
 
 class HeifImageBase:
@@ -49,9 +50,7 @@ class HeifImageBase:
             else:
                 _chroma = HeifChroma.INTERLEAVED_RRGGBBAA_BE if self.has_alpha else HeifChroma.INTERLEAVED_RRGGBB_BE
             _stride = heif_ctx.get("stride", None)
-            _img = _create_image(
-                self.size, HeifColorspace.RGB, _chroma, self.bit_depth, heif_ctx["mode"], heif_ctx["data"], _stride
-            )
+            _img = _create_image(self.size, _chroma, self.bit_depth, heif_ctx["mode"], heif_ctx["data"], stride=_stride)
             self._img_to_img_data_dict(_img, HeifColorspace.RGB, _chroma)
 
     @property
@@ -286,7 +285,7 @@ class HeifFile:
     def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
         __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
         __new_id = 2 + max(__ids)
-        __heif_ctx = self.__heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
+        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
         self._images.append(HeifImage(__new_id, len(self), __heif_ctx))
         return self
 
@@ -333,7 +332,6 @@ class HeifFile:
                         thumb.mode,
                         thumb.size,
                         thumb.data,
-                        img_index=len(self._images),
                         stride=thumb.stride,
                     )
                 )
@@ -404,43 +402,15 @@ class HeifFile:
                 continue
             saved_img_count += 1
             img.load()
-            # new_img = img.heif_img
             __bit_depth = 8 if getattr(img, "misc", {}).get("to_8bit", None) else img.bit_depth
-            new_img = _create_image(
-                img.size, HeifColorspace.RGB, img.chroma, __bit_depth, img.mode, img.data, img.stride
-            )
-            __icc_profile = img.info.get("icc_profile", None)
-            if __icc_profile is not None:
-                _prof_type = img.info.get("icc_profile_type", "prof").encode("ascii")
-                error = lib.heif_image_set_raw_color_profile(
-                    new_img, _prof_type, img.info["icc_profile"], len(img.info["icc_profile"])
-                )
-                check_libheif_error(error)
-            elif img.info.get("nclx_profile", None):
-                error = lib.heif_image_set_nclx_color_profile(
-                    new_img,
-                    ffi.cast("const struct heif_color_profile_nclx*", ffi.from_buffer(img.info["nclx_profile"])),
-                )
-                check_libheif_error(error)
+            new_img = _create_image(img.size, img.chroma, __bit_depth, img.mode, img.data, stride=img.stride)
+            _set_color_profile(new_img, img.info)
             p_new_img_handle = ffi.new("struct heif_image_handle **")
             error = lib.heif_context_encode_image(out_ctx.ctx, new_img, encoder, encoding_options, p_new_img_handle)
             check_libheif_error(error)
             new_img_handle = ffi.gc(p_new_img_handle[0], lib.heif_image_handle_release)
-            if img.info["exif"] is not None:
-                error = lib.heif_context_add_exif_metadata(
-                    out_ctx.ctx, new_img_handle, img.info["exif"], len(img.info["exif"])
-                )
-                check_libheif_error(error)
-            for metadata in img.info["metadata"]:
-                error = lib.heif_context_add_generic_metadata(
-                    out_ctx.ctx,
-                    new_img_handle,
-                    metadata["data"],
-                    len(metadata["data"]),
-                    metadata["metadata_type"],
-                    metadata["content_type"],
-                )
-                check_libheif_error(error)
+            _set_exif(out_ctx, new_img_handle, img.info)
+            _set_metadata(out_ctx, new_img_handle, img.info)
             thumbs_masks = save_mask[i][1]
             for thumb_box in thumbs_masks:
                 if thumb_box:
@@ -482,25 +452,12 @@ class HeifFile:
                 )
         return encoder
 
-    def __get_image_thumb_frombytes(self, bit_depth: int, mode: str, size: tuple, data, img_index: int, **kwargs):
+    def __get_image_thumb_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
         __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
         __new_id = 2 + max(__ids)
-        __heif_ctx = self.__heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
-        return HeifThumbnail(__heif_ctx, None, __new_id, img_index)
-
-    @staticmethod
-    def __heif_ctx_as_dict(bit_depth: int, mode: str, size: tuple, data, **kwargs) -> dict:
-        __factor = 1 if bit_depth == 8 else 2
-        __bytes_per_pix = 3 * __factor if mode == "RGB" else 4 * __factor
-        __stride = kwargs.get("stride", None)
-        return {
-            "bit_depth": bit_depth,
-            "mode": mode,
-            "size": size,
-            "data": data,
-            "stride": __stride if __stride else size[0] * __bytes_per_pix,
-            "additional_info": kwargs.get("add_info", {}),
-        }
+        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
+        __img_index = kwargs.get("img_index", len(self._images))
+        return HeifThumbnail(__heif_ctx, None, __new_id, __img_index)
 
     def _debug_dump(self, file_path="debug_boxes_dump.txt"):
         with builtins.open(file_path, "wb") as f:
@@ -637,12 +594,10 @@ def _read_thumbnails(heif_ctx: Union[LibHeifCtx, dict], img_handle, img_index: i
     return result
 
 
-def _create_image(
-    size: tuple, color: HeifColorspace, chroma: HeifChroma, bit_depth: int, mode: str, data, stride: int = None
-):
+def _create_image(size: tuple, chroma: HeifChroma, bit_depth: int, mode: str, data, **kwargs):
     width, height = size
     p_new_img = ffi.new("struct heif_image **")
-    error = lib.heif_image_create(width, height, color, chroma, p_new_img)
+    error = lib.heif_image_create(width, height, kwargs.get("color", HeifColorspace.RGB), chroma, p_new_img)
     check_libheif_error(error)
     new_img = ffi.gc(p_new_img[0], lib.heif_image_release)
     error = lib.heif_image_add_plane(new_img, HeifChannel.INTERLEAVED, width, height, bit_depth)
@@ -650,15 +605,43 @@ def _create_image(
     p_dest_stride = ffi.new("int *")
     p_data = lib.heif_image_get_plane(new_img, HeifChannel.INTERLEAVED, p_dest_stride)
     dest_stride = p_dest_stride[0]
-    p_source = ffi.from_buffer("uint8_t*", data)
-    __factor = 1 if bit_depth == 8 else 2
-    source_stride = stride if stride else width * 3 * __factor if mode == "RGB" else width * 4 * __factor
-    if dest_stride == source_stride:
-        ffi.memmove(p_data, data, len(data))
-    else:
-        for i in range(height):
-            ffi.memmove(p_data + dest_stride * i, p_source + source_stride * i, source_stride)
+    copy_image_data(p_data, data, dest_stride, get_stride(bit_depth, mode, width, **kwargs), height)
     return new_img
+
+
+def _set_color_profile(heif_img, info: dict) -> None:
+    __icc_profile = info.get("icc_profile", None)
+    if __icc_profile is not None:
+        _prof_type = info.get("icc_profile_type", "prof").encode("ascii")
+        error = lib.heif_image_set_raw_color_profile(
+            heif_img, _prof_type, info["icc_profile"], len(info["icc_profile"])
+        )
+        check_libheif_error(error)
+    elif info.get("nclx_profile", None):
+        error = lib.heif_image_set_nclx_color_profile(
+            heif_img,
+            ffi.cast("const struct heif_color_profile_nclx*", ffi.from_buffer(info["nclx_profile"])),
+        )
+        check_libheif_error(error)
+
+
+def _set_exif(ctx: LibHeifCtxWrite, heif_img_handle, info: dict) -> None:
+    if info["exif"] is not None:
+        error = lib.heif_context_add_exif_metadata(ctx.ctx, heif_img_handle, info["exif"], len(info["exif"]))
+        check_libheif_error(error)
+
+
+def _set_metadata(ctx: LibHeifCtxWrite, heif_img_handle, info: dict) -> None:
+    for metadata in info["metadata"]:
+        error = lib.heif_context_add_generic_metadata(
+            ctx.ctx,
+            heif_img_handle,
+            metadata["data"],
+            len(metadata["data"]),
+            metadata["metadata_type"],
+            metadata["content_type"],
+        )
+        check_libheif_error(error)
 
 
 # --------------------------------------------------------------------
