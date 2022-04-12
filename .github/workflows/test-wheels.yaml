@@ -33,6 +33,10 @@ jobs:
         ]
 
     steps:
+      - name: Delay, waiting Pypi to update.
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        run: sleep 30
+
       - uses: actions/checkout@v3
       - name: Set up QEMU
         if: matrix.i['arch'] == 'arm64'
@@ -73,6 +77,11 @@ jobs:
         python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
+      - name: Delay, waiting Pypi to update.
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        run: Start-Sleep -s 30
+        shell: powershell
+
       - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v3
@@ -85,7 +94,7 @@ jobs:
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Test wheel
-        run: cd .. && python3 -m pytest -s pillow_heif
+        run: cd .. && python3 -m pytest -rs pillow_heif
 
   macos-wheels:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
@@ -96,6 +105,10 @@ jobs:
         python-version: ["pypy-3.7", "pypy-3.8", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
+      - name: Delay, waiting Pypi to update.
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        run: sleep 30
+
       - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v3
@@ -109,7 +122,7 @@ jobs:
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Test wheel
-        run: cd .. && python3 -m pytest -s pillow_heif
+        run: cd .. && python3 -m pytest -rs pillow_heif
 
   manylinux-wheels:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
@@ -120,6 +133,10 @@ jobs:
         python-version: ["pypy-3.7", "pypy-3.8", "3.6", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
+      - name: Delay, waiting Pypi to update.
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        run: sleep 30
+
       - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v3
@@ -133,4 +150,4 @@ jobs:
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Test wheel
-        run: cd .. && python3 -m pytest -s pillow_heif
+        run: cd .. && python3 -m pytest -rs pillow_heif

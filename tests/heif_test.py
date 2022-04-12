@@ -52,9 +52,8 @@ def test_get_img_thumb_mask_for_save():
     heif_file = open_heif(Path("images/pug_2_2.heic"))
     mask = heif_file.get_img_thumb_mask_for_save(HeifSaveMask.SAVE_NONE)
     output = BytesIO()
-    heif_file.save(output, save_mask=mask, quality=10)
-    with pytest.raises(HeifError):
-        open_heif(output)
+    with pytest.raises(ValueError):
+        heif_file.save(output, save_mask=mask, quality=10)
     mask = heif_file.get_img_thumb_mask_for_save(HeifSaveMask.SAVE_ONE)
     output = BytesIO()
     heif_file.save(output, save_mask=mask, quality=10)

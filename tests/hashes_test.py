@@ -1,5 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
+from io import BytesIO
+from pathlib import Path
+
 import pytest
 from PIL import Image, ImageFilter
 
@@ -104,7 +107,7 @@ def average_hash(image, hash_size=8, mean=numpy.mean):
         raise ValueError("Hash size must be greater than or equal to 2")
 
     # reduce size and complexity, then covert to grayscale
-    image = image.convert("L").resize((hash_size, hash_size), Image.ANTIALIAS)
+    image = image.convert("L").resize((hash_size, hash_size), Image.Resampling.LANCZOS)
 
     # find average pixel value; 'pixels' is an array of the pixel values, ranging from 0 (black) to 255 (white)
     pixels = numpy.asarray(image)
@@ -130,7 +133,7 @@ def dhash(image, hash_size=8):
     if hash_size < 2:
         raise ValueError("Hash size must be greater than or equal to 2")
 
-    image = image.convert("L").resize((hash_size + 1, hash_size), Image.ANTIALIAS)
+    image = image.convert("L").resize((hash_size + 1, hash_size), Image.Resampling.LANCZOS)
     pixels = numpy.asarray(image)
     # compute differences between columns
     diff = pixels[:, 1:] > pixels[:, :-1]
@@ -148,7 +151,7 @@ def dhash_vertical(image, hash_size=8):
     @image must be a PIL instance.
     """
     # resize(w, h), but numpy.array((h, w))
-    image = image.convert("L").resize((hash_size, hash_size + 1), Image.ANTIALIAS)
+    image = image.convert("L").resize((hash_size, hash_size + 1), Image.Resampling.LANCZOS)
     pixels = numpy.asarray(image)
     # compute differences between rows
     diff = pixels[1:, :] > pixels[:-1, :]
@@ -403,7 +406,7 @@ def crop_resistant_hash(
 
     orig_image = image.copy()
     # Convert to gray scale and resize
-    image = image.convert("L").resize((segmentation_image_size, segmentation_image_size), Image.ANTIALIAS)
+    image = image.convert("L").resize((segmentation_image_size, segmentation_image_size), Image.Resampling.LANCZOS)
     # Add filters
     image = image.filter(ImageFilter.GaussianBlur()).filter(ImageFilter.MedianFilter())
     pixels = numpy.array(image).astype(numpy.float32)
@@ -440,3 +443,22 @@ def crop_resistant_hash(
         # bounding_box.show()
 
     return ImageMultiHash(hashes)
+
+
+def compare_hashes(pillow_images: list, hash_type="average", hash_size=16, max_difference=0):
+    image_hashes = []
+    for pillow_image in pillow_images:
+        if isinstance(pillow_image, (str, Path)):
+            pillow_image = Image.open(pillow_image)
+        elif isinstance(pillow_image, BytesIO):
+            pillow_image = Image.open(pillow_image)
+        if hash_type == "dhash":
+            image_hash = dhash(pillow_image, hash_size)
+        elif hash_type == "colorhash":
+            image_hash = colorhash(pillow_image, hash_size)
+        else:
+            image_hash = average_hash(pillow_image, hash_size)
+        for _ in range(len(image_hashes)):
+            distance = image_hash - image_hashes[_]
+            assert distance <= max_difference
+        image_hashes.append(image_hash)

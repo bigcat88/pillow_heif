@@ -212,7 +212,7 @@ def build_libs_linux():
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        if sys.maxsize > 2**32:  # Build x265 encoder only on 64 bit systems.
+        if sys.maxsize > 2**32:  # Build x265 encoder only on 64-bit systems.
             build_lib_linux(
                 "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                 "x265",

@@ -402,6 +402,7 @@ class HeifFile:
         for i, img in enumerate(self):
             if not save_mask[i][0]:
                 continue
+            saved_img_count += 1
             img.load()
             # new_img = img.heif_img
             __bit_depth = 8 if getattr(img, "misc", {}).get("to_8bit", None) else img.bit_depth

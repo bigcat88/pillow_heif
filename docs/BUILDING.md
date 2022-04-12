@@ -35,7 +35,7 @@ Notes:
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 brew install x265 libjpeg libde265 libheif
-pip3 install --no-binary pillow_heif
+pip3 install --no-binary=:all: pillow_heif
 ```
 
 ### Windows
@@ -43,7 +43,8 @@ By default, build script assumes that `vcpkg` builds libs in `C:\vcpkg\installed
 If not, then set `VCPKG_PREFIX` environment variable to your custom path, e.g. `setx VCPKG_PREFIX "D:\vcpkg\installed\x64-windows"`
 ```bat
 vcpkg install aom libheif --triplet=x64-windows
-pip3 install --no-binary pillow_heif
+pip3 install --no-binary=:all: pillow_heif
 ```
+After that copy `heif.dll`, `aom.dll`, `libde265.dll` and `libx265.dll` from `vcpkg\installed\x64-windows\bin` to site-packages root.
 
 Note: there is no support for 10/12 bit file formats for encoder now on Windows.
