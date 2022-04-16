@@ -60,7 +60,7 @@ def average_hash(image, hash_size=8, mean=numpy.mean):
         raise ValueError("Hash size must be greater than or equal to 2")
 
     # reduce size and complexity, then covert to grayscale
-    image = image.convert("L").resize((hash_size, hash_size), Image.Resampling.LANCZOS)
+    image = image.convert("L").resize((hash_size, hash_size), Image.ANTIALIAS)
 
     # find average pixel value; 'pixels' is an array of the pixel values, ranging from 0 (black) to 255 (white)
     pixels = numpy.asarray(image)
@@ -85,7 +85,7 @@ def dhash(image, hash_size=8):
     if hash_size < 2:
         raise ValueError("Hash size must be greater than or equal to 2")
 
-    image = image.convert("L").resize((hash_size + 1, hash_size), Image.Resampling.LANCZOS)
+    image = image.convert("L").resize((hash_size + 1, hash_size), Image.ANTIALIAS)
     pixels = numpy.asarray(image)
     # compute differences between columns
     diff = pixels[:, 1:] > pixels[:, :-1]
