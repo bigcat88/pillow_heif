@@ -12,9 +12,6 @@ if __name__ == "__main__":
     # Change directory to project root.
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
     pillow_heif.register_heif_opener()
-    # "images/hif/93FG5564.hif" - contains 1 image and two thumbnails for it.
-    # "images/hif/93FG5559.hif" - contains 1 image and two thumbnails for it.
-    # "images/nokia/collection/season_collection_1440x960.heic" - contains 4 images and 4 thumbnails.
     image_path = Path("images/pug_1_1.heic")
     try:
         img = Image.open(image_path)
