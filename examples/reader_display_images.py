@@ -11,10 +11,7 @@ import pillow_heif
 if __name__ == "__main__":
     # Change directory to project root.
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
-    # "images/hif/93FG5564.hif" - contains 1 image and two thumbnails for it.
-    # "images/hif/93FG5559.hif" - contains 1 image and two thumbnails for it.
-    # "images/nokia/collection/season_collection_1440x960.heic" - contains 4 images and 4 thumbnails.
-    image_path = Path("../converted/alpha_.heic")
+    image_path = Path("images/nokia/alpha.heic")
     try:
         if not pillow_heif.is_supported(image_path):
             raise ValueError("Unsupported image.")
