@@ -300,7 +300,8 @@ class HeifFile:
                 if k in frame.info:
                     additional_info[k] = frame.info[k]
             if frame.mode == "P":
-                frame = frame.convert(mode="RGB")
+                mode = 'RGBA' if frame.info.get('transparency') else 'RGB'
+                frame = frame.convert(mode=mode)
             # How here we can detect bit depth of Pillow image? pallete.rawmode or maybe something else?
             __bit_depth = 8
             self._add_frombytes(__bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})

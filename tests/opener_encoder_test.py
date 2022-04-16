@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from PIL import Image, ImageSequence
 
-from pillow_heif import options, register_heif_opener
+from pillow_heif import options, register_heif_opener, from_pillow
 
 imagehash = pytest.importorskip("hashes_test", reason="NumPy not installed")
 
@@ -102,3 +102,15 @@ def test_alpha_channel():
     heic_pillow = Image.open(out_heic)
     for i, frame in enumerate(ImageSequence.Iterator(png_pillow)):
         compare_hashes([ImageSequence.Iterator(heic_pillow)[i], frame])
+
+
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+def test_palette_with_bytes_tranparency():
+    png_pillow = Image.open(
+        Path("images/jpeg_gif_png/palette_with_bytes_transparency.png"))
+    heif_file = from_pillow(png_pillow)
+    out_heic = BytesIO()
+    heif_file.save(out_heic, format="HEIF", quality=90, save_all=True)
+    heic_pillow = Image.open(out_heic)
+    assert heic_pillow.heif_file.has_alpha is True
+    assert heic_pillow.mode == "RGBA"
