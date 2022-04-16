@@ -1,14 +1,16 @@
-from __future__ import absolute_import, division, print_function
-
+from gc import collect
 from io import BytesIO
 from pathlib import Path
 
 import pytest
-from PIL import Image, ImageFilter
+from PIL import Image
+
+from pillow_heif import open_heif, options, register_heif_opener
 
 __version__ = "4.2.1"
 
 numpy = pytest.importorskip("numpy", reason="NumPy not installed")
+register_heif_opener()
 
 """
 You may copy this file, if you keep the copyright information below:
@@ -45,55 +47,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 
-def _binary_array_to_hex(arr):
-    """
-    internal function to make a hex string out of a binary array.
-    """
-    bit_string = "".join(str(b) for b in 1 * arr.flatten())
-    width = int(numpy.ceil(len(bit_string) / 4))
-    return "{:0>{width}x}".format(int(bit_string, 2), width=width)
-
-
-class ImageHash(object):
-    """
-    Hash encapsulation. Can be used for dictionary keys and comparisons.
-    """
-
-    def __init__(self, binary_array):
-        self.hash = binary_array
-
-    def __str__(self):
-        return _binary_array_to_hex(self.hash.flatten())
-
-    def __repr__(self):
-        return repr(self.hash)
-
-    def __sub__(self, other):
-        if other is None:
-            raise TypeError("Other hash must not be None.")
-        if self.hash.size != other.hash.size:
-            raise TypeError("ImageHashes must be of the same shape.", self.hash.shape, other.hash.shape)
-        return numpy.count_nonzero(self.hash.flatten() != other.hash.flatten())
-
-    def __eq__(self, other):
-        if other is None:
-            return False
-        return numpy.array_equal(self.hash.flatten(), other.hash.flatten())
-
-    def __ne__(self, other):
-        if other is None:
-            return False
-        return not numpy.array_equal(self.hash.flatten(), other.hash.flatten())
-
-    def __hash__(self):
-        # this returns a 8 bit integer, intentionally shortening the information
-        return sum([2 ** (i % 8) for i, v in enumerate(self.hash.flatten()) if v])
-
-    def __len__(self):
-        # Returns the bit length of the hash
-        return self.hash.size
-
-
 def average_hash(image, hash_size=8, mean=numpy.mean):
     """
     Average Hash computation
@@ -115,8 +68,7 @@ def average_hash(image, hash_size=8, mean=numpy.mean):
 
     # create string of bits
     diff = pixels > avg
-    # make a hash
-    return ImageHash(diff)
+    return diff
 
 
 def dhash(image, hash_size=8):
@@ -137,25 +89,7 @@ def dhash(image, hash_size=8):
     pixels = numpy.asarray(image)
     # compute differences between columns
     diff = pixels[:, 1:] > pixels[:, :-1]
-    return ImageHash(diff)
-
-
-def dhash_vertical(image, hash_size=8):
-    """
-    Difference Hash computation.
-
-    following http://www.hackerfactor.com/blog/index.php?/archives/529-Kind-of-Like-That.html
-
-    computes differences vertically
-
-    @image must be a PIL instance.
-    """
-    # resize(w, h), but numpy.array((h, w))
-    image = image.convert("L").resize((hash_size, hash_size + 1), Image.Resampling.LANCZOS)
-    pixels = numpy.asarray(image)
-    # compute differences between rows
-    diff = pixels[1:, :] > pixels[:-1, :]
-    return ImageHash(diff)
+    return diff
 
 
 def colorhash(image, binbits=3):
@@ -208,249 +142,13 @@ def colorhash(image, binbits=3):
     bitarray = []
     for v in values:
         bitarray += [v // (2 ** (binbits - i - 1)) % 2 ** (binbits - i) > 0 for i in range(binbits)]
-    return ImageHash(numpy.asarray(bitarray).reshape((-1, binbits)))
-
-
-class ImageMultiHash(object):
-    """
-    This is an image hash containing a list of individual hashes for segments of the image.
-    The matching logic is implemented as described in Efficient Cropping-Resistant Robust Image Hashing
-    """
-
-    def __init__(self, hashes):
-        self.segment_hashes = hashes
-
-    def __eq__(self, other):
-        if other is None:
-            return False
-        return self.matches(other)
-
-    def __ne__(self, other):
-        return not self.matches(other)
-
-    def __sub__(self, other, hamming_cutoff=None, bit_error_rate=None):
-        matches, sum_distance = self.hash_diff(other, hamming_cutoff, bit_error_rate)
-        max_difference = len(self.segment_hashes)
-        if matches == 0:
-            return max_difference
-        max_distance = matches * len(self.segment_hashes[0])
-        tie_breaker = 0 - (float(sum_distance) / max_distance)
-        match_score = matches + tie_breaker
-        return max_difference - match_score
-
-    def __hash__(self):
-        return hash(tuple(hash(segment) for segment in self.segment_hashes))
-
-    def __str__(self):
-        return ",".join(str(x) for x in self.segment_hashes)
-
-    def __repr__(self):
-        return repr(self.segment_hashes)
-
-    def hash_diff(self, other_hash, hamming_cutoff=None, bit_error_rate=None):
-        """
-        Gets the difference between two multi-hashes, as a tuple. The first element of the tuple is the number of
-        matching segments, and the second element is the sum of the hamming distances of matching hashes.
-        NOTE: Do not order directly by this tuple, as higher is better for matches, and worse for hamming cutoff.
-        :param other_hash: The image multi hash to compare against
-        :param hamming_cutoff: The maximum hamming distance to a region hash in the target hash
-        :param bit_error_rate: Percentage of bits which can be incorrect, an alternative to the hamming cutoff. The
-        default of 0.25 means that the segment hashes can be up to 25% different
-        """
-        # Set default hamming cutoff if it's not set.
-        if hamming_cutoff is None and bit_error_rate is None:
-            bit_error_rate = 0.25
-        if hamming_cutoff is None:
-            hamming_cutoff = len(self.segment_hashes[0]) * bit_error_rate
-        # Get the hash distance for each region hash within cutoff
-        distances = []
-        for segment_hash in self.segment_hashes:
-            lowest_distance = min(segment_hash - other_segment_hash for other_segment_hash in other_hash.segment_hashes)
-            if lowest_distance > hamming_cutoff:
-                continue
-            distances.append(lowest_distance)
-        return len(distances), sum(distances)
-
-    def matches(self, other_hash, region_cutoff=1, hamming_cutoff=None, bit_error_rate=None):
-        """
-        Checks whether this hash matches another crop resistant hash, `other_hash`.
-        :param other_hash: The image multi hash to compare against
-        :param region_cutoff: The minimum number of regions which must have a matching hash
-        :param hamming_cutoff: The maximum hamming distance to a region hash in the target hash
-        :param bit_error_rate: Percentage of bits which can be incorrect, an alternative to the hamming cutoff. The
-        default of 0.25 means that the segment hashes can be up to 25% different
-        """
-        matches, _ = self.hash_diff(other_hash, hamming_cutoff, bit_error_rate)
-        return matches >= region_cutoff
-
-    def best_match(self, other_hashes, hamming_cutoff=None, bit_error_rate=None):
-        """
-        Returns the hash in a list which is the best match to the current hash
-        :param other_hashes: A list of image multi hashes to compare against
-        :param hamming_cutoff: The maximum hamming distance to a region hash in the target hash
-        :param bit_error_rate: Percentage of bits which can be incorrect, an alternative to the hamming cutoff.
-        Defaults to 0.25 if unset, which means the hash can be 25% different
-        """
-        return min(other_hashes, key=lambda other_hash: self.__sub__(other_hash, hamming_cutoff, bit_error_rate))
-
-
-def _find_region(remaining_pixels, segmented_pixels):
-    """
-    Finds a region and returns a set of pixel coordinates for it.
-    :param remaining_pixels: A numpy bool array, with True meaning the pixels are remaining to segment
-    :param segmented_pixels: A set of pixel coordinates which have already been assigned to segment. This will be
-    updated with the new pixels added to the returned segment.
-    """
-    in_region = set()
-    not_in_region = set()
-    # Find the first pixel in remaining_pixels with a value of True
-    available_pixels = numpy.transpose(numpy.nonzero(remaining_pixels))
-    start = tuple(available_pixels[0])
-    in_region.add(start)
-    new_pixels = in_region.copy()
-    while True:
-        try_next = set()
-        # Find surrounding pixels
-        for pixel in new_pixels:
-            x, y = pixel
-            neighbours = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
-            try_next.update(neighbours)
-        # Remove pixels we have already seen
-        try_next.difference_update(segmented_pixels, not_in_region)
-        # If there's no more pixels to try, the region is complete
-        if not try_next:
-            break
-        # Empty new pixels set, so we know whose neighbour's to check next time
-        new_pixels = set()
-        # Check new pixels
-        for pixel in try_next:
-            if remaining_pixels[pixel]:
-                in_region.add(pixel)
-                new_pixels.add(pixel)
-                segmented_pixels.add(pixel)
-            else:
-                not_in_region.add(pixel)
-    return in_region
-
-
-def _find_all_segments(pixels, segment_threshold, min_segment_size):
-    """
-    Finds all the regions within an image pixel array, and returns a list of the regions.
-
-    Note: Slightly different segmentations are produced when using pillow version 6 vs. >=7, due to a change in
-    rounding in the greyscale conversion.
-    :param pixels: A numpy array of the pixel brightnesses.
-    :param segment_threshold: The brightness threshold to use when differentiating between hills and valleys.
-    :param min_segment_size: The minimum number of pixels for a segment.
-    """
-    img_width, img_height = pixels.shape
-    # threshold pixels
-    threshold_pixels = pixels > segment_threshold
-    unassigned_pixels = numpy.full(pixels.shape, True, dtype=bool)
-
-    segments = []
-    already_segmented = set()
-
-    # Add all the pixels around the border outside the image:
-    already_segmented.update([(-1, z) for z in range(img_height)])
-    already_segmented.update([(z, -1) for z in range(img_width)])
-    already_segmented.update([(img_width, z) for z in range(img_height)])
-    already_segmented.update([(z, img_height) for z in range(img_width)])
-
-    # Find all the "hill" regions
-    while numpy.bitwise_and(threshold_pixels, unassigned_pixels).any():
-        remaining_pixels = numpy.bitwise_and(threshold_pixels, unassigned_pixels)
-        segment = _find_region(remaining_pixels, already_segmented)
-        # Apply segment
-        if len(segment) > min_segment_size:
-            segments.append(segment)
-        for pix in segment:
-            unassigned_pixels[pix] = False
-
-    # Invert the threshold matrix, and find "valleys"
-    threshold_pixels_i = numpy.invert(threshold_pixels)
-    while len(already_segmented) < img_width * img_height:
-        remaining_pixels = numpy.bitwise_and(threshold_pixels_i, unassigned_pixels)
-        segment = _find_region(remaining_pixels, already_segmented)
-        # Apply segment
-        if len(segment) > min_segment_size:
-            segments.append(segment)
-        for pix in segment:
-            unassigned_pixels[pix] = False
-
-    return segments
-
-
-def crop_resistant_hash(
-    image, hash_func=None, limit_segments=None, segment_threshold=128, min_segment_size=500, segmentation_image_size=300
-):
-    """
-    Creates a CropResistantHash object, by the algorithm described in the paper "Efficient Cropping-Resistant Robust
-    Image Hashing". DOI 10.1109/ARES.2014.85
-    This algorithm partitions the image into bright and dark segments, using a watershed-like algorithm, and then does
-    an image hash on each segment. This makes the image much more resistant to cropping than other algorithms, with
-    the paper claiming resistance to up to 50% cropping, while most other algorithms stop at about 5% cropping.
-
-    Note: Slightly different segmentations are produced when using pillow version 6 vs. >=7, due to a change in
-    rounding in the greyscale conversion. This leads to a slightly different result.
-    :param image: The image to hash
-    :param hash_func: The hashing function to use
-    :param limit_segments: If you have storage requirements, you can limit to hashing only the M largest segments
-    :param segment_threshold: Brightness threshold between hills and valleys. This should be static, putting it between
-    peak and trough dynamically breaks the matching
-    :param min_segment_size: Minimum number of pixels for a hashable segment
-    :param segmentation_image_size: Size which the image is resized to before segmentation
-    """
-    if hash_func is None:
-        hash_func = dhash
-
-    orig_image = image.copy()
-    # Convert to gray scale and resize
-    image = image.convert("L").resize((segmentation_image_size, segmentation_image_size), Image.Resampling.LANCZOS)
-    # Add filters
-    image = image.filter(ImageFilter.GaussianBlur()).filter(ImageFilter.MedianFilter())
-    pixels = numpy.array(image).astype(numpy.float32)
-
-    segments = _find_all_segments(pixels, segment_threshold, min_segment_size)
-
-    # If there are no segments, have 1 segment including the whole image
-    if not segments:
-        full_image_segment = {(0, 0), (segmentation_image_size - 1, segmentation_image_size - 1)}
-        segments.append(full_image_segment)
-
-    # If segment limit is set, discard the smaller segments
-    if limit_segments:
-        segments = sorted(segments, key=lambda s: len(s), reverse=True)[:limit_segments]
-
-    # Create bounding box for each segment
-    hashes = []
-    for segment in segments:
-        orig_w, orig_h = orig_image.size
-        scale_w = float(orig_w) / segmentation_image_size
-        scale_h = float(orig_h) / segmentation_image_size
-        min_y = min(coord[0] for coord in segment) * scale_h
-        min_x = min(coord[1] for coord in segment) * scale_w
-        max_y = (max(coord[0] for coord in segment) + 1) * scale_h
-        max_x = (max(coord[1] for coord in segment) + 1) * scale_w
-        # Compute robust hash for each bounding box
-        bounding_box = orig_image.crop((min_x, min_y, max_x, max_y))
-        hashes.append(hash_func(bounding_box))
-        # Show bounding box
-        # im_segment = image.copy()
-        # for pix in segment:
-        # 	im_segment.putpixel(pix[::-1], 255)
-        # im_segment.show()
-        # bounding_box.show()
-
-    return ImageMultiHash(hashes)
+    return numpy.asarray(bitarray).reshape((-1, binbits))
 
 
 def compare_hashes(pillow_images: list, hash_type="average", hash_size=16, max_difference=0):
     image_hashes = []
     for pillow_image in pillow_images:
-        if isinstance(pillow_image, (str, Path)):
-            pillow_image = Image.open(pillow_image)
-        elif isinstance(pillow_image, BytesIO):
+        if isinstance(pillow_image, (str, Path, BytesIO)):
             pillow_image = Image.open(pillow_image)
         if hash_type == "dhash":
             image_hash = dhash(pillow_image, hash_size)
@@ -458,7 +156,70 @@ def compare_hashes(pillow_images: list, hash_type="average", hash_size=16, max_d
             image_hash = colorhash(pillow_image, hash_size)
         else:
             image_hash = average_hash(pillow_image, hash_size)
+        image_hash = image_hash.flatten()
         for _ in range(len(image_hashes)):
-            distance = image_hash - image_hashes[_]
+            distance = numpy.count_nonzero(image_hash != image_hashes[_])
             assert distance <= max_difference
         image_hashes.append(image_hash)
+
+
+# TESTS STARTS HERE
+
+
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+def test_scale():
+    heic_file = open_heif(Path("images/pug_1_0.heic"))
+    heic_file.scale(640, 640)
+    out_buffer = BytesIO()
+    heic_file.save(out_buffer)
+    compare_hashes([Path("images/pug_1_0.heic"), out_buffer])
+
+
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+def test_add_from():
+    heif_file1 = open_heif(Path("images/pug_1_1.heic"))
+    heif_file2 = open_heif(Path("images/pug_2_3.heic"))
+    heif_file1.add_from_heif(heif_file2)
+    heif_file1.load(everything=True)
+    heif_file2.close(only_fp=True)
+    heif_file1.close(only_fp=True)
+    collect()
+    out_buf = BytesIO()
+    heif_file1.save(out_buf)
+    out_heif = open_heif(out_buf)
+    assert len([_ for _ in out_heif.thumbnails_all(one_for_image=True)]) == 3
+    assert len([_ for _ in out_heif.thumbnails_all()]) == 4
+    pillow_image = Image.open(out_buf)
+    compare_hashes([pillow_image, Path("images/pug_1_1.heic")])
+    pillow_image.seek(1)
+    compare_hashes([pillow_image, Path("images/pug_2_3.heic")])
+    pillow_image.seek(2)
+    _ = Image.open(Path("images/pug_2_3.heic"))
+    _.seek(1)
+    compare_hashes([pillow_image, _])
+    out_heif.close()
+    heif_file1.close()
+    heif_file2.close()
+
+
+# @pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+# @pytest.mark.parametrize(
+#     "image_path",
+#     (
+#         "images/rgba10bit.avif",
+#         "images/rgba10bit.heif",
+#         "images/mono10bit.avif",
+#         "images/mono10bit.heif",
+#         "images/cat.hif",
+#         "images/10bit.heic",
+#     ),
+# )
+# def test_10bit_to8(image_path):
+#     heif_image_10bit = open_heif(Path(image_path), convert_hdr_to_8bit=False)
+#     heif_image_10bit_2 = HeifFile({}).add_from_heif(heif_image_10bit)
+#     heif_image_8bit_saved = BytesIO()
+#     heif_image_10bit.save(heif_image_10bit_saved)
+#     pillow_image = heif_image[0].to_pillow(ignore_thumbnails=True)
+#     pillow_image.save("test.jpg")
+#     # compare_hashes([pillow_image, Path("images/cat.hif")])
+#     # image_8bit = Image.open(Path(image_path))

@@ -21,16 +21,8 @@ if __name__ == "__main__":
         img.load()
         for i, frame in enumerate(ImageSequence.Iterator(img)):
             # `img.info["thumbnails"]` can be changed in future versions.
-            # Probably soon will be introduced a new method instead of `Image.frombytes` for thumbnails.
             for thumb in img.info["thumbnails"]:
-                thumb_img = Image.frombytes(
-                    thumb.mode,
-                    thumb.size,
-                    thumb.data,
-                    "raw",
-                    thumb.mode,
-                    thumb.stride,
-                )
+                thumb_img = thumb.to_pillow()
                 thumb_img.show(title=f"Img={i} Thumbnail={thumb.info['thumb_id']}")
             img.show(title=f"Image index={i}")
     except Exception as e:

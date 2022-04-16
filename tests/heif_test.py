@@ -1,9 +1,9 @@
 import builtins
 import os
 from gc import collect
-from io import SEEK_END, BytesIO
+from io import BytesIO
 from pathlib import Path
-from sys import platform
+from typing import Union
 from warnings import warn
 
 import pytest
@@ -15,7 +15,6 @@ from pillow_heif import (
     HeifErrorCode,
     HeifFile,
     HeifImage,
-    HeifSaveMask,
     open_heif,
     options,
     register_heif_opener,
@@ -32,7 +31,41 @@ if not options().avif:
     warn("Skipping tests for `AV1` format due to lack of codecs.")
     avif_images.clear()
 
-images_dataset = heic_images + avif_images + heif_images
+full_dataset = heic_images + avif_images + heif_images
+minimal_dataset = [
+    Path("images/pug_1_0.heic"),
+    Path("images/pug_2_1.heic"),
+    Path("images/invalid_id.heic"),
+    Path("images/pug_2_3.heic"),
+    Path("images/nokia/alpha.heic"),
+]
+
+
+def compare_heif_files_fields(
+    heif1: Union[HeifFile, HeifImage], heif2: Union[HeifFile, HeifImage], ignore=None, thumb_max_differ=0
+):
+    def compare_images_fields(image1: HeifImage, image2: HeifImage):
+        assert image1.size == image2.size
+        assert image1.mode == image2.mode
+        assert image1.bit_depth == image2.bit_depth
+        assert image1.stride == image2.stride
+        if ignore is not None and "len" not in ignore:
+            assert len(image1.data) == len(image2.data)
+        for i_thumb, thumbnail in enumerate(image1.thumbnails):
+            with_difference = thumbnail.size[0] - image2.thumbnails[i_thumb].size[0]
+            height_difference = thumbnail.size[1] - image2.thumbnails[i_thumb].size[1]
+            assert with_difference + height_difference <= thumb_max_differ
+            assert thumbnail.mode == image2.thumbnails[i_thumb].mode
+            assert thumbnail.bit_depth == image2.thumbnails[i_thumb].bit_depth
+            assert thumbnail.stride == image2.thumbnails[i_thumb].stride
+            if ignore is not None and "len" not in ignore:
+                assert len(thumbnail.data) == len(image2.thumbnails[i_thumb].data)
+
+    if isinstance(heif1, HeifFile):
+        for i, image in enumerate(heif1):
+            compare_images_fields(image, heif2[i])
+    else:
+        compare_images_fields(heif1, heif2)
 
 
 @pytest.mark.parametrize("img_path", list(Path().glob("images/invalid/*")))
@@ -47,63 +80,7 @@ def test_corrupted_open(img_path):
             assert str(exception).find("Invalid input") != -1
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
-def test_get_img_thumb_mask_for_save():
-    heif_file = open_heif(Path("images/pug_2_2.heic"))
-    mask = heif_file.get_img_thumb_mask_for_save(HeifSaveMask.SAVE_NONE)
-    output = BytesIO()
-    with pytest.raises(ValueError):
-        heif_file.save(output, save_mask=mask, quality=10)
-    mask = heif_file.get_img_thumb_mask_for_save(HeifSaveMask.SAVE_ONE)
-    output = BytesIO()
-    heif_file.save(output, save_mask=mask, quality=10)
-    new_heif = open_heif(output)
-    assert len(new_heif) == 1
-    assert len(new_heif[0].thumbnails) == 0
-    mask = heif_file.get_img_thumb_mask_for_save(HeifSaveMask.SAVE_ALL)
-    output = BytesIO()
-    heif_file.save(output, save_mask=mask, quality=10)
-    new_heif = open_heif(output)
-    assert len(new_heif) == 2
-    assert len(new_heif[1].thumbnails) == 1
-    mask = heif_file.get_img_thumb_mask_for_save(HeifSaveMask.SAVE_ALL, thumb_box=-1)
-    output = BytesIO()
-    heif_file.save(output, save_mask=mask, quality=10)
-    new_heif = open_heif(output)
-    assert len(new_heif) == 2
-    assert len(new_heif[1].thumbnails) == 0
-    mask = heif_file.get_img_thumb_mask_for_save(HeifSaveMask.SAVE_ALL, thumb_box=128)
-    output = BytesIO()
-    heif_file.save(output, save_mask=mask, quality=10)
-    new_heif = open_heif(output)
-    assert len(new_heif) == 2
-    assert len(new_heif[1].thumbnails) == 1
-
-
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
-@pytest.mark.parametrize(
-    "thumbs,expected",
-    (
-        ([-1], 1),
-        ([0], 1),
-        ([1], 1),
-        ([256], 1),
-        ([128], 2),
-        ([128, 0], 2),
-        ([0, 128], 2),
-        ([128, 400], 3),
-    ),
-)
-def test_add_thumbs_to_mask(thumbs, expected):
-    heif_file = open_heif(Path("images/pug_1_1.heic"))
-    mask = heif_file.get_img_thumb_mask_for_save(HeifSaveMask.SAVE_ALL)
-    output = BytesIO()
-    heif_file.add_thumbs_to_mask(mask, thumbs)
-    heif_file.save(output, save_mask=mask, quality=10)
-    assert len(open_heif(output)[0].thumbnails) == expected
-
-
-def test_image_index():
+def test_index():
     heif_file = open_heif(Path("images/pug_2_2.heic"))
     with pytest.raises(IndexError):
         heif_file[-1].load()
@@ -111,151 +88,46 @@ def test_image_index():
         heif_file[len(heif_file)].load()
     assert heif_file[0].info["main"]
     assert not heif_file[len(heif_file) - 1].info["main"]
+    with pytest.raises(IndexError):
+        heif_file[0].thumbnails[-1].load()
+    with pytest.raises(IndexError):
+        heif_file[0].thumbnails[len(heif_file[0].thumbnails)].load()
+    with pytest.raises(IndexError):
+        del heif_file[-1]
+    with pytest.raises(IndexError):
+        del heif_file[2]
     heif_file.close()
 
 
-@pytest.mark.parametrize("img_path", avif_images[:4] + heic_images[:4])
-def test_inputs(img_path):
-    with builtins.open(img_path, "rb") as f:
-        d = f.read()
-        for heif_file in (open_heif(f), open_heif(d), open_heif(bytearray(d)), open_heif(BytesIO(d))):
-            assert heif_file.size[0] > 0
-            assert heif_file.size[1] > 0
-            assert heif_file.info
-            assert len(heif_file.data) > 0
-            heif_file.load(everything=True)
-            heif_file.close(only_fp=True)
-            heif_file.close(only_fp=True)
-            collect()
-            for thumb in heif_file.thumbnails_all():
-                assert len(thumb.data) > 0
-                thumb.close()
-                assert not thumb.data
-            heif_file.close()
-            assert getattr(heif_file, "_heif_ctx") is None
-            assert not heif_file.data
-            for thumb in heif_file.thumbnails_all():
-                assert not thumb.data
-            heif_file.close()
-        f.seek(0)
+def test_etc():
+    heif_file = open_heif(Path("images/pug_2_2.heic"))
+    heif_file.load(everything=False)
+    assert getattr(heif_file[0], "_img_data")
+    assert not getattr(heif_file[1], "_img_data")
+    assert heif_file.size == heif_file[0].size
+    assert heif_file.mode == heif_file[0].mode
+    assert len(heif_file.data) == len(heif_file[0].data)
+    assert heif_file.stride == heif_file[0].stride
+    assert heif_file.chroma == heif_file[0].chroma
+    assert heif_file.color == heif_file[0].color
+    assert heif_file.has_alpha == heif_file[0].has_alpha
+    assert heif_file.bit_depth == heif_file[0].bit_depth
 
 
-@pytest.mark.parametrize("img_path", avif_images[:4] + heic_images[:4])
-def test_inputs_collect(img_path):
-    with builtins.open(img_path, "rb") as f:
-        d = f.read()
-        for heif_file in (open_heif(f), open_heif(d), open_heif(BytesIO(d))):
-            heif_file.load(everything=True)
-            heif_file.close(only_fp=True)
-            heif_file.unload()
-            collect()
-            with pytest.raises(HeifError):
-                assert heif_file.data
-            heif_file.close()
-        f.seek(0)
-
-
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
-def test_outputs():
-    with builtins.open(Path("images/pug_1_1.heic"), "rb") as f:
-        output = BytesIO()
-        open_heif(f).save(output, quality=10)
-        assert output.seek(0, SEEK_END) > 0
-        with builtins.open(Path("tmp.heic"), "wb") as output:
-            open_heif(f).save(output, quality=10)
-            assert output.seek(0, SEEK_END) > 0
-        open_heif(f).save(Path("tmp.heic"), quality=10)
-        assert Path("tmp.heic").stat().st_size > 0
-        Path("tmp.heic").unlink()
-        with pytest.raises(TypeError):
-            open_heif(f).save(bytes(b"1234567890"), quality=10)
-
-
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
-def test_thumbnails():
+def test_thumb_one_for_image():
+    heif_file = open_heif(Path("images/pug_2_1.heic"))
+    assert len([_ for _ in heif_file.thumbnails_all(one_for_image=True)]) == 1
+    assert len([_ for _ in heif_file.thumbnails_all(one_for_image=False)]) == 1
     heif_file = open_heif(Path("images/pug_2_3.heic"))
     assert len([_ for _ in heif_file.thumbnails_all(one_for_image=True)]) == 2
-    assert len([_ for _ in heif_file.thumbnails_all()]) == 3
-    heif_file.load(everything=True)
-    heif_file_to_add = open_heif(Path("images/pug_1_1.heic"))
-    heif_file.add_from_heif(heif_file_to_add)
-    heif_file.close(only_fp=True)
-    collect()
-    out_buf = BytesIO()
-    heif_file.save(out_buf)
-    out_heif = open_heif(out_buf)
-    assert len([_ for _ in out_heif.thumbnails_all(one_for_image=True)]) == 3
-    assert len([_ for _ in out_heif.thumbnails_all()]) == 4
-    out_heif.close()
-    heif_file.close()
-
-
-def test_add_from_heif():
-    def check_equality():
-        assert len(heif_file) == 4
-        assert len([_ for _ in heif_file.thumbnails_all()]) == 6
-        assert heif_file[0].size == heif_file[1].size
-        assert heif_file[0].mode == heif_file[1].mode
-        assert heif_file[0].stride == heif_file[1].stride
-        assert len(heif_file[0].data) == len(heif_file[1].data)
-        assert heif_file[2].size == heif_file[3].size
-        assert heif_file[2].mode == heif_file[3].mode
-        assert heif_file[2].stride == heif_file[3].stride
-        assert len(heif_file[2].data) == len(heif_file[3].data)
-
-    heif_file = open_heif(Path("images/pug_1_1.heic"))
-    heif_file.add_from_heif(heif_file)
-    assert len(heif_file) == 2
-    assert len([_ for _ in heif_file.thumbnails_all()]) == 2
-    heif_file_to_add = open_heif(Path("images/pug_1_2.heic"))
-    heif_file.add_from_heif(heif_file_to_add)
-    heif_file.add_from_heif(heif_file_to_add[0])
-    check_equality()
-    if options().hevc_enc:
-        out_buf = BytesIO()
-        heif_file.save(out_buf, quality=10, enc_params=[("x265:ctu", "32")])
-        heif_file.close()
-        heif_file_to_add.close()
-        heif_file = open_heif(out_buf)
-        assert len(heif_file) == 4
-        assert len([_ for _ in heif_file.thumbnails_all()]) == 6
-        heif_file.load(everything=True)
-        check_equality()
-
-
-@pytest.mark.skipif(platform.lower() == "win32", reason="No 10/12 bit encoder for Windows.")
-def test_add_from_heif_10bit():
-    def check_equality():
-        assert len(heif_file) == 4
-        assert heif_file[0].size == heif_file[1].size
-        assert heif_file[0].mode == heif_file[1].mode
-        assert heif_file[0].stride == heif_file[1].stride
-        assert len(heif_file[0].data) == len(heif_file[1].data)
-        assert heif_file[2].size == heif_file[3].size
-        assert heif_file[2].mode == heif_file[3].mode
-        assert heif_file[2].stride == heif_file[3].stride
-        assert len(heif_file[2].data) == len(heif_file[3].data)
-
-    heif_file = open_heif(Path("images/mono10bit.heif"), convert_hdr_to_8bit=False)
-    heif_file.add_from_heif(heif_file)
-    assert len(heif_file) == 2
-    heif_file_to_add = open_heif(Path("images/rgba10bit.heif"), convert_hdr_to_8bit=False)
-    heif_file.add_from_heif(heif_file_to_add)
-    heif_file.add_from_heif(heif_file_to_add[0])
-    check_equality()
-    out_buf = BytesIO()
-    if options().hevc_enc:
-        heif_file.save(out_buf, enc_params=[("x265:ctu", "32")])
-        heif_file.close()
-        heif_file_to_add.close()
-        heif_file = open_heif(out_buf, convert_hdr_to_8bit=False)
-        assert len(heif_file) == 4
-        heif_file.load(everything=True)
-        check_equality()
+    assert len([_ for _ in heif_file.thumbnails_all(one_for_image=False)]) == 3
 
 
 def test_collect():
     heif_file = open_heif(Path("images/pug_2_1.heic"))
+    second_heif = HeifFile({})
+    second_heif.add_from_heif(heif_file)
+    heif_file = second_heif
     collect()
     heif_file.load(everything=True)
     heif_file.unload(everything=True)
@@ -263,10 +135,6 @@ def test_collect():
     heif_file.load(everything=True)
     heif_file.close(only_fp=True)
     collect()
-    if options().hevc_enc:
-        new_heif_image = BytesIO()
-        heif_file.save(new_heif_image, quality=10)
-        assert isinstance(open_heif(new_heif_image), HeifFile)
     for image in heif_file:
         data = image.data  # noqa
         for thumbnail in image.thumbnails:
@@ -286,18 +154,80 @@ def test_collect():
     heif_file.close()
 
 
-@pytest.mark.parametrize("image_path", images_dataset)
+@pytest.mark.parametrize("img_path", minimal_dataset)
+def test_inputs(img_path):
+    with builtins.open(img_path, "rb") as f:
+        b = f.read()
+        non_exclusive = [open_heif(BytesIO(b)), open_heif(f)]
+        exclusive = [open_heif(img_path), open_heif(b)]
+        for heif_file in [*non_exclusive, *exclusive]:
+            assert min(heif_file.size) > 0
+            assert heif_file.info
+            assert getattr(heif_file, "_heif_ctx") is not None
+            collect()
+            # This will load all data
+            for image in heif_file:
+                assert len(image.data) > 0
+                for thumbnail in image.thumbnails:
+                    assert len(thumbnail.data) > 0
+            # Check if unloading data works. `unload` method is for private use, it must not be called in apps code.
+            heif_file.unload(everything=True)
+            collect()
+            for image in heif_file:
+                assert not getattr(image, "_img_data")
+                for thumbnail in image.thumbnails:
+                    assert not getattr(thumbnail, "_img_data")
+            # After `unload` with if `fp` is present, it will read and load images again.
+            for image in heif_file:
+                assert len(image.data) > 0
+                for thumbnail in image.thumbnails:
+                    assert len(thumbnail.data) > 0
+            heif_file.close(only_fp=True)
+            collect()
+            assert getattr(heif_file, "_heif_ctx") is not None
+            # `fp` must be closed here.
+            assert getattr(heif_file._heif_ctx, "fp") is None
+            assert getattr(heif_file._heif_ctx, "_fp_close_after") == bool(heif_file in exclusive)
+            # Create new heif_file
+            second_heif = HeifFile({})
+            second_heif.add_from_heif(heif_file)
+            # This must do nothing, cause there is no `fp` in new heif file.
+            second_heif.close(only_fp=True)
+            collect()
+            compare_heif_files_fields(second_heif, heif_file)
+            heif_file.unload()
+            collect()
+            # After `unload` with `fp`=None, must be an exception accessing `data`
+            with pytest.raises(HeifError):
+                data = heif_file.data  # noqa
+            heif_file.close()
+            collect()
+            # Closing original heif file, must not affect newly created.
+            for image in second_heif:
+                assert len(image.data) > 0
+                for thumbnail in image.thumbnails:
+                    assert len(thumbnail.data) > 0
+            collect()
+            # Create heif_file from already created and compare.
+            heif_file = HeifFile({})
+            heif_file.add_from_heif(second_heif)
+            collect()
+            compare_heif_files_fields(second_heif, heif_file)
+            heif_file.close()
+            second_heif.close()
+
+
+@pytest.mark.parametrize("image_path", full_dataset)
 def test_all(image_path):
     heif_file = open_heif(image_path)
     for c, image in enumerate(heif_file):
         image.misc["to_8bit"] = True
-        pass_count = 2 if heif_file.bit_depth > 8 and platform.lower() != "win32" else 1
+        pass_count = 2 if heif_file.bit_depth > 8 else 1
         for i in range(pass_count):
             if i == 1:
                 image.misc["to_8bit"] = False
                 image.unload()
             assert min(image.size) > 0
-            assert image.size[1] > 0
             assert image.mode == "RGBA" if image.has_alpha else "RGB"
             assert image.bit_depth >= 8
             assert image.chroma == HeifChroma.UNDEFINED
@@ -309,26 +239,10 @@ def test_all(image_path):
             assert image.stride >= minimal_stride
             assert len(image.data) == image.stride * image.size[1]
             assert image.chroma != HeifChroma.UNDEFINED
-            assert image.color == HeifColorspace.RGB
+            assert image.color != HeifColorspace.UNDEFINED
             assert isinstance(image.load(), HeifImage)
-
-            if not options().hevc_enc:
-                continue
-            save_mask = heif_file.get_img_thumb_mask_for_save(mask=HeifSaveMask.SAVE_NONE)
-            save_mask[c][0] = True
-            new_heif_image = BytesIO()
-            heif_file.save(new_heif_image, quality=10, save_mask=save_mask)
-            new_heif_file = open_heif(new_heif_image, convert_hdr_to_8bit=image.misc["to_8bit"])
-            assert new_heif_file.mode == image.mode
-            assert new_heif_file.bit_depth == 8 if image.misc["to_8bit"] else image.bit_depth
-            assert isinstance(new_heif_file.load(), HeifFile)
-            assert new_heif_file.has_alpha == image.has_alpha
-            assert new_heif_file.chroma == image.chroma
-            assert new_heif_file.color == image.color
-            assert new_heif_file.size[0] == image.size[0]
-            assert new_heif_file.size[1] == image.size[1]
-            minimal_stride = new_heif_file.size[0] * 4 if new_heif_file.has_alpha else new_heif_file.size[0] * 3
-            if new_heif_file.bit_depth > 8 and not new_heif_file[0].misc["to_8bit"]:
-                minimal_stride *= 2
-            assert new_heif_file.stride >= minimal_stride
-            new_heif_file.close()
+    heif_file.close()
+    assert getattr(heif_file, "_heif_ctx") is None
+    collect()
+    # Here will be no exception, heif_file is in `closed` state without `_heif_ctx` and will not try to load anything.
+    assert heif_file.data is None

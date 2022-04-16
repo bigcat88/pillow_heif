@@ -25,7 +25,6 @@ from .constants import (
     HeifCompressionFormat,
     HeifErrorCode,
     HeifFiletype,
-    HeifSaveMask,
 )
 from .error import HeifError
 

@@ -2,19 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.1 - 2022-04-2x]
+## [0.2.1 - 2022-04-18]
 
 ### Added
 
 - (Windows) Build script by default assumes that `libheif ` installed in `C:\vcpkg\installed\x64-windows`, if `VCPKG_PREFIX` environment is missing.
+- (Heif) `reader_add_thumbnail` and `reader_remove_image` examples.
+- (Heif) `to_pillow` method and adjusted examples to use it.
 
 ### Changed
 
+- (Heif) Removed `HeifSaveMask`, `get_img_thumb_mask_for_save` that was previously introduced, instead added `__delitem__` to `HeifFile`.
+- All thumbnails encoding features reworked, to simplify api. See `add_thumbnails` methods in `HeifFile` and `HeifImage` classes.
+
 ### Fixed
 
+- (HeifImagePlugin) Fixed palette images with bytes transparency conversion. #21 (@Jarikf)
 - (Heif) Raises `ValueError` when trying to save empty(no images) file.
 - (HeifImagePlugin) Skips images with sizes = `0` during save, if there is no images, raise `ValueError`.
+- (HeifImagePlugin) Memory optimizations, when there is only one image in file.
 - Added licenses for libraries in binary wheels.
+- (Windows) Fix docs for building and developing.
+- (Heif) `add_from_pillow` method, now adds thumbnails from Pillow if it is `HeifImageFile(ImageFile.ImageFile)` class.
 
 ## [0.2.0 - 2022-04-09]
 

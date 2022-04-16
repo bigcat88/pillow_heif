@@ -67,7 +67,7 @@ def _get_bytes(fp, length=None) -> bytes:
     return bytes(fp)[:length]
 
 
-def _get_chroma(hdr_to_8bit: bool, bit_depth: int, has_alpha: bool) -> HeifChroma:
+def _get_chroma(bit_depth: int, has_alpha: bool, hdr_to_8bit: bool = False) -> HeifChroma:
     if hdr_to_8bit or bit_depth <= 8:
         chroma = HeifChroma.INTERLEAVED_RGBA if has_alpha else HeifChroma.INTERLEAVED_RGB
     else:
