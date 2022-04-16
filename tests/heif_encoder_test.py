@@ -160,7 +160,7 @@ def test_10_bit():
     compare_heif_files_fields(heif_file[0], heif_file[1])
     compare_heif_files_fields(heif_file[2], heif_file[3])
     assert heif_file[0].bit_depth == 10
-    assert heif_file[0].mode == "RGB"
+    assert heif_file[0].mode == "RGBA"
     assert heif_file[2].bit_depth == 10
     assert heif_file[2].mode == "RGBA"
 
