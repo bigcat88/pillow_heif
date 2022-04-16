@@ -186,9 +186,9 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         else:
             configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
             if name == "libde265":
-                configure_args += "--disable-sherlock265".split()
+                configure_args += "--disable-sherlock265 --disable-dec265".split()
             elif name == "libheif":
-                configure_args += "--disable-examples".split()
+                configure_args += "--disable-examples --disable-go".split()
             run(["./configure"] + configure_args, check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
@@ -212,7 +212,7 @@ def build_libs_linux():
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        if sys.maxsize > 2**32:  # Build x265 encoder only on 64 bit systems.
+        if sys.maxsize > 2**32:  # Build x265 encoder only on 64-bit systems.
             build_lib_linux(
                 "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                 "x265",

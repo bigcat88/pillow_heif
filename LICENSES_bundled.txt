@@ -1,0 +1,25 @@
+The pillow-heif wheels bundle several libraries that are compatible licensed. Here they are listed.
+
+Name: libheif
+License: LGPLv3
+Files: heif.dll or libheif.[dylib|so]
+  For details, see https://github.com/strukturag/libheif/blob/64d9ab99ce7ea8876700c034b19bbc8dd773ae0b/COPYING
+  Source code: https://github.com/strukturag/libheif/blob/64d9ab99ce7ea8876700c034b19bbc8dd773ae0b
+
+Name: libde265
+License: LGPLv3
+Files: libde265.[dylib|so|dll]
+  For details, see https://github.com/strukturag/libde265/blob/e587ef6e8000662b91c35ccb866c2374d3a40e27/COPYING
+  Source code: https://github.com/strukturag/libde265/blob/e587ef6e8000662b91c35ccb866c2374d3a40e27
+
+Name: x265
+License: GPLv2
+Files: libx265.[dylib|pyd|so]
+  For details, see https://bitbucket.org/multicoreware/x265_git/src/Release_3.4/COPYING
+  Source code: https://bitbucket.org/multicoreware/x265_git/src/Release_3.4
+
+Name: libaom
+License: BSD 3-Clause
+Files: aom.dll or libaom.[dylib|so]
+  For details, see https://aomedia.googlesource.com/aom/+/refs/tags/v3.3.0/LICENSE
+  Source code: https://aomedia.googlesource.com/aom/+/refs/tags/v3.3.0
