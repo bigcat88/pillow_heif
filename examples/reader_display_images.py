@@ -3,8 +3,6 @@ import sys
 import traceback
 from pathlib import Path
 
-from PIL import Image
-
 import pillow_heif
 
 # This demo displays all thumbnails and all images.
@@ -19,23 +17,9 @@ if __name__ == "__main__":
         print(f"number of images in file: {len(heif_image)}")
         for image in heif_image:
             for thumb in image.thumbnails:
-                thumbnail_img = Image.frombytes(
-                    thumb.mode,
-                    thumb.size,
-                    thumb.data,
-                    "raw",
-                    thumb.mode,
-                    thumb.stride,
-                )
+                thumbnail_img = thumb.to_pillow()
                 thumbnail_img.show(title=f"Thumbnail {thumb.info['thumb_id']}")
-            _img = Image.frombytes(
-                image.mode,
-                image.size,
-                image.data,
-                "raw",
-                image.mode,
-                image.stride,
-            )
+            _img = image.to_pillow()
             _img.show(title=f"Image {image.info['img_id']}")
     except Exception as e:
         print(f"{repr(e)} during processing {image_path.as_posix()}", file=sys.stderr)
