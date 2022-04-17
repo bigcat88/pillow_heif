@@ -153,7 +153,7 @@ def compare_hashes(pillow_images: list, hash_type="average", hash_size=16, max_d
         if hash_type == "dhash":
             image_hash = dhash(pillow_image, hash_size)
         elif hash_type == "colorhash":
-            image_hash = colorhash(pillow_image, hash_size)
+            image_hash = colorhash(pillow_image)
         else:
             image_hash = average_hash(pillow_image, hash_size)
         image_hash = image_hash.flatten()

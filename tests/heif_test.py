@@ -47,8 +47,10 @@ def compare_heif_files_fields(
     def compare_images_fields(image1: HeifImage, image2: HeifImage):
         assert image1.size == image2.size
         assert image1.mode == image2.mode
-        assert image1.bit_depth == image2.bit_depth
-        assert image1.stride == image2.stride
+        if ignore is not None and "bit_depth" not in ignore:
+            assert image1.bit_depth == image2.bit_depth
+        if ignore is not None and "stride" not in ignore:
+            assert image1.stride == image2.stride
         if ignore is not None and "len" not in ignore:
             assert len(image1.data) == len(image2.data)
         for i_thumb, thumbnail in enumerate(image1.thumbnails):
@@ -56,8 +58,10 @@ def compare_heif_files_fields(
             height_difference = thumbnail.size[1] - image2.thumbnails[i_thumb].size[1]
             assert with_difference + height_difference <= thumb_max_differ
             assert thumbnail.mode == image2.thumbnails[i_thumb].mode
-            assert thumbnail.bit_depth == image2.thumbnails[i_thumb].bit_depth
-            assert thumbnail.stride == image2.thumbnails[i_thumb].stride
+            if ignore is not None and "bit_depth" not in ignore:
+                assert thumbnail.bit_depth == image2.thumbnails[i_thumb].bit_depth
+            if ignore is not None and "stride" not in ignore:
+                assert thumbnail.stride == image2.thumbnails[i_thumb].stride
             if ignore is not None and "len" not in ignore:
                 assert len(thumbnail.data) == len(image2.thumbnails[i_thumb].data)
 

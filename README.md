@@ -46,11 +46,9 @@ if pillow_heif.is_supported('input.heic'):
     heif_file = pillow_heif.open_heif('input.heic')
     for img in heif_file:  # you still can use it without iteration, like before.
         img.scale(1024, 768) # `libheif` does not provide much operations, that can be done on image, so just scaling it.
-    # get save mask and set thumb_box=-1 to ignore all thumbs image have.
-    save_mask = heif_file.get_img_thumb_mask_for_save(pillow_heif.HeifSaveMask.SAVE_ALL, thumb_box=-1)
-    heif_file.add_thumbs_to_mask(save_mask, [768, 512, 256]) # add three new thumbnail boxes.
+    heif_file.add_thumbnails([768, 512, 256]) # add three new thumbnail boxes.
     # default quality is probably ~77 in x265, set it a bit lower and specify `save mask`.
-    heif_file.save('output.heic', quality=70, save_mask=save_mask)
+    heif_file.save('output.heic', quality=70, save_all=False) #save_all is True by default.
     exit(0)
 ```
 ### [More examples](https://github.com/bigcat88/pillow_heif/tree/master/examples)
@@ -85,7 +83,6 @@ The returned `HeifImageFile` by `Pillow` function `Image.open` has the following
   * `metadata` - is a list of dictionaries with `type` and `data` keys, excluding `exif`. May be empty.
   * `icc_profile` - contains data and present only when file has `ICC` color profile(`prof` or `rICC`).
   * `nclx_profile` - contains data and present only when file has `NCLX` color profile.
-  * `img_id` - id of image, needed for encoding operations.
 
 ### The HeifFile object
 The returned `HeifFile` by function `open_heif` or `from_pillow` has the following properties:

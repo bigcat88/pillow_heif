@@ -92,11 +92,11 @@ class HeifImageFile(ImageFile.ImageFile):
 
 
 def _save(im, fp, _filename):
-    from_pillow(im, load_one=True).save(fp, save_one=True, **im.encoderinfo)
+    from_pillow(im, load_one=True).save(fp, save_all=False, **im.encoderinfo)
 
 
 def _save_all(im, fp, _filename):
-    from_pillow(im).save(fp, save_one=False, **im.encoderinfo)
+    from_pillow(im).save(fp, save_all=True, **im.encoderinfo)
 
 
 def register_heif_opener(**kwargs):

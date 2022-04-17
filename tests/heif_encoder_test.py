@@ -165,6 +165,26 @@ def test_10_bit():
     assert heif_file[2].mode == "RGBA"
 
 
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+def test_save_all():
+    heif_file = open_heif(Path("images/pug_2_0.heic"))
+    out_buf_save_all = BytesIO()
+    heif_file.save(out_buf_save_all, save_all=True, quality=15)
+    out_buf_save_one = BytesIO()
+    heif_file.save(out_buf_save_one, save_all=False, quality=15)
+    assert len(open_heif(out_buf_save_all)) == 2
+    assert len(open_heif(out_buf_save_one)) == 1
+
+
+@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+def test_hif_file():
+    heif_file1 = open_heif(Path("images/cat.hif"))
+    out_buf = BytesIO()
+    heif_file1.save(out_buf, quality=10)
+    heif_file2 = open_heif(out_buf)
+    compare_heif_files_fields(heif_file1, heif_file2, thumb_max_differ=3)
+
+
 def test_no_encoder():
     try:
         _options.CFG_OPTIONS._hevc_enc = False

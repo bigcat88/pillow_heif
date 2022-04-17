@@ -424,7 +424,7 @@ class HeifFile:
             raise ValueError("Cannot write empty image as HEIF.")
         _heif_write_ctx = LibHeifCtxWrite(fp)
         _encoder = self._get_encoder(_heif_write_ctx, kwargs.get("quality", None), kwargs.get("enc_params", []))
-        self._save(_heif_write_ctx, _encoder, kwargs.get("save_one", False))
+        self._save(_heif_write_ctx, _encoder, not kwargs.get("save_all", True))
         error = lib.heif_context_write(_heif_write_ctx.ctx, _heif_write_ctx.writer, _heif_write_ctx.cpointer)
         check_libheif_error(error)
         _heif_write_ctx.close()
