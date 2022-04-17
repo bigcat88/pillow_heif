@@ -35,7 +35,7 @@ jobs:
 
       - name: manylinux preparations
         if: matrix.cibw_buildlinux == 'manylinux'
-        run: echo INSTALL_OS_PACKAGES="yum update -y && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
+        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "git-all"
 

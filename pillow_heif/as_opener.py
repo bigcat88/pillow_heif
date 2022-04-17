@@ -2,13 +2,14 @@
 Opener for Pillow library.
 """
 
+from copy import deepcopy
 from typing import Any
 
 from PIL import Image, ImageFile
 
 from ._options import options
 from .error import HeifError
-from .heif import from_pillow, is_supported, open_heif
+from .heif import HeifImage, from_pillow, is_supported, open_heif
 from .misc import reset_orientation
 
 
@@ -16,6 +17,7 @@ class HeifImageFile(ImageFile.ImageFile):
     format = "HEIF"
     format_description = "HEIF container for HEVC and AV1"
     heif_file: Any
+    _close_exclusive_fp_after_loading = False
 
     def __init__(self, *args, **kwargs):
         self.heif_file = None
@@ -33,13 +35,14 @@ class HeifImageFile(ImageFile.ImageFile):
     def load(self):
         if self.heif_file:
             frame_heif = self._heif_file_by_index(self.tell())
-            frame_heif.load()
             self.load_prepare()
             self.frombytes(frame_heif.data, "raw", (self.mode, frame_heif.stride))
-            if self.is_animated or self.info["thumbnails"]:
+            if self.is_animated:
                 frame_heif.unload()
             else:
+                self.info["thumbnails"] = deepcopy(self.info["thumbnails"])
                 self.heif_file = None
+                self._close_exclusive_fp_after_loading = True
         return super().load()
 
     def seek(self, frame):
@@ -73,7 +76,7 @@ class HeifImageFile(ImageFile.ImageFile):
             raise EOFError("attempt to seek outside sequence")
         return self.tell() != frame
 
-    def _heif_file_by_index(self, index):
+    def _heif_file_by_index(self, index) -> HeifImage:
         return self.heif_file[index]
 
     def _init_from_heif_file(self, heif_image) -> None:
@@ -89,11 +92,11 @@ class HeifImageFile(ImageFile.ImageFile):
 
 
 def _save(im, fp, _filename):
-    from_pillow(im, load_one=True).save(fp, save_one=True, **im.encoderinfo)
+    from_pillow(im, load_one=True).save(fp, save_all=False, **im.encoderinfo)
 
 
 def _save_all(im, fp, _filename):
-    from_pillow(im).save(fp, save_one=False, **im.encoderinfo)
+    from_pillow(im).save(fp, save_all=True, **im.encoderinfo)
 
 
 def register_heif_opener(**kwargs):

@@ -3,12 +3,22 @@ import os
 from gc import collect
 from io import BytesIO
 from pathlib import Path
+from typing import Union
 from warnings import warn
 
 import pytest
+from heif_test import compare_heif_files_fields
 from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
-from pillow_heif import HeifBrand, options, register_heif_opener
+from pillow_heif import (
+    HeifBrand,
+    HeifFile,
+    HeifImage,
+    HeifThumbnail,
+    open_heif,
+    options,
+    register_heif_opener,
+)
 
 register_heif_opener()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -24,11 +34,36 @@ if not options().avif:
 images_dataset = heic_images + avif_images + heif_images
 
 
+def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail], pillow: Image, ignore=None):
+    def compare_images_fields(heif_image: Union[HeifImage, HeifThumbnail], pillow_image: Image):
+        assert heif_image.size == pillow_image.size
+        assert heif_image.mode == pillow_image.mode
+        is_heif_image = isinstance(heif_image, HeifImage)
+        assert is_heif_image == bool(len(pillow_image.info))
+        for k in ("main", "brand", "exif", "metadata"):
+            if heif_image.info.get(k, None):
+                if isinstance(heif_image.info[k], (bool, int, float, str)):
+                    assert heif_image.info[k] == pillow_image.info[k]
+                else:
+                    assert len(heif_image.info[k]) == len(pillow_image.info[k])
+        for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
+            if heif_image.info.get(k, None):
+                assert len(heif_image.info[k]) == len(pillow_image.info[k])
+
+    if isinstance(heif, HeifFile):
+        for i, image in enumerate(heif):
+            pillow.seek(i)
+            compare_images_fields(image, pillow)
+    else:
+        compare_images_fields(heif, pillow)
+
+
 @pytest.mark.parametrize("image_path", images_dataset)
 def test_open_images(image_path):
     pillow_image = Image.open(image_path)
     assert getattr(pillow_image, "fp") is not None
     assert getattr(pillow_image, "heif_file") is not None
+    assert not getattr(pillow_image, "_close_exclusive_fp_after_loading")
     pillow_image.verify()  # Here we must check verify, but currently verify do nothing.
     images_count = len([_ for _ in ImageSequence.Iterator(pillow_image)])
     _last_img_id = -1
@@ -43,10 +78,12 @@ def test_open_images(image_path):
             assert image.info["main"]
         image.load()
     assert getattr(pillow_image, "fp") is not None
-    if images_count > 1 or len(pillow_image.info["thumbnails"]):
+    if images_count > 1:
         assert getattr(pillow_image, "heif_file") is not None
+        assert not getattr(pillow_image, "_close_exclusive_fp_after_loading")
     else:
         assert getattr(pillow_image, "heif_file") is None
+        assert getattr(pillow_image, "_close_exclusive_fp_after_loading")
 
 
 @pytest.mark.parametrize("img_path", list(Path().glob("images/invalid/*")))
@@ -92,3 +129,54 @@ def test_after_load():
         assert len(frame.tobytes()) > 0
         for thumb in img.info["thumbnails"]:
             assert len(thumb.data) > 0
+
+
+@pytest.mark.parametrize("image_path", ("images/pug_2_1.heic", "images/pug_2_3.heic"))
+def test_to_from_pillow(image_path):
+    heif_file = open_heif(image_path)
+    pillow_image1 = heif_file[0].to_pillow()
+    pillow_image2 = heif_file[1].to_pillow()
+    compare_heif_to_pillow_fields(heif_file[0], pillow_image1)
+    compare_heif_to_pillow_fields(heif_file[1], pillow_image2)
+    heif_from_pillow = HeifFile({})
+    heif_from_pillow.add_from_pillow(pillow_image1)
+    heif_from_pillow.add_from_pillow(pillow_image2)
+    compare_heif_files_fields(heif_file, heif_from_pillow)
+
+
+@pytest.mark.parametrize(
+    "image_path,compare_info",
+    (
+        ("images/pug_2_1.heic", {0: [0], 1: []}),
+        ("images/pug_2_3.heic", {0: [0], 1: [0, 1]}),
+        ("images/nokia/alpha.heic", {0: [], 1: [], 2: []}),
+    ),
+)
+def test_to_from_pillow_extra(image_path, compare_info):
+    heif_file = open_heif(image_path)
+    pil_list = []
+    # HeifFile to Pillow Images list
+    for img_i, thumb_i_list in compare_info.items():
+        pil_list.append(heif_file[img_i].to_pillow(ignore_thumbnails=True))
+        for thumb_i in thumb_i_list:
+            pil_list.append(heif_file[img_i].thumbnails[thumb_i].to_pillow())
+    collect()
+    # Pillow Images compare to HeifFile
+    i = 0
+    for img_i, thumb_i_list in compare_info.items():
+        compare_heif_to_pillow_fields(heif_file[img_i], pil_list[i])
+        i += 1
+        for thumb_i in thumb_i_list:
+            compare_heif_to_pillow_fields(heif_file[img_i].thumbnails[thumb_i], pil_list[i])
+            i += 1
+    collect()
+    # From Pillow Images create one HeifFile and compare.
+    heif_from_pillow = HeifFile({})
+    i = 0
+    for img_i, thumb_i_list in compare_info.items():
+        heif_from_pillow.add_from_pillow(pil_list[i])
+        i += 1
+        for _ in thumb_i_list:
+            heif_from_pillow[len(heif_from_pillow) - 1].add_thumbnails(max(pil_list[i].size))
+            i += 1
+    compare_heif_files_fields(heif_file, heif_from_pillow, thumb_max_differ=3)
