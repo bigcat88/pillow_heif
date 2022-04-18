@@ -9,7 +9,7 @@ from PIL import Image, ImageFile
 
 from ._options import options
 from .error import HeifError
-from .heif import HeifImage, from_pillow, is_supported, open_heif
+from .Heif import HeifImage, from_pillow, is_supported, open_heif
 from .misc import reset_orientation
 
 

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2 - 2021-0x-xx]
+
+### Added
+
+- PyPy 3.9 wheels.
+- (HeifImagePlugin, Heif) `append_images` parameter to `save` methods.
+
+### Changed
+
+- TODO
+
+### Fixed
+
+- TODO
+
 ## [0.2.1 - 2022-04-17]
 
 ### Added

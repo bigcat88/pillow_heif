@@ -86,7 +86,7 @@ class HeifImageBase:
     def color(self):
         return self._img_data.get("color", HeifColorspace.UNDEFINED)
 
-    def to_pillow(self, ignore_thumbnails: bool = False) -> Image:
+    def to_pillow(self, ignore_thumbnails: bool = False) -> Image.Image:
         image = Image.frombytes(
             self.mode,
             self.size,
@@ -346,17 +346,7 @@ class HeifFile:
     def scale(self, width: int, height: int) -> None:
         self._images[0].scale(width, height)
 
-    def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
-        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
-        __new_id = 2 + max(__ids)
-        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
-        self._images.append(HeifImage(__new_id, len(self), __heif_ctx))
-        return self
-
-    # def append_image(self):
-    #     pass
-
-    def add_from_pillow(self, pil_image: Image, load_one=False):
+    def add_from_pillow(self, pil_image: Image.Image, load_one=False):
         for frame in ImageSequence.Iterator(pil_image):
             if frame.width > 0 and frame.height > 0:
                 additional_info = {}
@@ -417,14 +407,15 @@ class HeifFile:
             img.add_thumbnails(boxes)
 
     def save(self, fp, **kwargs):
-        # append_images = kwargs.get("append_images", [])
+        save_all = kwargs.get("save_all", True)
+        append_images = _heif_images_from(kwargs.get("append_images", [])) if save_all else []
         if not options().hevc_enc:
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
         if not self._images:
             raise ValueError("Cannot write empty image as HEIF.")
         _heif_write_ctx = LibHeifCtxWrite(fp)
         _encoder = self._get_encoder(_heif_write_ctx, kwargs.get("quality", None), kwargs.get("enc_params", []))
-        self._save(_heif_write_ctx, _encoder, not kwargs.get("save_all", True))
+        self._save(_heif_write_ctx, _encoder, not save_all, append_images)
         error = lib.heif_context_write(_heif_write_ctx.ctx, _heif_write_ctx.writer, _heif_write_ctx.cpointer)
         check_libheif_error(error)
         _heif_write_ctx.close()
@@ -463,10 +454,10 @@ class HeifFile:
     def __del__(self):
         self.close()
 
-    def _save(self, out_ctx: LibHeifCtxWrite, encoder, save_one: bool) -> None:
+    def _save(self, out_ctx: LibHeifCtxWrite, encoder, save_one: bool, append_images: list[HeifImage]) -> None:
         encoding_options = lib.heif_encoding_options_alloc()
         encoding_options = ffi.gc(encoding_options, lib.heif_encoding_options_free)
-        for img in self:
+        for img in [i for i in self] + append_images:
             img.load()
             new_img = create_image(img.size, img.chroma, get_img_depth(img), img.mode, img.data, stride=img.stride)
             set_color_profile(new_img, img.info)
@@ -494,6 +485,13 @@ class HeifFile:
                         lib.heif_image_handle_release(p_new_thumb_handle[0])
             if save_one:
                 break
+
+    def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
+        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
+        __new_id = 2 + max(__ids)
+        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
+        self._images.append(HeifImage(__new_id, len(self), __heif_ctx))
+        return self
 
     @staticmethod
     def _get_encoder(heif_ctx, quality: int = None, enc_params: List[Tuple[str, str]] = None):
@@ -579,8 +577,19 @@ def open_heif(fp, apply_transformations: bool = True, convert_hdr_to_8bit: bool 
     return HeifFile(heif_ctx, img_list)
 
 
-def from_pillow(pil_image: Image, load_one=False) -> HeifFile:
+def from_pillow(pil_image: Image.Image, load_one: bool = False) -> HeifFile:
     return HeifFile({}).add_from_pillow(pil_image, load_one)
+
+
+def _heif_images_from(images: List[Union[HeifFile, HeifImage, Image.Image]]) -> list[HeifImage]:
+    result = []
+    for img in images:
+        if isinstance(img, HeifImage):
+            result.append(img)
+        else:
+            heif_file = from_pillow(img) if isinstance(img, Image.Image) else img
+            result += [_ for _ in heif_file]
+    return result
 
 
 def _read_thumbnails(heif_ctx: Union[LibHeifCtx, dict], img_handle, img_index: int) -> List[HeifThumbnail]:

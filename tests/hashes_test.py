@@ -7,11 +7,13 @@ from PIL import Image
 
 from pillow_heif import open_heif, options, register_heif_opener
 
-__version__ = "4.2.1"
-
+if not options().hevc_enc:
+    pytest.skip("No HEVC encoder.", allow_module_level=True)
 numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 register_heif_opener()
 
+
+__version__ = "4.2.1"
 """
 You may copy this file, if you keep the copyright information below:
 
@@ -166,7 +168,6 @@ def compare_hashes(pillow_images: list, hash_type="average", hash_size=16, max_d
 # TESTS STARTS HERE
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_scale():
     heic_file = open_heif(Path("images/pug_1_0.heic"))
     heic_file.scale(640, 640)
@@ -175,7 +176,6 @@ def test_scale():
     compare_hashes([Path("images/pug_1_0.heic"), out_buffer])
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_add_from():
     heif_file1 = open_heif(Path("images/pug_1_1.heic"))
     heif_file2 = open_heif(Path("images/pug_2_3.heic"))
@@ -202,7 +202,6 @@ def test_add_from():
     heif_file2.close()
 
 
-# @pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 # @pytest.mark.parametrize(
 #     "image_path",
 #     (
