@@ -17,9 +17,9 @@ chdir(path.join(path.dirname(path.dirname(path.abspath(__file__))), "tests"))
 pillow_heif.register_heif_opener()
 
 
-def perform_open_save(value):
+def perform_open_save(value, image_path):
     for _ in range(value):
-        image = Image.open(Path("images/nokia/alpha_3_2.heic"))
+        image = Image.open(image_path)
         assert getattr(image, "heif_file") is not None
         if pillow_heif.options().hevc_enc:
             out_buf = BytesIO()
@@ -27,16 +27,17 @@ def perform_open_save(value):
 
 
 @pytest.mark.skipif(sys.executable.lower().find("pypy") != -1, reason="Disabled on PyPy.")
-def test_open_leaks():
+def test_open_save_objects_leaks():
     from pympler import summary, tracker
 
-    perform_open_save(1)
+    image_path = Path("images/nokia/alpha_3_2.heic")
+    perform_open_save(1, image_path)
     gc.collect()
     _summary1 = tracker.SummaryTracker().create_summary()
     _summary1 = tracker.SummaryTracker().create_summary()  # noqa
     gc.collect()
     gc.set_debug(gc.DEBUG_SAVEALL)
-    perform_open_save(3)
+    perform_open_save(3, image_path)
     gc.collect()
     summary2 = tracker.SummaryTracker().create_summary()
     results = summary._sweep(summary.get_diff(_summary1, summary2))  # noqa

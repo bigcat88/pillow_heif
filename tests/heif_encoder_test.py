@@ -14,7 +14,10 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 register_heif_opener()
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+if not options().hevc_enc:
+    pytest.skip("No HEVC encoder.", allow_module_level=True)
+
+
 def test_outputs():
     with builtins.open(Path("images/pug_1_1.heic"), "rb") as f:
         output = BytesIO()
@@ -30,7 +33,6 @@ def test_outputs():
             open_heif(f).save(bytes(b"1234567890"), quality=10)
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_save_empty():
     heic_file = open_heif(Path("images/pug_1_0.heic"))
     del heic_file[0]
@@ -39,7 +41,6 @@ def test_save_empty():
         heic_file.save(out_buffer)
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 @pytest.mark.parametrize(
     "image_path,remove_img,remove_thumb,expected",
     (
@@ -67,7 +68,6 @@ def test_remove(image_path, remove_img: list, remove_thumb: list, expected: tupl
     assert len(heic_file_1_image.thumbnails) == expected[1]
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 @pytest.mark.parametrize(
     "thumbs,expected",
     (
@@ -95,7 +95,6 @@ def test_add_thumbs_to_image(thumbs, expected):
     assert len(open_heif(output)[0].thumbnails) == expected
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 @pytest.mark.parametrize(
     "thumbs,expected",
     (
@@ -120,7 +119,6 @@ def test_add_thumbs_to_images(thumbs, expected):
     assert len(heif_file[1].thumbnails) == expected[1]
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_add_from_heif():
     heif_file = open_heif(Path("images/pug_1_1.heic"))
     heif_file.add_from_heif(heif_file)
@@ -140,7 +138,17 @@ def test_add_from_heif():
     compare_heif_files_fields(heif_file, saved_heif_file, ignore=["len"])
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+def test_append_images():
+    heif_file = open_heif(Path("images/pug_1_0.heic"))
+    heif_file2 = open_heif(Path("images/pug_1_1.heic"))
+    heif_file3 = open_heif(Path("images/pug_2_0.heic"))
+    out_buf = BytesIO()
+    heif_file.save(out_buf, append_images=[heif_file2, heif_file3, heif_file3[1]])
+    heif_file = open_heif(out_buf)
+    assert len([i for i in heif_file.thumbnails_all()]) == 1
+    assert len(heif_file) == 5
+
+
 @pytest.mark.skipif(platform.lower() == "win32", reason="No 10/12 bit encoder for Windows.")
 def test_10_bit():
     heif_file = open_heif(Path("images/mono10bit.heif"), convert_hdr_to_8bit=False)
@@ -165,7 +173,6 @@ def test_10_bit():
     assert heif_file[2].mode == "RGBA"
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_save_all():
     heif_file = open_heif(Path("images/pug_2_0.heic"))
     out_buf_save_all = BytesIO()
@@ -176,7 +183,6 @@ def test_save_all():
     assert len(open_heif(out_buf_save_one)) == 1
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
 def test_hif_file():
     heif_file1 = open_heif(Path("images/cat.hif"))
     out_buf = BytesIO()
