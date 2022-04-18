@@ -10,6 +10,7 @@ import pytest
 from heif_test import compare_heif_files_fields
 from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
+import pillow_heif.HeifImagePlugin  # noqa
 from pillow_heif import (
     HeifBrand,
     HeifFile,
@@ -17,10 +18,8 @@ from pillow_heif import (
     HeifThumbnail,
     open_heif,
     options,
-    register_heif_opener,
 )
 
-register_heif_opener()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 avif_images = [f for f in list(Path().glob("images/avif/*.avif"))] + [f for f in list(Path().glob("images/*.avif"))]

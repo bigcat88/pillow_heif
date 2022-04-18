@@ -12,10 +12,9 @@ if __name__ == "__main__":
     # Change directory to project root.
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
     pillow_heif.register_heif_opener()
-    image_path = Path("images/pug_1_1.heic")
+    image_path = Path("images/pug_2_3.heic")
     try:
         img = Image.open(image_path)
-        img.load()
         for i, frame in enumerate(ImageSequence.Iterator(img)):
             for thumb in img.info["thumbnails"]:
                 thumb_img = thumb.to_pillow()

@@ -138,6 +138,17 @@ def test_add_from_heif():
     compare_heif_files_fields(heif_file, saved_heif_file, ignore=["len"])
 
 
+def test_append_images():
+    heif_file = open_heif(Path("images/pug_1_0.heic"))
+    heif_file2 = open_heif(Path("images/pug_1_1.heic"))
+    heif_file3 = open_heif(Path("images/pug_2_0.heic"))
+    out_buf = BytesIO()
+    heif_file.save(out_buf, append_images=[heif_file2, heif_file3, heif_file3[1]])
+    heif_file = open_heif(out_buf)
+    assert len([i for i in heif_file.thumbnails_all()]) == 1
+    assert len(heif_file) == 5
+
+
 @pytest.mark.skipif(platform.lower() == "win32", reason="No 10/12 bit encoder for Windows.")
 def test_10_bit():
     heif_file = open_heif(Path("images/mono10bit.heif"), convert_hdr_to_8bit=False)

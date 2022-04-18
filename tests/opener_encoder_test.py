@@ -99,3 +99,17 @@ def test_palette_with_bytes_transparency():
     heic_pillow = Image.open(out_heic)
     assert heic_pillow.heif_file.has_alpha is True  # noqa
     assert heic_pillow.mode == "RGBA"
+
+
+def test_append_images():
+    heic_pillow = Image.open(Path("images/pug_1_1.heic"))
+    heic_pillow2 = Image.open(Path("images/pug_1_0.heic"))
+    heic_pillow3 = Image.open(Path("images/pug_2_3.heic"))
+    out_buf = BytesIO()
+    heic_pillow.save(out_buf, format="HEIF", save_all=True, append_images=[heic_pillow2, heic_pillow3])
+    heic_pillow = Image.open(out_buf)
+    assert getattr(heic_pillow, "n_frames") == 4
+    assert len(ImageSequence.Iterator(heic_pillow)[0].info.get("thumbnails", [])) == 1
+    assert len(ImageSequence.Iterator(heic_pillow)[1].info.get("thumbnails", [])) == 0
+    assert len(ImageSequence.Iterator(heic_pillow)[2].info.get("thumbnails", [])) == 1
+    assert len(ImageSequence.Iterator(heic_pillow)[3].info.get("thumbnails", [])) == 2

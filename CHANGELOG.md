@@ -8,14 +8,13 @@ All notable changes to this project will be documented in this file.
 
 - PyPy 3.9 wheels.
 - (HeifImagePlugin, Heif) `append_images` parameter to `save` methods.
+- (HeifImagePlugin) - `import pillow_heif.HeifImagePlugin` for automatic Pillow plugin registration(as alternative to calling `register_heif_opener`).
 
 ### Changed
 
-- TODO
-
 ### Fixed
 
-- TODO
+- (Heif) HeifFile class don't close all images it's contain during destructor, if they are still referenced.
 
 ## [0.2.1 - 2022-04-17]
 
