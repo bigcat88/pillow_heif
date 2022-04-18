@@ -12,7 +12,6 @@ if __name__ == "__main__":
     # Change directory to project root.
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
     pillow_heif.register_heif_opener()
-    # second image has nclx profile, which is not supported currently by Pillow itself.
     image_path = Path("images/pug_2_1.heic")
     try:
         img = Image.open(image_path)
