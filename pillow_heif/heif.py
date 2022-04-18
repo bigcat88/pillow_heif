@@ -454,7 +454,7 @@ class HeifFile:
     def __del__(self):
         self.close(only_fp=True)
 
-    def _save(self, out_ctx: LibHeifCtxWrite, encoder, save_one: bool, append_images: list[HeifImage]) -> None:
+    def _save(self, out_ctx: LibHeifCtxWrite, encoder, save_one: bool, append_images: List[HeifImage]) -> None:
         encoding_options = lib.heif_encoding_options_alloc()
         encoding_options = ffi.gc(encoding_options, lib.heif_encoding_options_free)
         for img in list(self) + append_images:
@@ -581,7 +581,7 @@ def from_pillow(pil_image: Image.Image, load_one: bool = False) -> HeifFile:
     return HeifFile({}).add_from_pillow(pil_image, load_one)
 
 
-def _heif_images_from(images: List[Union[HeifFile, HeifImage, Image.Image]]) -> list[HeifImage]:
+def _heif_images_from(images: List[Union[HeifFile, HeifImage, Image.Image]]) -> List[HeifImage]:
     result = []
     for img in images:
         if isinstance(img, HeifImage):
