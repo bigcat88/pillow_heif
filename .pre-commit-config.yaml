@@ -6,7 +6,6 @@ repos:
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
     -   id: check-toml
-    -   id: name-tests-test
     -   id: mixed-line-ending
 
 -   repo: https://github.com/PyCQA/isort
