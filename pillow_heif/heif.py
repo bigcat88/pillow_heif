@@ -108,8 +108,12 @@ class HeifImageBase:
             for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
                 if k in self.info:
                     image.info[k] = self.info[k]
+            import gc
+
+            gc.collect()
             if not ignore_thumbnails:
                 image.info["thumbnails"] = deepcopy(self.thumbnails)
+            gc.collect()
             image.info["original_orientation"] = reset_orientation(image.info)
         return image
 
