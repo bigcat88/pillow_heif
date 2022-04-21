@@ -1,17 +1,8 @@
-from gc import collect
 from io import BytesIO
 from pathlib import Path
 
-import pytest
+import numpy
 from PIL import Image
-
-from pillow_heif import open_heif, options, register_heif_opener
-
-if not options().hevc_enc:
-    pytest.skip("No HEVC encoder.", allow_module_level=True)
-numpy = pytest.importorskip("numpy", reason="NumPy not installed")
-register_heif_opener()
-
 
 __version__ = "4.2.1"
 """
@@ -52,9 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 def average_hash(image, hash_size=8, mean=numpy.mean):
     """
     Average Hash computation
-
     Implementation follows http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
-
     @image must be a PIL instance.
     @mean how to determine the average luminescence. can try numpy.median instead.
     """
@@ -76,10 +65,7 @@ def average_hash(image, hash_size=8, mean=numpy.mean):
 def dhash(image, hash_size=8):
     """
     Difference Hash computation.
-
     following http://www.hackerfactor.com/blog/index.php?/archives/529-Kind-of-Like-That.html
-
-    computes differences horizontally
 
     @image must be a PIL instance.
     """
@@ -97,7 +83,6 @@ def dhash(image, hash_size=8):
 def colorhash(image, binbits=3):
     """
     Color Hash computation.
-
     Computes fractions of image in intensity, hue and saturation bins:
 
     * the first binbits encode the black fraction of the image
@@ -161,64 +146,5 @@ def compare_hashes(pillow_images: list, hash_type="average", hash_size=16, max_d
         image_hash = image_hash.flatten()
         for _ in range(len(image_hashes)):
             distance = numpy.count_nonzero(image_hash != image_hashes[_])
-            assert distance <= max_difference
+            assert distance <= max_difference, f"{distance} > {max_difference}"
         image_hashes.append(image_hash)
-
-
-# TESTS STARTS HERE
-
-
-def test_scale():
-    heic_file = open_heif(Path("images/pug_1_0.heic"))
-    heic_file.scale(640, 640)
-    out_buffer = BytesIO()
-    heic_file.save(out_buffer)
-    compare_hashes([Path("images/pug_1_0.heic"), out_buffer])
-
-
-def test_add_from():
-    heif_file1 = open_heif(Path("images/pug_1_1.heic"))
-    heif_file2 = open_heif(Path("images/pug_2_3.heic"))
-    heif_file1.add_from_heif(heif_file2)
-    heif_file1.load(everything=True)
-    heif_file2.close(only_fp=True)
-    heif_file1.close(only_fp=True)
-    collect()
-    out_buf = BytesIO()
-    heif_file1.save(out_buf)
-    out_heif = open_heif(out_buf)
-    assert len([_ for _ in out_heif.thumbnails_all(one_for_image=True)]) == 3
-    assert len([_ for _ in out_heif.thumbnails_all()]) == 4
-    pillow_image = Image.open(out_buf)
-    compare_hashes([pillow_image, Path("images/pug_1_1.heic")])
-    pillow_image.seek(1)
-    compare_hashes([pillow_image, Path("images/pug_2_3.heic")])
-    pillow_image.seek(2)
-    _ = Image.open(Path("images/pug_2_3.heic"))
-    _.seek(1)
-    compare_hashes([pillow_image, _])
-    out_heif.close()
-    heif_file1.close()
-    heif_file2.close()
-
-
-# @pytest.mark.parametrize(
-#     "image_path",
-#     (
-#         "images/rgba10bit.avif",
-#         "images/rgba10bit.heif",
-#         "images/mono10bit.avif",
-#         "images/mono10bit.heif",
-#         "images/cat.hif",
-#         "images/10bit.heic",
-#     ),
-# )
-# def test_10bit_to8(image_path):
-#     heif_image_10bit = open_heif(Path(image_path), convert_hdr_to_8bit=False)
-#     heif_image_10bit_2 = HeifFile({}).add_from_heif(heif_image_10bit)
-#     heif_image_8bit_saved = BytesIO()
-#     heif_image_10bit.save(heif_image_10bit_saved)
-#     pillow_image = heif_image[0].to_pillow(ignore_thumbnails=True)
-#     pillow_image.save("test.jpg")
-#     # compare_hashes([pillow_image, Path("images/cat.hif")])
-#     # image_8bit = Image.open(Path(image_path))

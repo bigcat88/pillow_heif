@@ -4,8 +4,8 @@ from gc import collect
 from io import BytesIO
 from pathlib import Path
 from typing import Union
-from warnings import warn
 
+import dataset
 import pytest
 from heif_test import compare_heif_files_fields
 from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
@@ -16,30 +16,18 @@ from pillow_heif import (
     HeifFile,
     HeifImage,
     HeifThumbnail,
+    from_pillow,
     open_heif,
-    options,
 )
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-avif_images = [f for f in list(Path().glob("images/avif/*.avif"))] + [f for f in list(Path().glob("images/*.avif"))]
-heic_images = [f for f in list(Path().glob("images/nokia/*.heic"))] + [f for f in list(Path().glob("images/*.heic"))]
-heif_images = [f for f in list(Path().glob("images/*.hif"))] + [f for f in list(Path().glob("images/*.heif"))]
 
-if not options().avif:
-    warn("Skipping tests for `AV1` format due to lack of codecs.")
-    avif_images.clear()
-
-images_dataset = heic_images + avif_images + heif_images
-
-
-def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail], pillow: Image, ignore=None):
+def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail], pillow: Image):
     def compare_images_fields(heif_image: Union[HeifImage, HeifThumbnail], pillow_image: Image):
         assert heif_image.size == pillow_image.size
         assert heif_image.mode == pillow_image.mode
-        is_heif_image = isinstance(heif_image, HeifImage)
-        assert is_heif_image == bool(len(pillow_image.info))
-        for k in ("main", "brand", "exif", "metadata"):
+        for k in ("main", "brand", "exif", "xmp", "metadata"):
             if heif_image.info.get(k, None):
                 if isinstance(heif_image.info[k], (bool, int, float, str)):
                     assert heif_image.info[k] == pillow_image.info[k]
@@ -57,13 +45,75 @@ def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail
         compare_images_fields(heif, pillow)
 
 
-@pytest.mark.parametrize("image_path", images_dataset)
+@pytest.mark.parametrize("img_path", dataset.CORRUPTED_DATASET)
+def test_corrupted_open(img_path):
+    with pytest.raises(UnidentifiedImageError):
+        Image.open(img_path)
+    with pytest.raises(UnidentifiedImageError):
+        with open(img_path, "rb") as f:
+            Image.open(BytesIO(f.read()))
+
+
+@pytest.mark.parametrize("img_path", dataset.MINIMAL_DATASET)
+def test_inputs(img_path):
+    with builtins.open(img_path, "rb") as f:
+        bytes_io = BytesIO(f.read())
+    fh = builtins.open(img_path, "rb")
+    for _as in (img_path.as_posix(), bytes_io, fh):
+        pillow_image = Image.open(_as)
+        assert getattr(pillow_image, "fp") is not None
+        pillow_image.load()
+        for frame in ImageSequence.Iterator(pillow_image):
+            assert len(frame.tobytes()) > 0
+        heif_image = from_pillow(pillow_image)
+        compare_heif_to_pillow_fields(heif_image, pillow_image)
+        assert len(from_pillow(pillow_image, load_one=True)) == 1
+
+
+def test_after_load():
+    img = Image.open(Path("images/rgb8_512_512_1_0.heic"))
+    assert getattr(img, "heif_file") is not None
+    img.load()
+    collect()
+    assert not getattr(img, "is_animated")
+    assert getattr(img, "n_frames") == 1
+    assert not img.info["thumbnails"]
+    assert getattr(img, "heif_file") is None
+    assert len(ImageSequence.Iterator(img)[0].tobytes())
+    img = Image.open(Path("images/rgb8_128_128_2_1.heic"))
+    assert getattr(img, "heif_file") is not None
+    img.load()
+    collect()
+    assert getattr(img, "is_animated")
+    assert getattr(img, "n_frames") == 2
+    assert len(img.info["thumbnails"]) == 1
+    assert getattr(img, "heif_file") is not None
+    assert len(ImageSequence.Iterator(img)[0].info["thumbnails"]) == 1
+    assert len(ImageSequence.Iterator(img)[1].info["thumbnails"]) == 1
+    assert len(ImageSequence.Iterator(img)[0].tobytes())
+    assert len(ImageSequence.Iterator(img)[1].tobytes())
+
+
+@pytest.mark.parametrize("image_path", dataset.MINIMAL_DATASET)
+def test_to_from_pillow(image_path):
+    heif_file = open_heif(image_path)
+    images_list = [i.to_pillow() for i in heif_file]
+    for i, image in enumerate(heif_file):
+        compare_heif_to_pillow_fields(image, images_list[i])
+    heif_from_pillow = HeifFile({})
+    for image in images_list:
+        heif_from_pillow.add_from_pillow(image)
+    compare_heif_files_fields(heif_file, heif_from_pillow)
+
+
+@pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
 def test_open_images(image_path):
     pillow_image = Image.open(image_path)
     assert getattr(pillow_image, "fp") is not None
     assert getattr(pillow_image, "heif_file") is not None
     assert not getattr(pillow_image, "_close_exclusive_fp_after_loading")
-    pillow_image.verify()  # Here we must check verify, but currently verify do nothing.
+    pillow_image.verify()
+    # Here we must check verify, but currently verify just loads thumbnails...
     images_count = len([_ for _ in ImageSequence.Iterator(pillow_image)])
     _last_img_id = -1
     for i, image in enumerate(ImageSequence.Iterator(pillow_image)):
@@ -75,7 +125,10 @@ def test_open_images(image_path):
         _last_img_id = image.info["img_id"]
         if not i:
             assert image.info["main"]
-        image.load()
+        assert len(ImageSequence.Iterator(pillow_image)[i].tobytes())
+        for thumb in ImageSequence.Iterator(pillow_image)[i].info["thumbnails"]:
+            assert len(thumb.data)
+        assert isinstance(image.getxmp(), dict)
     assert getattr(pillow_image, "fp") is not None
     if images_count > 1:
         assert getattr(pillow_image, "heif_file") is not None
@@ -83,99 +136,3 @@ def test_open_images(image_path):
     else:
         assert getattr(pillow_image, "heif_file") is None
         assert getattr(pillow_image, "_close_exclusive_fp_after_loading")
-
-
-@pytest.mark.parametrize("img_path", list(Path().glob("images/invalid/*")))
-def test_corrupted_open(img_path):
-    with pytest.raises(UnidentifiedImageError):
-        Image.open(img_path)
-    with pytest.raises(UnidentifiedImageError):
-        with open(img_path, "rb") as f:
-            Image.open(BytesIO(f.read()))
-
-
-@pytest.mark.parametrize("img_path", avif_images[:4] + heic_images[4:8])
-def test_inputs(img_path):
-    with builtins.open(img_path, "rb") as f:
-        bytes_io = BytesIO(f.read())
-    fh = builtins.open(img_path, "rb")
-    for _as in (img_path.as_posix(), bytes_io, fh):
-        pillow_image = Image.open(_as)
-        assert getattr(pillow_image, "fp") is not None
-        pillow_image.load()
-        pillow_image.load()
-
-
-def test_after_load():
-    img = Image.open(Path("images/pug_1_0.heic"))
-    img.load()
-    collect()
-    for i, frame in enumerate(ImageSequence.Iterator(img)):
-        assert len(frame.tobytes()) > 0
-        for thumb in img.info["thumbnails"]:
-            assert len(thumb.data) > 0
-    img = Image.open(Path("images/pug_1_1.heic"))
-    img.load()
-    collect()
-    for i, frame in enumerate(ImageSequence.Iterator(img)):
-        assert len(frame.tobytes()) > 0
-        for thumb in img.info["thumbnails"]:
-            assert len(thumb.data) > 0
-    img = Image.open(Path("images/pug_2_2.heic"))
-    img.load()
-    collect()
-    for i, frame in enumerate(ImageSequence.Iterator(img)):
-        assert len(frame.tobytes()) > 0
-        for thumb in img.info["thumbnails"]:
-            assert len(thumb.data) > 0
-
-
-@pytest.mark.parametrize("image_path", ("images/pug_2_1.heic", "images/pug_2_3.heic"))
-def test_to_from_pillow(image_path):
-    heif_file = open_heif(image_path)
-    pillow_image1 = heif_file[0].to_pillow()
-    pillow_image2 = heif_file[1].to_pillow()
-    compare_heif_to_pillow_fields(heif_file[0], pillow_image1)
-    compare_heif_to_pillow_fields(heif_file[1], pillow_image2)
-    heif_from_pillow = HeifFile({})
-    heif_from_pillow.add_from_pillow(pillow_image1)
-    heif_from_pillow.add_from_pillow(pillow_image2)
-    compare_heif_files_fields(heif_file, heif_from_pillow)
-
-
-@pytest.mark.parametrize(
-    "image_path,compare_info",
-    (
-        ("images/pug_2_1.heic", {0: [0], 1: []}),
-        ("images/pug_2_3.heic", {0: [0], 1: [0, 1]}),
-        ("images/nokia/alpha.heic", {0: [], 1: [], 2: []}),
-    ),
-)
-def test_to_from_pillow_extra(image_path, compare_info):
-    heif_file = open_heif(image_path)
-    pil_list = []
-    # HeifFile to Pillow Images list
-    for img_i, thumb_i_list in compare_info.items():
-        pil_list.append(heif_file[img_i].to_pillow(ignore_thumbnails=True))
-        for thumb_i in thumb_i_list:
-            pil_list.append(heif_file[img_i].thumbnails[thumb_i].to_pillow())
-    collect()
-    # Pillow Images compare to HeifFile
-    i = 0
-    for img_i, thumb_i_list in compare_info.items():
-        compare_heif_to_pillow_fields(heif_file[img_i], pil_list[i])
-        i += 1
-        for thumb_i in thumb_i_list:
-            compare_heif_to_pillow_fields(heif_file[img_i].thumbnails[thumb_i], pil_list[i])
-            i += 1
-    collect()
-    # From Pillow Images create one HeifFile and compare.
-    heif_from_pillow = HeifFile({})
-    i = 0
-    for img_i, thumb_i_list in compare_info.items():
-        heif_from_pillow.add_from_pillow(pil_list[i])
-        i += 1
-        for _ in thumb_i_list:
-            heif_from_pillow[len(heif_from_pillow) - 1].add_thumbnails(max(pil_list[i].size))
-            i += 1
-    compare_heif_files_fields(heif_file, heif_from_pillow, thumb_max_differ=3)
