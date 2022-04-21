@@ -28,7 +28,7 @@ preview = true
 profile = "black"
 
 [tool.pylint]
-master.py-version = "3.6"
+master.py-version = "3.7"
 master.unsafe-load-any-extension = "yes"
 design.max-attributes = 8
 basic.good-names = [
@@ -41,6 +41,7 @@ messages_control.disable = [
     "missing-class-docstring",
     "missing-function-docstring",
     "line-too-long",
+    "too-few-public-methods",
 ]
 
 [tool.mypy]
