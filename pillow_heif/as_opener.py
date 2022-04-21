@@ -9,7 +9,7 @@ from PIL import Image, ImageFile
 
 from ._options import options
 from .error import HeifError
-from .heif import HeifImage, from_pillow, is_supported, open_heif
+from .heif import HeifImage, from_pillow, getxmp, is_supported, open_heif
 from .misc import reset_orientation
 
 
@@ -44,6 +44,15 @@ class HeifImageFile(ImageFile.ImageFile):
                 self.heif_file = None
                 self._close_exclusive_fp_after_loading = True
         return super().load()
+
+    def getxmp(self) -> dict:
+        """
+        Returns a dictionary containing the XMP tags.
+        Requires defusedxml to be installed.
+
+        :returns: XMP tags in a dictionary.
+        """
+        return getxmp(self.info["xmp"])
 
     def seek(self, frame):
         if not self._seek_check(frame):
@@ -82,7 +91,7 @@ class HeifImageFile(ImageFile.ImageFile):
     def _init_from_heif_file(self, heif_image) -> None:
         self._size = heif_image.size
         self.mode = heif_image.mode
-        for k in ("main", "brand", "exif", "metadata", "img_id"):
+        for k in ("main", "brand", "exif", "xmp", "metadata", "img_id"):
             self.info[k] = heif_image.info[k]
         for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
             if k in heif_image.info:
