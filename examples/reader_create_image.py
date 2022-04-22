@@ -5,7 +5,7 @@ from PIL import Image
 
 import pillow_heif
 
-# This demo creates `py_pug.heic` from `pug.jpeg`, `pug2.heic` and `pug3.heic` files.
+# This demo creates `three_images.heic` from `rgba10bit.png`, `rgb8_512_512_1_0.heic` and `rgb8_512_512_1_2.heic`.
 if __name__ == "__main__":
     # Change directory to project root.
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
