@@ -40,10 +40,10 @@ def test_jpeg_to_heic_with_orientation():
     out_heic = BytesIO()
     jpeg_pillow.save(out_heic, format="HEIF", quality=100)
     heic_pillow = Image.open(out_heic)
-    imagehash.compare_hashes([jpeg_pillow, heic_pillow], hash_type="dhash", max_difference=1)
+    imagehash.compare_hashes([jpeg_pillow, heic_pillow], hash_type="dhash", hash_size=8)
     out_jpeg = BytesIO()
     heic_pillow.save(out_jpeg, format="JPEG")
-    imagehash.compare_hashes([jpeg_pillow, out_jpeg], hash_type="dhash", max_difference=1)
+    imagehash.compare_hashes([jpeg_pillow, out_jpeg], hash_type="dhash", hash_size=8)
 
 
 def test_heic_orientation_and_quality():
