@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2 - 2021-04-23]
+
+### Added
+
+- PyPy 3.9 wheels.
+- (HeifImagePlugin, Heif) `append_images` parameter to `save` methods.
+- (HeifImagePlugin) - `import pillow_heif.HeifImagePlugin` for automatic Pillow plugin registration(as alternative to calling `register_heif_opener`).
+- (HeifImagePlugin, Heif) `quality` can be now `-1` which indicates a lossless encoding.
+- (HeifImagePlugin) - `getxmp` method. Works the same way like in Pillow's `PngImagePlugin` | `JpegImagePlugin`.
+- (Heif) - added raw `xml` as `info["xml"]` and public function `pillow_heif.getxmp`(the same as for `HeifImagePlugin`)
+
+### Changed
+
+### Fixed
+
+- (HeifImagePlugin, Heif) - `Memory Leak` when `Opening` images, that appear in version 0.2.0 was `Slain Like a Hydra` (C)
+- (HeifImagePlugin, Heif) - rare Python crash, with specific `strides` of thumbnails. More tests for that.
+
 ## [0.2.1 - 2022-04-17]
 
 ### Added
