@@ -125,6 +125,8 @@ class HeifImageBase:
         p_img = ffi.new("struct heif_image **")
         check_libheif_error(lib.heif_decode_image(self._handle, p_img, colorspace, chroma, p_options))
         heif_img = ffi.gc(p_img[0], lib.heif_image_release)
+        if self.bit_depth > 8 and self.misc["to_8bit"]:
+            self.bit_depth = 8
         self._img_to_img_data_dict(heif_img, colorspace, chroma)
 
     def _img_to_img_data_dict(self, heif_img, colorspace, chroma):
