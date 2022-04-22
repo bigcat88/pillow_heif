@@ -47,7 +47,7 @@ if pillow_heif.is_supported('input.heic'):
     for img in heif_file:  # you still can use it without iteration, like before.
         img.scale(1024, 768) # `libheif` does not provide much operations, that can be done on image, so just scaling it.
     heif_file.add_thumbnails([768, 512, 256]) # add three new thumbnail boxes.
-    # default quality is probably ~77 in x265, set it a bit lower and specify `save mask`.
+    # default quality is probably ~77 in x265, set it a bit lower.
     heif_file.save('output.heic', quality=70, save_all=False) #save_all is True by default.
     exit(0)
 ```
@@ -65,6 +65,7 @@ From [PyPi](https://pypi.org/project/pillow-heif/) or [Build from source](https:
 | CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | PyPy 3.7 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 | PyPy 3.8 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
+| PyPy 3.9 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
