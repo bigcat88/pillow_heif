@@ -177,6 +177,7 @@ class HeifImage(HeifImageBase):
     def __init__(self, img_id: int, img_index: int, heif_ctx: Union[LibHeifCtx, dict]):
         additional_info = {}
         if isinstance(heif_ctx, LibHeifCtx):
+            self._heif_ctx = heif_ctx
             brand = heif_ctx.misc["brand"]
             p_handle = ffi.new("struct heif_image_handle **")
             error = lib.heif_context_get_image_handle(heif_ctx.ctx, img_id, p_handle)
