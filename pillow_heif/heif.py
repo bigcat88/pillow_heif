@@ -28,10 +28,17 @@ from .private import (
     read_color_profile,
     read_metadata,
     retrieve_exif,
+    retrieve_xmp,
     set_color_profile,
     set_exif,
     set_metadata,
+    set_xmp,
 )
+
+try:
+    from defusedxml import ElementTree
+except ImportError:  # pragma: no cover
+    ElementTree = None  # pragma: no cover
 
 
 class HeifImageBase:
@@ -96,7 +103,7 @@ class HeifImageBase:
             self.stride,
         )
         if isinstance(self, HeifImage):
-            for k in ("main", "brand", "exif", "metadata"):
+            for k in ("main", "brand", "exif", "xmp", "metadata"):
                 image.info[k] = self.info[k]
             for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
                 if k in self.info:
@@ -180,6 +187,7 @@ class HeifImage(HeifImageBase):
             check_libheif_error(error)
             handle = p_handle[0]
             _metadata = read_metadata(handle)
+            _xmp = retrieve_xmp(_metadata)
             _exif = retrieve_exif(_metadata)
             additional_info["metadata"] = _metadata
             _color_profile = read_color_profile(handle)
@@ -193,6 +201,7 @@ class HeifImage(HeifImageBase):
             brand = HeifBrand.UNKNOWN
             handle = None
             _exif = None
+            _xmp = None
             additional_info["metadata"] = []
             additional_info.update(heif_ctx.get("additional_info", {}))
         super().__init__(heif_ctx, handle)
@@ -201,6 +210,7 @@ class HeifImage(HeifImageBase):
             "img_id": img_id,
             "brand": brand,
             "exif": _exif,
+            "xmp": _xmp,
         }
         self.info.update(**additional_info)
         self.thumbnails = _read_thumbnails(heif_ctx, self._handle, img_index)
@@ -350,7 +360,7 @@ class HeifFile:
         for frame in ImageSequence.Iterator(pil_image):
             if frame.width > 0 and frame.height > 0:
                 additional_info = {}
-                for k in ("exif", "icc_profile", "icc_profile_type", "nclx_profile", "metadata", "brand"):
+                for k in ("exif", "xmp", "icc_profile", "icc_profile_type", "nclx_profile", "metadata", "brand"):
                     if k in frame.info:
                         additional_info[k] = frame.info[k]
                 if frame.mode == "P":
@@ -466,6 +476,7 @@ class HeifFile:
             check_libheif_error(error)
             new_img_handle = ffi.gc(p_new_img_handle[0], lib.heif_image_handle_release)
             set_exif(out_ctx, new_img_handle, img.info)
+            set_xmp(out_ctx, new_img_handle, img.info)
             set_metadata(out_ctx, new_img_handle, img.info)
             for thumbnail in img.thumbnails:
                 thumb_box = max(thumbnail.size)
@@ -579,6 +590,49 @@ def open_heif(fp, apply_transformations: bool = True, convert_hdr_to_8bit: bool 
 
 def from_pillow(pil_image: Image.Image, load_one: bool = False) -> HeifFile:
     return HeifFile({}).add_from_pillow(pil_image, load_one)
+
+
+def getxmp(xmp_data):
+    """
+    Returns a dictionary containing the XMP tags.
+    Requires defusedxml to be installed.
+    Copy of function `_getxmp` from Pillow.Image
+
+    :returns: XMP tags in a dictionary.
+    """
+
+    def get_name(tag):
+        return tag.split("}")[1]
+
+    def get_value(element):
+        value = {get_name(k): v for k, v in element.attrib.items()}
+        children = list(element)
+        if children:
+            for child in children:
+                name = get_name(child.tag)
+                child_value = get_value(child)
+                if name in value:
+                    if not isinstance(value[name], list):
+                        value[name] = [value[name]]
+                    value[name].append(child_value)
+                else:
+                    value[name] = child_value
+        elif value:
+            if element.text:
+                value["text"] = element.text
+        else:
+            return element.text
+        return value
+
+    if xmp_data:
+        if ElementTree is None:
+            warn("XMP data cannot be read without defusedxml dependency")
+            return {}
+        _clear_data = xmp_data.rsplit(b"\x00", 1)
+        if _clear_data[0]:
+            root = ElementTree.fromstring(_clear_data[0])
+            return {get_name(root.tag): get_value(root)}
+    return {}
 
 
 def _heif_images_from(images: List[Union[HeifFile, HeifImage, Image.Image]]) -> List[HeifImage]:

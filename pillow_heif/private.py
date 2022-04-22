@@ -111,6 +111,25 @@ def set_exif(ctx: LibHeifCtxWrite, heif_img_handle, info: dict) -> None:
         check_libheif_error(error)
 
 
+def retrieve_xmp(metadata: list):
+    _result = None
+    _purge = []
+    for i, md_block in enumerate(metadata):
+        if md_block["type"] == "mime":
+            _purge.append(i)
+            if not _result:
+                _result = md_block["data"]
+    for i in reversed(_purge):
+        del metadata[i]
+    return _result
+
+
+def set_xmp(ctx: LibHeifCtxWrite, heif_img_handle, info: dict) -> None:
+    if info["xmp"] is not None:
+        error = lib.heif_context_add_XMP_metadata(ctx.ctx, heif_img_handle, info["xmp"], len(info["xmp"]))
+        check_libheif_error(error)
+
+
 def read_metadata(handle) -> list:
     block_count = lib.heif_image_handle_get_number_of_metadata_blocks(handle, ffi.NULL)
     if block_count == 0:

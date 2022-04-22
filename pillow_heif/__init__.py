@@ -36,6 +36,7 @@ from .heif import (
     check,
     check_heif,
     from_pillow,
+    getxmp,
     is_supported,
     open,
     open_heif,
