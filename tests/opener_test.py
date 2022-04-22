@@ -60,6 +60,7 @@ def test_inputs(img_path):
         bytes_io = BytesIO(f.read())
     fh = builtins.open(img_path, "rb")
     for _as in (img_path.as_posix(), bytes_io, fh):
+        exclusive_fp = isinstance(_as, (Path, str, bytes))
         pillow_image = Image.open(_as)
         assert getattr(pillow_image, "fp") is not None
         pillow_image.load()
@@ -68,6 +69,10 @@ def test_inputs(img_path):
         heif_image = from_pillow(pillow_image)
         compare_heif_to_pillow_fields(heif_image, pillow_image)
         assert len(from_pillow(pillow_image, load_one=True)) == 1
+        if getattr(pillow_image, "n_frames") > 1 or not exclusive_fp:
+            assert getattr(pillow_image, "fp") is not None
+        else:
+            assert getattr(pillow_image, "fp") is None
 
 
 def test_after_load():
@@ -130,11 +135,12 @@ def test_open_images(image_path):
         for thumb in ImageSequence.Iterator(pillow_image)[i].info["thumbnails"]:
             assert len(thumb.data)
         assert isinstance(image.getxmp(), dict)
-    assert getattr(pillow_image, "fp") is not None
     if images_count > 1:
+        assert getattr(pillow_image, "fp") is not None
         assert getattr(pillow_image, "heif_file") is not None
         assert not getattr(pillow_image, "_close_exclusive_fp_after_loading")
     else:
+        assert getattr(pillow_image, "fp") is None
         assert getattr(pillow_image, "heif_file") is None
         assert getattr(pillow_image, "_close_exclusive_fp_after_loading")
         # Testing here one more time, just for sure, that missing `heif_file` not affect anything.
