@@ -228,10 +228,11 @@ def test_all(image_path):
                 assert isinstance(thumbnail.load(), HeifThumbnail)
 
 
-def test_no_defusedxml():
+def test_no_defusedxml(monkeypatch):
     import pillow_heif
 
-    pillow_heif.heif.ElementTree = None
-    heif_file = open_heif(Path("images/rgb8_512_512_1_0.heic"))
-    with pytest.warns(UserWarning):
-        getxmp(heif_file.info["xmp"])
+    with monkeypatch.context() as m:
+        m.setattr(pillow_heif.heif, "ElementTree", None)
+        heif_file = open_heif(Path("images/rgb8_512_512_1_0.heic"))
+        with pytest.warns(UserWarning):
+            getxmp(heif_file.info["xmp"])

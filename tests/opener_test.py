@@ -106,7 +106,7 @@ def test_to_from_pillow(image_path):
     compare_heif_files_fields(heif_file, heif_from_pillow)
 
 
-@pytest.mark.parametrize("image_path", dataset.FULL_DATASET[32:])
+@pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
 def test_open_images(image_path):
     pillow_image = Image.open(image_path)
     assert getattr(pillow_image, "fp") is not None
