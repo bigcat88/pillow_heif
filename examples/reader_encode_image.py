@@ -17,7 +17,6 @@ if __name__ == "__main__":
         heif_image = pillow_heif.from_pillow(pillow_image)
         result_path = os.path.join(target_folder, f"{image_path.stem}.heic")
         heif_image.save(result_path, quality=35)
-        heif_image.close()
     except Exception as e:
         print(f"{repr(e)} during processing {image_path.as_posix()}", file=sys.stderr)
         print(traceback.format_exc())

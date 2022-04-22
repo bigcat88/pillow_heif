@@ -14,7 +14,7 @@ if __name__ == "__main__":
     pillow_heif.register_heif_opener()
     target_folder = "../converted"
     os.makedirs(target_folder, exist_ok=True)
-    image_path = Path("images/jpeg_gif_png/pug.jpeg")
+    image_path = Path("images/jpeg_gif_png/pug_90_flipped.jpeg")
     try:
         img = Image.open(image_path)
         img.save(os.path.join(target_folder, f"{image_path.stem}.heic"), quality=50)

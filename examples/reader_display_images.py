@@ -9,7 +9,7 @@ import pillow_heif
 if __name__ == "__main__":
     # Change directory to project root.
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
-    image_path = Path("images/nokia/alpha.heic")
+    image_path = Path("images/etc_heif/nokia/alpha_3_2.heic")
     try:
         if not pillow_heif.is_supported(image_path):
             raise ValueError("Unsupported image.")
