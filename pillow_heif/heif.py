@@ -145,10 +145,6 @@ class HeifImageBase:
         if self._handle is not None:
             self._img_data.clear()
 
-    def close(self):
-        self._img_data.clear()
-        self._handle = None
-
 
 class HeifThumbnail(HeifImageBase):
     def __init__(self, heif_ctx: Union[LibHeifCtx, dict], img_handle, thumb_id: int, img_index: int):
@@ -173,6 +169,7 @@ class HeifThumbnail(HeifImageBase):
         )
 
     def __deepcopy__(self, memo):
+        self.load()  # need this, to change bit_depth when to_8bit=True
         heif_ctx = heif_ctx_as_dict(self.bit_depth, self.mode, self.size, self.data, stride=self.stride)
         return HeifThumbnail(heif_ctx, None, self.info["thumb_id"], self.info["img_index"])
 
@@ -189,8 +186,8 @@ class HeifImage(HeifImageBase):
             check_libheif_error(error)
             handle = p_handle[0]
             _metadata = read_metadata(handle)
-            _xmp = retrieve_xmp(_metadata)
             _exif = retrieve_exif(_metadata)
+            _xmp = retrieve_xmp(_metadata)
             additional_info["metadata"] = _metadata
             _color_profile = read_color_profile(handle)
             if _color_profile:
@@ -348,13 +345,6 @@ class HeifFile:
                 break
         return self
 
-    def unload(self, everything: bool = False):
-        for img in self:
-            img.unload()
-            if not everything:
-                break
-        return self
-
     def scale(self, width: int, height: int) -> None:
         self._images[0].scale(width, height)
 
@@ -391,6 +381,7 @@ class HeifFile:
         else:
             heif_images = [heif_image]
         for image in heif_images:
+            image.load()
             additional_info = image.info.copy()
             additional_info.pop("img_id", None)
             additional_info.pop("main", None)
@@ -426,22 +417,10 @@ class HeifFile:
         if not self._images:
             raise ValueError("Cannot write empty image as HEIF.")
         _heif_write_ctx = LibHeifCtxWrite(fp)
-        _encoder = self._get_encoder(_heif_write_ctx, kwargs.get("quality", None), kwargs.get("enc_params", []))
+        _encoder = self._get_encoder(_heif_write_ctx.ctx, kwargs.get("quality", None), kwargs.get("enc_params", []))
         self._save(_heif_write_ctx, _encoder, not save_all, append_images)
-        error = lib.heif_context_write(_heif_write_ctx.ctx, _heif_write_ctx.writer, _heif_write_ctx.cpointer)
+        error = lib.heif_context_write(_heif_write_ctx.ctx, _heif_write_ctx.writer, _heif_write_ctx.c_userdata)
         check_libheif_error(error)
-        _heif_write_ctx.close()
-
-    def close(self, only_fp: bool = False, thumbnails: bool = True):
-        if isinstance(self._heif_ctx, LibHeifCtx):
-            self._heif_ctx.close()
-        if not only_fp:
-            for img in self:
-                if thumbnails:
-                    for thumb in img.thumbnails:
-                        thumb.close()
-                img.close()
-            self._heif_ctx = None
 
     def __repr__(self):
         return f"<{self.__class__.__name__} with {len(self)} images: {[str(i) for i in self]}>"
@@ -462,9 +441,6 @@ class HeifFile:
         if key < 0 or key >= len(self._images):
             raise IndexError(f"invalid image index: {key}")
         del self._images[key]
-
-    def __del__(self):
-        self.close(only_fp=True)
 
     def _save(self, out_ctx: LibHeifCtxWrite, encoder, save_one: bool, append_images: List[HeifImage]) -> None:
         encoding_options = lib.heif_encoding_options_alloc()
@@ -508,19 +484,18 @@ class HeifFile:
 
     @staticmethod
     def _get_encoder(heif_ctx, quality: int = None, enc_params: List[Tuple[str, str]] = None):
-        p_encoder_descriptor = ffi.new("struct heif_encoder_descriptor **")
-        lib.heif_context_get_encoder_descriptors(
-            heif_ctx.cpointer, HeifCompressionFormat.HEVC, ffi.NULL, p_encoder_descriptor, 1
-        )
         p_encoder = ffi.new("struct heif_encoder **")
-        error = lib.heif_context_get_encoder(heif_ctx.cpointer, p_encoder_descriptor[0], p_encoder)
+        error = lib.heif_context_get_encoder_for_format(heif_ctx, HeifCompressionFormat.HEVC, p_encoder)
         check_libheif_error(error)
         encoder = ffi.gc(p_encoder[0], lib.heif_encoder_release)
         # lib.heif_encoder_set_logging_level(encoder, 4)
-        if quality is None and options().quality is not None:
+        if quality is None:
             quality = options().quality
-        if quality:
-            lib.heif_encoder_set_lossy_quality(encoder, quality)
+        if quality is not None:
+            if quality == -1:
+                check_libheif_error(lib.heif_encoder_set_lossless(encoder, True))
+            else:
+                check_libheif_error(lib.heif_encoder_set_lossy_quality(encoder, quality))
         if enc_params:
             for enc_param in enc_params:
                 check_libheif_error(
@@ -576,7 +551,7 @@ def is_supported(fp) -> bool:
 
 def open_heif(fp, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> HeifFile:
     heif_ctx = LibHeifCtx(fp, apply_transformations, convert_hdr_to_8bit)
-    check_libheif_error(lib.heif_context_read_from_reader(heif_ctx.ctx, heif_ctx.reader, heif_ctx.cpointer, ffi.NULL))
+    check_libheif_error(lib.heif_context_read_from_reader(heif_ctx.ctx, heif_ctx.reader, heif_ctx.c_userdata, ffi.NULL))
     p_main_image_id = ffi.new("heif_item_id *")
     check_libheif_error(lib.heif_context_get_primary_image_ID(heif_ctx.ctx, p_main_image_id))
     main_image_id = p_main_image_id[0]
@@ -672,14 +647,14 @@ def check(fp):
 
 
 def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # pylint: disable=redefined-builtin
-    warn("Function `open` is deprecated and will be removed in 0.2.1, use `open_heif` instead.", DeprecationWarning)
+    warn("Function `open` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
     return open_heif(
         fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
     )  # pragma: no cover
 
 
 def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
-    warn("Function `read` is deprecated, use `open_heif` instead.", DeprecationWarning)
+    warn("Function `read` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
     return open_heif(
         fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
     )  # pragma: no cover
