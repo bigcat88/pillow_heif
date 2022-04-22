@@ -43,6 +43,10 @@ class HeifImageFile(ImageFile.ImageFile):
                 self.info["thumbnails"] = deepcopy(self.info["thumbnails"])
                 self.heif_file = None
                 self._close_exclusive_fp_after_loading = True
+        # Temporary code, till understand how to fill `tile`
+        if getattr(self, "_exclusive_fp", False) and self._close_exclusive_fp_after_loading:
+            self.fp.close()
+        self.fp = None
         return super().load()
 
     def getxmp(self) -> dict:
