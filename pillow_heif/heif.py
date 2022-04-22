@@ -172,7 +172,7 @@ class HeifThumbnail(HeifImageBase):
         )
 
     def __deepcopy__(self, memo):
-        self.load()  # need this, to change bit_depth if to_8bit=True
+        self.load()  # need this, to change bit_depth when to_8bit=True
         heif_ctx = heif_ctx_as_dict(self.bit_depth, self.mode, self.size, self.data, stride=self.stride)
         return HeifThumbnail(heif_ctx, None, self.info["thumb_id"], self.info["img_index"])
 
@@ -650,14 +650,14 @@ def check(fp):
 
 
 def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # pylint: disable=redefined-builtin
-    warn("Function `open` is deprecated and will be removed in 0.2.1, use `open_heif` instead.", DeprecationWarning)
+    warn("Function `open` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
     return open_heif(
         fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
     )  # pragma: no cover
 
 
 def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
-    warn("Function `read` is deprecated, use `open_heif` instead.", DeprecationWarning)
+    warn("Function `read` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
     return open_heif(
         fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
     )  # pragma: no cover

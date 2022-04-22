@@ -73,25 +73,25 @@ def test_inputs(img_path):
 def test_after_load():
     img = Image.open(Path("images/rgb8_512_512_1_0.heic"))
     assert getattr(img, "heif_file") is not None
-    img.load()
-    collect()
-    assert not getattr(img, "is_animated")
-    assert getattr(img, "n_frames") == 1
-    assert not img.info["thumbnails"]
-    assert getattr(img, "heif_file") is None
-    assert len(ImageSequence.Iterator(img)[0].tobytes())
+    for i in range(3):
+        img.load()
+        collect()
+        assert not getattr(img, "is_animated")
+        assert getattr(img, "n_frames") == 1
+        assert not img.info["thumbnails"]
+        assert getattr(img, "heif_file") is None
+        assert len(ImageSequence.Iterator(img)[0].tobytes())
     img = Image.open(Path("images/rgb8_128_128_2_1.heic"))
-    assert getattr(img, "heif_file") is not None
-    img.load()
-    collect()
-    assert getattr(img, "is_animated")
-    assert getattr(img, "n_frames") == 2
-    assert len(img.info["thumbnails"]) == 1
-    assert getattr(img, "heif_file") is not None
-    assert len(ImageSequence.Iterator(img)[0].info["thumbnails"]) == 1
-    assert len(ImageSequence.Iterator(img)[1].info["thumbnails"]) == 1
-    assert len(ImageSequence.Iterator(img)[0].tobytes())
-    assert len(ImageSequence.Iterator(img)[1].tobytes())
+    for i in range(3):
+        collect()
+        assert getattr(img, "is_animated")
+        assert getattr(img, "n_frames") == 2
+        assert len(img.info["thumbnails"]) == 1
+        assert getattr(img, "heif_file") is not None
+        assert len(ImageSequence.Iterator(img)[0].info["thumbnails"]) == 1
+        assert len(ImageSequence.Iterator(img)[1].info["thumbnails"]) == 1
+        assert len(ImageSequence.Iterator(img)[0].tobytes())
+        assert len(ImageSequence.Iterator(img)[1].tobytes())
 
 
 @pytest.mark.parametrize("image_path", dataset.MINIMAL_DATASET)
@@ -106,7 +106,7 @@ def test_to_from_pillow(image_path):
     compare_heif_files_fields(heif_file, heif_from_pillow)
 
 
-@pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
+@pytest.mark.parametrize("image_path", dataset.FULL_DATASET[32:])
 def test_open_images(image_path):
     pillow_image = Image.open(image_path)
     assert getattr(pillow_image, "fp") is not None
@@ -125,6 +125,7 @@ def test_open_images(image_path):
         _last_img_id = image.info["img_id"]
         if not i:
             assert image.info["main"]
+        collect()
         assert len(ImageSequence.Iterator(pillow_image)[i].tobytes())
         for thumb in ImageSequence.Iterator(pillow_image)[i].info["thumbnails"]:
             assert len(thumb.data)
@@ -136,3 +137,7 @@ def test_open_images(image_path):
     else:
         assert getattr(pillow_image, "heif_file") is None
         assert getattr(pillow_image, "_close_exclusive_fp_after_loading")
+        # Testing here one more time, just for sure, that missing `heif_file` not affect anything.
+        collect()
+        assert pillow_image.tobytes()
+        assert len(ImageSequence.Iterator(pillow_image)[0].tobytes())
