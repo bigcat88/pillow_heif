@@ -36,19 +36,16 @@ class HeifImageFile(ImageFile.ImageFile):
         if self.heif_file:
             frame_heif = self._heif_file_by_index(self.tell())
             self.load_prepare()
-            self.frombytes(frame_heif.data, "raw", (self.mode, frame_heif.stride))
+            self.frombytes(frame_heif.data, "raw", (frame_heif.mode, frame_heif.stride))
             if self.is_animated:
                 frame_heif.unload()
             else:
                 self.info["thumbnails"] = deepcopy(self.info["thumbnails"])
                 self.heif_file = None
                 self._close_exclusive_fp_after_loading = True
-            # ==================================================
-            # Temporary code, till understand how to fill `tile`
-            if self.fp and getattr(self, "_exclusive_fp", False) and self._close_exclusive_fp_after_loading:
-                self.fp.close()
+                if self.fp and getattr(self, "_exclusive_fp", False) and hasattr(self.fp, "close"):
+                    self.fp.close()
                 self.fp = None
-            # ==================================================
         return super().load()
 
     def getxmp(self) -> dict:
