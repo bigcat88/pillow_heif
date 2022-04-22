@@ -2,7 +2,6 @@
 Functions and classes for heif images to read and write.
 """
 import builtins
-import gc
 from copy import deepcopy
 from typing import Any, Dict, Iterator, List, Tuple, Union
 from warnings import warn
@@ -109,10 +108,8 @@ class HeifImageBase:
             for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
                 if k in self.info:
                     image.info[k] = self.info[k]
-            gc.collect()
             if not ignore_thumbnails:
                 image.info["thumbnails"] = deepcopy(self.thumbnails)
-            gc.collect()
             image.info["original_orientation"] = reset_orientation(image.info)
         return image
 
