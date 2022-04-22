@@ -2,8 +2,6 @@
 Options to change pillow_heif runtime behaviour.
 """
 
-from warnings import warn
-
 from ._lib_info import have_decoder_for_format, have_encoder_for_format
 from .constants import HeifCompressionFormat
 
@@ -44,16 +42,6 @@ class PyLibHeifOptions:
         self._cfg["thumbnails"] = value
 
     @property
-    def thumbnails_autoload(self) -> bool:
-        warn("Property `thumbnails_autoload` is deprecated.", DeprecationWarning)
-        return self._cfg["thumbnails_autoload"]  # pragma: no cover
-
-    @thumbnails_autoload.setter
-    def thumbnails_autoload(self, value: bool):
-        warn("Property `thumbnails_autoload` is deprecated.", DeprecationWarning)
-        self._cfg["thumbnails_autoload"] = value  # pragma: no cover
-
-    @property
     def quality(self):
         return self._cfg["quality"]
 
@@ -72,7 +60,6 @@ class PyLibHeifOptions:
         self._cfg["strict"] = False
         self._cfg["thumbnails"] = True
         self._cfg["quality"] = None
-        self._cfg["thumbnails_autoload"] = False  # DEPRECATED
 
 
 CFG_OPTIONS: PyLibHeifOptions = PyLibHeifOptions()
