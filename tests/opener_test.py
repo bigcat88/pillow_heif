@@ -60,7 +60,6 @@ def test_inputs(img_path):
         bytes_io = BytesIO(f.read())
     fh = builtins.open(img_path, "rb")
     for _as in (img_path.as_posix(), bytes_io, fh):
-        exclusive_fp = isinstance(_as, (Path, str, bytes))
         pillow_image = Image.open(_as)
         assert getattr(pillow_image, "fp") is not None
         pillow_image.load()
@@ -69,7 +68,7 @@ def test_inputs(img_path):
         heif_image = from_pillow(pillow_image)
         compare_heif_to_pillow_fields(heif_image, pillow_image)
         assert len(from_pillow(pillow_image, load_one=True)) == 1
-        if getattr(pillow_image, "n_frames") > 1 or not exclusive_fp:
+        if getattr(pillow_image, "n_frames") > 1:
             assert getattr(pillow_image, "fp") is not None
         else:
             assert getattr(pillow_image, "fp") is None

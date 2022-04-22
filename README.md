@@ -81,6 +81,7 @@ The returned `HeifImageFile` by `Pillow` function `Image.open` has the following
   * `main` - boolean indication if this a main image in sequence.
   * `brand` - value from int enum `HeifBrand`.
   * `exif` - exif data or `None`.
+  * `xmp` - xmp data or `None`.
   * `metadata` - is a list of dictionaries with `type` and `data` keys, excluding `exif`. May be empty.
   * `icc_profile` - contains data and present only when file has `ICC` color profile(`prof` or `rICC`).
   * `nclx_profile` - contains data and present only when file has `NCLX` color profile.
