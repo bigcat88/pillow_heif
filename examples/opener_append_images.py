@@ -13,8 +13,8 @@ if __name__ == "__main__":
     os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
     target_folder = "../converted"
     os.makedirs(target_folder, exist_ok=True)
-    image_path = Path("images/pug_1_0.heic")
-    append_image_path = Path("images/pug_1_2.heic")
+    image_path = Path("images/rgb8_512_512_1_0.heic")
+    append_image_path = Path("images/rgb8_512_512_1_2.heic")
     try:
         img = Image.open(image_path)
         append_img = Image.open(append_image_path)
