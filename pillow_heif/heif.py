@@ -177,6 +177,7 @@ class HeifImage(HeifImageBase):
     def __init__(self, img_id: int, img_index: int, heif_ctx: Union[LibHeifCtx, dict]):
         additional_info = {}
         if isinstance(heif_ctx, LibHeifCtx):
+            self._heif_ctx = heif_ctx
             brand = heif_ctx.misc["brand"]
             p_handle = ffi.new("struct heif_image_handle **")
             error = lib.heif_context_get_image_handle(heif_ctx.ctx, img_id, p_handle)
@@ -354,10 +355,12 @@ class HeifFile:
                 for k in ("exif", "xmp", "icc_profile", "icc_profile_type", "nclx_profile", "metadata", "brand"):
                     if k in frame.info:
                         additional_info[k] = frame.info[k]
+                        # if k == "exif":
+                        #     additional_info["original_orientation"] = reset_orientation(additional_info)
                 if frame.mode == "P":
                     mode = "RGBA" if frame.info.get("transparency") else "RGB"
                     frame = frame.convert(mode=mode)
-                # How here we can detect bit-depth of Pillow image? pallete.rawmode or maybe something else?
+                # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?
                 __bit_depth = 8
                 self._add_frombytes(__bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
                 for thumb in frame.info.get("thumbnails", []):

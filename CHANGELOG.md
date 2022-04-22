@@ -18,8 +18,9 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - (HeifImagePlugin, Heif) - `Memory Leak` when `Opening` images, that appear in version 0.2.0 was `Slain Like a Hydra` (C)
-- (HeifImagePlugin, Heif) - rare Python crash, with specific `strides` of thumbnails. More tests for that.
 - (HeifImagePlugin) - closing exclusive `fp`, this bug was only in 0.2.0+ versions.
+- (HeifImagePlugin, Heif) - rare Python crash, with specific `strides` of thumbnails. More tests for that.
+- (HeifImagePlugin, Heif) - Python crash when HeifFile closes its HeifImages when they are still referenced.
 
 ## [0.2.1 - 2022-04-17]
 

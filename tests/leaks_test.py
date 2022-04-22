@@ -59,7 +59,7 @@ def _get_mem_usage():
 @pytest.mark.skipif(sys.platform.lower() == "win32", reason="requires Unix or macOS")
 def test_open_save_leaks():
     mem_limit = None
-    for i in range(300):
+    for i in range(750):
         # do_save=False
         # Reason: https://bitbucket.org/multicoreware/x265_git/issues/616/x265_encoder_open-leaks-memory-zoneparam
         perform_open_save(1, Path("images/rgb8_128_128_2_1.heic"), do_save=False)

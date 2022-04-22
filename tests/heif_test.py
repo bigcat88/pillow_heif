@@ -191,6 +191,14 @@ def test_inputs(img_path):
             assert len(heif_file_from[len(heif_file_from) - 1].data)
 
 
+def test_only_heif_image_reference():
+    empty_heif_container = HeifFile({})
+    empty_heif_container.add_from_heif(open_heif(Path("images/rgb8_512_512_1_0.heic"))[0])
+    empty_heif_container.add_from_heif(open_heif(Path("images/rgb8_128_128_2_1.heic"))[1])
+    assert len(empty_heif_container) == 2
+    empty_heif_container.load(everything=True)
+
+
 @pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
 def test_all(image_path):
     heif_file = open_heif(image_path)
