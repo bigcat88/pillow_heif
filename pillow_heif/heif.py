@@ -1,7 +1,6 @@
 """
 Functions and classes for heif images to read and write.
 """
-import builtins
 from copy import deepcopy
 from typing import Any, Dict, Iterator, List, Tuple, Union
 from warnings import warn
@@ -511,10 +510,6 @@ class HeifFile:
         __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
         __img_index = kwargs.get("img_index", len(self._images))
         return HeifThumbnail(__heif_ctx, None, __new_id, __img_index)
-
-    def _debug_dump(self, file_path="debug_boxes_dump.txt"):
-        with builtins.open(file_path, "wb") as f:
-            lib.heif_context_debug_dump_boxes_to_file(self._heif_ctx.ctx, f.fileno())
 
 
 def check_heif(fp):

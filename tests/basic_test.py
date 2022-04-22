@@ -27,13 +27,6 @@ def test_lib_version():
     assert pillow_heif.libheif_version() == "1.12.0"
 
 
-def test_debug_boxes_dump():
-    heif_file = pillow_heif.open_heif(dataset.MINIMAL_DATASET[0])
-    heif_file._debug_dump("debug_dump.txt")
-    assert Path("debug_dump.txt").stat().st_size > 100
-    Path("debug_dump.txt").unlink()
-
-
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)
 def test_get_file_mimetype(img_path):
     mimetype = pillow_heif.get_file_mimetype(img_path)

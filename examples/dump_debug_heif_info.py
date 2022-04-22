@@ -14,11 +14,6 @@ if __name__ == "__main__":
     print("Supported:", pillow_heif.is_supported(file))
     print("Mime:", pillow_heif.get_file_mimetype(file))
     heif_file = pillow_heif.open_heif(file, convert_hdr_to_8bit=False)
-    # # Uncomment this if you need `boxes` from heif header.
-    # from pathlib import Path
-    # boxes_name = Path(file).stem + ".txt"
-    # print(f"Saving debug boxes to {boxes_name}")
-    # heif_file._debug_dump(boxes_name)  # noqa
     print("Number of images:", len(heif_file))
     print("Number of thumbnails:", len(list(heif_file.thumbnails_all())))
     print("Information about each image:")
