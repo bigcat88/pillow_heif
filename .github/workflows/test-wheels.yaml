@@ -35,7 +35,7 @@ jobs:
     steps:
       - name: Delay, waiting Pypi to update.
         if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: sleep 90
+        run: sleep 180
 
       - uses: actions/checkout@v3
       - name: Set up QEMU
@@ -107,7 +107,7 @@ jobs:
     steps:
       - name: Delay, waiting Pypi to update.
         if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: sleep 90
+        run: sleep 180
 
       - uses: actions/checkout@v3
       - name: Set up Python
@@ -135,7 +135,7 @@ jobs:
     steps:
       - name: Delay, waiting Pypi to update.
         if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: sleep 90
+        run: sleep 180
 
       - uses: actions/checkout@v3
       - name: Set up Python

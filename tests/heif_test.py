@@ -149,11 +149,11 @@ def test_heif_from_heif(img_path):
 
 @pytest.mark.parametrize("img_path", dataset.MINIMAL_DATASET)
 def test_inputs(img_path):
-    with builtins.open(img_path, "rb") as f:
-        b = f.read()
-        non_exclusive = [open_heif(BytesIO(b)), open_heif(f)]
-        exclusive = [open_heif(img_path), open_heif(b)]
-        for heif_file in [*non_exclusive, *exclusive]:
+    with builtins.open(img_path, "rb") as fh:
+        b = fh.read()
+        bytes_io = BytesIO(b)
+        for fp in [bytes_io, fh, img_path, img_path.as_posix(), b]:
+            heif_file = open_heif(fp)
             assert min(heif_file.size) > 0
             assert heif_file.info
             assert getattr(heif_file, "_heif_ctx") is not None
@@ -176,7 +176,7 @@ def test_inputs(img_path):
             collect()
             assert getattr(heif_file, "_heif_ctx") is not None
             assert getattr(heif_file._heif_ctx, "fp") is not None
-            assert getattr(heif_file._heif_ctx, "_fp_close_after") == bool(heif_file in exclusive)
+            assert getattr(heif_file._heif_ctx, "_fp_close_after") == isinstance(fp, (Path, str, bytes))
             # Create new heif_file
             heif_file_from = HeifFile({}).add_from_heif(heif_file)
             collect()
@@ -189,6 +189,8 @@ def test_inputs(img_path):
             compare_heif_files_fields(heif_file_from, heif_file)
             heif_file = None  # noqa
             assert len(heif_file_from[len(heif_file_from) - 1].data)
+            if not isinstance(fp, (Path, str, bytes)):
+                assert not fp.closed
 
 
 def test_only_heif_image_reference():

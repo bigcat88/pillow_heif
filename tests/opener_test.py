@@ -56,22 +56,23 @@ def test_corrupted_open(img_path):
 
 @pytest.mark.parametrize("img_path", dataset.MINIMAL_DATASET)
 def test_inputs(img_path):
-    with builtins.open(img_path, "rb") as f:
-        bytes_io = BytesIO(f.read())
-    fh = builtins.open(img_path, "rb")
-    for _as in (img_path.as_posix(), bytes_io, fh):
-        pillow_image = Image.open(_as)
-        assert getattr(pillow_image, "fp") is not None
-        pillow_image.load()
-        for frame in ImageSequence.Iterator(pillow_image):
-            assert len(frame.tobytes()) > 0
-        heif_image = from_pillow(pillow_image)
-        compare_heif_to_pillow_fields(heif_image, pillow_image)
-        assert len(from_pillow(pillow_image, load_one=True)) == 1
-        if getattr(pillow_image, "n_frames") > 1:
+    with builtins.open(img_path, "rb") as fh:
+        bytes_io = BytesIO(fh.read())
+        for fp in [bytes_io, fh, img_path, img_path.as_posix()]:
+            pillow_image = Image.open(fp)
             assert getattr(pillow_image, "fp") is not None
-        else:
-            assert getattr(pillow_image, "fp") is None
+            pillow_image.load()
+            for frame in ImageSequence.Iterator(pillow_image):
+                assert len(frame.tobytes()) > 0
+            heif_image = from_pillow(pillow_image)
+            compare_heif_to_pillow_fields(heif_image, pillow_image)
+            assert len(from_pillow(pillow_image, load_one=True)) == 1
+            if getattr(pillow_image, "n_frames") > 1:
+                assert getattr(pillow_image, "fp") is not None
+            else:
+                assert getattr(pillow_image, "fp") is None
+            if not isinstance(fp, (Path, str)):
+                assert not fp.closed
 
 
 def test_after_load():
