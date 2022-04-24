@@ -8,6 +8,7 @@ from pathlib import Path
 
 from _pillow_heif_cffi import ffi, lib
 
+from .error import check_libheif_error
 from .misc import _get_bytes
 
 
@@ -46,21 +47,20 @@ class LibHeifCtx:
 
 
 class LibHeifCtxWrite:
-    def __init__(self, fp):
-        self._fp_close_after = False
-        self.fp = self._get_fp(fp)
-        self.c_userdata = ffi.new_handle(self.fp)
+    def __init__(self):
         self.ctx = ffi.gc(lib.heif_context_alloc(), lib.heif_context_free)
-        self.writer = self._get_heif_writer()
 
-    def __del__(self):
-        if self._fp_close_after and self.fp and hasattr(self.fp, "close"):
-            self.fp.close()
-        self.fp = None
-
-    def _get_fp(self, fp):
+    def write(self, fp):
+        __fp = self._get_fp(fp)
+        c_userdata = ffi.new_handle(__fp)
+        error = lib.heif_context_write(self.ctx, self._get_heif_writer(), c_userdata)
         if isinstance(fp, (str, Path)):
-            self._fp_close_after = True
+            __fp.close()
+        check_libheif_error(error)
+
+    @staticmethod
+    def _get_fp(fp):
+        if isinstance(fp, (str, Path)):
             return builtins.open(fp, "wb")
         if hasattr(fp, "write"):
             return fp

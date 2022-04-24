@@ -418,11 +418,10 @@ class HeifFile:
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
         if not self._images:
             raise ValueError("Cannot write empty image as HEIF.")
-        _heif_write_ctx = LibHeifCtxWrite(fp)
-        _encoder = self._get_encoder(_heif_write_ctx.ctx, kwargs.get("quality", None), kwargs.get("enc_params", []))
-        self._save(_heif_write_ctx, _encoder, not save_all, append_images)
-        error = lib.heif_context_write(_heif_write_ctx.ctx, _heif_write_ctx.writer, _heif_write_ctx.c_userdata)
-        check_libheif_error(error)
+        heif_ctx_write = LibHeifCtxWrite()
+        _encoder = self._get_encoder(heif_ctx_write, kwargs.get("quality", None), kwargs.get("enc_params", []))
+        self._save(heif_ctx_write, _encoder, not save_all, append_images)
+        heif_ctx_write.write(fp)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} with {len(self)} images: {[str(i) for i in self]}>"
@@ -485,9 +484,9 @@ class HeifFile:
         return self
 
     @staticmethod
-    def _get_encoder(heif_ctx, quality: int = None, enc_params: List[Tuple[str, str]] = None):
+    def _get_encoder(out_ctx: LibHeifCtxWrite, quality: int = None, enc_params: List[Tuple[str, str]] = None):
         p_encoder = ffi.new("struct heif_encoder **")
-        error = lib.heif_context_get_encoder_for_format(heif_ctx, HeifCompressionFormat.HEVC, p_encoder)
+        error = lib.heif_context_get_encoder_for_format(out_ctx.ctx, HeifCompressionFormat.HEVC, p_encoder)
         check_libheif_error(error)
         encoder = ffi.gc(p_encoder[0], lib.heif_encoder_release)
         # lib.heif_encoder_set_logging_level(encoder, 4)
