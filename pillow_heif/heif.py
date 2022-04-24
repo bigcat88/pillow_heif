@@ -412,7 +412,7 @@ class HeifFile:
         if not self._images and not append_images:
             raise ValueError("Cannot write empty image as HEIF.")
         heif_ctx_write = LibHeifCtxWrite()
-        heif_ctx_write.set_encoder_parameters(kwargs.get("quality", options().quality), kwargs.get("enc_params", []))
+        heif_ctx_write.set_encoder_parameters(kwargs.get("enc_params", []), kwargs.get("quality", options().quality))
         self._save(heif_ctx_write, not save_all, append_images)
         heif_ctx_write.write(fp)
 

@@ -57,9 +57,7 @@ class LibHeifCtxWrite:
         self.encoder = ffi.gc(p_encoder[0], lib.heif_encoder_release)
         # lib.heif_encoder_set_logging_level(self.encoder, 4)
 
-    def set_encoder_parameters(self, quality: int = None, enc_params: List[Tuple[str, str]] = None):
-        if enc_params is None:
-            enc_params = []
+    def set_encoder_parameters(self, enc_params: List[Tuple[str, str]], quality: int = None):
         if quality is not None:
             if quality == -1:
                 check_libheif_error(lib.heif_encoder_set_lossless(self.encoder, True))
