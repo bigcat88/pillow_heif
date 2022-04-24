@@ -5,9 +5,12 @@ Callback functions and classes for libheif `heif_context_read_from_reader` and `
 import builtins
 from io import SEEK_END, SEEK_SET, BytesIO
 from pathlib import Path
+from typing import List, Tuple
 
 from _pillow_heif_cffi import ffi, lib
 
+from .constants import HeifCompressionFormat
+from .error import check_libheif_error
 from .misc import _get_bytes
 
 
@@ -46,21 +49,38 @@ class LibHeifCtx:
 
 
 class LibHeifCtxWrite:
-    def __init__(self, fp):
-        self._fp_close_after = False
-        self.fp = self._get_fp(fp)
-        self.c_userdata = ffi.new_handle(self.fp)
+    def __init__(self, compression_format: int = HeifCompressionFormat.HEVC):
         self.ctx = ffi.gc(lib.heif_context_alloc(), lib.heif_context_free)
-        self.writer = self._get_heif_writer()
+        p_encoder = ffi.new("struct heif_encoder **")
+        error = lib.heif_context_get_encoder_for_format(self.ctx, compression_format, p_encoder)
+        check_libheif_error(error)
+        self.encoder = ffi.gc(p_encoder[0], lib.heif_encoder_release)
+        # lib.heif_encoder_set_logging_level(self.encoder, 4)
 
-    def __del__(self):
-        if self._fp_close_after and self.fp and hasattr(self.fp, "close"):
-            self.fp.close()
-        self.fp = None
+    def set_encoder_parameters(self, quality: int = None, enc_params: List[Tuple[str, str]] = None):
+        if enc_params is None:
+            enc_params = []
+        if quality is not None:
+            if quality == -1:
+                check_libheif_error(lib.heif_encoder_set_lossless(self.encoder, True))
+            else:
+                check_libheif_error(lib.heif_encoder_set_lossy_quality(self.encoder, quality))
+        for param in enc_params:
+            check_libheif_error(
+                lib.heif_encoder_set_parameter(self.encoder, param[0].encode("ascii"), param[1].encode("ascii"))
+            )
 
-    def _get_fp(self, fp):
+    def write(self, fp):
+        __fp = self._get_fp(fp)
+        c_userdata = ffi.new_handle(__fp)
+        error = lib.heif_context_write(self.ctx, self._get_heif_writer(), c_userdata)
         if isinstance(fp, (str, Path)):
-            self._fp_close_after = True
+            __fp.close()
+        check_libheif_error(error)
+
+    @staticmethod
+    def _get_fp(fp):
+        if isinstance(fp, (str, Path)):
             return builtins.open(fp, "wb")
         if hasattr(fp, "write"):
             return fp
