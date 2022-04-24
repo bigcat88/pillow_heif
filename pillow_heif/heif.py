@@ -2,7 +2,7 @@
 Functions and classes for heif images to read and write.
 """
 from copy import deepcopy
-from typing import Any, Dict, Iterator, List, Tuple, Union
+from typing import Any, Dict, Iterator, List, Union
 from warnings import warn
 
 from _pillow_heif_cffi import ffi, lib
@@ -10,14 +10,7 @@ from PIL import Image, ImageSequence
 
 from ._libheif_ctx import LibHeifCtx, LibHeifCtxWrite
 from ._options import options
-from .constants import (
-    HeifBrand,
-    HeifChannel,
-    HeifChroma,
-    HeifColorspace,
-    HeifCompressionFormat,
-    HeifFiletype,
-)
+from .constants import HeifBrand, HeifChannel, HeifChroma, HeifColorspace, HeifFiletype
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, _get_chroma, reset_orientation
 from .private import (
@@ -416,11 +409,11 @@ class HeifFile:
         append_images = _heif_images_from(kwargs.get("append_images", [])) if save_all else []
         if not options().hevc_enc:
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
-        if not self._images:
+        if not self._images and not append_images:
             raise ValueError("Cannot write empty image as HEIF.")
         heif_ctx_write = LibHeifCtxWrite()
-        _encoder = self._get_encoder(heif_ctx_write, kwargs.get("quality", None), kwargs.get("enc_params", []))
-        self._save(heif_ctx_write, _encoder, not save_all, append_images)
+        heif_ctx_write.set_encoder_parameters(kwargs.get("quality", options().quality), kwargs.get("enc_params", []))
+        self._save(heif_ctx_write, not save_all, append_images)
         heif_ctx_write.write(fp)
 
     def __repr__(self):
@@ -443,30 +436,30 @@ class HeifFile:
             raise IndexError(f"invalid image index: {key}")
         del self._images[key]
 
-    def _save(self, out_ctx: LibHeifCtxWrite, encoder, save_one: bool, append_images: List[HeifImage]) -> None:
-        encoding_options = lib.heif_encoding_options_alloc()
-        encoding_options = ffi.gc(encoding_options, lib.heif_encoding_options_free)
+    def _save(self, ctx: LibHeifCtxWrite, save_one: bool, append_images: List[HeifImage]) -> None:
+        enc_options = lib.heif_encoding_options_alloc()
+        enc_options = ffi.gc(enc_options, lib.heif_encoding_options_free)
         for img in list(self) + append_images:
             img.load()
             new_img = create_image(img.size, img.chroma, get_img_depth(img), img.mode, img.data, stride=img.stride)
             set_color_profile(new_img, img.info)
             p_new_img_handle = ffi.new("struct heif_image_handle **")
-            error = lib.heif_context_encode_image(out_ctx.ctx, new_img, encoder, encoding_options, p_new_img_handle)
+            error = lib.heif_context_encode_image(ctx.ctx, new_img, ctx.encoder, enc_options, p_new_img_handle)
             check_libheif_error(error)
             new_img_handle = ffi.gc(p_new_img_handle[0], lib.heif_image_handle_release)
-            set_exif(out_ctx, new_img_handle, img.info)
-            set_xmp(out_ctx, new_img_handle, img.info)
-            set_metadata(out_ctx, new_img_handle, img.info)
+            set_exif(ctx, new_img_handle, img.info)
+            set_xmp(ctx, new_img_handle, img.info)
+            set_metadata(ctx, new_img_handle, img.info)
             for thumbnail in img.thumbnails:
                 thumb_box = max(thumbnail.size)
                 if max(img.size) > thumb_box > 3:
                     p_new_thumb_handle = ffi.new("struct heif_image_handle **")
                     error = lib.heif_context_encode_thumbnail(
-                        out_ctx.ctx,
+                        ctx.ctx,
                         new_img,
                         new_img_handle,
-                        encoder,
-                        encoding_options,
+                        ctx.encoder,
+                        enc_options,
                         thumb_box,
                         p_new_thumb_handle,
                     )
@@ -482,27 +475,6 @@ class HeifFile:
         __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
         self._images.append(HeifImage(__new_id, len(self), __heif_ctx))
         return self
-
-    @staticmethod
-    def _get_encoder(out_ctx: LibHeifCtxWrite, quality: int = None, enc_params: List[Tuple[str, str]] = None):
-        p_encoder = ffi.new("struct heif_encoder **")
-        error = lib.heif_context_get_encoder_for_format(out_ctx.ctx, HeifCompressionFormat.HEVC, p_encoder)
-        check_libheif_error(error)
-        encoder = ffi.gc(p_encoder[0], lib.heif_encoder_release)
-        # lib.heif_encoder_set_logging_level(encoder, 4)
-        if quality is None:
-            quality = options().quality
-        if quality is not None:
-            if quality == -1:
-                check_libheif_error(lib.heif_encoder_set_lossless(encoder, True))
-            else:
-                check_libheif_error(lib.heif_encoder_set_lossy_quality(encoder, quality))
-        if enc_params:
-            for enc_param in enc_params:
-                check_libheif_error(
-                    lib.heif_encoder_set_parameter(encoder, enc_param[0].encode("ascii"), enc_param[1].encode("ascii"))
-                )
-        return encoder
 
     def __get_image_thumb_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
         __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]

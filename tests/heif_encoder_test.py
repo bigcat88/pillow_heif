@@ -10,7 +10,7 @@ from heif_test import compare_heif_files_fields
 from PIL import Image
 
 from pillow_heif import _options  # noqa
-from pillow_heif import HeifError, open_heif, options, register_heif_opener
+from pillow_heif import HeifError, HeifFile, open_heif, options, register_heif_opener
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -42,6 +42,14 @@ def test_save_empty():
     out_buffer = BytesIO()
     with pytest.raises(ValueError):
         heic_file.save(out_buffer)
+
+
+def test_save_empty_with_append():
+    empty_heic_file = HeifFile({})
+    heic_file = open_heif(Path("images/rgb8_128_128_2_1.heic"))
+    out_buffer = BytesIO()
+    empty_heic_file.save(out_buffer, append_images=heic_file)
+    compare_heif_files_fields(heic_file, open_heif(out_buffer))
 
 
 @pytest.mark.parametrize(
