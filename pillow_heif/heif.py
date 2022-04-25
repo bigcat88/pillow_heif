@@ -10,7 +10,7 @@ from PIL import Image, ImageSequence
 
 from ._libheif_ctx import LibHeifCtx, LibHeifCtxWrite
 from ._options import options
-from .constants import HeifBrand, HeifChannel, HeifChroma, HeifColorspace, HeifFiletype
+from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifFiletype
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, _get_chroma, reset_orientation
 from .private import (
@@ -36,11 +36,8 @@ except ImportError:  # pragma: no cover
 class HeifImageBase:
     def __init__(self, heif_ctx: Union[LibHeifCtx, dict], handle):
         self._img_data: Dict[str, Any] = {}
+        self._heif_ctx = heif_ctx
         if isinstance(heif_ctx, LibHeifCtx):
-            self.misc = {
-                "transforms": heif_ctx.misc["transforms"],
-                "to_8bit": heif_ctx.misc["to_8bit"],
-            }
             self._handle = ffi.gc(handle, lib.heif_image_handle_release)
             self.size = (
                 lib.heif_image_handle_get_width(self._handle),
@@ -95,7 +92,7 @@ class HeifImageBase:
             self.stride,
         )
         if isinstance(self, HeifImage):
-            for k in ("main", "brand", "exif", "xmp", "metadata"):
+            for k in ("exif", "xmp", "metadata"):
                 image.info[k] = self.info[k]
             for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
                 if k in self.info:
@@ -109,15 +106,14 @@ class HeifImageBase:
         if self._img_data or self._handle is None:
             return
         colorspace = HeifColorspace.RGB
-        chroma = _get_chroma(self.bit_depth, self.has_alpha, self.misc["to_8bit"])
+        chroma = _get_chroma(self.bit_depth, self.has_alpha, self._heif_ctx.to_8bit)
         p_options = lib.heif_decoding_options_alloc()
         p_options = ffi.gc(p_options, lib.heif_decoding_options_free)
-        p_options.ignore_transformations = int(not self.misc["transforms"])
-        p_options.convert_hdr_to_8bit = int(self.misc["to_8bit"])
+        p_options.convert_hdr_to_8bit = int(self._heif_ctx.to_8bit)
         p_img = ffi.new("struct heif_image **")
         check_libheif_error(lib.heif_decode_image(self._handle, p_img, colorspace, chroma, p_options))
         heif_img = ffi.gc(p_img[0], lib.heif_image_release)
-        if self.bit_depth > 8 and self.misc["to_8bit"]:
+        if self.bit_depth > 8 and self._heif_ctx.to_8bit:
             self.bit_depth = 8
         self._img_to_img_data_dict(heif_img, colorspace, chroma)
 
@@ -170,8 +166,6 @@ class HeifImage(HeifImageBase):
     def __init__(self, img_id: int, img_index: int, heif_ctx: Union[LibHeifCtx, dict]):
         additional_info = {}
         if isinstance(heif_ctx, LibHeifCtx):
-            self._heif_ctx = heif_ctx
-            brand = heif_ctx.misc["brand"]
             p_handle = ffi.new("struct heif_image_handle **")
             error = lib.heif_context_get_image_handle(heif_ctx.ctx, img_id, p_handle)
             if error.code != HeifErrorCode.OK and not img_index:
@@ -190,7 +184,6 @@ class HeifImage(HeifImageBase):
                 else:
                     additional_info["nclx_profile"] = _color_profile["data"]
         else:
-            brand = HeifBrand.UNKNOWN
             handle = None
             _exif = None
             _xmp = None
@@ -198,9 +191,7 @@ class HeifImage(HeifImageBase):
             additional_info.update(heif_ctx.get("additional_info", {}))
         super().__init__(heif_ctx, handle)
         self.info = {
-            "main": not img_index,
             "img_id": img_id,
-            "brand": brand,
             "exif": _exif,
             "xmp": _xmp,
         }
@@ -279,7 +270,7 @@ class HeifImage(HeifImageBase):
 class HeifFile:
     def __init__(self, heif_ctx: Union[LibHeifCtx, dict], img_ids: list = None):
         self._images: List[HeifImage] = []
-        self._heif_ctx: Union[LibHeifCtx, dict, None] = heif_ctx
+        self.mimetype = heif_ctx.get_mimetype() if isinstance(heif_ctx, LibHeifCtx) else ""
         if img_ids:
             for i, img_id in enumerate(img_ids):
                 self._images.append(HeifImage(img_id, i, heif_ctx))
@@ -345,7 +336,7 @@ class HeifFile:
         for frame in ImageSequence.Iterator(pil_image):
             if frame.width > 0 and frame.height > 0:
                 additional_info = {}
-                for k in ("exif", "xmp", "icc_profile", "icc_profile_type", "nclx_profile", "metadata", "brand"):
+                for k in ("exif", "xmp", "icc_profile", "icc_profile_type", "nclx_profile", "metadata"):
                     if k in frame.info:
                         additional_info[k] = frame.info[k]
                         # if k == "exif":
@@ -379,7 +370,6 @@ class HeifFile:
             image.load()
             additional_info = image.info.copy()
             additional_info.pop("img_id", None)
-            additional_info.pop("main", None)
             self._add_frombytes(
                 image.bit_depth,
                 image.mode,
@@ -412,7 +402,7 @@ class HeifFile:
         if not self._images and not append_images:
             raise ValueError("Cannot write empty image as HEIF.")
         heif_ctx_write = LibHeifCtxWrite()
-        heif_ctx_write.set_encoder_parameters(kwargs.get("quality", options().quality), kwargs.get("enc_params", []))
+        heif_ctx_write.set_encoder_parameters(kwargs.get("enc_params", []), kwargs.get("quality", options().quality))
         self._save(heif_ctx_write, not save_all, append_images)
         heif_ctx_write.write(fp)
 
@@ -518,20 +508,12 @@ def is_supported(fp) -> bool:
     return not options().strict
 
 
-def open_heif(fp, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> HeifFile:
-    heif_ctx = LibHeifCtx(fp, apply_transformations, convert_hdr_to_8bit)
-    check_libheif_error(lib.heif_context_read_from_reader(heif_ctx.ctx, heif_ctx.reader, heif_ctx.c_userdata, ffi.NULL))
-    p_main_image_id = ffi.new("heif_item_id *")
-    check_libheif_error(lib.heif_context_get_primary_image_ID(heif_ctx.ctx, p_main_image_id))
-    main_image_id = p_main_image_id[0]
-    top_img_count = lib.heif_context_get_number_of_top_level_images(heif_ctx.ctx)
-    top_img_ids = ffi.new("heif_item_id[]", top_img_count)
-    top_img_count = lib.heif_context_get_list_of_top_level_image_IDs(heif_ctx.ctx, top_img_ids, top_img_count)
-    img_list = [main_image_id]
-    for i in range(top_img_count):
-        if top_img_ids[i] != main_image_id:
-            img_list.append(top_img_ids[i])
-    return HeifFile(heif_ctx, img_list)
+def open_heif(fp, convert_hdr_to_8bit: bool = True) -> HeifFile:
+    heif_ctx = LibHeifCtx(fp, convert_hdr_to_8bit)
+    main_image_id = heif_ctx.get_main_img_id()
+    top_img_ids = heif_ctx.get_top_images_ids()
+    top_img_list = [main_image_id] + [i for i in top_img_ids if i != main_image_id]
+    return HeifFile(heif_ctx, top_img_list)
 
 
 def from_pillow(pil_image: Image.Image, load_one: bool = False) -> HeifFile:
@@ -592,6 +574,7 @@ def _heif_images_from(images: List[Union[HeifFile, HeifImage, Image.Image]]) -> 
     return result
 
 
+# -> _read_thumbnails_id in private.py and here [i for i in i]
 def _read_thumbnails(heif_ctx: Union[LibHeifCtx, dict], img_handle, img_index: int) -> List[HeifThumbnail]:
     result: List[HeifThumbnail] = []
     if img_handle is None or not options().thumbnails:
@@ -608,6 +591,8 @@ def _read_thumbnails(heif_ctx: Union[LibHeifCtx, dict], img_handle, img_index: i
 
 # --------------------------------------------------------------------
 # DEPRECATED FUNCTIONS.
+# pylint: disable=unused-argument
+# pylint: disable=redefined-builtin
 
 
 def check(fp):
@@ -615,24 +600,16 @@ def check(fp):
     return check_heif(fp)  # pragma: no cover
 
 
-def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # pylint: disable=redefined-builtin
+def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # noqa
     warn("Function `open` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
-    return open_heif(
-        fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
-    )  # pragma: no cover
+    return open_heif(fp, convert_hdr_to_8bit=convert_hdr_to_8bit)  # pragma: no cover
 
 
-def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):
+def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # noqa
     warn("Function `read` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
-    return open_heif(
-        fp, apply_transformations=apply_transformations, convert_hdr_to_8bit=convert_hdr_to_8bit
-    )  # pragma: no cover
+    return open_heif(fp, convert_hdr_to_8bit=convert_hdr_to_8bit)  # pragma: no cover
 
 
-def read_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> HeifFile:
+def read_heif(fp, *, apply_transformations: bool = True, convert_hdr_to_8bit: bool = True) -> HeifFile:  # noqa
     warn("Function `read_heif` is deprecated, use `open_heif` instead. Read docs, why.", DeprecationWarning)
-    return open_heif(
-        fp,
-        apply_transformations=apply_transformations,
-        convert_hdr_to_8bit=convert_hdr_to_8bit,
-    )  # pragma: no cover
+    return open_heif(fp, convert_hdr_to_8bit=convert_hdr_to_8bit)  # pragma: no cover

@@ -41,7 +41,6 @@ messages_control.disable = [
     "missing-class-docstring",
     "missing-function-docstring",
     "line-too-long",
-    "too-few-public-methods",
 ]
 
 [tool.mypy]
