@@ -11,14 +11,7 @@ from heif_test import compare_heif_files_fields
 from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
 import pillow_heif.HeifImagePlugin  # noqa
-from pillow_heif import (
-    HeifBrand,
-    HeifFile,
-    HeifImage,
-    HeifThumbnail,
-    from_pillow,
-    open_heif,
-)
+from pillow_heif import HeifFile, HeifImage, HeifThumbnail, from_pillow, open_heif
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -27,7 +20,7 @@ def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail
     def compare_images_fields(heif_image: Union[HeifImage, HeifThumbnail], pillow_image: Image):
         assert heif_image.size == pillow_image.size
         assert heif_image.mode == pillow_image.mode
-        for k in ("main", "brand", "exif", "xmp", "metadata"):
+        for k in ("exif", "xmp", "metadata"):
             if heif_image.info.get(k, None):
                 if isinstance(heif_image.info[k], (bool, int, float, str)):
                     assert heif_image.info[k] == pillow_image.info[k]
@@ -123,13 +116,11 @@ def test_open_images(image_path):
     _last_img_id = -1
     for i, image in enumerate(ImageSequence.Iterator(pillow_image)):
         assert image.info
-        assert image.info["brand"] != HeifBrand.UNKNOWN.name
+        assert image.custom_mimetype in ("image/heic", "image/heif", "image/heif-sequence", "image/avif")
         if "icc_profile" in image.info and len(image.info["icc_profile"]) > 0:
             ImageCms.getOpenProfile(BytesIO(pillow_image.info["icc_profile"]))
         assert image.info["img_id"] != _last_img_id
         _last_img_id = image.info["img_id"]
-        if not i:
-            assert image.info["main"]
         collect()
         assert len(ImageSequence.Iterator(pillow_image)[i].tobytes())
         for thumb in ImageSequence.Iterator(pillow_image)[i].info["thumbnails"]:

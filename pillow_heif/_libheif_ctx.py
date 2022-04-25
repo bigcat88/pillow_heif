@@ -11,18 +11,39 @@ from _pillow_heif_cffi import ffi, lib
 
 from .constants import HeifCompressionFormat
 from .error import check_libheif_error
-from .misc import _get_bytes
+from .misc import get_file_mimetype
 
 
 class LibHeifCtx:
-    def __init__(self, fp, transforms, to_8bit):
+    def __init__(self, fp, to_8bit: bool = False):
         self._fp_close_after = False
+        self.to_8bit = to_8bit
         self.fp = self._get_fp(fp)
         self.fp.seek(0, SEEK_SET)
         self.c_userdata = ffi.new_handle(self.fp)
         self.ctx = ffi.gc(lib.heif_context_alloc(), lib.heif_context_free)
         self.reader = self._get_libheif_reader()
-        self.misc = {"transforms": transforms, "to_8bit": to_8bit, "brand": lib.heif_main_brand(_get_bytes(fp, 12), 12)}
+        check_libheif_error(lib.heif_context_read_from_reader(self.ctx, self.reader, self.c_userdata, ffi.NULL))
+
+    def get_main_img_id(self) -> int:
+        p_main_image_id = ffi.new("heif_item_id *")
+        check_libheif_error(lib.heif_context_get_primary_image_ID(self.ctx, p_main_image_id))
+        return p_main_image_id[0]
+
+    def get_top_images_ids(self) -> list:
+        top_img_count = lib.heif_context_get_number_of_top_level_images(self.ctx)
+        top_img_ids = ffi.new("heif_item_id[]", top_img_count)
+        top_img_count = lib.heif_context_get_list_of_top_level_image_IDs(self.ctx, top_img_ids, top_img_count)
+        return [top_img_ids[i] for i in range(top_img_count)]
+
+    def get_mimetype(self) -> str:
+        mimetype = ""
+        if self.fp:
+            old_position = self.fp.tell()
+            self.fp.seek(0, SEEK_SET)
+            mimetype = get_file_mimetype(self.fp)
+            self.fp.seek(old_position, SEEK_SET)
+        return mimetype
 
     def __del__(self):
         if self._fp_close_after and self.fp and hasattr(self.fp, "close"):
