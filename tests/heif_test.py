@@ -119,10 +119,10 @@ def test_heif_from_heif(img_path):
         heif_file = open_heif(img_path, convert_hdr_to_8bit=hdr_to_8bit)
         collect()
         # Create Heif from Heif
-        heif_file_from = HeifFile({}).add_from_heif(heif_file)
+        heif_file_from = HeifFile().add_from_heif(heif_file)
         collect()
         # Create Heif from created Heif
-        heif_file_from_from = HeifFile({}).add_from_heif(heif_file_from)
+        heif_file_from_from = HeifFile().add_from_heif(heif_file_from)
         for _ in heif_file:
             _.unload()
         collect()
@@ -175,7 +175,7 @@ def test_inputs(img_path):
             assert getattr(heif_file[0]._heif_ctx, "fp") is not None
             assert getattr(heif_file[0]._heif_ctx, "_fp_close_after") == isinstance(fp, (Path, str, bytes))
             # Create new heif_file
-            heif_file_from = HeifFile({}).add_from_heif(heif_file)
+            heif_file_from = HeifFile().add_from_heif(heif_file)
             collect()
             compare_heif_files_fields(heif_file_from, heif_file)
             for _ in heif_file:
@@ -191,7 +191,7 @@ def test_inputs(img_path):
 
 
 def test_only_heif_image_reference():
-    empty_heif_container = HeifFile({})
+    empty_heif_container = HeifFile()
     empty_heif_container.add_from_heif(open_heif(Path("images/rgb8_512_512_1_0.heic"))[0])
     empty_heif_container.add_from_heif(open_heif(Path("images/rgb8_128_128_2_1.heic"))[1])
     assert len(empty_heif_container) == 2

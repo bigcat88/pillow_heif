@@ -1,6 +1,7 @@
 """
 Undocumented private functions for other code to look better.
 """
+
 from _pillow_heif_cffi import ffi, lib
 
 from ._libheif_ctx import LibHeifCtxWrite

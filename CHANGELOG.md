@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3 - 2021-05-xx]
+
+### Added
+
+- (HeifImagePlugin) - `custom_mimetype` field added like in other Pillow's plugins, instead of `info["brand"]`
+- (Heif) - `mimetype` field added to `HeifFile` class, instead of `info["brand"]`
+
+### Changed
+
+- (Heif) - `apply_transformations` parameter in function `open_heif` was removed.
+- (HeifImagePlugin, Heif) - removed `brand` and `main` values from `info`.
+
+### Fixed
+
+- (HeifImagePlugin, Heif) - allow saving empty HeifFile when `append_images` parameter present.
+- (HeifImagePlugin, Heif) - during saving, `fp` will be open after encoding process finished, and not before start.
+
 ## [0.2.2 - 2021-04-23]
 
 ### Added

@@ -45,7 +45,7 @@ def test_save_empty():
 
 
 def test_save_empty_with_append():
-    empty_heic_file = HeifFile({})
+    empty_heic_file = HeifFile()
     heic_file = open_heif(Path("images/rgb8_128_128_2_1.heic"))
     out_buffer = BytesIO()
     empty_heic_file.save(out_buffer, append_images=heic_file)

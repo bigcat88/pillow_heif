@@ -1,6 +1,7 @@
 """
 Functions and classes for heif images to read and write.
 """
+
 from copy import deepcopy
 from typing import Any, Dict, Iterator, List, Union
 from warnings import warn
@@ -34,6 +35,8 @@ except ImportError:  # pragma: no cover
 
 
 class HeifImageBase:
+    """Basic class for HeifImage and HeifThumbnail."""
+
     def __init__(self, heif_ctx: Union[LibHeifCtx, dict], handle):
         self._img_data: Dict[str, Any] = {}
         self._heif_ctx = heif_ctx
@@ -135,6 +138,8 @@ class HeifImageBase:
 
 
 class HeifThumbnail(HeifImageBase):
+    """Class represents a single thumbnail for a HeifImage."""
+
     def __init__(self, heif_ctx: Union[LibHeifCtx, dict], img_handle, thumb_id: int, img_index: int):
         if isinstance(heif_ctx, LibHeifCtx):
             p_handle = ffi.new("struct heif_image_handle **")
@@ -163,6 +168,8 @@ class HeifThumbnail(HeifImageBase):
 
 
 class HeifImage(HeifImageBase):
+    """Class represents one frame in a file."""
+
     def __init__(self, img_id: int, img_index: int, heif_ctx: Union[LibHeifCtx, dict]):
         additional_info = {}
         if isinstance(heif_ctx, LibHeifCtx):
@@ -196,7 +203,7 @@ class HeifImage(HeifImageBase):
             "xmp": _xmp,
         }
         self.info.update(**additional_info)
-        self.thumbnails = _read_thumbnails(heif_ctx, self._handle, img_index)
+        self.thumbnails = self.__read_thumbnails(img_index)
 
     def __repr__(self):
         _bytes = f"{len(self.data)} bytes" if self._img_data else "no"
@@ -266,9 +273,36 @@ class HeifImage(HeifImageBase):
             __heif_ctx = heif_ctx_as_dict(get_img_depth(self), self.mode, __size, data, stride=dest_stride)
             self.thumbnails.append(HeifThumbnail(__heif_ctx, None, 0, 0))
 
+    def __read_thumbnails(self, img_index: int) -> List[HeifThumbnail]:
+        result: List[HeifThumbnail] = []
+        if self._handle is None or not options().thumbnails:
+            return result
+        thumbs_count = lib.heif_image_handle_get_number_of_thumbnails(self._handle)
+        if thumbs_count == 0:
+            return result
+        thumbnails_ids = ffi.new("heif_item_id[]", thumbs_count)
+        thumb_count = lib.heif_image_handle_get_list_of_thumbnail_IDs(self._handle, thumbnails_ids, thumbs_count)
+        for i in range(thumb_count):
+            result.append(HeifThumbnail(self._heif_ctx, self._handle, thumbnails_ids[i], img_index))
+        return result
+
 
 class HeifFile:
-    def __init__(self, heif_ctx: Union[LibHeifCtx, dict], img_ids: list = None):
+    """
+    This class represents the :py:class:`~pillow_heif.HeifImage` container.
+
+    To create :py:class:`~pillow_heif.HeifFile` object, use the appropriate factory
+    functions.
+
+    * :py:func:`~pillow_heif.open_heif`
+    * :py:func:`~pillow_heif.from_pillow`
+
+    .. note:: To create empty container to fill it with images later, create a class without parameters.
+    """
+
+    def __init__(self, heif_ctx: Union[LibHeifCtx, dict] = None, img_ids: list = None):
+        if heif_ctx is None:
+            heif_ctx = {}
         self._images: List[HeifImage] = []
         self.mimetype = heif_ctx.get_mimetype() if isinstance(heif_ctx, LibHeifCtx) else ""
         if img_ids:
@@ -396,7 +430,7 @@ class HeifFile:
 
     def save(self, fp, **kwargs):
         save_all = kwargs.get("save_all", True)
-        append_images = _heif_images_from(kwargs.get("append_images", [])) if save_all else []
+        append_images = self.__heif_images_from(kwargs.get("append_images", [])) if save_all else []
         if not options().hevc_enc:
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
         if not self._images and not append_images:
@@ -473,32 +507,49 @@ class HeifFile:
         __img_index = kwargs.get("img_index", len(self._images))
         return HeifThumbnail(__heif_ctx, None, __new_id, __img_index)
 
+    @staticmethod
+    def __heif_images_from(images: list) -> List[HeifImage]:
+        """Accepts list of Union[HeifFile, HeifImage, Image.Image] and returns List[HeifImage]"""
+        result = []
+        for img in images:
+            if isinstance(img, HeifImage):
+                result.append(img)
+            else:
+                heif_file = from_pillow(img) if isinstance(img, Image.Image) else img
+                result += list(heif_file)
+        return result
+
 
 def check_heif(fp):
     """
-    Wrapper around `libheif.heif_check_filetype`.
+    Wrapper around `libheif.heif_check_filetype` function.
 
-    Note: If `fp` contains less 12 bytes, then returns `HeifFiletype.NO`.
+    .. note:: If `fp` contains less 12 bytes, then always return `HeifFiletype.NO`
 
-    :param fp: A filename (string), pathlib.Path object, file object or bytes.
-       The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
-       and be opened in binary mode.
-    :returns: `HeifFiletype`
+    :param fp: See parameter ``fp`` in :func:`is_supported`
+
+    :returns: Value from :py:class:`~pillow_heif.HeifFiletype` enumeration.
     """
+
     magic = _get_bytes(fp, 16)
     return HeifFiletype.NO if len(magic) < 12 else lib.heif_check_filetype(magic, len(magic))
 
 
 def is_supported(fp) -> bool:
     """
-    Checks if `fp` contains a supported file type, by calling :py:func:`~pillow_heif.reader.check_heif` function.
-    If `heif_filetype_yes_supported` or `heif_filetype_maybe` then returns True.
-    If `heif_filetype_no` then returns False.
-    OPTIONS
-    "strict": `bool` determine what to return for `heif_filetype_yes_unsupported`.
-    "avif": `bool` determine will be `avif` files marked as supported.
-    If it is False from start, then pillow_heif was build without codecs for AVIF and you should not set it to true.
+    Checks if the given `fp` object contains a supported file type,
+    by calling :py:func:`~pillow_heif.check_heif` function.
+
+    Look at :py:attr:`~pillow_heif._options.PyLibHeifOptions.strict` property for additional info.
+
+    :param fp: A filename (string), pathlib.Path object or a file object.
+        The file object must implement ``file.read``,
+        ``file.seek``, and ``file.tell`` methods,
+        and be opened in binary mode.
+
+    :returns: A boolean indicating if object can be opened.
     """
+
     magic = _get_bytes(fp, 16)
     heif_filetype = check_heif(magic)
     if heif_filetype == HeifFiletype.NO or (not options().avif and magic[8:12] in (b"avif", b"avis")):
@@ -508,7 +559,18 @@ def is_supported(fp) -> bool:
     return not options().strict
 
 
-def open_heif(fp, convert_hdr_to_8bit: bool = True) -> HeifFile:
+def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
+    """
+    Opens the given HEIF image file.
+
+    :param fp: See parameter ``fp`` in :func:`is_supported`
+    :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
+        be converted to 8 bit images during loading.
+
+    :returns: An :py:class:`~pillow_heif.HeifFile` object.
+    :exception HeifError: If file is corrupted or is not in Heif format.
+    """
+
     heif_ctx = LibHeifCtx(fp, convert_hdr_to_8bit)
     main_image_id = heif_ctx.get_main_img_id()
     top_img_ids = heif_ctx.get_top_images_ids()
@@ -517,10 +579,19 @@ def open_heif(fp, convert_hdr_to_8bit: bool = True) -> HeifFile:
 
 
 def from_pillow(pil_image: Image.Image, load_one: bool = False) -> HeifFile:
-    return HeifFile({}).add_from_pillow(pil_image, load_one)
+    """
+    Creates :py:class:`~pillow_heif.HeifFile` from a Pillow Image.
+
+    :param pil_image: Pillow :external:py:class:`~PIL.Image.Image` class
+    :param load_one: If ``True``, then all frames will be loaded.
+
+    :returns: An :py:class:`~pillow_heif.HeifFile` object.
+    """
+
+    return HeifFile().add_from_pillow(pil_image, load_one)
 
 
-def getxmp(xmp_data):
+def getxmp(xmp_data) -> dict:
     """
     Returns a dictionary containing the XMP tags.
     Requires defusedxml to be installed.
@@ -561,32 +632,6 @@ def getxmp(xmp_data):
             root = ElementTree.fromstring(_clear_data[0])
             return {get_name(root.tag): get_value(root)}
     return {}
-
-
-def _heif_images_from(images: List[Union[HeifFile, HeifImage, Image.Image]]) -> List[HeifImage]:
-    result = []
-    for img in images:
-        if isinstance(img, HeifImage):
-            result.append(img)
-        else:
-            heif_file = from_pillow(img) if isinstance(img, Image.Image) else img
-            result += list(heif_file)
-    return result
-
-
-# -> _read_thumbnails_id in private.py and here [i for i in i]
-def _read_thumbnails(heif_ctx: Union[LibHeifCtx, dict], img_handle, img_index: int) -> List[HeifThumbnail]:
-    result: List[HeifThumbnail] = []
-    if img_handle is None or not options().thumbnails:
-        return result
-    thumbs_count = lib.heif_image_handle_get_number_of_thumbnails(img_handle)
-    if thumbs_count == 0:
-        return result
-    thumbnails_ids = ffi.new("heif_item_id[]", thumbs_count)
-    thumb_count = lib.heif_image_handle_get_list_of_thumbnail_IDs(img_handle, thumbnails_ids, thumbs_count)
-    for i in range(thumb_count):
-        result.append(HeifThumbnail(heif_ctx, img_handle, thumbnails_ids[i], img_index))
-    return result
 
 
 # --------------------------------------------------------------------

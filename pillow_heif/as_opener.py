@@ -1,5 +1,5 @@
 """
-Opener for Pillow library.
+Plugin for Pillow library.
 """
 
 from copy import deepcopy
@@ -14,6 +14,8 @@ from .misc import reset_orientation
 
 
 class HeifImageFile(ImageFile.ImageFile):
+    """Pillow plugin class for HEIF image format."""
+
     format = "HEIF"
     format_description = "HEIF container for HEVC and AV1"
     heif_file: Any
@@ -77,11 +79,17 @@ class HeifImageFile(ImageFile.ImageFile):
             _.load()
 
     @property
-    def n_frames(self):
+    def n_frames(self) -> int:
+        """
+        Return the number of available frames.
+
+        :returns: Frame number, starting with 0.
+        """
         return len(self.heif_file) if self.heif_file else 1
 
     @property
-    def is_animated(self):
+    def is_animated(self) -> bool:
+        """Return ``True`` if this image has more then one frame, or ``False`` otherwise."""
         return self.n_frames > 1
 
     def _seek_check(self, frame):
@@ -112,7 +120,13 @@ def _save_all(im, fp, _filename):
     from_pillow(im).save(fp, save_all=True, **im.encoderinfo)
 
 
-def register_heif_opener(**kwargs):
+def register_heif_opener(**kwargs) -> None:
+    """
+    Registers Pillow plugin.
+
+    :param kwargs: dictionary with values to set in :py:class:`~pillow_heif._options.PyLibHeifOptions`
+    """
+
     options().update(**kwargs)
     Image.register_open(HeifImageFile.format, HeifImageFile, is_supported)
     Image.register_save(HeifImageFile.format, _save)

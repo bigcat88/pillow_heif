@@ -67,6 +67,7 @@ class HeifChannel(IntEnum):
 
 
 def encode_fourcc(fourcc):
+    """Encodes 4 bytes in reverse order"""
     return ord(fourcc[0]) << 24 | ord(fourcc[1]) << 16 | ord(fourcc[2]) << 8 | ord(fourcc[3])
 
 
@@ -87,7 +88,7 @@ class HeifColorProfileType(IntEnum):
 
 
 class HeifFiletype(IntEnum):
-    """Result of `check_heif` function."""
+    """Result of :py:func:`~pillow_heif.check_heif` function."""
 
     NO = 0
     """it is unsupported file"""
@@ -99,39 +100,8 @@ class HeifFiletype(IntEnum):
     """not sure whether it is heif and is it supported"""
 
 
-class HeifBrand(IntEnum):
-    """Possible heif brands."""
-
-    UNKNOWN = 0
-    """unknown brand"""
-    HEIC = 1
-    """the usual HEIF images"""
-    HEIX = 2
-    """10bit images, or anything that uses h265 with range extension"""
-    HEVC = 3
-    """brand for image sequences"""
-    HEVX = 4
-    """brand for 10bit image sequences"""
-    HEIM = 5
-    """multiview"""
-    HEIS = 6
-    """scalable"""
-    HEVM = 7
-    """multiview sequence"""
-    HEVS = 8
-    """scalable sequence"""
-    MIF1 = 9
-    """image, any coding algorithm"""
-    MSF1 = 10
-    """sequence, any coding algorithm"""
-    AVIF = 11
-    """Avif image"""
-    AVIS = 12
-    """Avif sequence"""
-
-
 class HeifErrorCode(IntEnum):
-    """Possible libheif errors code."""
+    """Possible libheif error codes in :py:class:`~pillow_heif.HeifError`"""
 
     OK = 0
     """Everything ok, no error occurred."""

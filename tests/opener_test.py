@@ -98,7 +98,7 @@ def test_to_from_pillow(image_path):
     images_list = [i.to_pillow() for i in heif_file]
     for i, image in enumerate(heif_file):
         compare_heif_to_pillow_fields(image, images_list[i])
-    heif_from_pillow = HeifFile({})
+    heif_from_pillow = HeifFile()
     for image in images_list:
         heif_from_pillow.add_from_pillow(image)
     compare_heif_files_fields(heif_file, heif_from_pillow)
