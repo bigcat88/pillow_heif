@@ -211,14 +211,13 @@ def test_all(image_path):
             assert min(image.size) > 0
             assert image.mode == "RGBA" if image.has_alpha else "RGB"
             assert image.bit_depth >= 8
-            assert image.chroma == HeifChroma.UNDEFINED
+            assert image.chroma != HeifChroma.UNDEFINED
             assert image.color != HeifColorspace.UNDEFINED
             minimal_stride = image.size[0] * 4 if image.has_alpha else image.size[0] * 3
             if image.bit_depth > 8:
                 minimal_stride *= 2
             assert image.stride >= minimal_stride
             assert len(image.data) == image.stride * image.size[1]
-            assert image.chroma != HeifChroma.UNDEFINED
             # This will load thumbnails too
             assert isinstance(image.load(), HeifImage)
             for thumbnail in image.thumbnails:
@@ -236,7 +235,7 @@ def test_no_defusedxml(monkeypatch):
     import pillow_heif
 
     with monkeypatch.context() as m:
-        m.setattr(pillow_heif.heif, "ElementTree", None)
+        m.setattr(pillow_heif.misc, "ElementTree", None)
         heif_file = open_heif(Path("images/rgb8_512_512_1_0.heic"))
         with pytest.warns(UserWarning):
             getxmp(heif_file.info["xmp"])
