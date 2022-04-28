@@ -11,8 +11,6 @@ from typing import Union
 
 from _pillow_heif_cffi import ffi, lib
 
-from .constants import HeifChroma
-
 
 def reset_orientation(info: dict) -> Union[int, None]:
     """
@@ -65,14 +63,3 @@ def _get_bytes(fp, length=None) -> bytes:
             fp.seek(offset)
         return result
     return bytes(fp)[:length]
-
-
-def _get_chroma(bit_depth: int, has_alpha: bool, hdr_to_8bit: bool = False) -> HeifChroma:
-    if hdr_to_8bit or bit_depth <= 8:
-        chroma = HeifChroma.INTERLEAVED_RGBA if has_alpha else HeifChroma.INTERLEAVED_RGB
-    else:
-        if has_alpha:
-            chroma = HeifChroma.INTERLEAVED_RRGGBBAA_BE
-        else:
-            chroma = HeifChroma.INTERLEAVED_RRGGBB_BE
-    return chroma
