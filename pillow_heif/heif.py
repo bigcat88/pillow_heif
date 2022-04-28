@@ -37,6 +37,7 @@ class HeifImageBase:
     def __init__(self, heif_ctx: Union[LibHeifCtx, dict], handle):
         self._img_data: Dict[str, Any] = {}
         self._heif_ctx = heif_ctx
+        self._colorspace = HeifColorspace.RGB
         if isinstance(heif_ctx, LibHeifCtx):
             self._handle = ffi.gc(handle, lib.heif_image_handle_release)
             self.size = (
@@ -53,7 +54,7 @@ class HeifImageBase:
             _chroma = _get_chroma(self.bit_depth, self.has_alpha)
             _stride = heif_ctx.get("stride", None)
             _img = create_image(self.size, _chroma, self.bit_depth, heif_ctx["mode"], heif_ctx["data"], stride=_stride)
-            self._img_to_img_data_dict(_img, HeifColorspace.RGB, _chroma)
+            self._img_to_img_data_dict(_img, _chroma)
 
     @property
     def mode(self) -> str:
@@ -80,7 +81,11 @@ class HeifImageBase:
 
     @property
     def color(self):
-        return self._img_data.get("color", HeifColorspace.UNDEFINED)
+        """Colorspace used to decode the image.
+
+        :returns: Value from :py:class:`~pillow_heif.HeifColorspace`"""
+
+        return self._colorspace
 
     def to_pillow(self, ignore_thumbnails: bool = False) -> Image.Image:
         image = Image.frombytes(
@@ -105,25 +110,24 @@ class HeifImageBase:
     def _load_if_not(self):
         if self._img_data or self._handle is None:
             return
-        colorspace = HeifColorspace.RGB
         chroma = _get_chroma(self.bit_depth, self.has_alpha, self._heif_ctx.to_8bit)
         p_options = lib.heif_decoding_options_alloc()
         p_options = ffi.gc(p_options, lib.heif_decoding_options_free)
         p_options.convert_hdr_to_8bit = int(self._heif_ctx.to_8bit)
         p_img = ffi.new("struct heif_image **")
-        check_libheif_error(lib.heif_decode_image(self._handle, p_img, colorspace, chroma, p_options))
+        check_libheif_error(lib.heif_decode_image(self._handle, p_img, self.color, chroma, p_options))
         heif_img = ffi.gc(p_img[0], lib.heif_image_release)
         if self.bit_depth > 8 and self._heif_ctx.to_8bit:
             self.bit_depth = 8
-        self._img_to_img_data_dict(heif_img, colorspace, chroma)
+        self._img_to_img_data_dict(heif_img, chroma)
 
-    def _img_to_img_data_dict(self, heif_img, colorspace, chroma):
+    def _img_to_img_data_dict(self, heif_img, chroma):
         p_stride = ffi.new("int *")
         p_data = lib.heif_image_get_plane(heif_img, HeifChannel.INTERLEAVED, p_stride)
         stride = p_stride[0]
         data_length = self.size[1] * stride
         data_buffer = ffi.buffer(p_data, data_length)
-        self._img_data.update(img=heif_img, data=data_buffer, stride=stride, color=colorspace, chroma=chroma)
+        self._img_data.update(img=heif_img, data=data_buffer, stride=stride, chroma=chroma)
 
     def load(self):
         self._load_if_not()
@@ -227,7 +231,7 @@ class HeifImage(HeifImageBase):
             lib.heif_image_get_primary_width(scaled_heif_img),
             lib.heif_image_get_primary_height(scaled_heif_img),
         )
-        self._img_to_img_data_dict(scaled_heif_img, self.color, self.chroma)
+        self._img_to_img_data_dict(scaled_heif_img, self.chroma)
         return self
 
     def add_thumbnails(self, boxes: Union[list, int]) -> None:
@@ -297,6 +301,11 @@ class HeifFile:
 
     @property
     def color(self):
+        """Points to :py:attr:`~pillow_heif.HeifImage.color` property of the
+        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+
+        :exception IndexError: If there is no images."""
+
         return self._images[0].color
 
     @property

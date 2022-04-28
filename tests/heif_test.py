@@ -214,14 +214,13 @@ def test_all(image_path):
             assert image.mode == "RGBA" if image.has_alpha else "RGB"
             assert image.bit_depth >= 8
             assert image.chroma == HeifChroma.UNDEFINED
-            assert image.color == HeifColorspace.UNDEFINED
+            assert image.color != HeifColorspace.UNDEFINED
             minimal_stride = image.size[0] * 4 if image.has_alpha else image.size[0] * 3
             if image.bit_depth > 8 and not image._heif_ctx.to_8bit:
                 minimal_stride *= 2
             assert image.stride >= minimal_stride
             assert len(image.data) == image.stride * image.size[1]
             assert image.chroma != HeifChroma.UNDEFINED
-            assert image.color != HeifColorspace.UNDEFINED
             # This will load thumbnails too
             assert isinstance(image.load(), HeifImage)
             for thumbnail in image.thumbnails:
