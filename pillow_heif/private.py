@@ -49,10 +49,6 @@ def heif_ctx_as_dict(bit_depth: int, mode: str, size: tuple, data, **kwargs) -> 
     }
 
 
-def get_img_depth(img):
-    return 8 if getattr(img, "misc", {}).get("to_8bit", None) else img.bit_depth
-
-
 def read_color_profile(handle) -> dict:
     profile_type = lib.heif_image_handle_get_color_profile_type(handle)
     if profile_type == HeifColorProfileType.NOT_PRESENT:

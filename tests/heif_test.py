@@ -31,22 +31,23 @@ def compare_heif_files_fields(
     def compare_images_fields(image1: HeifImage, image2: HeifImage):
         assert image1.size == image2.size
         assert image1.mode == image2.mode
-        # First test stride, cause bit_depth can change during load if `convert_hdr_to_8bit=True`
+        if "original_bit_depth" not in ignore:
+            assert image1.original_bit_depth == image2.original_bit_depth
+        assert image1.bit_depth == image2.bit_depth
         if "stride" not in ignore:
             assert image1.stride == image2.stride
             assert len(image1.data) == len(image2.data)
-        if "bit_depth" not in ignore:
-            assert image1.bit_depth == image2.bit_depth
         for i_thumb, thumbnail in enumerate(image1.thumbnails):
             with_difference = thumbnail.size[0] - image2.thumbnails[i_thumb].size[0]
             height_difference = thumbnail.size[1] - image2.thumbnails[i_thumb].size[1]
             assert with_difference + height_difference <= thumb_size_max_differ
             assert thumbnail.mode == image2.thumbnails[i_thumb].mode
+            if "original_bit_depth" not in ignore:
+                assert thumbnail.original_bit_depth == image2.thumbnails[i_thumb].original_bit_depth
+            assert thumbnail.bit_depth == image2.thumbnails[i_thumb].bit_depth
             if "t_stride" not in ignore:
                 assert thumbnail.stride == image2.thumbnails[i_thumb].stride
                 assert len(thumbnail.data) == len(image2.thumbnails[i_thumb].data)
-            if "t_bit_depth" not in ignore:
-                assert thumbnail.bit_depth == image2.thumbnails[i_thumb].bit_depth
         assert image1.info["exif"] == image2.info["exif"]
         assert image1.info["xmp"] == image2.info["xmp"]
         for block_i, block in enumerate(image1.info["metadata"]):
@@ -119,14 +120,14 @@ def test_heif_from_heif(img_path):
         heif_file = open_heif(img_path, convert_hdr_to_8bit=hdr_to_8bit)
         collect()
         # Create Heif from Heif
-        heif_file_from = HeifFile({}).add_from_heif(heif_file)
+        heif_file_from = HeifFile().add_from_heif(heif_file)
         collect()
         # Create Heif from created Heif
-        heif_file_from_from = HeifFile({}).add_from_heif(heif_file_from)
+        heif_file_from_from = HeifFile().add_from_heif(heif_file_from)
         for _ in heif_file:
             _.unload()
         collect()
-        compare_heif_files_fields(heif_file, heif_file_from)
+        compare_heif_files_fields(heif_file, heif_file_from, ignore=["original_bit_depth"])
         # Closing original Heif must not affect data in others two
         heif_file = None  # noqa
         for _ in heif_file_from:
@@ -136,12 +137,9 @@ def test_heif_from_heif(img_path):
         collect()
         heif_file_from.load(everything=True)
         heif_file_from_from.load(everything=True)
-        compare_heif_files_fields(heif_file_from, heif_file_from_from)
+        compare_heif_files_fields(heif_file_from, heif_file_from_from, ignore=["original_bit_depth"])
         heif_file_from = None  # noqa
         assert len(heif_file_from_from[len(heif_file_from_from) - 1].data)
-
-    heif_from_heif(hdr_to_8bit=True)
-    heif_from_heif(hdr_to_8bit=False)
 
 
 @pytest.mark.parametrize("img_path", dataset.MINIMAL_DATASET)
@@ -177,13 +175,13 @@ def test_inputs(img_path):
             # Create new heif_file
             heif_file_from = HeifFile({}).add_from_heif(heif_file)
             collect()
-            compare_heif_files_fields(heif_file_from, heif_file)
+            compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
             for _ in heif_file:
                 _.unload()
             for _ in heif_file_from:
                 _.unload()
             collect()
-            compare_heif_files_fields(heif_file_from, heif_file)
+            compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
             heif_file = None  # noqa
             assert len(heif_file_from[len(heif_file_from) - 1].data)
             if not isinstance(fp, (Path, str, bytes)):
@@ -204,7 +202,7 @@ def test_all(image_path):
     assert heif_file.mimetype in ("image/heic", "image/heif", "image/heif-sequence", "image/avif")
     for c, image in enumerate(heif_file):
         image._heif_ctx.to_8bit = True
-        pass_count = 2 if heif_file.bit_depth > 8 else 1
+        pass_count = 2 if heif_file.original_bit_depth > 8 else 1
         for i in range(pass_count):
             if i == 1:
                 image._heif_ctx.to_8bit = False
@@ -216,7 +214,7 @@ def test_all(image_path):
             assert image.chroma == HeifChroma.UNDEFINED
             assert image.color != HeifColorspace.UNDEFINED
             minimal_stride = image.size[0] * 4 if image.has_alpha else image.size[0] * 3
-            if image.bit_depth > 8 and not image._heif_ctx.to_8bit:
+            if image.bit_depth > 8:
                 minimal_stride *= 2
             assert image.stride >= minimal_stride
             assert len(image.data) == image.stride * image.size[1]
@@ -225,7 +223,7 @@ def test_all(image_path):
             assert isinstance(image.load(), HeifImage)
             for thumbnail in image.thumbnails:
                 minimal_stride = thumbnail.size[0] * 4 if thumbnail.has_alpha else thumbnail.size[0] * 3
-                if thumbnail.bit_depth > 8 and not thumbnail._heif_ctx.to_8bit:
+                if thumbnail.bit_depth > 8:
                     minimal_stride *= 2
                 assert thumbnail.stride >= minimal_stride
                 assert len(thumbnail.data) == thumbnail.stride * thumbnail.size[1]

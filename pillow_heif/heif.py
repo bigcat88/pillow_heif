@@ -15,7 +15,6 @@ from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, _get_chroma, reset_orientation
 from .private import (
     create_image,
-    get_img_depth,
     heif_ctx_as_dict,
     read_color_profile,
     read_metadata,
@@ -44,15 +43,38 @@ class HeifImageBase:
                 lib.heif_image_handle_get_width(self._handle),
                 lib.heif_image_handle_get_height(self._handle),
             )
-            self.bit_depth = lib.heif_image_handle_get_luma_bits_per_pixel(self._handle)
         else:
             self._handle = None
-            self.bit_depth = heif_ctx["bit_depth"]
             self.size = heif_ctx["size"]
             _chroma = _get_chroma(self.bit_depth, self.has_alpha)
             _stride = heif_ctx.get("stride", None)
             _img = create_image(self.size, _chroma, self.bit_depth, heif_ctx["mode"], heif_ctx["data"], stride=_stride)
             self._img_to_img_data_dict(_img, _chroma)
+
+    @property
+    def bit_depth(self):
+        """Image channel pixel bit depth. Possible values: 8, 10, 12
+
+        .. note:: When ``convert_hdr_to_8bit`` is True, return value will be always ``8``"""
+
+        if isinstance(self._heif_ctx, dict):
+            return self._heif_ctx["bit_depth"]
+        return 8 if self._heif_ctx.to_8bit else lib.heif_image_handle_get_luma_bits_per_pixel(self._handle)
+
+    @property
+    def original_bit_depth(self):
+        """
+        Shows number of bits in colour channel, before it was decoded using ``convert_hdr_to_8bit`` parameter.
+
+        .. note:: If ``convert_hdr_to_8bit`` is ``False`` then this field is always equal to ``bit_depth``
+
+            This includes situations where image was created not from a file.
+
+        :returns: An int value representing number of bits per color channel."""
+
+        if self._handle is not None:
+            return lib.heif_image_handle_get_luma_bits_per_pixel(self._handle)
+        return self.bit_depth
 
     @property
     def has_alpha(self):
@@ -124,8 +146,6 @@ class HeifImageBase:
         p_img = ffi.new("struct heif_image **")
         check_libheif_error(lib.heif_decode_image(self._handle, p_img, self.color, chroma, p_options))
         heif_img = ffi.gc(p_img[0], lib.heif_image_release)
-        if self.bit_depth > 8 and self._heif_ctx.to_8bit:
-            self.bit_depth = 8
         self._img_to_img_data_dict(heif_img, chroma)
 
     def _img_to_img_data_dict(self, heif_img, chroma):
@@ -168,7 +188,6 @@ class HeifThumbnail(HeifImageBase):
         )
 
     def __deepcopy__(self, memo):
-        self.load()  # need this, to change bit_depth when to_8bit=True
         heif_ctx = heif_ctx_as_dict(self.bit_depth, self.mode, self.size, self.data, stride=self.stride)
         return HeifThumbnail(heif_ctx, None, self.info["thumb_id"], self.info["img_index"])
 
@@ -274,7 +293,7 @@ class HeifImage(HeifImageBase):
             p_data = lib.heif_image_get_plane(new_thumbnail, HeifChannel.INTERLEAVED, p_dest_stride)
             dest_stride = p_dest_stride[0]
             data = ffi.buffer(p_data, __size[1] * dest_stride)
-            __heif_ctx = heif_ctx_as_dict(get_img_depth(self), self.mode, __size, data, stride=dest_stride)
+            __heif_ctx = heif_ctx_as_dict(self.bit_depth, self.mode, __size, data, stride=dest_stride)
             self.thumbnails.append(HeifThumbnail(__heif_ctx, None, 0, 0))
 
 
@@ -285,6 +304,24 @@ class HeifFile:
         if img_ids:
             for i, img_id in enumerate(img_ids):
                 self._images.append(HeifImage(img_id, i, heif_ctx))
+
+    @property
+    def original_bit_depth(self):
+        """Points to :py:attr:`~pillow_heif.HeifImage.original_bit_depth` property of the
+        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+
+        :exception IndexError: If there is no images."""
+
+        return self._images[0].original_bit_depth
+
+    @property
+    def bit_depth(self):
+        """Points to :py:attr:`~pillow_heif.HeifImage.bit_depth` property of the
+        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+
+        :exception IndexError: If there is no images."""
+
+        return self._images[0].bit_depth
 
     @property
     def size(self):
@@ -322,10 +359,6 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
         return self._images[0].has_alpha
-
-    @property
-    def bit_depth(self):
-        return self._images[0].bit_depth
 
     @property
     def info(self):
@@ -451,7 +484,7 @@ class HeifFile:
         enc_options = ffi.gc(enc_options, lib.heif_encoding_options_free)
         for img in list(self) + append_images:
             img.load()
-            new_img = create_image(img.size, img.chroma, get_img_depth(img), img.mode, img.data, stride=img.stride)
+            new_img = create_image(img.size, img.chroma, img.bit_depth, img.mode, img.data, stride=img.stride)
             set_color_profile(new_img, img.info)
             p_new_img_handle = ffi.new("struct heif_image_handle **")
             error = lib.heif_context_encode_image(ctx.ctx, new_img, ctx.encoder, enc_options, p_new_img_handle)

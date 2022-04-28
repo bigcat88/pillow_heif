@@ -101,7 +101,7 @@ def test_to_from_pillow(image_path):
     heif_from_pillow = HeifFile({})
     for image in images_list:
         heif_from_pillow.add_from_pillow(image)
-    compare_heif_files_fields(heif_file, heif_from_pillow)
+    compare_heif_files_fields(heif_file, heif_from_pillow, ignore=["original_bit_depth"])
 
 
 @pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
