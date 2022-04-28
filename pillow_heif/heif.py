@@ -45,16 +45,23 @@ class HeifImageBase:
                 lib.heif_image_handle_get_height(self._handle),
             )
             self.bit_depth = lib.heif_image_handle_get_luma_bits_per_pixel(self._handle)
-            self.has_alpha = bool(lib.heif_image_handle_has_alpha_channel(self._handle))
         else:
             self._handle = None
             self.bit_depth = heif_ctx["bit_depth"]
             self.size = heif_ctx["size"]
-            self.has_alpha = heif_ctx["mode"] == "RGBA"
             _chroma = _get_chroma(self.bit_depth, self.has_alpha)
             _stride = heif_ctx.get("stride", None)
             _img = create_image(self.size, _chroma, self.bit_depth, heif_ctx["mode"], heif_ctx["data"], stride=_stride)
             self._img_to_img_data_dict(_img, _chroma)
+
+    @property
+    def has_alpha(self):
+        """``True`` for images with ``alpha`` channel, ``False`` otherwise.
+
+        :returns: "True" or "False" """
+        if isinstance(self._heif_ctx, LibHeifCtx):
+            return bool(lib.heif_image_handle_has_alpha_channel(self._handle))
+        return self._heif_ctx["mode"] == "RGBA"
 
     @property
     def mode(self) -> str:
@@ -310,6 +317,10 @@ class HeifFile:
 
     @property
     def has_alpha(self):
+        """Points to :py:attr:`~pillow_heif.HeifImage.has_alpha` property of the
+        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+
+        :exception IndexError: If there is no images."""
         return self._images[0].has_alpha
 
     @property
