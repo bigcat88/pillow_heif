@@ -8,3 +8,9 @@ Constants
 
 .. autoclass:: HeifErrorCode
     :members:
+
+.. autoclass:: HeifColorspace
+    :members:
+
+.. autoclass:: HeifChroma
+    :members:

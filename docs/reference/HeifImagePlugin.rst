@@ -19,9 +19,10 @@ HeifImageFile Object
 
         .. note::
             Known to this plugin keys and values in dictionary will be saved to the image.
+            They are the same as in :py:class:`~pillow_heif.HeifImage` class.
 
         Specific keys for this plugin that is always present are:
-            exif, xmp, metadata
+            exif, xmp, metadata, thumbnails
         Optional there can be also such keys:
             icc_profile, icc_profile_type, nclx_profile
 

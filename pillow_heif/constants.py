@@ -6,14 +6,14 @@ from enum import IntEnum
 
 
 class HeifChroma(IntEnum):
-    """Chroma subsampling definitions."""
+    """Chroma subsampling definitions. Used in :py:attr:`pillow_heif.HeifImage.chroma`"""
 
     UNDEFINED = 99
     """Undefined chroma."""
     MONOCHROME = 0
     """Mono chroma."""
     CHROMA_420 = 1
-    """Cb and Cr are each subsampled at a factor of 2 both horizontally and vertically."""
+    """``Cb`` and ``Cr`` are each subsampled at a factor of 2 both horizontally and vertically."""
     CHROMA_422 = 2
     """The two chroma components are sampled at half the horizontal sample rate of luma."""
     CHROMA_444 = 3
@@ -33,7 +33,7 @@ class HeifChroma(IntEnum):
 
 
 class HeifColorspace(IntEnum):
-    """Colorspace format of the image."""
+    """Colorspace format of the image. Used in :py:attr:`pillow_heif.HeifImage.color`"""
 
     UNDEFINED = 99
     """Undefined colorspace."""

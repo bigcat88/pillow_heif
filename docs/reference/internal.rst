@@ -3,6 +3,12 @@
 Internal
 ========
 
+HeifImageBase class object
+--------------------------
+
+.. autoclass:: pillow_heif.heif.HeifImageBase
+    :members:
+
 LibHeifCtx Object
 -----------------
 

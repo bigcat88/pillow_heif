@@ -35,11 +35,9 @@ from .heif import (
     check,
     check_heif,
     from_pillow,
-    getxmp,
     is_supported,
     open,
     open_heif,
     read,
-    read_heif,
 )
-from .misc import get_file_mimetype, reset_orientation
+from .misc import get_file_mimetype, getxmp, reset_orientation

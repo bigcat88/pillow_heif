@@ -9,8 +9,8 @@ from PIL import Image, ImageFile
 
 from ._options import options
 from .error import HeifError
-from .heif import HeifImage, from_pillow, getxmp, is_supported, open_heif
-from .misc import reset_orientation
+from .heif import HeifImage, from_pillow, is_supported, open_heif
+from .misc import getxmp, reset_orientation
 
 
 class HeifImageFile(ImageFile.ImageFile):

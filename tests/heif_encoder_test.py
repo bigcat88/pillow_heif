@@ -171,10 +171,12 @@ def test_save_all():
 
 def test_hif_file():
     heif_file1 = open_heif(Path("images/etc_heif/cat.hif"))
+    assert heif_file1.original_bit_depth == 10
     out_buf = BytesIO()
     heif_file1.save(out_buf, quality=10)
     heif_file2 = open_heif(out_buf)
-    compare_heif_files_fields(heif_file1, heif_file2, ignore=["t_stride"])
+    assert heif_file2.original_bit_depth == 8
+    compare_heif_files_fields(heif_file1, heif_file2, ignore=["t_stride", "original_bit_depth"])
 
 
 def test_no_encoder():

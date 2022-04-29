@@ -30,7 +30,7 @@ def test_lib_version():
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)
 def test_get_file_mimetype(img_path):
     mimetype = pillow_heif.get_file_mimetype(img_path)
-    assert mimetype in ("image/heic", "image/heif", "image/heif-sequence", "image/avif")
+    assert mimetype in ("image/heic", "image/heif", "image/avif", "image/heic-sequence", "image/heif-sequence")
 
 
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)
