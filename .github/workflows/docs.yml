@@ -16,18 +16,26 @@ concurrency:
 jobs:
     doc:
       name: "Documentation build"
-      runs-on: macos-11
+      runs-on: ubuntu-20.04
+      env:
+        BUILD_DIR_PREFIX: "/tmp/pillow_heif"
+        KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
 
       steps:
         - uses: actions/checkout@v3
-        - name: Install requirements
-          run: |
-            python3 -m pip install --upgrade pip
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-            brew install x265 libjpeg libde265 libheif
+
+        - uses: actions/cache@v3
+          with:
+            path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
+            key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
+
+        - uses: actions/cache@v3
+          with:
+            path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
+            key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
 
         - name: Build sdist
-          run: pip install .[docs]
+          run: sudo -H python3 -m pip install .[docs]
 
         - name: Build documentations
           shell: bash -l {0}
@@ -46,3 +54,6 @@ jobs:
             name: pillow-heif
             email: bigcat88@icloud.com
             clean_repo: true
+
+        - name: Fix cache permissions
+          run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
