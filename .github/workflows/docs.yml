@@ -19,12 +19,12 @@ jobs:
       runs-on: ubuntu-20.04
       env:
         BUILD_DIR_PREFIX: "/tmp/pillow_heif"
-        KEY_HEAD: x86_64-manylinux
+        KEY_HEAD: x86_64-ubuntu20-docs
 
       steps:
         - uses: actions/checkout@v3
         - name: Install OS packages
-          run: sudo apt install libc++-dev
+          run: sudo apt install libffi-dev libtool
 
         - uses: actions/cache@v3
           with:
