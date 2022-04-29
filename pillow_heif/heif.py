@@ -299,7 +299,19 @@ class HeifImage(HeifImageBase):
 
 
 class HeifFile:
-    def __init__(self, heif_ctx: Union[LibHeifCtx, dict], img_ids: list = None):
+    """This class represents the :py:class:`~pillow_heif.HeifImage` classes container.
+
+    To create :py:class:`~pillow_heif.HeifFile` object, use the appropriate factory functions.
+
+    * :py:func:`~pillow_heif.open_heif`
+    * :py:func:`~pillow_heif.from_pillow`
+
+    .. note:: To create empty container to fill it with images later, create a class without parameters.
+    """
+
+    def __init__(self, heif_ctx: Union[LibHeifCtx, dict] = None, img_ids: list = None):
+        if heif_ctx is None:
+            heif_ctx = {}
         self._images: List[HeifImage] = []
         self.mimetype = heif_ctx.get_mimetype() if isinstance(heif_ctx, LibHeifCtx) else ""
         if img_ids:

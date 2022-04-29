@@ -141,6 +141,9 @@ def test_heif_from_heif(img_path):
         heif_file_from = None  # noqa
         assert len(heif_file_from_from[len(heif_file_from_from) - 1].data)
 
+    heif_from_heif(hdr_to_8bit=True)
+    heif_from_heif(hdr_to_8bit=False)
+
 
 @pytest.mark.parametrize("img_path", dataset.MINIMAL_DATASET)
 def test_inputs(img_path):
@@ -173,7 +176,7 @@ def test_inputs(img_path):
             assert getattr(heif_file[0]._heif_ctx, "fp") is not None
             assert getattr(heif_file[0]._heif_ctx, "_fp_close_after") == isinstance(fp, (Path, str, bytes))
             # Create new heif_file
-            heif_file_from = HeifFile({}).add_from_heif(heif_file)
+            heif_file_from = HeifFile().add_from_heif(heif_file)
             collect()
             compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
             for _ in heif_file:
@@ -189,7 +192,7 @@ def test_inputs(img_path):
 
 
 def test_only_heif_image_reference():
-    empty_heif_container = HeifFile({})
+    empty_heif_container = HeifFile()
     empty_heif_container.add_from_heif(open_heif(Path("images/rgb8_512_512_1_0.heic"))[0])
     empty_heif_container.add_from_heif(open_heif(Path("images/rgb8_128_128_2_1.heic"))[1])
     assert len(empty_heif_container) == 2
@@ -199,7 +202,13 @@ def test_only_heif_image_reference():
 @pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
 def test_all(image_path):
     heif_file = open_heif(image_path)
-    assert heif_file.mimetype in ("image/heic", "image/heif", "image/heif-sequence", "image/avif")
+    assert heif_file.mimetype in (
+        "image/heic",
+        "image/heif",
+        "image/avif",
+        "image/heic-sequence",
+        "image/heif-sequence",
+    )
     for c, image in enumerate(heif_file):
         image._heif_ctx.to_8bit = True
         pass_count = 2 if heif_file.original_bit_depth > 8 else 1
