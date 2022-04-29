@@ -44,5 +44,6 @@ For usage without Pillow plugin as a base, look at examples started with ``reade
 
 For using it as a Pillow plugin, refer to Pillow's documentation:
 `Pillow Tutorial <https://pillow.readthedocs.io/en/stable/handbook/tutorial.html>`_
-
 and to exampels started with ``opener_``.
+
+`Examples <https://github.com/bigcat88/pillow_heif/tree/master/examples>`_

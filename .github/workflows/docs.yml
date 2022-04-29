@@ -1,0 +1,47 @@
+name: Docs
+
+on:
+  release:
+    types: [created]
+  push:
+    branches:
+    - main
+
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: True
+
+jobs:
+    doc:
+      name: "Documentation build"
+      runs-on: macos-11
+
+      steps:
+        - uses: actions/checkout@v3
+        - name: Install requirements
+          run: |
+            python3 -m pip install --upgrade pip
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            brew install x265 libjpeg libde265 libheif
+
+        - name: Build sdist
+          run: pip install .[docs]
+
+        - name: Build documentations
+          shell: bash -l {0}
+          run: |
+            sphinx-multiversion docs/ build/html
+            touch build/html/.nojekyll
+            ln -srf build/html/$(git tag -l --sort=creatordate |tail -1) build/html/latest  # auto-link the latest tag
+
+        - name: Push to web
+          uses: tagus/git-deploy@v0.4.1
+          with:
+            changes: build/html
+            branch: main
+            repository: git@github.com:bigcat88/pillow_heif.git
+            ssh_key: ${{ secrets.DOCS_DEPLOY_KEY }}
+            name: pillow-heif
+            email: bigcat88@icloud.com
+            clean_repo: true

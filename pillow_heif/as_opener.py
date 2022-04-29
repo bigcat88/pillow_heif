@@ -58,6 +58,7 @@ class HeifImageFile(ImageFile.ImageFile):
 
         :returns: XMP tags in a dictionary.
         """
+
         return getxmp(self.info["xmp"])
 
     def seek(self, frame):
@@ -85,11 +86,13 @@ class HeifImageFile(ImageFile.ImageFile):
 
         :returns: Frame number, starting with 0.
         """
+
         return len(self.heif_file) if self.heif_file else 1
 
     @property
     def is_animated(self) -> bool:
         """Return ``True`` if this image has more then one frame, or ``False`` otherwise."""
+
         return self.n_frames > 1
 
     def _seek_check(self, frame):
