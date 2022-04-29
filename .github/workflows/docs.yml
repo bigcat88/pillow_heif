@@ -41,23 +41,22 @@ jobs:
             python3 -m pip install --upgrade pip
             sudo -H python3 -m pip install .[docs]
 
-#        - name: Build documentations
-#          shell: bash -l {0}
-#          run: |
-#            sphinx-multiversion docs/ build/html
-#            touch build/html/.nojekyll
+        - name: Build documentations
+          shell: bash -l {0}
+          run: |
+            sphinx-multiversion docs/ build/html
 #            ln -srf build/html/$(git tag -l --sort=creatordate |tail -1) build/html/latest  # auto-link the latest tag
-#
-#        - name: Push to web
-#          uses: tagus/git-deploy@v0.4.1
-#          with:
-#            changes: build/html
-#            branch: main
-#            repository: git@github.com:bigcat88/pillow_heif.git
-#            ssh_key: ${{ secrets.DOCS_DEPLOY_KEY }}
-#            name: pillow-heif
-#            email: bigcat88@icloud.com
-#            clean_repo: true
+
+        - name: Push to web
+          uses: tagus/git-deploy@v0.4.1
+          with:
+            changes: build/html
+            branch: main
+            repository: git@github.com:bigcat88/pillow_heif.git
+            ssh_key: ${{ secrets.DOCS_DEPLOY_KEY }}
+            name: pillow-heif
+            email: bigcat88@icloud.com
+            clean_repo: true
 
         - name: Fix cache permissions
           run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
