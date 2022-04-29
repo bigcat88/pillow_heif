@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3 - 2021-05-0x]
+
+### Added
+
+- First documentation has arrived.
+- (HeifImagePlugin) - `custom_mimetype` field added like in other Pillow's plugins, instead of `info["brand"]`
+- (Heif) - `mimetype` field added to `HeifFile` class, instead of `info["brand"]`
+
+### Changed
+
+- (Heif) - `apply_transformations` parameter in function `open_heif` was removed.
+- (HeifImagePlugin, Heif) - removed `brand` and `main` values from `info` dictionary.
+- (Heif) - added `original_bit_depth` property. It will not break any existing code. See docs.
+
+### Fixed
+
+- (HeifImagePlugin, Heif) - allow saving empty HeifFile when `append_images` parameter present.
+- (HeifImagePlugin, Heif) - during saving, `fp` will be open after encoding process finished, and not before start.
+- (Heif) - HeifImage.chroma and HeifImage.color property now avalaible before image load, right after `open`.
+
 ## [0.2.2 - 2021-04-23]
 
 ### Added
