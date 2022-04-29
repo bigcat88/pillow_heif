@@ -1,0 +1,8 @@
+version: 2
+
+python:
+  install:
+    - requirements: sphinx>=4.4
+    - requirements: sphinx-issues>=3.0.1
+    - requirements: sphinx-rtd-theme>=1.0
+    - requirements: pillow-heif
