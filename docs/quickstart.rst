@@ -40,7 +40,9 @@ Manual
 Advanced usage
 **************
 
-For usage without Pillow plugin as a base, see :ref:`advanced-usage`
+For usage without Pillow plugin as a base, look at examples started with ``reader_``
 
 For using it as a Pillow plugin, refer to Pillow's documentation:
 `Pillow Tutorial <https://pillow.readthedocs.io/en/stable/handbook/tutorial.html>`_
+
+and to exampels started with ``opener_``.

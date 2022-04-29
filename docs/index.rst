@@ -16,7 +16,6 @@ Pillow-Heif documentation!
    quickstart.rst
    options.rst
    reference/index.rst
-   tutorial.rst
 
 Indices and tables
 ==================
