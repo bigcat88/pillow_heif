@@ -2,4 +2,4 @@ version: 2
 
 python:
   install:
-    - requirements: docs/rtd_docs_reuirements.txt
+    - requirements: docs/rtd_docs_requirements.txt
