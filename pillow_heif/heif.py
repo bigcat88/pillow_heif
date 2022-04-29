@@ -3,7 +3,7 @@ Functions and classes for heif images to read and write.
 """
 
 from copy import deepcopy
-from typing import Any, Dict, Iterator, List, Literal, Union
+from typing import Any, Dict, Iterator, List, Union
 from warnings import warn
 
 from _pillow_heif_cffi import ffi, lib
@@ -82,7 +82,7 @@ class HeifImageBase:
         return self._heif_ctx["mode"] == "RGBA"
 
     @property
-    def mode(self) -> Literal["RGB", "RGBA"]:
+    def mode(self):
         """Returns “RGBA” for images with alpha channel, and “RGB” for images without.
 
         :returns: "RGB" or "RGBA" """
