@@ -24,7 +24,7 @@ jobs:
       steps:
         - uses: actions/checkout@v3
         - name: Install OS packages
-          run: sudo apt install libffi-dev libtool
+          run: sudo apt install libffi-dev
 
         - uses: actions/cache@v3
           with:
@@ -37,7 +37,9 @@ jobs:
             key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
 
         - name: Build sdist
-          run: sudo -H python3 -m pip install .[docs]
+          run: |
+            python3 -m pip install --upgrade pip
+            sudo -H python3 -m pip install .[docs]
 
         - name: Build documentations
           shell: bash -l {0}
