@@ -1,0 +1,4 @@
+sphinx>=4.4
+sphinx-issues>=3.0.1
+sphinx-rtd-theme>=1.0
+pillow-heif>=0.2
