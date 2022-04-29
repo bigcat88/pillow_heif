@@ -26,6 +26,7 @@ def reset_orientation(info: dict) -> Union[int, None]:
     :param info: An `info` dictionary from `ImageFile.ImageFile` or `UndecodedHeifImage`.
     :returns: Original orientation or None if it is absent.
     """
+
     if info.get("exif", None):
         tif_tag = info["exif"][6:]
         endian_mark = "<" if tif_tag[0:2] == b"\x49\x49" else ">"
@@ -47,13 +48,15 @@ def reset_orientation(info: dict) -> Union[int, None]:
 
 def get_file_mimetype(fp) -> str:
     """
-    Wrapper around `libheif.get_file_mimetype`.
+    Wrapper around `libheif.get_file_mimetype`
 
     :param fp: A filename (string), pathlib.Path object, file object or bytes.
        The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
        and be opened in binary mode.
-    :returns: string with `image/*`. If the format could not be detected, an empty string is returned.
+    :returns: "image/heic", "image/heif", "image/heic-sequence",
+        "image/heif-sequence", "image/avif" or "image/avif-sequence"
     """
+
     __data = _get_bytes(fp, 50)
     return ffi.string(lib.heif_get_file_mime_type(__data, len(__data))).decode()
 

@@ -15,6 +15,8 @@ from .misc import get_file_mimetype
 
 
 class LibHeifCtx:
+    """LibHeif reader context"""
+
     def __init__(self, fp, to_8bit: bool = False):
         self._fp_close_after = False
         self.to_8bit = to_8bit
@@ -70,6 +72,8 @@ class LibHeifCtx:
 
 
 class LibHeifCtxWrite:
+    """LibHeif writer context"""
+
     def __init__(self, compression_format: int = HeifCompressionFormat.HEVC):
         self.ctx = ffi.gc(lib.heif_context_alloc(), lib.heif_context_free)
         p_encoder = ffi.new("struct heif_encoder **")

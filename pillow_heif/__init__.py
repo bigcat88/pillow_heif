@@ -17,7 +17,6 @@ from .constants import heif_filetype_no  # DEPRECATED
 from .constants import heif_filetype_yes_supported  # DEPRECATED
 from .constants import heif_filetype_yes_unsupported  # DEPRECATED
 from .constants import (
-    HeifBrand,
     HeifChannel,
     HeifChroma,
     HeifColorProfileType,
@@ -40,6 +39,5 @@ from .heif import (
     open,
     open_heif,
     read,
-    read_heif,
 )
 from .misc import get_file_mimetype, getxmp, reset_orientation

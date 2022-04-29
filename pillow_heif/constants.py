@@ -6,14 +6,14 @@ from enum import IntEnum
 
 
 class HeifChroma(IntEnum):
-    """Chroma subsampling definitions."""
+    """Chroma subsampling definitions. Used in :py:attr:`pillow_heif.HeifImage.chroma`"""
 
     UNDEFINED = 99
     """Undefined chroma."""
     MONOCHROME = 0
     """Mono chroma."""
     CHROMA_420 = 1
-    """Cb and Cr are each subsampled at a factor of 2 both horizontally and vertically."""
+    """``Cb`` and ``Cr`` are each subsampled at a factor of 2 both horizontally and vertically."""
     CHROMA_422 = 2
     """The two chroma components are sampled at half the horizontal sample rate of luma."""
     CHROMA_444 = 3
@@ -33,7 +33,7 @@ class HeifChroma(IntEnum):
 
 
 class HeifColorspace(IntEnum):
-    """Colorspace format of the image."""
+    """Colorspace format of the image. Used in :py:attr:`pillow_heif.HeifImage.color`"""
 
     UNDEFINED = 99
     """Undefined colorspace."""
@@ -67,6 +67,7 @@ class HeifChannel(IntEnum):
 
 
 def encode_fourcc(fourcc):
+    """Encodes 4 bytes in reverse order"""
     return ord(fourcc[0]) << 24 | ord(fourcc[1]) << 16 | ord(fourcc[2]) << 8 | ord(fourcc[3])
 
 
@@ -87,7 +88,7 @@ class HeifColorProfileType(IntEnum):
 
 
 class HeifFiletype(IntEnum):
-    """Result of `check_heif` function."""
+    """Result of :py:func:`~pillow_heif.check_heif` function."""
 
     NO = 0
     """it is unsupported file"""
@@ -99,39 +100,8 @@ class HeifFiletype(IntEnum):
     """not sure whether it is heif and is it supported"""
 
 
-class HeifBrand(IntEnum):
-    """Possible heif brands."""
-
-    UNKNOWN = 0
-    """unknown brand"""
-    HEIC = 1
-    """the usual HEIF images"""
-    HEIX = 2
-    """10bit images, or anything that uses h265 with range extension"""
-    HEVC = 3
-    """brand for image sequences"""
-    HEVX = 4
-    """brand for 10bit image sequences"""
-    HEIM = 5
-    """multiview"""
-    HEIS = 6
-    """scalable"""
-    HEVM = 7
-    """multiview sequence"""
-    HEVS = 8
-    """scalable sequence"""
-    MIF1 = 9
-    """image, any coding algorithm"""
-    MSF1 = 10
-    """sequence, any coding algorithm"""
-    AVIF = 11
-    """Avif image"""
-    AVIS = 12
-    """Avif sequence"""
-
-
 class HeifErrorCode(IntEnum):
-    """Possible libheif errors code."""
+    """Possible libheif error codes in :py:class:`~pillow_heif.HeifError`"""
 
     OK = 0
     """Everything ok, no error occurred."""

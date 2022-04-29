@@ -1,6 +1,7 @@
 """
 Undocumented private functions for other code to look better.
 """
+
 from _pillow_heif_cffi import ffi, lib
 
 from ._libheif_ctx import LibHeifCtxWrite
@@ -8,7 +9,7 @@ from .constants import HeifChannel, HeifChroma, HeifColorProfileType, HeifColors
 from .error import check_libheif_error
 
 
-def create_image(size: tuple, chroma: HeifChroma, bit_depth: int, mode: str, data, **kwargs):
+def create_image(size: tuple, chroma: HeifChroma, bit_depth: int, data, stride: int, **kwargs):
     width, height = size
     p_new_img = ffi.new("struct heif_image **")
     error = lib.heif_image_create(width, height, kwargs.get("color", HeifColorspace.RGB), chroma, p_new_img)
@@ -19,7 +20,7 @@ def create_image(size: tuple, chroma: HeifChroma, bit_depth: int, mode: str, dat
     p_dest_stride = ffi.new("int *")
     p_data = lib.heif_image_get_plane(new_img, HeifChannel.INTERLEAVED, p_dest_stride)
     dest_stride = p_dest_stride[0]
-    copy_image_data(p_data, data, dest_stride, get_stride(bit_depth, mode, width, **kwargs), height)
+    copy_image_data(p_data, data, dest_stride, stride, height)
     return new_img
 
 
@@ -32,19 +33,17 @@ def copy_image_data(dest_data, src_data, dest_stride: int, source_stride: int, h
             ffi.memmove(dest_data + dest_stride * i, p_source + source_stride * i, dest_stride)
 
 
-def get_stride(bit_depth: int, mode: str, width: int, **kwargs) -> int:
-    __stride = kwargs.get("stride", None)
-    __factor = 1 if bit_depth == 8 else 2
-    return __stride if __stride else width * 3 * __factor if mode == "RGB" else width * 4 * __factor
-
-
 def heif_ctx_as_dict(bit_depth: int, mode: str, size: tuple, data, **kwargs) -> dict:
+    stride = kwargs.get("stride", None)
+    if stride is None:
+        factor = 1 if bit_depth == 8 else 2
+        stride = size[0] * 3 * factor if mode == "RGB" else size[0] * 4 * factor
     return {
         "bit_depth": bit_depth,
         "mode": mode,
         "size": size,
         "data": data,
-        "stride": get_stride(bit_depth, mode, size[0], **kwargs),
+        "stride": stride,
         "additional_info": kwargs.get("add_info", {}),
     }
 
