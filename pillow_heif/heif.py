@@ -575,7 +575,7 @@ class HeifFile:
 
             ``quality`` - see :py:attr:`~pillow_heif._options.PyLibHeifOptions.quality`
 
-            ``enc_params`` - tuple of name:value to pass to encoder itself. Look in ``x265`` docs...
+            ``enc_params`` - tuple of name:value to pass to :ref:`x265 <hevc-encoder>` encoder.
 
         :param fp: A filename (string), pathlib.Path object or file object.
 
