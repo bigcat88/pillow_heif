@@ -31,6 +31,9 @@ from .private import (
 class HeifImageBase:
     """Base class for :py:class:`HeifImage` and :py:class:`HeifThumbnail`"""
 
+    size: tuple
+    """Width and height of the image."""
+
     def __init__(self, heif_ctx: Union[LibHeifCtx, dict], handle):
         self._img_data: Dict[str, Any] = {}
         self._heif_ctx = heif_ctx
@@ -77,6 +80,7 @@ class HeifImageBase:
         """``True`` for images with ``alpha`` channel, ``False`` otherwise.
 
         :returns: "True" or "False" """
+
         if isinstance(self._heif_ctx, LibHeifCtx):
             return bool(lib.heif_image_handle_has_alpha_channel(self._handle))
         return self._heif_ctx["mode"] == "RGBA"
@@ -135,8 +139,8 @@ class HeifImageBase:
 
         :param ignore_thumbnails: Shall` info["thumbnails"] be empty or not.
 
-        :returns: :py:class:`PIL.Image.Image` class created from this image.
-        """
+        :returns: :py:class:`PIL.Image.Image` class created from this image."""
+
         image = Image.frombytes(
             self.mode,
             self.size,
@@ -300,8 +304,7 @@ class HeifImage(HeifImageBase):
 
         :param boxes: int or list of ints determining size of thumbnail(s) to generate for image.
 
-        :returns: None.
-        """
+        :returns: None."""
 
         if isinstance(boxes, list):
             boxes_list = boxes
@@ -360,8 +363,7 @@ class HeifFile:
     * :py:func:`~pillow_heif.open_heif`
     * :py:func:`~pillow_heif.from_pillow`
 
-    .. note:: To create empty container to fill it with images later, create a class without parameters.
-    """
+    .. note:: To get empty container to fill it later, create a class without parameters."""
 
     def __init__(self, heif_ctx: Union[LibHeifCtx, dict] = None, img_ids: list = None):
         if heif_ctx is None:
@@ -392,6 +394,11 @@ class HeifFile:
 
     @property
     def size(self):
+        """Points to :py:attr:`~pillow_heif.HeifImage.size` property of the
+        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+
+        :exception IndexError: If there is no images."""
+
         return self._images[0].size
 
     @property
@@ -469,8 +476,7 @@ class HeifFile:
 
         :param one_for_image: If set to ``True`` will return maximum one thumbnail for one image.
 
-        :returns: Iterator for :py:class:`~pillow_heif.HeifThumbnail` classes.
-        """
+        :returns: Iterator for :py:class:`~pillow_heif.HeifThumbnail` classes."""
 
         for i in self:
             for thumb in i.thumbnails:
@@ -491,6 +497,11 @@ class HeifFile:
         self._images[0].scale(width, height)
 
     def add_from_pillow(self, pil_image: Image.Image, load_one=False):
+        """Add image(s) to container.
+
+        :param pil_image: ``PIL.Image`` class to get images from.
+        :param load_one: should be only one frame loaded. Default=``False``"""
+
         for frame in ImageSequence.Iterator(pil_image):
             if frame.width > 0 and frame.height > 0:
                 additional_info = {}
@@ -520,6 +531,10 @@ class HeifFile:
         return self
 
     def add_from_heif(self, heif_image):
+        """Add image(s) to container.
+
+        :param heif_image: ``HeifFile`` or ``HeifImage`` class to get images from."""
+
         if isinstance(heif_image, HeifFile):
             heif_images = list(heif_image)
         else:
@@ -554,8 +569,7 @@ class HeifFile:
 
         :param boxes: int or list of ints determining size of thumbnail(s) to generate for images.
 
-        :returns: None.
-        """
+        :returns: None."""
 
         for img in self._images:
             img.add_thumbnails(boxes)
@@ -575,7 +589,7 @@ class HeifFile:
 
             ``quality`` - see :py:attr:`~pillow_heif._options.PyLibHeifOptions.quality`
 
-            ``enc_params`` - tuple of name:value to pass to encoder itself. Look in ``x265`` docs...
+            ``enc_params`` - tuple of name:value to pass to :ref:`x265 <hevc-encoder>` encoder.
 
         :param fp: A filename (string), pathlib.Path object or file object.
 
@@ -700,8 +714,7 @@ def is_supported(fp) -> bool:
         ``file.seek``, and ``file.tell`` methods,
         and be opened in binary mode.
 
-    :returns: A boolean indicating if object can be opened.
-    """
+    :returns: A boolean indicating if object can be opened."""
 
     magic = _get_bytes(fp, 16)
     heif_filetype = check_heif(magic)
@@ -721,8 +734,7 @@ def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
         be converted to 8 bit images during loading.
 
     :returns: An :py:class:`~pillow_heif.HeifFile` object.
-    :exception HeifError: If file is corrupted or is not in Heif format.
-    """
+    :exception HeifError: If file is corrupted or is not in Heif format."""
 
     heif_ctx = LibHeifCtx(fp, convert_hdr_to_8bit)
     main_image_id = heif_ctx.get_main_img_id()
@@ -738,8 +750,7 @@ def from_pillow(pil_image: Image.Image, load_one: bool = False) -> HeifFile:
     :param pil_image: Pillow :external:py:class:`~PIL.Image.Image` class
     :param load_one: If ``True``, then all frames will be loaded.
 
-    :returns: An :py:class:`~pillow_heif.HeifFile` object.
-    """
+    :returns: An :py:class:`~pillow_heif.HeifFile` object."""
 
     return HeifFile().add_from_pillow(pil_image, load_one)
 

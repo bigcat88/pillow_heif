@@ -7,3 +7,5 @@ HeifThumbnail class object
     :show-inheritance:
     :inherited-members:
     :members:
+
+    .. autoattribute:: size

@@ -18,10 +18,7 @@
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
 
-Library to work with HEIF files and an add-on for Pillow.
-Using the [libheif](https://github.com/strukturag/libheif) via [CFFI](https://cffi.readthedocs.io).
-
-Here last release of **0.1** version: [tag](https://github.com/bigcat88/pillow_heif/tree/v0.1.11)
+Python library for working with HEIF images and an add-on for Pillow.
 
 ## Example of use as pillow plugin.
 ```python3
@@ -34,7 +31,6 @@ image = Image.open('images/input.heic')
 for i, frame in enumerate(ImageSequence.Iterator(image)):
     rotated = frame.rotate(13)
     rotated.save(f'rotated_frame{i}.heic', quality=90)
-exit(0)
 ```
 
 ## Standalone example use
@@ -49,12 +45,18 @@ if pillow_heif.is_supported('input.heic'):
     heif_file.add_thumbnails([768, 512, 256]) # add three new thumbnail boxes.
     # default quality is probably ~77 in x265, set it a bit lower.
     heif_file.save('output.heic', quality=70, save_all=False) #save_all is True by default.
-    exit(0)
 ```
-### [More examples](https://github.com/bigcat88/pillow_heif/tree/master/examples)
 
-## Installation
-From [PyPi](https://pypi.org/project/pillow-heif/) or [Build from source](https://github.com/bigcat88/pillow_heif/blob/master/docs/BUILDING.md)
+## More Information
+
+- [Documentation](https://pillow-heif.readthedocs.io/)
+  - [Installation](https://pillow-heif.readthedocs.io/en/latest/installation.html)
+  - [Quickstart](https://pillow-heif.readthedocs.io/en/latest/quickstart.html)
+- [Contribute](https://github.com/bigcat88/pillow_heif/blob/master/.github/CONTRIBUTING.md)
+  - [Issues](https://github.com/bigcat88/pillow_heif/issues)
+- [Changelog](https://github.com/bigcat88/pillow_heif/blob/master/CHANGELOG.md)
+
+## Wheels
 
 | **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
 |--------------------|:---------------:|:-----------------:|:-----------------:|:----------:|:----------:|
@@ -70,52 +72,3 @@ From [PyPi](https://pypi.org/project/pillow-heif/) or [Build from source](https:
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
 #### **_Versions 0.2.X will be last to support Python 3.6_**
-
-## Base objects
-
-### More documentation will arrive soon, before 0.3.0 version...
-
-### The HeifImageFile object (as Pillow plugin)
-The returned `HeifImageFile` by `Pillow` function `Image.open` has the following additional properties beside regular:
-* `info` dictionary keys:
-  * `main` - boolean indication if this a main image in sequence.
-  * `brand` - value from int enum `HeifBrand`.
-  * `exif` - exif data or `None`.
-  * `metadata` - is a list of dictionaries with `type` and `data` keys, excluding `exif`. May be empty.
-  * `icc_profile` - contains data and present only when file has `ICC` color profile(`prof` or `rICC`).
-  * `nclx_profile` - contains data and present only when file has `NCLX` color profile.
-
-### The HeifFile object
-The returned `HeifFile` by function `open_heif` or `from_pillow` has the following properties:
-
-* `size`, `has_alpha`, `mode`, `bit_depth`, `data`, `stride`, `info`, etc - properties that points to main `HeifImage`
-* class supports `len`, `iter` and `__getitem__`:
-  * `len` - returns number of top level images including main.
-  * `iter` - returns a generator to iterate through all images, first image will be main.
-  * `__getitem__` - returns image by index, image with index=0 is main.
-* other useful class methods:
-  * `thumbnails_all` - returns an iterator to access thumbnails for all images in file.
-  * `add_from_pillow` - add image(s) from pillow :)
-  * `add_from_heif` - add image(s) from another `HeifFile`.
-  * `save` - saves `HeifFile` to `fp` that can be `Path` or `BytesIO`.
-
-### The HeifImage object
-
-* `size` - the size of the image as a `(width, height)` tuple of integers.
-* `has_alpha` - is a boolean indicating the presence of an alpha channel.
-* `mode` - the image mode, e.g. 'RGB' or 'RGBA'.
-* `bit_depth` - the number of bits in each component of a pixel.
-* `data` - the raw decoded file data, as bytes.
-* `stride` - the number of bytes in a row of decoded file data.
-* `info` - same dictionary as in `HeifImageFile.info`.
-* `thumbnails` - list of `HeifThumbnail` objects.
-
-### The HeifThumbnail object
-
-* `size` - the size of the image as a `(width, height)` tuple of integers.
-* `has_alpha` - is a boolean indicating the presence of an alpha channel.
-* `mode` - the image mode, e.g. 'RGB' or 'RGBA'.
-* `bit_depth` - the number of bits in each component of a pixel.
-* `data` - the raw decoded file data, as bytes.
-* `stride` - the number of bytes in a row of decoded file data.
-* `img_index` - index of image for which this thumbnail is.
