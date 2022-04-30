@@ -2,7 +2,7 @@
 
 ![analysis](https://github.com/bigcat88/pillow_heif/actions/workflows/analysis-coverage.yml/badge.svg)
 ![build](https://github.com/bigcat88/pillow_heif/actions/workflows/create-release-draft.yml/badge.svg)
-![wheels test](https://github.com/bigcat88/pillow_heif/actions/workflows/test-wheels.yaml/badge.svg)
+![wheels test](https://github.com/bigcat88/pillow_heif/actions/workflows/test-wheels.yml/badge.svg)
 [![codecov](https://codecov.io/gh/bigcat88/pillow_heif/branch/master/graph/badge.svg?token=JY64F2OL6V)](https://codecov.io/gh/bigcat88/pillow_heif)
 ![style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
