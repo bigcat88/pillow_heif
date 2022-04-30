@@ -2,14 +2,28 @@ name: Build from src
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: [Analysis & Coverage]
-    types:
-      - completed
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, edited]
+    paths:
+      - 'libheif/*.*'
+      - 'setup.*'
+      - 'pyproject.toml'
+      - 'tests/**'
+  push:
+    branches: [master]
+    paths:
+      - 'libheif/*.*'
+      - 'setup.*'
+      - 'pyproject.toml'
+      - 'tests/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     name: ${{ matrix.distro }}-${{ matrix.arch }}
     runs-on: ubuntu-latest
     strategy:
