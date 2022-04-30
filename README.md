@@ -47,6 +47,15 @@ if pillow_heif.is_supported('input.heic'):
     heif_file.save('output.heic', quality=70, save_all=False) #save_all is True by default.
 ```
 
+## More Information
+
+- [Documentation](https://pillow-heif.readthedocs.io/)
+  - [Installation](https://pillow-heif.readthedocs.io/en/latest/installation.html)
+  - [Quickstart](https://pillow-heif.readthedocs.io/en/latest/quickstart.html)
+- [Contribute](https://github.com/bigcat88/pillow_heif/blob/master/.github/CONTRIBUTING.md)
+  - [Issues](https://github.com/bigcat88/pillow_heif/issues)
+- [Changelog](https://github.com/bigcat88/pillow_heif/blob/master/CHANGELOG.md)
+
 ## Wheels
 
 | **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
@@ -63,12 +72,3 @@ if pillow_heif.is_supported('input.heic'):
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
 #### **_Versions 0.2.X will be last to support Python 3.6_**
-
-## More Information
-
-- [Documentation](https://pillow-heif.readthedocs.io/)
-  - [Installation](https://pillow-heif.readthedocs.io/en/latest/installation.html)
-  - [Quickstart](https://pillow-heif.readthedocs.io/en/latest/quickstart.html)
-- [Contribute](https://github.com/bigcat88/pillow_heif/blob/master/.github/CONTRIBUTING.md)
-  - [Issues](https://github.com/bigcat88/pillow_heif/issues)
-- [Changelog](https://github.com/bigcat88/pillow_heif/blob/master/CHANGELOG.md)
