@@ -13,5 +13,3 @@ setup(
     version=get_version(),
     cffi_modules=["libheif/build.py:ffi"],
 )
-
-# WAH
