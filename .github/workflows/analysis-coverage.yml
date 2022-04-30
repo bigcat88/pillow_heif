@@ -32,11 +32,13 @@ jobs:
       - uses: actions/checkout@v3
 
       - uses: actions/cache@v3
+        id: cache-tools
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
           key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
 
       - uses: actions/cache@v3
+        id: cache-libs
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
           key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
@@ -68,3 +70,7 @@ jobs:
 
       - name: Fix cache permissions
         run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+
+      - name: Test build from source
+#        if: steps.cache-tools.outputs.cache-hit != 'true' | steps.cache-libs.outputs.cache-hit != 'true'
+        uses: .github/workflows/test-src-build.yml@main
