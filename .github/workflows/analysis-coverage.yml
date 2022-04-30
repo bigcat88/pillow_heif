@@ -24,8 +24,23 @@ jobs:
   build-analysis:
     runs-on: ubuntu-latest
     name: Analysis & Coverage
+    env:
+      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
+      KEY_HEAD: analysis-coverage
+
     steps:
       - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
+
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
+
       - name: Install from source
         run: |
           sudo -H python3 -m pip install --upgrade pip
@@ -50,3 +65,6 @@ jobs:
           file: ./coverage.xml
           fail_ci_if_error: true
           verbose: true
+
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
