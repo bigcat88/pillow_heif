@@ -2,7 +2,21 @@ name: Build from src
 
 on:
   workflow_dispatch:
-  workflow_call:
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, edited]
+    paths:
+      - 'libheif/*.*'
+      - 'setup.*'
+      - 'pyproject.toml'
+      - 'tests/**'
+  push:
+    branches: [master]
+    paths:
+      - 'libheif/*.*'
+      - 'setup.*'
+      - 'pyproject.toml'
+      - 'tests/**'
 
 jobs:
   build:

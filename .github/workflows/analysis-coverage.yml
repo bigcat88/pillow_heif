@@ -70,7 +70,3 @@ jobs:
 
       - name: Fix cache permissions
         run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
-
-      - name: Test build from source
-#        if: steps.cache-tools.outputs.cache-hit != 'true' | steps.cache-libs.outputs.cache-hit != 'true'
-        uses: ./.github/workflows/test-src-build.yml@main
