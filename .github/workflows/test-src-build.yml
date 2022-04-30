@@ -18,6 +18,10 @@ on:
       - 'pyproject.toml'
       - 'tests/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: ${{ matrix.distro }}-${{ matrix.arch }}
