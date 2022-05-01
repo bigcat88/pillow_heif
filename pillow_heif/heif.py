@@ -7,13 +7,13 @@ from typing import Any, Dict, Iterator, List, Union
 from warnings import warn
 
 from _pillow_heif_cffi import ffi, lib
-from PIL import Image, ImageSequence
+from PIL import Image, ImageOps, ImageSequence
 
 from ._libheif_ctx import LibHeifCtx, LibHeifCtxWrite
 from ._options import options
 from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifFiletype
 from .error import HeifError, HeifErrorCode, check_libheif_error
-from .misc import _get_bytes, reset_orientation
+from .misc import _get_bytes, set_orientation
 from .private import (
     create_image,
     heif_ctx_as_dict,
@@ -62,8 +62,7 @@ class HeifImageBase:
 
     @property
     def original_bit_depth(self):
-        """
-        Shows number of bits in colour channel, before it was decoded using ``convert_hdr_to_8bit`` parameter.
+        """Number of bits in colour channel, before it was decoded using ``convert_hdr_to_8bit`` parameter.
 
         .. note:: If ``convert_hdr_to_8bit`` is ``False`` then this field is always equal to ``bit_depth``
 
@@ -142,7 +141,7 @@ class HeifImageBase:
         :returns: :py:class:`PIL.Image.Image` class created from this image."""
 
         image = Image.frombytes(
-            self.mode,
+            self.mode,  # noqa
             self.size,
             self.data,
             "raw",
@@ -157,7 +156,7 @@ class HeifImageBase:
                     image.info[k] = self.info[k]
             thumbnails = [] if ignore_thumbnails else deepcopy(self.thumbnails)
             image.info["thumbnails"] = thumbnails
-            image.info["original_orientation"] = reset_orientation(image.info)
+            image.info["original_orientation"] = set_orientation(image.info)
         return image
 
     def load(self):
@@ -504,15 +503,18 @@ class HeifFile:
 
         for frame in ImageSequence.Iterator(pil_image):
             if frame.width > 0 and frame.height > 0:
+                original_orientation = None
                 additional_info = {}
                 for k in ("exif", "xmp", "icc_profile", "icc_profile_type", "nclx_profile", "metadata"):
                     if k in frame.info:
                         additional_info[k] = frame.info[k]
-                        # if k == "exif":
-                        #     additional_info["original_orientation"] = reset_orientation(additional_info)
+                        if k == "exif":
+                            original_orientation = set_orientation(additional_info)
                 if frame.mode == "P":
                     mode = "RGBA" if frame.info.get("transparency") else "RGB"
                     frame = frame.convert(mode=mode)
+                if original_orientation is not None:
+                    frame = ImageOps.exif_transpose(frame)
                 # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?
                 __bit_depth = 8
                 self._add_frombytes(__bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
@@ -578,7 +580,7 @@ class HeifFile:
         """Saves image under the given fp.
 
         Keyword options can be used to provide additional instructions to the writer.
-        If a writer doesn’t recognise an option, it is silently ignored.
+        If a writer does not recognise an option, it is silently ignored.
 
         Supported options:
             ``save_all`` - boolean. Should all images from ``HeiFile`` be saved.

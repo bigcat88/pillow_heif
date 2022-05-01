@@ -16,6 +16,7 @@ Pillow-Heif documentation!
    quickstart.rst
    options.rst
    reference/index.rst
+   workaround-orientation.rst
 
 Indices and tables
 ==================

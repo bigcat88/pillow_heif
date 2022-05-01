@@ -13,5 +13,7 @@ Opening HEIF file
 Low Level API
 -------------
 
+.. autofunction:: getxmp
 .. autofunction:: get_file_mimetype
 .. autofunction:: check_heif
+.. autofunction:: set_orientation

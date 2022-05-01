@@ -38,12 +38,12 @@ def test_zero(size: tuple):
 def test_jpeg_to_heic_with_orientation():
     jpeg_pillow = Image.open(Path("images/jpeg_gif_png/pug_90_flipped.jpeg"))
     out_heic = BytesIO()
-    jpeg_pillow.save(out_heic, format="HEIF", quality=100)
+    jpeg_pillow.save(out_heic, format="HEIF", quality=-1)
     heic_pillow = Image.open(out_heic)
-    imagehash.compare_hashes([jpeg_pillow, heic_pillow], hash_type="dhash", hash_size=8)
+    imagehash.compare_hashes([jpeg_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
     out_jpeg = BytesIO()
     heic_pillow.save(out_jpeg, format="JPEG")
-    imagehash.compare_hashes([jpeg_pillow, out_jpeg], hash_type="dhash", hash_size=8)
+    imagehash.compare_hashes([jpeg_pillow, out_jpeg], hash_type="dhash", hash_size=8, max_difference=1)
 
 
 def test_heic_orientation_and_quality():
