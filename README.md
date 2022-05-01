@@ -18,7 +18,16 @@
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
 
-Python library for working with HEIF images and an add-on for Pillow.
+Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
+
+Features:
+ * Decoding of 8, 10, 12 bit HEIF images.
+ * Encoding of 8, 10, 12 bit HEIF images. *On windows currently only encoding og 8 bit images supported*
+ * EXIF, XMP, IPTC metadata support.
+ * Support multiple images in one file. **HEIC**
+ * HEIF native thumbnails support.
+ * Adding all this features to Pillow in one line of code as a plugin.
+
 
 ## Example of use as pillow plugin.
 ```python3
