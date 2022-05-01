@@ -2,11 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.3 - 2021-05-0x]
+## [0.2.3 - 2021-05-02]
 
 ### Added
 
-- First documentation has arrived.
+- Documentation has arrived.
 - (HeifImagePlugin) - `custom_mimetype` field added like in other Pillow's plugins, instead of `info["brand"]`
 - (Heif) - `mimetype` field added to `HeifFile` class, instead of `info["brand"]`
 
