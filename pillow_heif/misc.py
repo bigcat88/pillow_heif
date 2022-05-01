@@ -18,14 +18,16 @@ except ImportError:  # pragma: no cover
     ElementTree = None  # pragma: no cover
 
 
-def reset_orientation(info: dict) -> Union[int, None]:
-    """
-    Sets `orientation` in `exif` to `1` if any presents. In Pillow plugin mode it called automatically for main image.
-    When `pillow_heif` used as a reader, if you wish you can call it manually.
+def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
+    """Sets orientation in ``EXIF`` to ``1`` by default if any orientation present.
+    In Pillow plugin mode it called automatically for main image.
+    When ``pillow_heif`` used as a reader, if you wish you can call it manually.
 
-    :param info: An `info` dictionary from `ImageFile.ImageFile` or `UndecodedHeifImage`.
-    :returns: Original orientation or None if it is absent.
-    """
+    .. note:: If there is no orientation tag, this function will not add it and do nothing.
+
+    :param info: `info` dictionary from `~PIL.Image.Image` or `~pillow_heif.HeifImage`.
+    :param orientation: int value of EXIF orientation tag.
+    :returns: Original orientation or None if it is absent."""
 
     if info.get("exif", None):
         tif_tag = info["exif"][6:]
@@ -41,14 +43,14 @@ def reset_orientation(info: dict) -> Union[int, None]:
             data = unpack(endian_mark + "H", value[0:2])[0]
             if data != 1:
                 p_value = 6 + pointer + 8
-                info["exif"] = info["exif"][:p_value] + pack(endian_mark + "H", 1) + info["exif"][p_value + 2 :]
+                new_orientation = pack(endian_mark + "H", orientation)
+                info["exif"] = info["exif"][:p_value] + new_orientation + info["exif"][p_value + 2 :]
             return data
     return None
 
 
 def get_file_mimetype(fp) -> str:
-    """
-    Wrapper around `libheif.get_file_mimetype`
+    """Wrapper around `libheif.get_file_mimetype`
 
     :param fp: A filename (string), pathlib.Path object, file object or bytes.
        The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
@@ -75,13 +77,12 @@ def _get_bytes(fp, length=None) -> bytes:
 
 
 def getxmp(xmp_data) -> dict:
-    """
-    Returns a dictionary containing the XMP tags.
-    Requires defusedxml to be installed.
-    Copy of function `_getxmp` from Pillow.Image
+    """Returns a dictionary containing the XMP tags.
+    **Requires defusedxml to be installed.** Implementation taken from ``Pillow``.
 
-    :returns: XMP tags in a dictionary.
-    """
+    Used in :py:meth:`pillow_heif.HeifImageFile.getxmp`
+
+    :returns: XMP tags in a dictionary."""
 
     def get_name(tag):
         return tag.split("}")[1]

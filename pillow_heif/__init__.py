@@ -40,4 +40,4 @@ from .heif import (
     open_heif,
     read,
 )
-from .misc import get_file_mimetype, getxmp, reset_orientation
+from .misc import get_file_mimetype, getxmp, set_orientation

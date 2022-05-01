@@ -15,9 +15,11 @@ All notable changes to this project will be documented in this file.
 - (Heif) - `apply_transformations` parameter in function `open_heif` was removed.
 - (HeifImagePlugin, Heif) - removed `brand` and `main` values from `info` dictionary.
 - (Heif) - added `original_bit_depth` property. It will not break any existing code. See docs.
+- (Heif) - function `reset_orientation` was renamed to `set_orientation`.
 
 ### Fixed
 
+- (HeifImagePlugin, Heif) - fix `exif` rotation, when converting from non `heif` to `heif`. See in docs chapter: `Workarounds`
 - (HeifImagePlugin, Heif) - allow saving empty HeifFile when `append_images` parameter present.
 - (HeifImagePlugin, Heif) - during saving, `fp` will be open after encoding process finished, and not before start.
 - (Heif) - HeifImage.chroma and HeifImage.color property now avalaible before image load, right after `open`.

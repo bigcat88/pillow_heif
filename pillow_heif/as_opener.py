@@ -10,7 +10,7 @@ from PIL import Image, ImageFile
 from ._options import options
 from .error import HeifError
 from .heif import HeifImage, from_pillow, is_supported, open_heif
-from .misc import getxmp, reset_orientation
+from .misc import getxmp, set_orientation
 
 
 class HeifImageFile(ImageFile.ImageFile):
@@ -52,12 +52,10 @@ class HeifImageFile(ImageFile.ImageFile):
         return super().load()
 
     def getxmp(self) -> dict:
-        """
-        Returns a dictionary containing the XMP tags.
+        """Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.
 
-        :returns: XMP tags in a dictionary.
-        """
+        :returns: XMP tags in a dictionary."""
 
         return getxmp(self.info["xmp"])
 
@@ -81,11 +79,9 @@ class HeifImageFile(ImageFile.ImageFile):
 
     @property
     def n_frames(self) -> int:
-        """
-        Return the number of available frames.
+        """Return the number of available frames.
 
-        :returns: Frame number, starting with 0.
-        """
+        :returns: Frame number, starting with 0."""
 
         return len(self.heif_file) if self.heif_file else 1
 
@@ -112,7 +108,7 @@ class HeifImageFile(ImageFile.ImageFile):
             if k in heif_image.info:
                 self.info[k] = heif_image.info[k]
         self.info["thumbnails"] = heif_image.thumbnails
-        self.info["original_orientation"] = reset_orientation(self.info)
+        self.info["original_orientation"] = set_orientation(self.info)
 
 
 def _save(im, fp, _filename):
@@ -124,8 +120,7 @@ def _save_all(im, fp, _filename):
 
 
 def register_heif_opener(**kwargs) -> None:
-    """
-    Registers Pillow plugin.
+    """Registers Pillow plugin.
 
     :param kwargs: dictionary with values to set in :py:class:`~pillow_heif._options.PyLibHeifOptions`
     """

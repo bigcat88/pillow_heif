@@ -2,7 +2,7 @@ from io import BytesIO
 from pathlib import Path
 
 import numpy
-from PIL import Image
+from PIL import Image, ImageOps
 
 __version__ = "4.2.1"
 """
@@ -137,6 +137,7 @@ def compare_hashes(pillow_images: list, hash_type="average", hash_size=16, max_d
     for pillow_image in pillow_images:
         if isinstance(pillow_image, (str, Path, BytesIO)):
             pillow_image = Image.open(pillow_image)
+        pillow_image = ImageOps.exif_transpose(pillow_image)
         if hash_type == "dhash":
             image_hash = dhash(pillow_image, hash_size)
         elif hash_type == "colorhash":
