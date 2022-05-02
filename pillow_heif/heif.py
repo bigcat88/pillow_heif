@@ -503,21 +503,23 @@ class HeifFile:
 
         for frame in ImageSequence.Iterator(pil_image):
             if frame.width > 0 and frame.height > 0:
-                original_orientation = None
                 additional_info = {}
-                for k in ("exif", "xmp", "icc_profile", "icc_profile_type", "nclx_profile", "metadata"):
+                for k in ("exif", "xmp", "metadata", "icc_profile", "icc_profile_type", "nclx_profile"):
                     if k in frame.info:
                         additional_info[k] = frame.info[k]
-                        if k == "exif":
-                            original_orientation = set_orientation(additional_info)
+                if "xmp" not in additional_info and "XML:com.adobe.xmp" in frame.info:
+                    additional_info["xmp"] = frame.info["XML:com.adobe.xmp"]
+                if "xmp" in additional_info and isinstance(additional_info["xmp"], str):
+                    additional_info["xmp"] = additional_info["xmp"].encode("utf-8")
+                original_orientation = set_orientation(additional_info)
                 if frame.mode == "P":
                     mode = "RGBA" if frame.info.get("transparency") else "RGB"
                     frame = frame.convert(mode=mode)
                 if original_orientation is not None:
                     frame = ImageOps.exif_transpose(frame)
                 # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?
-                __bit_depth = 8
-                self._add_frombytes(__bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
+                _bit_depth = 8
+                self._add_frombytes(_bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
                 for thumb in frame.info.get("thumbnails", []):
                     self._images[len(self._images) - 1].thumbnails.append(
                         self.__get_image_thumb_frombytes(

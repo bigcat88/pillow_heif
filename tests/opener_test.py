@@ -11,7 +11,14 @@ from heif_test import compare_heif_files_fields
 from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
 import pillow_heif.HeifImagePlugin  # noqa
-from pillow_heif import HeifFile, HeifImage, HeifThumbnail, from_pillow, open_heif
+from pillow_heif import (
+    HeifFile,
+    HeifImage,
+    HeifThumbnail,
+    from_pillow,
+    getxmp,
+    open_heif,
+)
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -138,3 +145,13 @@ def test_open_images(image_path):
         collect()
         assert pillow_image.tobytes()
         assert len(ImageSequence.Iterator(pillow_image)[0].tobytes())
+
+
+def test_xmp_tags():
+    png_xmp = Image.open(Path("images/jpeg_gif_png/xmp_tags_orientation.png"))
+    heif_file = from_pillow(png_xmp)
+    heif_pillow = heif_file[0].to_pillow()
+    assert getxmp(heif_pillow.info["xmp"])
+    assert isinstance(heif_pillow.info["xmp"], bytes)
+    assert getxmp(heif_file.info["xmp"])
+    assert isinstance(heif_file.info["xmp"], bytes)

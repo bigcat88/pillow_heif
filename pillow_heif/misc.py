@@ -6,6 +6,7 @@ Mostly for internal use, so prototypes can change between versions.
 
 import builtins
 import pathlib
+import re
 from struct import pack, unpack
 from typing import Union
 from warnings import warn
@@ -20,15 +21,18 @@ except ImportError:  # pragma: no cover
 
 def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
     """Sets orientation in ``EXIF`` to ``1`` by default if any orientation present.
+    Removes ``XMP`` orientation tag if it is present.
     In Pillow plugin mode it called automatically for main image.
     When ``pillow_heif`` used as a reader, if you wish you can call it manually.
 
     .. note:: If there is no orientation tag, this function will not add it and do nothing.
+    If both XMP and EXIF orientation tag present, EXIF tag will be returned, but both tags will be removed.
 
     :param info: `info` dictionary from `~PIL.Image.Image` or `~pillow_heif.HeifImage`.
-    :param orientation: int value of EXIF orientation tag.
+    :param orientation: int value of EXIF or XMP orientation tag.
     :returns: Original orientation or None if it is absent."""
 
+    original_orientation = None
     if info.get("exif", None):
         tif_tag = info["exif"][6:]
         endian_mark = "<" if tif_tag[0:2] == b"\x49\x49" else ">"
@@ -40,13 +44,21 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
             if unpack(endian_mark + "H", tif_tag[pointer : pointer + 2])[0] != 274:
                 continue
             value = tif_tag[pointer + 8 : pointer + 12]
-            data = unpack(endian_mark + "H", value[0:2])[0]
-            if data != 1:
+            original_orientation = unpack(endian_mark + "H", value[0:2])[0]
+            if original_orientation != 1:
                 p_value = 6 + pointer + 8
                 new_orientation = pack(endian_mark + "H", orientation)
                 info["exif"] = info["exif"][:p_value] + new_orientation + info["exif"][p_value + 2 :]
-            return data
-    return None
+                break
+    if info.get("xmp", None):
+        xmp_data = info["xmp"].decode("utf-8")
+        match = re.search(r'tiff:Orientation="([0-9])"', xmp_data)
+        if match:
+            if original_orientation is None:
+                original_orientation = int(match[1])
+            xmp_data = re.sub(r'tiff:Orientation="([0-9])"', "", xmp_data)
+            info["xmp"] = xmp_data.encode("utf-8")
+    return original_orientation
 
 
 def get_file_mimetype(fp) -> str:
@@ -76,11 +88,13 @@ def _get_bytes(fp, length=None) -> bytes:
     return bytes(fp)[:length]
 
 
-def getxmp(xmp_data) -> dict:
+def getxmp(xmp_data: bytes) -> dict:
     """Returns a dictionary containing the XMP tags.
     **Requires defusedxml to be installed.** Implementation taken from ``Pillow``.
 
     Used in :py:meth:`pillow_heif.HeifImageFile.getxmp`
+
+    :param xmp_data: ``bytes`` containing string in UTF-8 encoding with XMP tags.
 
     :returns: XMP tags in a dictionary."""
 

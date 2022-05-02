@@ -56,3 +56,10 @@ Here is list of functions and method that resets orientations automatically:
     * :py:meth:`pillow_heif.HeifFile.add_from_pillow`
     * :py:meth:`pillow_heif.HeifImage.to_pillow`
     * :py:class:`pillow_heif.HeifImageFile` *Pillow plugin class*
+
+Q. What about XMP tag orientation?
+""""""""""""""""""""""""""""""""""
+
+In version 0.2.4 implemented removing of XMP tag, almost the same tech as for EXIF tag.
+
+It was done by adding code to :py:func:`~pillow_heif.set_orientation` function, so the same rules will be applied.
