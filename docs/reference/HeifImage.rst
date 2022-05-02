@@ -20,7 +20,7 @@ HeifImage class object
     .. py:attribute:: info["xmp"]
         :type: bytes
 
-        XMP metadata. Can be `None`
+        XMP metadata. String in bytes in UTF-8 encoding. Can be `None`
 
     .. py:attribute:: info["metadata"]
         :type: list

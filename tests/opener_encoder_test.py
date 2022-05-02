@@ -46,6 +46,19 @@ def test_jpeg_to_heic_with_orientation():
     imagehash.compare_hashes([jpeg_pillow, out_jpeg], hash_type="dhash", hash_size=8, max_difference=1)
 
 
+def test_png_xmp_orientation():
+    png_pillow = Image.open(Path("images/jpeg_gif_png/xmp_tags_orientation.png"))
+    out_heic = BytesIO()
+    png_pillow.save(out_heic, format="HEIF", quality=-1)
+    heic_pillow = Image.open(out_heic)
+    assert heic_pillow.info["xmp"]
+    assert isinstance(heic_pillow.info["xmp"], bytes)
+    imagehash.compare_hashes([png_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
+    out_png = BytesIO()
+    heic_pillow.save(out_png, format="PNG")
+    imagehash.compare_hashes([png_pillow, out_png], hash_type="dhash", hash_size=8, max_difference=1)
+
+
 def test_heic_orientation_and_quality():
     heic_pillow = Image.open(Path("images/etc_heif/arrow.heic"))
     out_jpeg = BytesIO()

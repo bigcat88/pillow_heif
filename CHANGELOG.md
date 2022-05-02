@@ -2,7 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.3 - 2021-05-02]
+## [0.2.4 - 2022-0x-xx]
+
+### Added
+
+- (HeifImagePlugin) - saving of XMP tags from PNG.
+
+### Changed
+
+### Fixed
+
+- (HeifImagePlugin) - XMP Orientation tag.
+
+## [0.2.3 - 2022-05-02]
 
 ### Added
 
@@ -24,7 +36,7 @@ All notable changes to this project will be documented in this file.
 - (HeifImagePlugin, Heif) - during saving, `fp` will be open after encoding process finished, and not before start.
 - (Heif) - HeifImage.chroma and HeifImage.color property now avalaible before image load, right after `open`.
 
-## [0.2.2 - 2021-04-23]
+## [0.2.2 - 2022-04-23]
 
 ### Added
 
