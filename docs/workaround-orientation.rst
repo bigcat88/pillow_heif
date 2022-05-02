@@ -1,8 +1,8 @@
 Workarounds
 ===========
 
-Exif Orientation Tag
---------------------
+Exif/XMP Orientation Tag
+------------------------
 
 Q. What is Exif Orientation Tag
 """""""""""""""""""""""""""""""
@@ -57,7 +57,7 @@ Here is list of functions and method that resets orientations automatically:
     * :py:meth:`pillow_heif.HeifImage.to_pillow`
     * :py:class:`pillow_heif.HeifImageFile` *Pillow plugin class*
 
-Q. What about XMP tag orientation?
+Q. What about XMP orientation tag?
 """"""""""""""""""""""""""""""""""
 
 In version 0.2.4 implemented removing of XMP tag, almost the same tech as for EXIF tag.
