@@ -32,7 +32,7 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
 
     :param info: `info` dictionary from `~PIL.Image.Image` or `~pillow_heif.HeifImage`.
     :param orientation: int value of EXIF or XMP orientation tag.
-    :returns: Original orientation or None if it is absent."""
+    :returns: Original orientation or None if it is absent.vvv"""
 
     original_orientation = None
     if info.get("exif", None):
