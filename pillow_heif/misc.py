@@ -26,7 +26,9 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
     When ``pillow_heif`` used as a reader, if you wish you can call it manually.
 
     .. note:: If there is no orientation tag, this function will not add it and do nothing.
-    If both XMP and EXIF orientation tag present, EXIF tag will be returned, but both tags will be removed.
+
+        If both XMP and EXIF orientation tags present, EXIF orientation tag will be returned,
+        but both tags will be removed.
 
     :param info: `info` dictionary from `~PIL.Image.Image` or `~pillow_heif.HeifImage`.
     :param orientation: int value of EXIF or XMP orientation tag.
