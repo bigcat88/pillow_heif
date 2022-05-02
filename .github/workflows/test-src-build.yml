@@ -26,6 +26,7 @@ jobs:
   build:
     name: ${{ matrix.distro }}-${{ matrix.arch }}
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[docs]')"
     strategy:
       matrix:
         distro: ["ubuntu:focal", "ubuntu:jammy", "alpine:3.14"]

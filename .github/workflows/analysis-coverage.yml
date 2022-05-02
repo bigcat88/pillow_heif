@@ -24,6 +24,7 @@ jobs:
   build-analysis:
     runs-on: ubuntu-latest
     name: Analysis & Coverage
+    if: "!contains(github.event.head_commit.message, '[docs]')"
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
       KEY_HEAD: analysis-coverage
