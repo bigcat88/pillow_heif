@@ -18,6 +18,7 @@ from pillow_heif import (
     HeifThumbnail,
     getxmp,
     open_heif,
+    options,
     register_heif_opener,
 )
 
@@ -147,48 +148,58 @@ def test_heif_from_heif(img_path):
 
 @pytest.mark.parametrize("img_path", dataset.MINIMAL_DATASET)
 def test_inputs(img_path):
-    with builtins.open(img_path, "rb") as fh:
-        b = fh.read()
-        bytes_io = BytesIO(b)
-        for fp in [bytes_io, fh, img_path, img_path.as_posix(), b]:
-            heif_file = open_heif(fp)
-            assert min(heif_file.size) > 0
-            assert heif_file.info
-            assert getattr(heif_file[0], "_heif_ctx") is not None
-            collect()
-            # This will load all data
-            for image in heif_file:
-                assert not getattr(image, "_img_data")
-                assert len(image.data) > 0
-                for thumbnail in image.thumbnails:
-                    assert not getattr(thumbnail, "_img_data")
-                    assert len(thumbnail.data) > 0
-                image.unload()
-            collect()
-            for image in heif_file:
-                assert not getattr(image, "_img_data")
-                assert len(image.data) > 0
-                for thumbnail in image.thumbnails:
-                    assert not getattr(thumbnail, "_img_data")
-                    assert len(thumbnail.data) > 0
-            collect()
-            assert getattr(heif_file[0], "_heif_ctx") is not None
-            assert getattr(heif_file[0]._heif_ctx, "fp") is not None
-            assert getattr(heif_file[0]._heif_ctx, "_fp_close_after") == isinstance(fp, (Path, str, bytes))
-            # Create new heif_file
-            heif_file_from = HeifFile().add_from_heif(heif_file)
-            collect()
-            compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
-            for _ in heif_file:
-                _.unload()
-            for _ in heif_file_from:
-                _.unload()
-            collect()
-            compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
-            heif_file = None  # noqa
-            assert len(heif_file_from[len(heif_file_from) - 1].data)
-            if not isinstance(fp, (Path, str, bytes)):
-                assert not fp.closed
+    def perform_test_input():
+        with builtins.open(img_path, "rb") as fh:
+            b = fh.read()
+            bytes_io = BytesIO(b)
+            for fp in [bytes_io, fh, img_path, img_path.as_posix(), b]:
+                heif_file = open_heif(fp)
+                assert heif_file.mimetype
+                assert min(heif_file.size) > 0
+                assert heif_file.info
+                assert getattr(heif_file[0], "_heif_ctx") is not None
+                collect()
+                # This will load all data
+                for image in heif_file:
+                    assert not getattr(image, "_img_data")
+                    assert len(image.data) > 0
+                    for thumbnail in image.thumbnails:
+                        assert not getattr(thumbnail, "_img_data")
+                        assert len(thumbnail.data) > 0
+                    image.unload()
+                collect()
+                for image in heif_file:
+                    assert not getattr(image, "_img_data")
+                    assert len(image.data) > 0
+                    for thumbnail in image.thumbnails:
+                        assert not getattr(thumbnail, "_img_data")
+                        assert len(thumbnail.data) > 0
+                collect()
+                assert getattr(heif_file[0], "_heif_ctx") is not None
+                if not options().ctx_in_memory:
+                    assert getattr(heif_file[0]._heif_ctx, "fp") is not None
+                    assert getattr(heif_file[0]._heif_ctx, "_fp_close_after") == isinstance(fp, (Path, str, bytes))
+                # Create new heif_file
+                heif_file_from = HeifFile().add_from_heif(heif_file)
+                collect()
+                compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
+                for _ in heif_file:
+                    _.unload()
+                for _ in heif_file_from:
+                    _.unload()
+                collect()
+                compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
+                heif_file = None  # noqa
+                assert len(heif_file_from[len(heif_file_from) - 1].data)
+                if not isinstance(fp, (Path, str, bytes)):
+                    assert not fp.closed
+
+    perform_test_input()
+    try:
+        options().ctx_in_memory = False
+        perform_test_input()
+    finally:
+        options().ctx_in_memory = True
 
 
 def test_only_heif_image_reference():
@@ -201,43 +212,51 @@ def test_only_heif_image_reference():
 
 @pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
 def test_all(image_path):
-    heif_file = open_heif(image_path)
-    assert heif_file.mimetype in (
-        "image/heic",
-        "image/heif",
-        "image/avif",
-        "image/heic-sequence",
-        "image/heif-sequence",
-    )
-    for c, image in enumerate(heif_file):
-        image._heif_ctx.to_8bit = True
-        pass_count = 2 if heif_file.original_bit_depth > 8 else 1
-        for i in range(pass_count):
-            if i == 1:
-                image._heif_ctx.to_8bit = False
-                image.unload()
-            assert isinstance(getxmp(image.info["xmp"]), dict)
-            assert min(image.size) > 0
-            assert image.mode == "RGBA" if image.has_alpha else "RGB"
-            assert image.bit_depth >= 8
-            assert image.chroma != HeifChroma.UNDEFINED
-            assert image.color != HeifColorspace.UNDEFINED
-            minimal_stride = image.size[0] * 4 if image.has_alpha else image.size[0] * 3
-            if image.bit_depth > 8:
-                minimal_stride *= 2
-            assert image.stride >= minimal_stride
-            assert len(image.data) == image.stride * image.size[1]
-            # This will load thumbnails too
-            assert isinstance(image.load(), HeifImage)
-            for thumbnail in image.thumbnails:
-                minimal_stride = thumbnail.size[0] * 4 if thumbnail.has_alpha else thumbnail.size[0] * 3
-                if thumbnail.bit_depth > 8:
+    def perform_test_all():
+        heif_file = open_heif(image_path)
+        assert heif_file.mimetype in (
+            "image/heic",
+            "image/heif",
+            "image/avif",
+            "image/heic-sequence",
+            "image/heif-sequence",
+        )
+        for c, image in enumerate(heif_file):
+            image._heif_ctx.to_8bit = True
+            pass_count = 2 if heif_file.original_bit_depth > 8 else 1
+            for i in range(pass_count):
+                if i == 1:
+                    image._heif_ctx.to_8bit = False
+                    image.unload()
+                assert isinstance(getxmp(image.info["xmp"]), dict)
+                assert min(image.size) > 0
+                assert image.mode == "RGBA" if image.has_alpha else "RGB"
+                assert image.bit_depth >= 8
+                assert image.chroma != HeifChroma.UNDEFINED
+                assert image.color != HeifColorspace.UNDEFINED
+                minimal_stride = image.size[0] * 4 if image.has_alpha else image.size[0] * 3
+                if image.bit_depth > 8:
                     minimal_stride *= 2
-                assert thumbnail.stride >= minimal_stride
-                assert len(thumbnail.data) == thumbnail.stride * thumbnail.size[1]
-                assert thumbnail.chroma != HeifChroma.UNDEFINED
-                assert thumbnail.color != HeifColorspace.UNDEFINED
-                assert isinstance(thumbnail.load(), HeifThumbnail)
+                assert image.stride >= minimal_stride
+                assert len(image.data) == image.stride * image.size[1]
+                # This will load thumbnails too
+                assert isinstance(image.load(), HeifImage)
+                for thumbnail in image.thumbnails:
+                    minimal_stride = thumbnail.size[0] * 4 if thumbnail.has_alpha else thumbnail.size[0] * 3
+                    if thumbnail.bit_depth > 8:
+                        minimal_stride *= 2
+                    assert thumbnail.stride >= minimal_stride
+                    assert len(thumbnail.data) == thumbnail.stride * thumbnail.size[1]
+                    assert thumbnail.chroma != HeifChroma.UNDEFINED
+                    assert thumbnail.color != HeifColorspace.UNDEFINED
+                    assert isinstance(thumbnail.load(), HeifThumbnail)
+
+    perform_test_all()
+    try:
+        options().ctx_in_memory = False
+        perform_test_all()
+    finally:
+        options().ctx_in_memory = True
 
 
 def test_no_defusedxml(monkeypatch):

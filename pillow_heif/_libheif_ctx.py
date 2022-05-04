@@ -9,9 +9,10 @@ from typing import List, Tuple
 
 from _pillow_heif_cffi import ffi, lib
 
+from ._options import options
 from .constants import HeifCompressionFormat
 from .error import check_libheif_error
-from .misc import get_file_mimetype
+from .misc import _get_bytes, get_file_mimetype
 
 
 class LibHeifCtx:
@@ -20,12 +21,21 @@ class LibHeifCtx:
     def __init__(self, fp, to_8bit: bool = False):
         self._fp_close_after = False
         self.to_8bit = to_8bit
-        self.fp = self._get_fp(fp)
-        self.fp.seek(0, SEEK_SET)
-        self.c_userdata = ffi.new_handle(self.fp)
         self.ctx = ffi.gc(lib.heif_context_alloc(), lib.heif_context_free)
-        self.reader = self._get_libheif_reader()
-        check_libheif_error(lib.heif_context_read_from_reader(self.ctx, self.reader, self.c_userdata, ffi.NULL))
+        if options().ctx_in_memory:
+            self.fp = None
+            self.c_userdata = None
+            if hasattr(fp, "seek"):
+                fp.seek(0, SEEK_SET)
+            self.reader = _get_bytes(fp)
+            error = lib.heif_context_read_from_memory_without_copy(self.ctx, self.reader, len(self.reader), ffi.NULL)
+        else:
+            self.fp = self._get_fp(fp)
+            self.fp.seek(0, SEEK_SET)
+            self.c_userdata = ffi.new_handle(self.fp)
+            self.reader = self._get_libheif_reader()
+            error = lib.heif_context_read_from_reader(self.ctx, self.reader, self.c_userdata, ffi.NULL)
+        check_libheif_error(error)
 
     def get_main_img_id(self) -> int:
         p_main_image_id = ffi.new("heif_item_id *")
@@ -40,7 +50,9 @@ class LibHeifCtx:
 
     def get_mimetype(self) -> str:
         mimetype = ""
-        if self.fp:
+        if isinstance(self.reader, bytes):
+            mimetype = get_file_mimetype(self.reader)
+        elif self.fp:
             old_position = self.fp.tell()
             self.fp.seek(0, SEEK_SET)
             mimetype = get_file_mimetype(self.fp)
