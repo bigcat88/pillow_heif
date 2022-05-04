@@ -35,7 +35,9 @@ class PyLibHeifOptions:
     @property
     def strict(self) -> bool:
         """Indicates should be or not partially supported files be marked as supported.
-        Affects on return result of :py:func:`~pillow_heif.is_supported` function."""
+        Affects on return result of :py:func:`~pillow_heif.is_supported` function.
+
+        Default = ``False``"""
 
         return self._cfg["strict"]
 
@@ -45,7 +47,9 @@ class PyLibHeifOptions:
 
     @property
     def thumbnails(self) -> bool:
-        """Property to enable or disable HEIF thumbnails functionality. Default=True"""
+        """Property to enable or disable HEIF thumbnails functionality.
+
+        Default = ``True``"""
 
         return self._cfg["thumbnails"]
 
@@ -70,9 +74,12 @@ class PyLibHeifOptions:
     def ctx_in_memory(self) -> bool:
         """Should files be read to memory fully.
 
-        As Python is much slower than ``C++``, we read a file to memory and let ``libheif`` to manage reads.
+        As Python is much slower than ``C++``, we read a file to memory and
+        let ``libheif`` to manage reads.
         You can look at source of class ``LibHeifCtx`` in ``_libheif_ctx.py`` file.
-        This will be the default behaviour, until maybe someday written on ``C`` reader module will appear."""
+        This will be the default behaviour, until maybe someday written on ``C`` reader module will appear.
+
+        Default = ``True``"""
 
         return self._cfg["ctx_in_memory"]
 
