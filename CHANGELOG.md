@@ -2,13 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.4 - 2022-0x-xx]
+## [0.2.4 - 2022-05-xx]
 
 ### Added
 
 - (HeifImagePlugin) - saving of XMP tags from PNG.
+- Benchmarks page to docs.
 
 ### Changed
+
+- Added option `ctx_in_memory`, default=True. Benchmarks showed that versions 0.1.x which worked like this, was much faster.
+This will not affect any user code, changes are internal.
 
 ### Fixed
 
