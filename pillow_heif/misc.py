@@ -74,7 +74,7 @@ def get_file_mimetype(fp) -> str:
     """
 
     __data = _get_bytes(fp, 50)
-    return ffi.string(lib.heif_get_file_mime_type(__data, len(__data))).decode()
+    return ffi.string(lib.heif_get_file_mime_type(__data, len(__data))).decode("utf-8")
 
 
 def _get_bytes(fp, length=None) -> bytes:

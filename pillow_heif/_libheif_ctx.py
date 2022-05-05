@@ -9,9 +9,31 @@ from typing import List, Tuple
 
 from _pillow_heif_cffi import ffi, lib
 
+from ._options import options
 from .constants import HeifCompressionFormat
 from .error import check_libheif_error
-from .misc import get_file_mimetype
+from .misc import _get_bytes, get_file_mimetype
+
+
+def _get_libheif_reader():
+    libheif_reader = ffi.new("struct heif_reader *")
+    libheif_reader.reader_api_version = 1
+    libheif_reader.get_position = lib.callback_tell
+    libheif_reader.read = lib.callback_read
+    libheif_reader.seek = lib.callback_seek
+    libheif_reader.wait_for_file_size = lib.callback_wait_for_file_size
+    return libheif_reader
+
+
+def _get_heif_writer():
+    heif_writer = ffi.new("struct heif_writer *")
+    heif_writer.writer_api_version = 1
+    heif_writer.write = lib.callback_write
+    return heif_writer
+
+
+HEIF_READER = _get_libheif_reader()
+HEIF_WRITER = _get_heif_writer()
 
 
 class LibHeifCtx:
@@ -20,12 +42,20 @@ class LibHeifCtx:
     def __init__(self, fp, to_8bit: bool = False):
         self._fp_close_after = False
         self.to_8bit = to_8bit
-        self.fp = self._get_fp(fp)
-        self.fp.seek(0, SEEK_SET)
-        self.c_userdata = ffi.new_handle(self.fp)
         self.ctx = ffi.gc(lib.heif_context_alloc(), lib.heif_context_free)
-        self.reader = self._get_libheif_reader()
-        check_libheif_error(lib.heif_context_read_from_reader(self.ctx, self.reader, self.c_userdata, ffi.NULL))
+        if options().ctx_in_memory:
+            self.fp = None
+            if hasattr(fp, "seek"):
+                fp.seek(0, SEEK_SET)
+            self.c_userdata = bytes(_get_bytes(fp))
+            cdata_buf = ffi.from_buffer(self.c_userdata)  # For PyPy3, without this it will raise error during read.
+            error = lib.heif_context_read_from_memory_without_copy(self.ctx, cdata_buf, len(cdata_buf), ffi.NULL)
+        else:
+            self.fp = self._get_fp(fp)
+            self.fp.seek(0, SEEK_SET)
+            self.c_userdata = ffi.new_handle(self.fp)
+            error = lib.heif_context_read_from_reader(self.ctx, HEIF_READER, self.c_userdata, ffi.NULL)
+        check_libheif_error(error)
 
     def get_main_img_id(self) -> int:
         p_main_image_id = ffi.new("heif_item_id *")
@@ -40,7 +70,9 @@ class LibHeifCtx:
 
     def get_mimetype(self) -> str:
         mimetype = ""
-        if self.fp:
+        if isinstance(self.c_userdata, bytes):
+            mimetype = get_file_mimetype(self.c_userdata)
+        elif self.fp:
             old_position = self.fp.tell()
             self.fp.seek(0, SEEK_SET)
             mimetype = get_file_mimetype(self.fp)
@@ -50,7 +82,6 @@ class LibHeifCtx:
     def __del__(self):
         if self._fp_close_after and self.fp and hasattr(self.fp, "close"):
             self.fp.close()
-        self.fp = None
 
     def _get_fp(self, fp):
         if hasattr(fp, "read") and hasattr(fp, "tell") and hasattr(fp, "seek"):
@@ -59,16 +90,6 @@ class LibHeifCtx:
         if isinstance(fp, (str, Path)):
             return builtins.open(fp, "rb")
         return BytesIO(fp)
-
-    @staticmethod
-    def _get_libheif_reader():
-        libheif_reader = ffi.new("struct heif_reader *")
-        libheif_reader.reader_api_version = 1
-        libheif_reader.get_position = lib.callback_tell
-        libheif_reader.read = lib.callback_read
-        libheif_reader.seek = lib.callback_seek
-        libheif_reader.wait_for_file_size = lib.callback_wait_for_file_size
-        return libheif_reader
 
 
 class LibHeifCtxWrite:
@@ -96,7 +117,7 @@ class LibHeifCtxWrite:
     def write(self, fp):
         __fp = self._get_fp(fp)
         c_userdata = ffi.new_handle(__fp)
-        error = lib.heif_context_write(self.ctx, self._get_heif_writer(), c_userdata)
+        error = lib.heif_context_write(self.ctx, HEIF_WRITER, c_userdata)
         if isinstance(fp, (str, Path)):
             __fp.close()
         check_libheif_error(error)
@@ -109,24 +130,17 @@ class LibHeifCtxWrite:
             return fp
         raise TypeError("`fp` must be a path to file or and object with `write` method.")
 
-    @staticmethod
-    def _get_heif_writer():
-        heif_writer = ffi.new("struct heif_writer *")
-        heif_writer.writer_api_version = 1
-        heif_writer.write = lib.callback_write
-        return heif_writer
-
 
 @ffi.def_extern()
 def callback_tell(userdata):
     fp = ffi.from_handle(userdata)
-    return fp.tell() if fp and not fp.closed else 0
+    return fp.tell() if not fp.closed else 0
 
 
 @ffi.def_extern()
 def callback_seek(position, userdata):
     fp = ffi.from_handle(userdata)
-    if fp and not fp.closed:
+    if not fp.closed:
         fp.seek(position)
     return 0
 
@@ -134,17 +148,15 @@ def callback_seek(position, userdata):
 @ffi.def_extern()
 def callback_read(data, size, userdata):
     fp = ffi.from_handle(userdata)
-    if fp and not fp.closed:
-        read_data = fp.read(size)
-        ffi.memmove(data, read_data, len(read_data))
+    if not fp.closed:
+        fp.readinto(ffi.buffer(data, size=size))
     return 0
 
 
 @ffi.def_extern()
 def callback_write(_ctx, data, size, userdata):
     fp = ffi.from_handle(userdata)
-    if fp and not fp.closed:
-        fp.write(ffi.buffer(data, size=size))
+    fp.write(ffi.buffer(data, size=size))
     return [0, 0, ffi.NULL]
 
 
@@ -152,7 +164,7 @@ def callback_write(_ctx, data, size, userdata):
 def callback_wait_for_file_size(target_size, userdata):
     fp = ffi.from_handle(userdata)
     fp_size = 0
-    if fp and not fp.closed:
+    if not fp.closed:
         fp_current = fp.tell()
         fp_size = fp.seek(0, SEEK_END)
         fp.seek(fp_current, SEEK_SET)

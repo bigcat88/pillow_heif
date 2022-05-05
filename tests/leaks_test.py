@@ -27,9 +27,11 @@ def perform_open_save(iterations, image_path, do_save=True):
 
 
 @pytest.mark.skipif(sys.executable.lower().find("pypy") != -1, reason="Disabled on PyPy.")
-def test_open_save_objects_leaks():
+@pytest.mark.parametrize("ctx_in_memory", (False, True))
+def test_open_save_objects_leaks(ctx_in_memory):
     from pympler import summary, tracker
 
+    pillow_heif.options().ctx_in_memory = ctx_in_memory
     image_path = Path("images/rgb8_128_128_2_1.heic")
     perform_open_save(1, image_path)
     gc.collect()
@@ -57,14 +59,16 @@ def _get_mem_usage():
 
 
 @pytest.mark.skipif(sys.platform.lower() == "win32", reason="requires Unix or macOS")
-def test_open_save_leaks():
+@pytest.mark.parametrize("ctx_in_memory", (False, True))
+def test_open_save_leaks(ctx_in_memory):
+    pillow_heif.options().ctx_in_memory = ctx_in_memory
     mem_limit = None
     for i in range(1000):
         # do_save=False
-        # Reason: https://bitbucket.org/multicoreware/x265_git/issues/616/x265_encoder_open-leaks-memory-zoneparam
+        # https://bitbucket.org/multicoreware/x265_git/issues/616/x265_encoder_open-leaks-memory-zoneparam
         perform_open_save(1, Path("images/rgb8_128_128_2_1.heic"), do_save=False)
         mem = _get_mem_usage()
-        if i < 250:
+        if i < 300:
             mem_limit = mem + 1
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
