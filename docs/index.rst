@@ -17,6 +17,7 @@ Pillow-Heif documentation!
    options.rst
    reference/index.rst
    workaround-orientation.rst
+   benchmarks.rst
 
 Indices and tables
 ==================
