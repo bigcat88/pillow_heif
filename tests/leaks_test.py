@@ -68,7 +68,7 @@ def test_open_save_leaks(ctx_in_memory):
         # https://bitbucket.org/multicoreware/x265_git/issues/616/x265_encoder_open-leaks-memory-zoneparam
         perform_open_save(1, Path("images/rgb8_128_128_2_1.heic"), do_save=False)
         mem = _get_mem_usage()
-        if i < 250:
+        if i < 300:
             mem_limit = mem + 1
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
