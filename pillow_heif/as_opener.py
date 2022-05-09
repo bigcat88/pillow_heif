@@ -74,7 +74,7 @@ class HeifImageFile(ImageFile.ImageFile):
         return i
 
     def verify(self) -> None:
-        for _ in self.heif_file.thumbnails_all():
+        for _ in self.info["thumbnails"]:
             _.load()
 
     @property
