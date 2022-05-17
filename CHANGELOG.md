@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.4 - 2022-05-xx]
+## [0.2.4 - 2022-05-18]
 
 ### Added
 
@@ -17,6 +17,7 @@ This will not affect any user code, changes are internal.
 ### Fixed
 
 - (HeifImagePlugin) - XMP Orientation tag.
+- (HeifImagePlugin, encoder) - L and LA color modes. #23 (@Jarikf)
 
 ## [0.2.3 - 2022-05-02]
 
