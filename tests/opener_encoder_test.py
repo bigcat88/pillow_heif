@@ -114,6 +114,28 @@ def test_palette_with_bytes_transparency():
     assert heic_pillow.mode == "RGBA"
 
 
+def test_L_color_mode():
+    png_pillow = Image.open(Path("images/jpeg_gif_png/L_color_mode_image.png"))
+    heif_file = from_pillow(png_pillow)
+    out_heic = BytesIO()
+    heif_file.save(out_heic, format="HEIF", quality=90, save_all=True)
+    heic_pillow = Image.open(out_heic)
+    assert heic_pillow.heif_file.has_alpha is False  # noqa
+    assert heic_pillow.mode == "RGB"
+    imagehash.compare_hashes([png_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
+
+
+def test_LA_color_mode():
+    png_pillow = Image.open(Path("images/jpeg_gif_png/LA_color_mode_image.png"))
+    heif_file = from_pillow(png_pillow)
+    out_heic = BytesIO()
+    heif_file.save(out_heic, format="HEIF", quality=90, save_all=True)
+    heic_pillow = Image.open(out_heic)
+    assert heic_pillow.heif_file.has_alpha is True  # noqa
+    assert heic_pillow.mode == "RGBA"
+    imagehash.compare_hashes([png_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
+
+
 def test_append_images():
     heic_pillow = Image.open(Path("images/rgb8_512_512_1_0.heic"))
     heic_pillow2 = Image.open(Path("images/rgb8_150_128_2_1.heic"))
