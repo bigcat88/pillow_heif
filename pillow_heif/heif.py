@@ -515,6 +515,11 @@ class HeifFile:
                 if frame.mode == "P":
                     mode = "RGBA" if frame.info.get("transparency") else "RGB"
                     frame = frame.convert(mode=mode)
+                elif frame.mode == "LA":
+                    frame = frame.convert(mode="RGBA")
+                elif frame.mode == "L":
+                    frame = frame.convert(mode="RGB")
+
                 if original_orientation is not None:
                     frame = ImageOps.exif_transpose(frame)
                 # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?

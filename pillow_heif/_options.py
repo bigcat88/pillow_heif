@@ -74,8 +74,7 @@ class PyLibHeifOptions:
     def ctx_in_memory(self) -> bool:
         """Should files be read to memory fully.
 
-        As Python is much slower than ``C++``, we read a file to memory and
-        let ``libheif`` to manage reads.
+        As Python is much slower than ``C++``, we read a file to memory and let ``libheif`` manage reads.
         You can look at source of class ``LibHeifCtx`` in ``_libheif_ctx.py`` file.
         This will be the default behaviour, until maybe someday written on ``C`` reader module will appear.
 
