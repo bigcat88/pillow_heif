@@ -58,7 +58,7 @@ jobs:
         if: matrix.i['os'] != 'debian' && matrix.i['os'] != 'ubuntu' && matrix.i['os'] != 'alpine'
         run: |
           echo PREPARE_CMD="yum makecache" >> $GITHUB_ENV
-          echo INSTALL_CMD="yum install -y python3 python3-pip zlib" >> $GITHUB_ENV
+          echo INSTALL_CMD="yum install -y python3 python3-pip" >> $GITHUB_ENV
 
       - name: Build image & Run tests
         run: |
