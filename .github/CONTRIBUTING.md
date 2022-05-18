@@ -10,7 +10,7 @@ Please send a pull request to the `main` branch.  Feel free to ask questions [vi
 - Create a branch from `main`.
 - Install dev requirements with `pip install ".[dev]"`
 - Develop bug fixes, features, tests, etc.
-- Run the test suite. See [Codecov](https://codecov.io/gh) to see if the changed code is covered by tests.
+- Run the test suite. Run `coverage run -m pytest &&  coverage html` to see if the changed code is covered by tests.
 - Run PyLint inside project root: `pylint pillow_heif`
 - Do not forget to install `pre-commit` hooks by `pre-commit install` command.
 - Create a pull request to pull the changes from your branch to the pillow-heif `main`.
