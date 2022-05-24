@@ -4,6 +4,7 @@ from gc import collect
 from io import BytesIO
 from pathlib import Path
 from typing import Union
+from unittest import mock
 
 import dataset
 import pytest
@@ -12,6 +13,7 @@ from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
 import pillow_heif.HeifImagePlugin  # noqa
 from pillow_heif import (
+    HeifError,
     HeifFile,
     HeifImage,
     HeifThumbnail,
@@ -155,3 +157,15 @@ def test_xmp_tags():
     assert isinstance(heif_pillow.info["xmp"], bytes)
     assert getxmp(heif_file.info["xmp"])
     assert isinstance(heif_file.info["xmp"], bytes)
+
+
+def test_truncated_fail():
+    truncated_heif = Image.open(Path("images/corrupted/truncated.heic"))
+    with pytest.raises(HeifError):
+        truncated_heif.load()
+
+
+@mock.patch("PIL.ImageFile.LOAD_TRUNCATED_IMAGES", True)
+def test_truncated_ok():
+    truncated_heif = Image.open(Path("images/corrupted/truncated.heic"))
+    truncated_heif.load()

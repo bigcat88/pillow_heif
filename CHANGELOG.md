@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.5 - 2022-0x-xx]
+
+### Added
+
+- (HeifImagePlugin) - support for `PIL.ImageFile.LOAD_TRUNCATED_IMAGES` flag.
+
+### Changed
+
+### Fixed
+
 ## [0.2.4 - 2022-05-18]
 
 ### Added
