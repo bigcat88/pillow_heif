@@ -8,6 +8,7 @@ from typing import Any
 from PIL import Image, ImageFile
 
 from ._options import options
+from .constants import HeifErrorCode
 from .error import HeifError
 from .heif import HeifImage, from_pillow, is_supported, open_heif
 from .misc import getxmp, set_orientation
@@ -39,11 +40,17 @@ class HeifImageFile(ImageFile.ImageFile):
         if self.heif_file:
             frame_heif = self._heif_image_by_index(self.tell())
             self.load_prepare()
-            self.frombytes(frame_heif.data, "raw", (frame_heif.mode, frame_heif.stride))
+            truncated = False
+            try:
+                self.frombytes(frame_heif.data, "raw", (frame_heif.mode, frame_heif.stride))
+            except HeifError as exc:
+                truncated = exc.code == HeifErrorCode.DECODER_PLUGIN_ERROR and exc.subcode == 100
+                if not truncated or not ImageFile.LOAD_TRUNCATED_IMAGES:
+                    raise
             if self.is_animated:
                 frame_heif.unload()
             else:
-                self.info["thumbnails"] = deepcopy(self.info["thumbnails"])
+                self.info["thumbnails"] = deepcopy(self.info["thumbnails"]) if not truncated else []
                 self.heif_file = None
                 self._close_exclusive_fp_after_loading = True
                 if self.fp and getattr(self, "_exclusive_fp", False) and hasattr(self.fp, "close"):

@@ -20,3 +20,4 @@ if not options().avif:
 
 FULL_DATASET = AVIF_IMAGES + HEIC_IMAGES + HEIF_IMAGES
 CORRUPTED_DATASET = list(Path().glob("images/corrupted/*.*"))
+CORRUPTED_DATASET = [i for i in CORRUPTED_DATASET if i.name.find("truncated") == -1]
