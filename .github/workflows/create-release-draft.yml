@@ -18,6 +18,7 @@ jobs:
         run: python3 -m pip install cibuildwheel twine
 
       - name: Install libheif and dependencies
+      - uses: msys2/setup-msys2@v2
         with:
           update: true
           install: >-
