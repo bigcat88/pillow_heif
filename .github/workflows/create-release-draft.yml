@@ -27,7 +27,9 @@ jobs:
 
       - run: dir ${{ env.VCPKG_PREFIX }}/bin
 
-      - run: ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libx265.dll
+      - run: |
+          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libx265.dll
+          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libheif.dll
 
       - run: dir ${{ env.VCPKG_PREFIX }}/bin
 
