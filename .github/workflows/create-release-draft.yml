@@ -25,7 +25,7 @@ jobs:
           install: >-
             mingw-w64-x86_64-libheif
 
-      - run: dir ${{ env.VCPKG_PREFIX }}
+      - run: dir ${{ env.VCPKG_PREFIX }}/lib
 
       - name: Run cibuildwheel
         run: cibuildwheel
