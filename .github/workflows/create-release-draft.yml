@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install python requirements and dependencies
+      - name: Install python requirements
         run: python3 -m pip install cibuildwheel twine
 
       - name: Install libheif and dependencies
