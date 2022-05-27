@@ -9,7 +9,7 @@ jobs:
     name: Wheels • windows • x86_64
     runs-on: windows-2019
     env:
-      VCPKG_PREFIX: "C:/temp/msys64"
+      VCPKG_PREFIX: "C:/temp/msys64/mingw64"
 
     steps:
       - uses: actions/checkout@v3

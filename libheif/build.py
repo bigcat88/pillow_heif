@@ -56,6 +56,8 @@ if platform.lower() == "win32":
     lib_export_file = Path(path.join(include_path_prefix_lib, "libheif.dll.a"))
     if lib_export_file.is_file():
         copy(lib_export_file, path.join(include_path_prefix_lib, "libheif.lib"))
+    else:
+        warn("If you build this with MSYS2, you should not see this warning.")
 
 if platform.lower() in ("darwin", "win32"):
     include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
