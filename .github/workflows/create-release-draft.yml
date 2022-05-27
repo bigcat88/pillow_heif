@@ -13,10 +13,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Install requirements and dependencies
-        run: |
-          python3 -m pip install cibuildwheel twine
-          pacman -S mingw-w64-x86_64-libheif
+
+      - name: Install python requirements and dependencies
+        run: python3 -m pip install cibuildwheel twine
+
+      - name: Install libheif and dependencies
+      - uses: msys2/setup-msys2@v2
+      - shell: msys2 {0}
+        run: pacman -S mingw-w64-x86_64-libheif
 
       - name: Run cibuildwheel
         run: cibuildwheel
