@@ -14,9 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-#      - name: Python preparing
-#        run: |
-#          python3 -m pip install cibuildwheel twine
+      - name: Python preparing
+        run: |
+          python3 -m pip install cibuildwheel twine
 
       - name: Install LibHeif and dependencies
         uses: msys2/setup-msys2@v2
@@ -27,22 +27,22 @@ jobs:
 
       - run: dir ${{ env.VCPKG_PREFIX }}
 
-#      - name: Run cibuildwheel
-#        run: cibuildwheel
-#        env:
-#          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
-#          CIBW_ARCHS_WINDOWS: "AMD64"
-#          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
-#
-#      - name: Check built wheels
-#        run: twine check wheelhouse/*
-#
-#      - name: Upload built wheels
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
+      - name: Run cibuildwheel
+        run: cibuildwheel
+        env:
+          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
+          CIBW_ARCHS_WINDOWS: "AMD64"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
+
+      - name: Check built wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
 
 #  wheels_macos:
 #    name: Wheels • macosx • x86_64
@@ -191,44 +191,44 @@ jobs:
 #          name: wheels
 #          path: wheelhouse/*.tar.gz
 
-#  draft_release:
-##    needs: [sdist, wheels_linux, wheels_macos, wheels_windows]
-#    needs: [wheels_windows]
-#    runs-on: ubuntu-20.04
-#    name: Build and create release
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Get release info
-#        id: get_release_info
-#        run: |
-#          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
-#          echo "::set-output name=version::v${RELEASE_VERSION}"
-#          echo "::set-output name=tag::v${RELEASE_VERSION}"
-#          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
-#          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
-#          if [ "$CHANGELOG" == "" ]; then
-#            echo "changelog is empty!"
-#            exit 1
-#          fi
-#          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-#          echo "$CHANGELOG" >> $GITHUB_ENV
-#          echo "EOF" >> $GITHUB_ENV
-#
-#      - name: Collect sdist and wheels
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse
-#
-#      - name: Create release draft
-#        uses: ncipollo/release-action@v1.10.0
-#        with:
-#          name: ${{ steps.get_release_info.outputs.version }}
-#          tag: ${{ steps.get_release_info.outputs.tag }}
-#          commit: ${{ github.ref }}
-#          draft: true
-#          body: ${{ env.CHANGELOG }}
-#          artifacts: wheelhouse/*
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          artifactErrorsFailBuild: true
+  draft_release:
+#    needs: [sdist, wheels_linux, wheels_macos, wheels_windows]
+    needs: [wheels_windows]
+    runs-on: ubuntu-20.04
+    name: Build and create release
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get release info
+        id: get_release_info
+        run: |
+          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
+          echo "::set-output name=version::v${RELEASE_VERSION}"
+          echo "::set-output name=tag::v${RELEASE_VERSION}"
+          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
+          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
+          if [ "$CHANGELOG" == "" ]; then
+            echo "changelog is empty!"
+            exit 1
+          fi
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Collect sdist and wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse
+
+      - name: Create release draft
+        uses: ncipollo/release-action@v1.10.0
+        with:
+          name: ${{ steps.get_release_info.outputs.version }}
+          tag: ${{ steps.get_release_info.outputs.tag }}
+          commit: ${{ github.ref }}
+          draft: true
+          body: ${{ env.CHANGELOG }}
+          artifacts: wheelhouse/*
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifactErrorsFailBuild: true
