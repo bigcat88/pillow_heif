@@ -12,21 +12,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Python requirements
-        run: python3 -m pip install cibuildwheel twine
+      - name: Preparations
+        run: |
+          python3 -m pip install cibuildwheel twine
+          echo VCPKG_PREFIX="$RUNNER_TEMP" >> $GITHUB_ENV
 
-      - uses: msys2/setup-msys2@v2
-        name: Install LibHeif and dependencies
+      - name: Install LibHeif and dependencies
+        uses: msys2/setup-msys2@v2
         with:
           install: >-
             mingw-w64-x86_64-libheif
 
-      - run: ls -la RUNNER_TEMP
-
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
-          VCPKG_PREFIX: RUNNER_TEMP
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
