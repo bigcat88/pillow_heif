@@ -18,7 +18,7 @@ jobs:
         run: python3 -m pip install cibuildwheel twine
 
       - uses: msys2/setup-msys2@v2
-      - name: Install LibHeif and dependencies
+        name: Install LibHeif and dependencies
         with:
           install: >-
             mingw-w64-x86_64-libheif
