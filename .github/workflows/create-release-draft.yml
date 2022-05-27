@@ -14,16 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Preparations
-        run: |
-          python3 -m pip install cibuildwheel twine
-
       - name: Install LibHeif and dependencies
         uses: msys2/setup-msys2@v2
         with:
-          location: env.VCPKG_PREFIX
+          location: ${{ env.VCPKG_PREFIX }}
           install: >-
             mingw-w64-x86_64-libheif
+
+      - name: Preparations
+        run: |
+          python3 -m pip install cibuildwheel twine
 
       - name: Run cibuildwheel
         run: cibuildwheel
