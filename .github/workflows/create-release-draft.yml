@@ -8,8 +8,6 @@ jobs:
   wheels_windows:
     name: Wheels • windows • x86_64
     runs-on: windows-2019
-    env:
-      VCPKG_PREFIX: "C:/msys64/mingw64"
 
     steps:
       - uses: actions/checkout@v3
@@ -23,9 +21,12 @@ jobs:
           install: >-
             mingw-w64-x86_64-libheif
 
+      - run: ls -la RUNNER_TEMP
+
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
+          VCPKG_PREFIX: RUNNER_TEMP
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
