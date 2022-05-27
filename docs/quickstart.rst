@@ -37,6 +37,24 @@ Manual
 
 **More information what functionality does it support as a plugin can be found here:** :py:class:`~pillow_heif.HeifImageFile`
 
+Options
+"""""""
+
+Overriding default options
+
+When registering plugin with :py:func:`pillow_heif.register_heif_opener`
+
+.. code-block:: python
+
+    register_heif_opener(thumbnails=False, quality=100)
+
+With call to :py:func:`pillow_heif.options()`
+
+.. code-block:: python
+
+    options().thumbnails = False
+    options().quality = 100
+
 Advanced usage
 **************
 
@@ -44,6 +62,6 @@ For usage without Pillow plugin as a base, look at examples started with ``reade
 
 For using it as a Pillow plugin, refer to Pillow's documentation:
 `Pillow Tutorial <https://pillow.readthedocs.io/en/stable/handbook/tutorial.html>`_
-and to exampels started with ``opener_``.
+and to examples started with ``opener_``.
 
 `Examples <https://github.com/bigcat88/pillow_heif/tree/master/examples>`_

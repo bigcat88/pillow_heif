@@ -3,7 +3,6 @@ import gc
 import os
 from io import SEEK_END, BytesIO
 from pathlib import Path
-from sys import platform
 
 import pytest
 from heif_test import compare_heif_files_fields
@@ -135,7 +134,6 @@ def test_append_images():
     compare_heif_files_fields(heif_file3[1], heif_file_out[5])
 
 
-@pytest.mark.skipif(platform.lower() == "win32", reason="No 10/12 bit encoder for Windows.")
 def test_10_bit():
     heif_file = open_heif(Path("images/mono10.heif"), convert_hdr_to_8bit=False)
     heif_file.add_from_heif(heif_file)

@@ -2,7 +2,7 @@ The pillow-heif wheels bundle several libraries that are compatible licensed. He
 
 Name: libheif
 License: LGPLv3
-Files: heif.dll or libheif.[dylib|so]
+Files: libheif.[dylib|so|dll]
   For details, see https://github.com/strukturag/libheif/blob/64d9ab99ce7ea8876700c034b19bbc8dd773ae0b/COPYING
   Source code: https://github.com/strukturag/libheif/blob/64d9ab99ce7ea8876700c034b19bbc8dd773ae0b
 
@@ -14,12 +14,24 @@ Files: libde265.[dylib|so|dll]
 
 Name: x265
 License: GPLv2
-Files: libx265.[dylib|pyd|so]
+Files: libx265.[dylib|so|dll]
   For details, see https://bitbucket.org/multicoreware/x265_git/src/Release_3.4/COPYING
   Source code: https://bitbucket.org/multicoreware/x265_git/src/Release_3.4
 
 Name: libaom
 License: BSD 3-Clause
-Files: aom.dll or libaom.[dylib|so]
+Files: libaom.[dylib|so|dll]
   For details, see https://aomedia.googlesource.com/aom/+/refs/tags/v3.3.0/LICENSE
   Source code: https://aomedia.googlesource.com/aom/+/refs/tags/v3.3.0
+
+Name: dav1d
+License: BSD-2-Clause
+Files: libdav1d.[dylib|so|dll]
+  For details, see https://github.com/videolan/dav1d/blob/master/COPYING
+  Source code: https://github.com/videolan/dav1d
+
+Name: rav1e
+License: BSD-2-Clause
+Files: rav1e.[dylib|so|dll]
+  For details, see https://github.com/xiph/rav1e/blob/master/LICENSE
+  Source code: https://github.com/xiph/rav1e
