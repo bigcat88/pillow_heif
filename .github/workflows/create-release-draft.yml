@@ -15,8 +15,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Python preparing
-        run: |
-          python3 -m pip install cibuildwheel twine
+        run: python3 -m pip install cibuildwheel twine
 
       - name: Install LibHeif and dependencies
         uses: msys2/setup-msys2@v2
@@ -24,6 +23,13 @@ jobs:
           location: C:/temp
           install: >-
             mingw-w64-x86_64-libheif
+            mingw-w64-x86_64-binutils
+
+      - run: dir ${{ env.VCPKG_PREFIX }}/bin
+
+      - run: ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libx265.dll
+
+      - run: dir ${{ env.VCPKG_PREFIX }}/bin
 
       - name: Run cibuildwheel
         run: cibuildwheel
