@@ -21,9 +21,9 @@
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
 
 Features:
- * Decoding of 8, 10, 12 bit HEIF images.
- * Encoding of 8, 10, 12 bit HEIF images. *On windows currently only encoding of 8 bit images supported*
- * EXIF, XMP, IPTC metadata support.
+ * Decoding of `8`, `10`, `12` bit HEIF images.
+ * Encoding of `8`, `10`, `12` bit HEIF images. *On windows currently only encoding of 8 bit images supported*
+ * `EXIF`, `XMP`, `IPTC` metadata support.
  * Support multiple images in one file, e.g **HEIC** files.
  * HEIF native thumbnails support.
  * Adding all this features to Pillow in one line of code as a plugin.

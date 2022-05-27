@@ -38,6 +38,7 @@ basic.good-names = [
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
 messages_control.disable = [
+    "missing-class-docstring",
     "missing-function-docstring",
     "line-too-long",
 ]
