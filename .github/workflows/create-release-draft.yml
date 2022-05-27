@@ -28,12 +28,12 @@ jobs:
       - run: dir ${{ env.VCPKG_PREFIX }}/bin
 
       - run: |
-          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libx265*.dll
-          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libheif*.dll
-          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libde265*.dll
-          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libaom*.dll
-          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libdav1d*.dll
-          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/rav1e*.dll
+          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/*.dll
+#          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libheif*.dll
+#          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libde265*.dll
+#          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libaom*.dll
+#          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/libdav1d*.dll
+#          ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/rav1e*.dll
 
       - run: dir ${{ env.VCPKG_PREFIX }}/bin
 
