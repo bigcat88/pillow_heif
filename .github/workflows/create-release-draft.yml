@@ -8,14 +8,14 @@ jobs:
   wheels_windows:
     name: Wheels • windows • x86_64
     runs-on: windows-2019
+    env:
+      VCPKG_PREFIX: ${{ RUNNER_TEMP }}
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Preparations
-        run: |
-          python3 -m pip install cibuildwheel twine
-          echo VCPKG_PREFIX="$RUNNER_TEMP" >> $GITHUB_ENV
+      - name: Python preparations
+        run: python3 -m pip install cibuildwheel twine
 
       - name: Install LibHeif and dependencies
         uses: msys2/setup-msys2@v2
