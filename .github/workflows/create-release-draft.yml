@@ -25,14 +25,12 @@ jobs:
           install: >-
             mingw-w64-x86_64-libheif
 
-      - run: dir ${{ env.VCPKG_PREFIX }}/lib
-
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -v -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
 
       - name: Check built wheels
         run: twine check wheelhouse/*
