@@ -17,12 +17,11 @@ jobs:
       - name: Install python requirements
         run: python3 -m pip install cibuildwheel twine
 
+      - uses: msys2/setup-msys2@v2
       - name: Install libheif and dependencies
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: >-
-            mingw-w64-x86_64-libheif
+        shell: msys2 {0}
+        run: |
+          pacman --noconfirm -S --needed --overwrite * mingw-w64-x86_64-libheif
 
       - name: Run cibuildwheel
         run: cibuildwheel
