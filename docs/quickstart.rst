@@ -37,10 +37,8 @@ Manual
 
 **More information what functionality does it support as a plugin can be found here:** :py:class:`~pillow_heif.HeifImageFile`
 
-Options
-"""""""
-
 Overriding default options
+""""""""""""""""""""""""""
 
 When registering plugin with :py:func:`pillow_heif.register_heif_opener`
 
@@ -64,4 +62,4 @@ For using it as a Pillow plugin, refer to Pillow's documentation:
 `Pillow Tutorial <https://pillow.readthedocs.io/en/stable/handbook/tutorial.html>`_
 and to examples started with ``opener_``.
 
-`Examples <https://github.com/bigcat88/pillow_heif/tree/master/examples>`_
+`Pillow-Heif Examples Link <https://github.com/bigcat88/pillow_heif/tree/master/examples>`_
