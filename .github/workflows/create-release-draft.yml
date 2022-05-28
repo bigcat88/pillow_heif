@@ -26,6 +26,11 @@ jobs:
       - shell: msys2 {0}
         run: |
             cd libheif/mingw-w64-libheif
+            pacman -Syu --noconfirm
+
+      - shell: msys2 {0}
+        run: |
+            cd libheif/mingw-w64-libheif
             sed -i 's/^M//' *
             makepkg-mingw --syncdeps --noconfirm -f
             pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst
