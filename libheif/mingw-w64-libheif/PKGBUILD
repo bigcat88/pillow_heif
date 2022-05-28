@@ -1,6 +1,4 @@
 # Contributor: Edward E. <develinthedetail@gmail.com>
-# Taken from:
-# https://github.com/msys2/MINGW-packages/blob/a68642280eceb8fbc498d3e715063ce8f325b2f0/mingw-w64-libheif/PKGBUILD
 
 _realname=libheif
 pkgbase=mingw-w64-${_realname}
@@ -22,7 +20,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-libde265"
          "${MINGW_PACKAGE_PREFIX}-libjpeg-turbo"
          "${MINGW_PACKAGE_PREFIX}-libpng"
-         "${MINGW_PACKAGE_PREFIX}-libwinpthread-git"
+         "${MINGW_PACKAGE_PREFIX}-libwinpthread-git
          "${MINGW_PACKAGE_PREFIX}-x265")
 source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         "001-fix-pkgconfig-provide-includedir.patch"
