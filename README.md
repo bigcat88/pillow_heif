@@ -27,7 +27,7 @@ Features:
  * Support multiple images in one file, e.g **HEIC** files.
  * HEIF `native thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
- * Includes AVIF(x264) decoder.~~(s) and encoder(s)~~ (in progress).
+ * Includes AVIF(x264) decoder.
 
 
 ## Example of use as pillow plugin.

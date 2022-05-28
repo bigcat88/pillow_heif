@@ -74,7 +74,7 @@ Windows
 .. note::
     | On Windows installation is a bit tricky...
     | First install `msys2 <https://www.msys2.org/>`_, if it is not installed.
-    | By default, build script assumes that **msys2** builds libs in *C:\\msys64\\mingw64*
+    | By default, build script assumes that **msys2** builds libs in :bash:`C:\msys64\mingw64`
     | You can set **VCPKG_PREFIX** environment variable to your custom path, e.g.:
     | :bash:`setx VCPKG_PREFIX "D:\msys64\mingw6"`
 
@@ -86,5 +86,5 @@ Now install Pillow-Heif with::
 
     python3 -m pip install --upgrade pillow-heif --no-binary :all:
 
-| After that copy **libheif.dll**, **libaom.dll**, **libde265.dll**, **libdav1d.dll**, **rav1e.dll** and **libx265.dll** from
+| After that copy **libheif.dll**, **libaom.dll**, **libde265.dll** and **libx265.dll** from
     *msys64\\mingw6\\bin* to site-packages root or simply add **...\\msys2\\mingw64\\bin** to dll load path.

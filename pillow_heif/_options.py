@@ -61,7 +61,8 @@ class PyLibHeifOptions:
     def quality(self) -> Union[int, None]:
         """Get or set default encoding quality.
 
-        .. note:: Quality specified during `save` has higher priority then this.
+        .. note:: Quality specified during :py:meth:`~pillow_heif.HeifFile.save`
+            has higher priority then this.
 
         Possible values: None, -1, range(0-100). Default=None
             Set -1 for lossless quality or from 0 to 100, where 0 is lowest and 100 is highest."""
