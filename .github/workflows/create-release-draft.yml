@@ -22,6 +22,7 @@ jobs:
           location: C:/temp
           update: true
           install: >-
+            base-devel
             mingw-w64-x86_64-binutils
 
       - shell: msys2 {0}
