@@ -1,4 +1,5 @@
 # Contributor: Edward E. <develinthedetail@gmail.com>
+# Taken from:
 # https://github.com/msys2/MINGW-packages/blob/a68642280eceb8fbc498d3e715063ce8f325b2f0/mingw-w64-libheif/PKGBUILD
 
 _realname=libheif

@@ -9,16 +9,16 @@
 @@ -6,7 +6,7 @@
    if(GDKPIXBUF2_FOUND)
      execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} gdk-pixbuf-2.0 --variable gdk_pixbuf_moduledir --define-variable=prefix=${CMAKE_INSTALL_PREFIX} OUTPUT_VARIABLE GDKPIXBUF2_MODULE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+ 
 -    add_library(pixbufloader-heif MODULE pixbufloader-heif.c)
 +    add_library(pixbufloader-heif pixbufloader-heif.c)
-
+ 
      target_include_directories(pixbufloader-heif
                                 PRIVATE
 @@ -15,6 +15,6 @@
                                     ${libheif_SOURCE_DIR})
      target_link_libraries(pixbufloader-heif PUBLIC ${GDKPIXBUF2_LIBRARIES} heif)
-
+ 
 -    install(TARGETS pixbufloader-heif LIBRARY DESTINATION ${GDKPIXBUF2_MODULE_DIR})
 +    install(TARGETS pixbufloader-heif DESTINATION ${GDKPIXBUF2_MODULE_DIR})
    endif()

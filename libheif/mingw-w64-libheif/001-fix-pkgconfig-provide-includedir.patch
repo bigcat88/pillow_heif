@@ -8,7 +8,7 @@
 +includedir=@includedir@/@PACKAGE@
  builtin_h265_decoder=@have_libde265@
  builtin_h265_encoder=@have_x265@
-
+ 
 @@ -12,4 +12,4 @@
  Requires:
  Libs: -L@libdir@ -lheif
@@ -24,5 +24,6 @@
 -set(VERSION ${PROJECT_VERSION})
 +set(VERSION ${PACKAGE_VERSION})
 +set(PACKAGE ${PROJECT_NAME})
-
+ 
  configure_file(libheif.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libheif.pc @ONLY)
+ 
