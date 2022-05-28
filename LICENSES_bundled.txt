@@ -23,15 +23,3 @@ License: BSD 3-Clause
 Files: libaom.[dylib|so|dll]
   For details, see https://aomedia.googlesource.com/aom/+/refs/tags/v3.3.0/LICENSE
   Source code: https://aomedia.googlesource.com/aom/+/refs/tags/v3.3.0
-
-Name: dav1d
-License: BSD-2-Clause
-Files: libdav1d.[dylib|so|dll]
-  For details, see https://github.com/videolan/dav1d/blob/master/COPYING
-  Source code: https://github.com/videolan/dav1d
-
-Name: rav1e
-License: BSD-2-Clause
-Files: rav1e.[dylib|so|dll]
-  For details, see https://github.com/xiph/rav1e/blob/master/LICENSE
-  Source code: https://github.com/xiph/rav1e

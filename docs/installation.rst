@@ -76,11 +76,16 @@ Windows
     | First install `msys2 <https://www.msys2.org/>`_, if it is not installed.
     | By default, build script assumes that **msys2** builds libs in *C:\\msys64\\mingw64*
     | You can set **VCPKG_PREFIX** environment variable to your custom path, e.g.:
-    | :bash:`setx VCPKG_PREFIX "D:\msys64\mingw6"`
+    | :bash:`setx VCPKG_PREFIX "D:\msys64\mingw64"`
 
-Using **msys2** install required libraries::
+Using **msys2** terminal change working directory and install `libheif`::
 
-    pacman -S mingw-w64-x86_64-libheif
+    cd .../pillow_heif/libheif/mingw-w64-libheif
+    makepkg-mingw --syncdeps
+    pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst
+
+.. note::
+    This is needed, so we dont want to `dav1d` or `rav1e` to be installed as dependencies.
 
 Now install Pillow-Heif with::
 

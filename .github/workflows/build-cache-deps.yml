@@ -1,10 +1,11 @@
-name: Build cache for dependecies
+name: Build cache for dependencies
 
 on:
   push:
     branches: [master]
     paths:
-      - 'libheif/**'
+      - 'libheif/*.py'
+      - 'libheif/heif.h'
   schedule:
     - cron: '59 23 * * 5' # Every Friday at 23:59 (GMT+2)
   workflow_dispatch:
