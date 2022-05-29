@@ -59,8 +59,9 @@ if platform.lower() == "win32":
     else:
         warn("If you build this with MSYS2, you should not see this warning.")
 
-if platform.lower() in ("darwin", "win32"):
-    include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
+# if platform.lower() in ("darwin", "win32"):
+#     include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
+include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 ffi.set_source(
     "_pillow_heif_cffi",
