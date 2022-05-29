@@ -44,10 +44,10 @@ elif platform.lower() == "win32":
 else:
     include_path_prefix = build_libs.build_libs_linux()
 
-if platform.lower() != "win32":
-    include_path_prefix_include = path.join(include_path_prefix, "include")
-    if include_path_prefix_include not in include_dirs:
-        include_dirs.append(include_path_prefix_include)
+# if platform.lower() != "win32":
+#     include_path_prefix_include = path.join(include_path_prefix, "include")
+#     if include_path_prefix_include not in include_dirs:
+#         include_dirs.append(include_path_prefix_include)
 include_path_prefix_lib = path.join(include_path_prefix, "lib")
 if include_path_prefix_lib not in library_dirs:
     library_dirs.append(include_path_prefix_lib)
