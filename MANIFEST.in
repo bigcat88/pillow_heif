@@ -13,3 +13,5 @@ exclude SECURITY.md
 
 prune docs
 prune docker
+
+recursive-exclude **/__pycache__ *
