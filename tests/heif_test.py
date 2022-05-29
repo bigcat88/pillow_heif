@@ -19,6 +19,7 @@ from pillow_heif import (
     getxmp,
     open_heif,
     options,
+    read_heif,
     register_heif_opener,
 )
 
@@ -267,3 +268,11 @@ def test_no_defusedxml(monkeypatch):
         heif_file = open_heif(Path("images/rgb8_512_512_1_0.heic"))
         with pytest.warns(UserWarning):
             getxmp(heif_file.info["xmp"])
+
+
+def test_read_heif():
+    heif_file = read_heif(Path("images/rgb8_210_128_2_2.heic"))
+    for img in heif_file:
+        assert img._img_data
+        for thumbnail in img.thumbnails:
+            assert thumbnail._img_data
