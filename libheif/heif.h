@@ -624,9 +624,9 @@ struct heif_error heif_image_handle_get_metadata(const struct heif_image_handle*
 enum heif_color_profile_type    // Do not use this in Python directly, LO/HO byte order can differ.
 {
   heif_color_profile_type_not_present = 0,
-  heif_color_profile_type_nclx = 'nclx',
-  heif_color_profile_type_rICC = 'rICC',
-  heif_color_profile_type_prof = 'prof'
+  heif_color_profile_type_nclx = 0x6E636C78, // nclx -> "xlcn"
+  heif_color_profile_type_rICC = 0x72494343, // rICC -> "CCIr"
+  heif_color_profile_type_prof = 0x70726F66  // prof -> "forp"
 };
 
 

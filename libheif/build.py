@@ -44,14 +44,12 @@ elif platform.lower() == "win32":
 else:
     include_path_prefix = build_libs.build_libs_linux()
 
-# if platform.lower() != "win32":
-#     include_path_prefix_include = path.join(include_path_prefix, "include")
-#     if include_path_prefix_include not in include_dirs:
-#         include_dirs.append(include_path_prefix_include)
+# Need to include "lib" directory to find "heif" library.
 include_path_prefix_lib = path.join(include_path_prefix, "lib")
 if include_path_prefix_lib not in library_dirs:
     library_dirs.append(include_path_prefix_lib)
 
+# MSYS2: rename "libheif.dll.a" to "libheif.lib"
 if platform.lower() == "win32":
     lib_export_file = Path(path.join(include_path_prefix_lib, "libheif.dll.a"))
     if lib_export_file.is_file():
@@ -59,8 +57,7 @@ if platform.lower() == "win32":
     else:
         warn("If you build this with MSYS2, you should not see this warning.")
 
-# if platform.lower() in ("darwin", "win32"):
-#     include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
+# Adds project root to `include` path
 include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 ffi.set_source(
