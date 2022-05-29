@@ -24,7 +24,8 @@ jobs:
             patch
             mingw-w64-x86_64-binutils
 
-      - shell: msys2 {0}
+      - name: Build libheif and dependencies
+        shell: msys2 {0}
         run: |
             cd libheif/mingw-w64-libheif
             sed -i 's/^M//' *
@@ -199,8 +200,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   draft_release:
-#    needs: [sdist, wheels_linux, wheels_macos, wheels_windows]
-    needs: [wheels_windows]
+    needs: [sdist, wheels_linux, wheels_macos, wheels_windows]
     runs-on: ubuntu-20.04
     name: Build and create release
 
