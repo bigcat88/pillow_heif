@@ -30,7 +30,7 @@ jobs:
             cd libheif/mingw-w64-libheif
             sed -i 's/^M//' *
             makepkg-mingw --syncdeps --noconfirm -f
-            pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst
+            pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst --noconfirm
 #      - name: Install LibHeif and dependencies
 #        uses: msys2/setup-msys2@v2
 #        with:
