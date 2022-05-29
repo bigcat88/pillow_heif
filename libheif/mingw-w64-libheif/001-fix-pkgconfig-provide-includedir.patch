@@ -26,4 +26,4 @@
 +set(PACKAGE ${PROJECT_NAME})
  
  configure_file(libheif.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libheif.pc @ONLY)
-
+ 
