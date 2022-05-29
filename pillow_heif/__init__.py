@@ -39,5 +39,6 @@ from .heif import (
     open,
     open_heif,
     read,
+    read_heif,
 )
 from .misc import get_file_mimetype, getxmp, set_orientation

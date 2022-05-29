@@ -697,23 +697,20 @@ class HeifFile:
 
 
 def check_heif(fp):
-    """
-    Wrapper around `libheif.heif_check_filetype` function.
+    """Wrapper around `libheif.heif_check_filetype` function.
 
     .. note:: If `fp` contains less 12 bytes, then always return `HeifFiletype.NO`
 
     :param fp: See parameter ``fp`` in :func:`is_supported`
 
-    :returns: Value from :py:class:`~pillow_heif.HeifFiletype` enumeration.
-    """
+    :returns: Value from :py:class:`~pillow_heif.HeifFiletype` enumeration."""
 
     magic = _get_bytes(fp, 16)
     return HeifFiletype.NO if len(magic) < 12 else lib.heif_check_filetype(magic, len(magic))
 
 
 def is_supported(fp) -> bool:
-    """
-    Checks if the given `fp` object contains a supported file type,
+    """Checks if the given `fp` object contains a supported file type,
     by calling :py:func:`~pillow_heif.check_heif` function.
 
     Look at :py:attr:`~pillow_heif._options.PyLibHeifOptions.strict` property for additional info.
@@ -735,8 +732,7 @@ def is_supported(fp) -> bool:
 
 
 def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
-    """
-    Opens the given HEIF image file.
+    """Opens the given HEIF image file.
 
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
@@ -752,9 +748,26 @@ def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
     return HeifFile(heif_ctx, top_img_list)
 
 
+def read_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
+    """Opens the given HEIF image file and decodes all images.
+
+    .. note:: In most cases it better to call :py:meth:`~pillow_heif.open_heif`, and
+        let images decoded automatically only when needed.
+
+    :param fp: See parameter ``fp`` in :func:`is_supported`
+    :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
+        be converted to 8 bit images during loading.
+
+    :returns: An :py:class:`~pillow_heif.HeifFile` object.
+    :exception HeifError: If file is corrupted or is not in Heif format."""
+
+    heif_file = open_heif(fp, convert_hdr_to_8bit)
+    heif_file.load(everything=True)
+    return heif_file
+
+
 def from_pillow(pil_image: Image.Image, load_one: bool = False) -> HeifFile:
-    """
-    Creates :py:class:`~pillow_heif.HeifFile` from a Pillow Image.
+    """Creates :py:class:`~pillow_heif.HeifFile` from a Pillow Image.
 
     :param pil_image: Pillow :external:py:class:`~PIL.Image.Image` class
     :param load_one: If ``True``, then all frames will be loaded.
