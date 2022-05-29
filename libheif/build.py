@@ -1,4 +1,6 @@
 from os import getenv, path
+from pathlib import Path
+from shutil import copy
 from subprocess import DEVNULL, PIPE, run
 from sys import platform
 from warnings import warn
@@ -37,21 +39,26 @@ if platform.lower() == "darwin":
 elif platform.lower() == "win32":
     include_path_prefix = getenv("VCPKG_PREFIX")
     if include_path_prefix is None:
-        include_path_prefix = "C:\\vcpkg\\installed\\x64-windows"
+        include_path_prefix = "C:\\msys64\\mingw64"
         warn(f"VCPKG_PREFIX environment variable is not set. Assuming `VCPKG_PREFIX={include_path_prefix}`")
 else:
     include_path_prefix = build_libs.build_libs_linux()
 
-if include_path_prefix:
-    include_path_prefix_include = path.join(include_path_prefix, "include")
-    if include_path_prefix_include not in include_dirs:
-        include_dirs.append(include_path_prefix_include)
-    include_path_prefix_lib = path.join(include_path_prefix, "lib")
-    if include_path_prefix_lib not in library_dirs:
-        library_dirs.append(include_path_prefix_lib)
+# Need to include "lib" directory to find "heif" library.
+include_path_prefix_lib = path.join(include_path_prefix, "lib")
+if include_path_prefix_lib not in library_dirs:
+    library_dirs.append(include_path_prefix_lib)
 
-if platform.lower() in ("darwin", "win32"):
-    include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
+# MSYS2: rename "libheif.dll.a" to "libheif.lib"
+if platform.lower() == "win32":
+    lib_export_file = Path(path.join(include_path_prefix_lib, "libheif.dll.a"))
+    if lib_export_file.is_file():
+        copy(lib_export_file, path.join(include_path_prefix_lib, "libheif.lib"))
+    else:
+        warn("If you build this with MSYS2, you should not see this warning.")
+
+# Adds project root to `include` path
+include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 ffi.set_source(
     "_pillow_heif_cffi",
@@ -60,7 +67,7 @@ ffi.set_source(
     """,
     include_dirs=include_dirs,
     library_dirs=library_dirs,
-    libraries=["heif"],
+    libraries=["libheif"] if platform.lower() == "win32" else ["heif"],
     extra_compile_args=["/d2FH4-"] if platform.lower() == "win32" else [],
 )
 

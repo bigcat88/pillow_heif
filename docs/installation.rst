@@ -19,6 +19,8 @@ Wheels are present for all systems supported by `cibuildwheel <https://cibuildwh
 Building From Source
 --------------------
 
+    All **pillow-heif's** **PyPi** packages are build on GitHub Actions, so you can take a look at `it <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/create-release-draft.yml>`_.
+
 .. role:: bash(code)
    :language: bash
 
@@ -27,7 +29,7 @@ Linux
 
 .. note::
 
-    | For installing external libraries, you should run install with **root** rights.
+    | For installing external libraries, you should run install with **root** privileges.
     | See `build_libs.py <https://github.com/bigcat88/pillow_heif/blob/master/libheif/build_libs.py>`_ for
         additional info what will happen during installing from source...
     | Here is a
@@ -71,18 +73,23 @@ Windows
 
 .. note::
     | On Windows installation is a bit tricky...
-    | First install `vcpkg <https://vcpkg.io/en/getting-started.html>`_, if it is not installed.
-    | By default, build script assumes that **vcpkg** builds libs in *C:\\vcpkg\\installed\\x64-windows*
+    | First install `msys2 <https://www.msys2.org/>`_, if it is not installed.
+    | By default, build script assumes that **msys2** builds libs in :bash:`C:\msys64\mingw64`
     | You can set **VCPKG_PREFIX** environment variable to your custom path, e.g.:
-    | :bash:`setx VCPKG_PREFIX "D:\vcpkg\installed\x64-windows"`
+    | :bash:`setx VCPKG_PREFIX "D:\msys64\mingw64"`
 
-Using **vcpkg** install required libraries::
+Using **msys2** terminal change working directory and install `libheif`::
 
-    vcpkg install aom libheif --triplet=x64-windows
+    cd .../pillow_heif/libheif/mingw-w64-libheif
+    makepkg-mingw --syncdeps
+    pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst
+
+.. note::
+    This is needed, so we dont want to `dav1d` or `rav1e` to be installed as dependencies.
 
 Now install Pillow-Heif with::
 
     python3 -m pip install --upgrade pillow-heif --no-binary :all:
 
-| After that copy **heif.dll**, **aom.dll**, **libde265.dll** and **libx265.dll** from
-    *vcpkg\\installed\\x64-windows\\bin* to site-packages root.
+| After that copy **libheif.dll**, **libaom.dll**, **libde265.dll** and **libx265.dll** from
+    *msys64\\mingw6\\bin* to site-packages root or simply add **...\\msys2\\mingw64\\bin** to dll load path.

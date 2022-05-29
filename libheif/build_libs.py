@@ -203,7 +203,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         run("ldconfig", check=True)
 
 
-def build_libs_linux():
+def build_libs_linux() -> str:
     _install_flag = path.join(BUILD_DIR_PREFIX, "was_installed.flag")
     if path.isfile(_install_flag):
         print("Tools & Libraries already installed.", flush=True)

@@ -621,13 +621,13 @@ struct heif_error heif_image_handle_get_metadata(const struct heif_image_handle*
                                                  heif_item_id metadata_id,
                                                  void* out_data);
 
-//enum heif_color_profile_type
-//{
-//  heif_color_profile_type_not_present = 0,
-//  heif_color_profile_type_nclx = heif_fourcc('n', 'c', 'l', 'x'),
-//  heif_color_profile_type_rICC = heif_fourcc('r', 'I', 'C', 'C'),
-//  heif_color_profile_type_prof = heif_fourcc('p', 'r', 'o', 'f')
-//};
+enum heif_color_profile_type    // Do not use this in Python directly, LO/HO byte order can differ.
+{
+  heif_color_profile_type_not_present = 0,
+  heif_color_profile_type_nclx = 0x6E636C78, // nclx -> "xlcn"
+  heif_color_profile_type_rICC = 0x72494343, // rICC -> "CCIr"
+  heif_color_profile_type_prof = 0x70726F66  // prof -> "forp"
+};
 
 
 // Returns 'heif_color_profile_type_not_present' if there is no color profile.
