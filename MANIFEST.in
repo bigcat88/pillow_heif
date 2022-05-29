@@ -1,8 +1,8 @@
-include libheif/*
 include README.md
 include CHANGELOG.md
 include pyproject.toml
 
+graft libheif
 graft tests
 graft examples
 
