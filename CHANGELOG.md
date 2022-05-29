@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - (HeifImagePlugin) - support for `PIL.ImageFile.LOAD_TRUNCATED_IMAGES` flag.
+- (Windows, encoder) - encoding of `10` and `12` bit images.
 
 ### Changed
 
