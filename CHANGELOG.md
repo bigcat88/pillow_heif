@@ -2,14 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.5 - 2022-0x-xx]
+## [0.2.5 - 2022-05-30]
 
 ### Added
 
 - (HeifImagePlugin) - support for `PIL.ImageFile.LOAD_TRUNCATED_IMAGES` flag.
-- (Windows, encoder) - encoding of `10` and `12` bit images.
+- (Windows, encoder) - encoding of `10` and `12` bit images. #24
 
 ### Changed
+
+- (Windows) - replaced `vcpkg` build by `MSYS2`(MinGW) build, report of any possible bugs you see.
 
 ### Fixed
 
