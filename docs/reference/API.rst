@@ -8,6 +8,7 @@ Opening HEIF file
 
 .. autofunction:: is_supported
 .. autofunction:: open_heif
+.. autofunction:: read_heif
 .. autofunction:: from_pillow
 
 Low Level API
