@@ -158,3 +158,28 @@ def test_append_images():
     compare_heif_to_pillow_fields(heif_file[2], heic_pillow)
     heic_pillow.seek(3)
     compare_heif_to_pillow_fields(heif_file[3], heic_pillow)
+
+
+def test_exif_overwriting():
+    image = Image.open(Path("images/rgb8_128_128_2_1.heic"))  # PreviewDateTime in Exif here is missing.
+    for frame in ImageSequence.Iterator(image):
+        exif_data = frame.getexif()
+        assert exif_data
+    out_buf = BytesIO()
+    image.save(out_buf, format="HEIF", exif=None, save_all=True)  # remove Exif from primary image
+    saved_image = Image.open(out_buf)
+    for i, frame in enumerate(ImageSequence.Iterator(saved_image)):
+        assert frame.getexif() if i else not frame.getexif()
+    exif_data = saved_image.getexif()
+    new_date_time = "1988:02:02 11:11:11"
+    exif_data[0x0132] = new_date_time  # ModifiedDateTime
+    exif_data[0xC71B] = new_date_time  # PreviewDateTime
+    out_buf2 = BytesIO()
+    image.save(out_buf2, format="HEIF", exif=exif_data.tobytes(), save_all=True)  # change Exif in primary image
+    saved_image = Image.open(out_buf2)
+    for i, frame in enumerate(ImageSequence.Iterator(saved_image)):
+        exif_data = frame.getexif()
+        if not i:
+            assert exif_data[0x0132] == new_date_time == exif_data[0xC71B]
+        else:
+            assert not exif_data.get(0xC71B, None)

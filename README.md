@@ -62,6 +62,7 @@ if pillow_heif.is_supported('input.heic'):
   - [Installation](https://pillow-heif.readthedocs.io/en/latest/installation.html)
   - [Quickstart](https://pillow-heif.readthedocs.io/en/latest/quickstart.html)
 - [Contribute](https://github.com/bigcat88/pillow_heif/blob/master/.github/CONTRIBUTING.md)
+  - [Discussions](https://github.com/bigcat88/pillow_heif/discussions)
   - [Issues](https://github.com/bigcat88/pillow_heif/issues)
 - [Changelog](https://github.com/bigcat88/pillow_heif/blob/master/CHANGELOG.md)
 
@@ -80,4 +81,4 @@ if pillow_heif.is_supported('input.heic'):
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
-#### **_Versions 0.2.X will be last to support Python 3.6_**
+#### **_Versions 0.3.X will be last to support Python 3.6_**

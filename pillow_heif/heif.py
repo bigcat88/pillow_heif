@@ -573,8 +573,7 @@ class HeifFile:
         return self
 
     def add_thumbnails(self, boxes: Union[List[int], int]) -> None:
-        """
-        Add thumbnail(s) to all images.
+        """Add thumbnail(s) to all images.
 
         :param boxes: int or list of ints determining size of thumbnail(s) to generate for images.
 
@@ -600,6 +599,8 @@ class HeifFile:
 
             ``enc_params`` - tuple of name:value to pass to :ref:`x265 <hevc-encoder>` encoder.
 
+            ``exif`` - replace exif of primary image with specified.
+
         :param fp: A filename (string), pathlib.Path object or file object.
 
         :returns: None
@@ -609,11 +610,14 @@ class HeifFile:
         append_images = self.__heif_images_from(kwargs.get("append_images", [])) if save_all else []
         if not options().hevc_enc:
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
-        if not self._images and not append_images:
-            raise ValueError("Cannot write empty image as HEIF.")
+        images_to_save = self._images + append_images
+        if not images_to_save:
+            raise ValueError("Cannot write file with no images as HEIF.")
         heif_ctx_write = LibHeifCtxWrite()
         heif_ctx_write.set_encoder_parameters(kwargs.get("enc_params", []), kwargs.get("quality", options().quality))
-        self._save(heif_ctx_write, not save_all, append_images)
+        if kwargs.get("exif", -1) != -1:  # Overriding Exif of primary image if it is specified.
+            images_to_save[0].info["exif"] = kwargs["exif"]
+        self._save(heif_ctx_write, images_to_save if save_all else images_to_save[:1])
         heif_ctx_write.write(fp)
 
     def __repr__(self):
@@ -636,10 +640,25 @@ class HeifFile:
             raise IndexError(f"invalid image index: {key}")
         del self._images[key]
 
-    def _save(self, ctx: LibHeifCtxWrite, save_one: bool, append_images: List[HeifImage]) -> None:
+    def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
+        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
+        __new_id = 2 + max(__ids)
+        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
+        self._images.append(HeifImage(__new_id, len(self), __heif_ctx))
+        return self
+
+    def __get_image_thumb_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
+        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
+        __new_id = 2 + max(__ids)
+        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
+        __img_index = kwargs.get("img_index", len(self._images))
+        return HeifThumbnail(__heif_ctx, None, __new_id, __img_index)
+
+    @staticmethod
+    def _save(ctx: LibHeifCtxWrite, img_list: List[HeifImage]) -> None:
         enc_options = lib.heif_encoding_options_alloc()
         enc_options = ffi.gc(enc_options, lib.heif_encoding_options_free)
-        for img in list(self) + append_images:
+        for img in img_list:
             img.load()
             new_img = create_image(img.size, img.chroma, img.bit_depth, img.data, stride=img.stride)
             set_color_profile(new_img, img.info)
@@ -666,22 +685,6 @@ class HeifFile:
                     check_libheif_error(error)
                     if p_new_thumb_handle[0] != ffi.NULL:
                         lib.heif_image_handle_release(p_new_thumb_handle[0])
-            if save_one:
-                break
-
-    def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
-        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
-        __new_id = 2 + max(__ids)
-        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
-        self._images.append(HeifImage(__new_id, len(self), __heif_ctx))
-        return self
-
-    def __get_image_thumb_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
-        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
-        __new_id = 2 + max(__ids)
-        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
-        __img_index = kwargs.get("img_index", len(self._images))
-        return HeifThumbnail(__heif_ctx, None, __new_id, __img_index)
 
     @staticmethod
     def __heif_images_from(images: list) -> List[HeifImage]:

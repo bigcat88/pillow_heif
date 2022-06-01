@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.6 - 2022-06-xx]
+
+### Added
+
+- (HeifImagePlugin, Heif) - `save` now recognizes `exif=` optional parameter. Works as in other Pillow plugins. #25
+- Docs page: [Encoding](https://pillow-heif.readthedocs.io/en/latest/encoding.html)
+
+### Changed
+
+### Fixed
+
 ## [0.2.5 - 2022-05-30]
 
 ### Added

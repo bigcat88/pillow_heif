@@ -16,6 +16,7 @@ Pillow-Heif documentation!
    quickstart.rst
    options.rst
    reference/index.rst
+   encoding.rst
    workaround-orientation.rst
    benchmarks.rst
 
