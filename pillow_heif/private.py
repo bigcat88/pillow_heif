@@ -9,6 +9,22 @@ from .constants import HeifChannel, HeifChroma, HeifColorProfileType, HeifColors
 from .error import check_libheif_error
 
 
+# from dataclasses import dataclass
+# @dataclass                # Avalaible from Python 3.7
+class HeifCtxAsDict:  # noqa # pylint: disable=too-few-public-methods
+    def __init__(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
+        stride = kwargs.get("stride", None)
+        if stride is None:
+            factor = 1 if bit_depth == 8 else 2
+            stride = size[0] * 3 * factor if mode == "RGB" else size[0] * 4 * factor
+        self.bit_depth = bit_depth
+        self.mode = mode
+        self.size = size
+        self.data = data
+        self.stride = stride
+        self.additional_info = kwargs.get("add_info", {})
+
+
 def create_image(size: tuple, chroma: HeifChroma, bit_depth: int, data, stride: int, **kwargs):
     width, height = size
     p_new_img = ffi.new("struct heif_image **")
@@ -31,21 +47,6 @@ def copy_image_data(dest_data, src_data, dest_stride: int, source_stride: int, h
         p_source = ffi.from_buffer("uint8_t*", src_data)
         for i in range(height):
             ffi.memmove(dest_data + dest_stride * i, p_source + source_stride * i, dest_stride)
-
-
-def heif_ctx_as_dict(bit_depth: int, mode: str, size: tuple, data, **kwargs) -> dict:
-    stride = kwargs.get("stride", None)
-    if stride is None:
-        factor = 1 if bit_depth == 8 else 2
-        stride = size[0] * 3 * factor if mode == "RGB" else size[0] * 4 * factor
-    return {
-        "bit_depth": bit_depth,
-        "mode": mode,
-        "size": size,
-        "data": data,
-        "stride": stride,
-        "additional_info": kwargs.get("add_info", {}),
-    }
 
 
 def read_color_profile(handle) -> dict:

@@ -116,6 +116,28 @@ def test_thumb_one_for_image():
     assert len(list(heif_file.thumbnails_all(one_for_image=False))) == 4
 
 
+def test_thumbnail_references():
+    heif_file = open_heif(Path("images/rgb8_210_128_2_2.heic"))
+    thumbnails_all = list(heif_file.thumbnails_all())
+    assert thumbnails_all[0].get_original() == heif_file[0]
+    assert thumbnails_all[1].get_original() == heif_file[0]
+    assert thumbnails_all[2].get_original() == heif_file[1]
+    assert thumbnails_all[3].get_original() == heif_file[1]
+    del heif_file[0]
+    assert thumbnails_all[0].get_original() is None
+    assert thumbnails_all[0].get_original() is None
+    assert str(thumbnails_all[0]).find("Original:None") != -1
+    assert thumbnails_all[2].get_original() == heif_file[0]
+    assert thumbnails_all[3].get_original() == heif_file[0]
+    pillow_img = heif_file[0].to_pillow()
+    assert pillow_img.info["thumbnails"][0].get_original() is None
+    assert pillow_img.info["thumbnails"][1].get_original() is None
+    img_from_pillow = HeifFile().add_from_pillow(pillow_img)
+    assert img_from_pillow.thumbnails[0].get_original() == img_from_pillow[0]
+    assert img_from_pillow.thumbnails[1].get_original() == img_from_pillow[0]
+    assert str(img_from_pillow.thumbnails[0]).find("Original:None") == -1
+
+
 @pytest.mark.parametrize("img_path", dataset.MINIMAL_DATASET)
 def test_heif_from_heif(img_path):
     def heif_from_heif(hdr_to_8bit=True):

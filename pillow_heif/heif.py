@@ -5,6 +5,7 @@ Functions and classes for heif images to read and write.
 from copy import deepcopy
 from typing import Any, Dict, Iterator, List, Union
 from warnings import warn
+from weakref import ref
 
 from _pillow_heif_cffi import ffi, lib
 from PIL import Image, ImageOps, ImageSequence
@@ -15,8 +16,8 @@ from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifFiletype
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, set_orientation
 from .private import (
+    HeifCtxAsDict,
     create_image,
-    heif_ctx_as_dict,
     read_color_profile,
     read_metadata,
     retrieve_exif,
@@ -34,7 +35,7 @@ class HeifImageBase:
     size: tuple
     """Width and height of the image."""
 
-    def __init__(self, heif_ctx: Union[LibHeifCtx, dict], handle):
+    def __init__(self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict], handle):
         self._img_data: Dict[str, Any] = {}
         self._heif_ctx = heif_ctx
         self._colorspace = HeifColorspace.RGB
@@ -46,8 +47,8 @@ class HeifImageBase:
             )
         else:
             self._handle = None
-            self.size = heif_ctx["size"]
-            _img = create_image(self.size, self.chroma, self.bit_depth, heif_ctx["data"], stride=heif_ctx["stride"])
+            self.size = heif_ctx.size
+            _img = create_image(self.size, self.chroma, self.bit_depth, heif_ctx.data, stride=heif_ctx.stride)
             self._img_to_img_data_dict(_img)
 
     @property
@@ -56,8 +57,8 @@ class HeifImageBase:
 
         .. note:: When ``convert_hdr_to_8bit`` is True, return value will be always ``8``"""
 
-        if isinstance(self._heif_ctx, dict):
-            return self._heif_ctx["bit_depth"]
+        if isinstance(self._heif_ctx, HeifCtxAsDict):
+            return self._heif_ctx.bit_depth
         return 8 if self._heif_ctx.to_8bit else lib.heif_image_handle_get_luma_bits_per_pixel(self._handle)
 
     @property
@@ -82,7 +83,7 @@ class HeifImageBase:
 
         if isinstance(self._heif_ctx, LibHeifCtx):
             return bool(lib.heif_image_handle_has_alpha_channel(self._handle))
-        return self._heif_ctx["mode"] == "RGBA"
+        return self._heif_ctx.mode == "RGBA"
 
     @property
     def mode(self):
@@ -136,7 +137,7 @@ class HeifImageBase:
     def to_pillow(self, ignore_thumbnails: bool = False) -> Image.Image:
         """Helper method to create :py:class:`PIL.Image.Image`
 
-        :param ignore_thumbnails: Shall` info["thumbnails"] be empty or not.
+        :param ignore_thumbnails: Shall ``info["thumbnails"]`` be empty or not.
 
         :returns: :py:class:`PIL.Image.Image` class created from this image."""
 
@@ -154,8 +155,7 @@ class HeifImageBase:
             for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
                 if k in self.info:
                     image.info[k] = self.info[k]
-            thumbnails = [] if ignore_thumbnails else deepcopy(self.thumbnails)
-            image.info["thumbnails"] = thumbnails
+            image.info["thumbnails"] = [] if ignore_thumbnails else deepcopy(self.thumbnails)
             image.info["original_orientation"] = set_orientation(image.info)
         return image
 
@@ -195,36 +195,44 @@ class HeifImageBase:
 class HeifThumbnail(HeifImageBase):
     """Class represents a single thumbnail for a HeifImage."""
 
-    def __init__(self, heif_ctx: Union[LibHeifCtx, dict], img_handle, thumb_id: int, img_index: int):
-        if isinstance(heif_ctx, LibHeifCtx):
+    def __init__(self, original_img, reference, thumb_id: int = None):
+        if isinstance(original_img, HeifImage):
             p_handle = ffi.new("struct heif_image_handle **")
-            check_libheif_error(lib.heif_image_handle_get_thumbnail(img_handle, thumb_id, p_handle))
-            handle = p_handle[0]
+            check_libheif_error(lib.heif_image_handle_get_thumbnail(original_img._handle, thumb_id, p_handle))
+            super().__init__(original_img._heif_ctx, p_handle[0])
         else:
-            handle = None
-        super().__init__(heif_ctx, handle)
-        self.info = {
-            "thumb_id": thumb_id,
-            "img_index": img_index,
-        }
+            super().__init__(original_img, None)
+        self.parent = ref(reference)
 
     def __repr__(self):
         _bytes = f"{len(self.data)} bytes" if self._img_data else "no"
         return (
             f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
-            f"with id = {self.info['thumb_id']} for img with index = {self.info['img_index']} "
-            f"and with {_bytes} image data>"
+            f"with {_bytes} image data> Original:{self.parent()}"
         )
 
     def __deepcopy__(self, memo):
-        heif_ctx = heif_ctx_as_dict(self.bit_depth, self.mode, self.size, self.data, stride=self.stride)
-        return HeifThumbnail(heif_ctx, None, self.info["thumb_id"], self.info["img_index"])
+        return self.clone()
+
+    def clone(self, ref_original=None):
+        heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, self.size, self.data, stride=self.stride)
+        return HeifThumbnail(heif_ctx, ref_original if ref_original else heif_ctx)
+
+    def get_original(self):
+        """Return an :py:class:`~pillow_heif.HeifImage` frame to which thumbnail belongs.
+
+        .. note:: It is useful when you traverse thumbnails with :py:meth:`~pillow_heif.HeifFile.thumbnails_all`
+
+        :returns: :py:class:`~pillow_heif.HeifImage` or None."""
+
+        referenced = self.parent()
+        return referenced if isinstance(referenced, HeifImage) else None
 
 
 class HeifImage(HeifImageBase):
     """Class represents one frame in a file."""
 
-    def __init__(self, img_id: int, img_index: int, heif_ctx: Union[LibHeifCtx, dict]):
+    def __init__(self, img_id: int, img_index: int, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict]):
         additional_info = {}
         if isinstance(heif_ctx, LibHeifCtx):
             p_handle = ffi.new("struct heif_image_handle **")
@@ -249,7 +257,7 @@ class HeifImage(HeifImageBase):
             _exif = None
             _xmp = None
             additional_info["metadata"] = []
-            additional_info.update(heif_ctx.get("additional_info", {}))
+            additional_info.update(heif_ctx.additional_info)
         super().__init__(heif_ctx, handle)
         self.info = {
             "img_id": img_id,
@@ -257,7 +265,7 @@ class HeifImage(HeifImageBase):
             "xmp": _xmp,
         }
         self.info.update(**additional_info)
-        self.thumbnails = self.__read_thumbnails(img_index)
+        self.thumbnails = self.__read_thumbnails()
 
     def __repr__(self):
         _bytes = f"{len(self.data)} bytes" if self._img_data else "no"
@@ -337,10 +345,10 @@ class HeifImage(HeifImageBase):
             p_data = lib.heif_image_get_plane(new_thumbnail, HeifChannel.INTERLEAVED, p_dest_stride)
             dest_stride = p_dest_stride[0]
             data = ffi.buffer(p_data, __size[1] * dest_stride)
-            __heif_ctx = heif_ctx_as_dict(self.bit_depth, self.mode, __size, data, stride=dest_stride)
-            self.thumbnails.append(HeifThumbnail(__heif_ctx, None, 0, 0))
+            __heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, __size, data, stride=dest_stride)
+            self.thumbnails.append(HeifThumbnail(__heif_ctx, self))
 
-    def __read_thumbnails(self, img_index: int) -> List[HeifThumbnail]:
+    def __read_thumbnails(self) -> List[HeifThumbnail]:
         result: List[HeifThumbnail] = []
         if self._handle is None or not options().thumbnails:
             return result
@@ -350,7 +358,7 @@ class HeifImage(HeifImageBase):
         thumbnails_ids = ffi.new("heif_item_id[]", thumbs_count)
         thumb_count = lib.heif_image_handle_get_list_of_thumbnail_IDs(self._handle, thumbnails_ids, thumbs_count)
         for i in range(thumb_count):
-            result.append(HeifThumbnail(self._heif_ctx, self._handle, thumbnails_ids[i], img_index))
+            result.append(HeifThumbnail(self, self, thumb_id=thumbnails_ids[i]))
         return result
 
 
@@ -364,9 +372,9 @@ class HeifFile:
 
     .. note:: To get empty container to fill it later, create a class without parameters."""
 
-    def __init__(self, heif_ctx: Union[LibHeifCtx, dict] = None, img_ids: list = None):
+    def __init__(self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict] = None, img_ids: list = None):
         if heif_ctx is None:
-            heif_ctx = {}
+            heif_ctx = HeifCtxAsDict(0, "", (0, 0), None)
         self._images: List[HeifImage] = []
         self.mimetype = heif_ctx.get_mimetype() if isinstance(heif_ctx, LibHeifCtx) else ""
         if img_ids:
@@ -524,17 +532,11 @@ class HeifFile:
                     frame = ImageOps.exif_transpose(frame)
                 # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?
                 _bit_depth = 8
-                self._add_frombytes(_bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
+                added_image = self._add_frombytes(
+                    _bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info}
+                )
                 for thumb in frame.info.get("thumbnails", []):
-                    self._images[len(self._images) - 1].thumbnails.append(
-                        self.__get_image_thumb_frombytes(
-                            thumb.bit_depth,
-                            thumb.mode,
-                            thumb.size,
-                            thumb.data,
-                            stride=thumb.stride,
-                        )
-                    )
+                    added_image.thumbnails.append(thumb.clone(ref_original=added_image))
             if load_one:
                 break
         return self
@@ -552,7 +554,7 @@ class HeifFile:
             image.load()
             additional_info = image.info.copy()
             additional_info.pop("img_id", None)
-            self._add_frombytes(
+            added_image = self._add_frombytes(
                 image.bit_depth,
                 image.mode,
                 image.size,
@@ -561,15 +563,7 @@ class HeifFile:
                 add_info={**additional_info},
             )
             for thumb in image.thumbnails:
-                self._images[len(self._images) - 1].thumbnails.append(
-                    self.__get_image_thumb_frombytes(
-                        thumb.bit_depth,
-                        thumb.mode,
-                        thumb.size,
-                        thumb.data,
-                        stride=thumb.stride,
-                    )
-                )
+                added_image.thumbnails.append(thumb.clone(ref_original=added_image))
         return self
 
     def add_thumbnails(self, boxes: Union[List[int], int]) -> None:
@@ -641,18 +635,12 @@ class HeifFile:
         del self._images[key]
 
     def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
-        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
+        __ids = [i.info["img_id"] for i in self._images] + [0]
         __new_id = 2 + max(__ids)
-        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
-        self._images.append(HeifImage(__new_id, len(self), __heif_ctx))
-        return self
-
-    def __get_image_thumb_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
-        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
-        __new_id = 2 + max(__ids)
-        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
-        __img_index = kwargs.get("img_index", len(self._images))
-        return HeifThumbnail(__heif_ctx, None, __new_id, __img_index)
+        __heif_ctx = HeifCtxAsDict(bit_depth, mode, size, data, **kwargs)
+        added_image = HeifImage(__new_id, len(self), __heif_ctx)
+        self._images.append(added_image)
+        return added_image
 
     @staticmethod
     def _save(ctx: LibHeifCtxWrite, img_list: List[HeifImage]) -> None:

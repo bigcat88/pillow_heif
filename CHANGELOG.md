@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- (Heif) - optimized code of `HeifImageThumbnail`, added `get_original` method.
+
 ### Fixed
 
 ## [0.2.5 - 2022-05-30]
