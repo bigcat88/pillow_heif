@@ -5,6 +5,7 @@ Functions and classes for heif images to read and write.
 from copy import deepcopy
 from typing import Any, Dict, Iterator, List, Union
 from warnings import warn
+from weakref import ref
 
 from _pillow_heif_cffi import ffi, lib
 from PIL import Image, ImageOps, ImageSequence
@@ -15,8 +16,8 @@ from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifFiletype
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, set_orientation
 from .private import (
+    HeifCtxAsDict,
     create_image,
-    heif_ctx_as_dict,
     read_color_profile,
     read_metadata,
     retrieve_exif,
@@ -34,7 +35,7 @@ class HeifImageBase:
     size: tuple
     """Width and height of the image."""
 
-    def __init__(self, heif_ctx: Union[LibHeifCtx, dict], handle):
+    def __init__(self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict], handle):
         self._img_data: Dict[str, Any] = {}
         self._heif_ctx = heif_ctx
         self._colorspace = HeifColorspace.RGB
@@ -46,8 +47,8 @@ class HeifImageBase:
             )
         else:
             self._handle = None
-            self.size = heif_ctx["size"]
-            _img = create_image(self.size, self.chroma, self.bit_depth, heif_ctx["data"], stride=heif_ctx["stride"])
+            self.size = heif_ctx.size
+            _img = create_image(self.size, self.chroma, self.bit_depth, heif_ctx.data, stride=heif_ctx.stride)
             self._img_to_img_data_dict(_img)
 
     @property
@@ -56,8 +57,8 @@ class HeifImageBase:
 
         .. note:: When ``convert_hdr_to_8bit`` is True, return value will be always ``8``"""
 
-        if isinstance(self._heif_ctx, dict):
-            return self._heif_ctx["bit_depth"]
+        if isinstance(self._heif_ctx, HeifCtxAsDict):
+            return self._heif_ctx.bit_depth
         return 8 if self._heif_ctx.to_8bit else lib.heif_image_handle_get_luma_bits_per_pixel(self._handle)
 
     @property
@@ -82,7 +83,7 @@ class HeifImageBase:
 
         if isinstance(self._heif_ctx, LibHeifCtx):
             return bool(lib.heif_image_handle_has_alpha_channel(self._handle))
-        return self._heif_ctx["mode"] == "RGBA"
+        return self._heif_ctx.mode == "RGBA"
 
     @property
     def mode(self):
@@ -136,7 +137,7 @@ class HeifImageBase:
     def to_pillow(self, ignore_thumbnails: bool = False) -> Image.Image:
         """Helper method to create :py:class:`PIL.Image.Image`
 
-        :param ignore_thumbnails: Shall` info["thumbnails"] be empty or not.
+        :param ignore_thumbnails: Shall ``info["thumbnails"]`` be empty or not.
 
         :returns: :py:class:`PIL.Image.Image` class created from this image."""
 
@@ -154,8 +155,7 @@ class HeifImageBase:
             for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
                 if k in self.info:
                     image.info[k] = self.info[k]
-            thumbnails = [] if ignore_thumbnails else deepcopy(self.thumbnails)
-            image.info["thumbnails"] = thumbnails
+            image.info["thumbnails"] = [] if ignore_thumbnails else deepcopy(self.thumbnails)
             image.info["original_orientation"] = set_orientation(image.info)
         return image
 
@@ -195,42 +195,51 @@ class HeifImageBase:
 class HeifThumbnail(HeifImageBase):
     """Class represents a single thumbnail for a HeifImage."""
 
-    def __init__(self, heif_ctx: Union[LibHeifCtx, dict], img_handle, thumb_id: int, img_index: int):
-        if isinstance(heif_ctx, LibHeifCtx):
+    def __init__(self, original_img, reference, thumb_id: int = None):
+        if isinstance(original_img, HeifImage):
             p_handle = ffi.new("struct heif_image_handle **")
-            check_libheif_error(lib.heif_image_handle_get_thumbnail(img_handle, thumb_id, p_handle))
-            handle = p_handle[0]
+            check_libheif_error(lib.heif_image_handle_get_thumbnail(original_img._handle, thumb_id, p_handle))
+            super().__init__(original_img._heif_ctx, p_handle[0])
         else:
-            handle = None
-        super().__init__(heif_ctx, handle)
-        self.info = {
-            "thumb_id": thumb_id,
-            "img_index": img_index,
-        }
+            super().__init__(original_img, None)
+        self.parent = ref(reference)
 
     def __repr__(self):
         _bytes = f"{len(self.data)} bytes" if self._img_data else "no"
         return (
             f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
-            f"with id = {self.info['thumb_id']} for img with index = {self.info['img_index']} "
-            f"and with {_bytes} image data>"
+            f"with {_bytes} image data> Original:{self.parent()}"
         )
 
     def __deepcopy__(self, memo):
-        heif_ctx = heif_ctx_as_dict(self.bit_depth, self.mode, self.size, self.data, stride=self.stride)
-        return HeifThumbnail(heif_ctx, None, self.info["thumb_id"], self.info["img_index"])
+        return self.clone()
+
+    def clone(self, ref_original=None):
+        heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, self.size, self.data, stride=self.stride)
+        return HeifThumbnail(heif_ctx, ref_original if ref_original else heif_ctx)
+
+    def get_original(self):
+        """Return an :py:class:`~pillow_heif.HeifImage` frame to which thumbnail belongs.
+
+        .. note:: It is useful when you traverse thumbnails with :py:meth:`~pillow_heif.HeifFile.thumbnails_all`
+
+        :returns: :py:class:`~pillow_heif.HeifImage` or None."""
+
+        referenced = self.parent()
+        return referenced if isinstance(referenced, HeifImage) else None
 
 
 class HeifImage(HeifImageBase):
     """Class represents one frame in a file."""
 
-    def __init__(self, img_id: int, img_index: int, heif_ctx: Union[LibHeifCtx, dict]):
+    def __init__(self, img_id: int, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict], primary=False):
         additional_info = {}
         if isinstance(heif_ctx, LibHeifCtx):
             p_handle = ffi.new("struct heif_image_handle **")
-            error = lib.heif_context_get_image_handle(heif_ctx.ctx, img_id, p_handle)
-            if error.code != HeifErrorCode.OK and not img_index:
+            if primary:
                 error = lib.heif_context_get_primary_image_handle(heif_ctx.ctx, p_handle)
+            else:
+                error = lib.heif_context_get_image_handle(heif_ctx.ctx, img_id, p_handle)
             check_libheif_error(error)
             handle = p_handle[0]
             _metadata = read_metadata(handle)
@@ -249,15 +258,16 @@ class HeifImage(HeifImageBase):
             _exif = None
             _xmp = None
             additional_info["metadata"] = []
-            additional_info.update(heif_ctx.get("additional_info", {}))
+            additional_info.update(heif_ctx.additional_info)
         super().__init__(heif_ctx, handle)
         self.info = {
             "img_id": img_id,
             "exif": _exif,
             "xmp": _xmp,
+            "primary": primary,
         }
         self.info.update(**additional_info)
-        self.thumbnails = self.__read_thumbnails(img_index)
+        self.thumbnails = self.__read_thumbnails()
 
     def __repr__(self):
         _bytes = f"{len(self.data)} bytes" if self._img_data else "no"
@@ -337,10 +347,10 @@ class HeifImage(HeifImageBase):
             p_data = lib.heif_image_get_plane(new_thumbnail, HeifChannel.INTERLEAVED, p_dest_stride)
             dest_stride = p_dest_stride[0]
             data = ffi.buffer(p_data, __size[1] * dest_stride)
-            __heif_ctx = heif_ctx_as_dict(self.bit_depth, self.mode, __size, data, stride=dest_stride)
-            self.thumbnails.append(HeifThumbnail(__heif_ctx, None, 0, 0))
+            __heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, __size, data, stride=dest_stride)
+            self.thumbnails.append(HeifThumbnail(__heif_ctx, self))
 
-    def __read_thumbnails(self, img_index: int) -> List[HeifThumbnail]:
+    def __read_thumbnails(self) -> List[HeifThumbnail]:
         result: List[HeifThumbnail] = []
         if self._handle is None or not options().thumbnails:
             return result
@@ -350,7 +360,7 @@ class HeifImage(HeifImageBase):
         thumbnails_ids = ffi.new("heif_item_id[]", thumbs_count)
         thumb_count = lib.heif_image_handle_get_list_of_thumbnail_IDs(self._handle, thumbnails_ids, thumbs_count)
         for i in range(thumb_count):
-            result.append(HeifThumbnail(self._heif_ctx, self._handle, thumbnails_ids[i], img_index))
+            result.append(HeifThumbnail(self, self, thumb_id=thumbnails_ids[i]))
         return result
 
 
@@ -364,111 +374,124 @@ class HeifFile:
 
     .. note:: To get empty container to fill it later, create a class without parameters."""
 
-    def __init__(self, heif_ctx: Union[LibHeifCtx, dict] = None, img_ids: list = None):
+    def __init__(
+        self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict] = None, img_ids: List[int] = None, main_id: int = None
+    ):
         if heif_ctx is None:
-            heif_ctx = {}
+            heif_ctx = HeifCtxAsDict(0, "", (0, 0), None)
         self._images: List[HeifImage] = []
         self.mimetype = heif_ctx.get_mimetype() if isinstance(heif_ctx, LibHeifCtx) else ""
         if img_ids:
-            for i, img_id in enumerate(img_ids):
-                self._images.append(HeifImage(img_id, i, heif_ctx))
+            for img_id in img_ids:
+                self._images.append(HeifImage(img_id, heif_ctx, img_id == main_id))
 
     @property
     def original_bit_depth(self):
         """Points to :py:attr:`~pillow_heif.HeifImage.original_bit_depth` property of the
-        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].original_bit_depth
+        return self._images[self.primary_index()].original_bit_depth
 
     @property
     def bit_depth(self):
         """Points to :py:attr:`~pillow_heif.HeifImage.bit_depth` property of the
-        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].bit_depth
+        return self._images[self.primary_index()].bit_depth
 
     @property
     def size(self):
         """Points to :py:attr:`~pillow_heif.HeifImage.size` property of the
-        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].size
+        return self._images[self.primary_index()].size
 
     @property
     def mode(self):
         """Points to :py:attr:`~pillow_heif.HeifImage.mode` property of the
-        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].mode
+        return self._images[self.primary_index()].mode
 
     @property
     def data(self):
         """Points to :py:attr:`~pillow_heif.HeifImage.data` property of the
-        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].data
+        return self._images[self.primary_index()].data
 
     @property
     def stride(self):
         """Points to :py:attr:`~pillow_heif.HeifImage.stride` property of the
-        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].stride
+        return self._images[self.primary_index()].stride
 
     @property
     def chroma(self):
         """Points to :py:attr:`~pillow_heif.HeifImage.chroma` property of the
-        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].chroma
+        return self._images[self.primary_index()].chroma
 
     @property
     def color(self):
         """Points to :py:attr:`~pillow_heif.HeifImage.color` property of the
-        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].color
+        return self._images[self.primary_index()].color
 
     @property
     def has_alpha(self):
         """Points to :py:attr:`~pillow_heif.HeifImage.has_alpha` property of the
-        first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].has_alpha
+        return self._images[self.primary_index()].has_alpha
 
     @property
     def info(self):
-        """Points to ``info`` dict of the first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        """Points to ``info`` dict of the primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].info
+        return self._images[self.primary_index()].info
 
     @property
     def thumbnails(self):
-        """Points to ``thumbnails`` of the first :py:class:`~pillow_heif.HeifImage`'s class in container.
+        """Points to ``thumbnails`` of the primary :py:class:`~pillow_heif.HeifImage` in the container.
 
         :exception IndexError: If there is no images."""
 
-        return self._images[0].thumbnails
+        return self._images[self.primary_index()].thumbnails
+
+    def primary_index(self, image_list=None) -> int:
+        """Returns index of the ``PrimaryImage`` in the container."""
+
+        if image_list is None:
+            image_list = self._images
+        i = 0
+        for index, _ in enumerate(image_list):
+            if _.info["primary"]:
+                i = index
+        return i
 
     def thumbnails_all(self, one_for_image: bool = False) -> Iterator[HeifThumbnail]:
         """Enums all thumbnails in all images.
@@ -484,29 +507,43 @@ class HeifFile:
                     break
 
     def load(self, everything: bool = False):
-        for img in self:
-            img.load()
-            if not everything:
-                break
+        if everything:
+            for img in self:
+                img.load()
+        else:
+            self._images[self.primary_index()].load()
         return self
 
     def scale(self, width: int, height: int) -> None:
-        """Scale first image in container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
+        """Scale primary image in the container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
 
-        self._images[0].scale(width, height)
+        self._images[self.primary_index()].scale(width, height)
 
-    def add_from_pillow(self, pil_image: Image.Image, load_one=False):
+    def add_from_pillow(self, pil_image: Image.Image, load_one=False, ignore_primary=True):
         """Add image(s) to container.
 
         :param pil_image: ``PIL.Image`` class to get images from.
-        :param load_one: should be only one frame loaded. Default=``False``"""
+        :param load_one: should be only one frame loaded. Default=``False``
+        :param ignore_primary: force ``PrimaryImage=False`` flag to all added images."""
 
         for frame in ImageSequence.Iterator(pil_image):
             if frame.width > 0 and frame.height > 0:
+                frame.load()
                 additional_info = {}
-                for k in ("exif", "xmp", "metadata", "icc_profile", "icc_profile_type", "nclx_profile"):
+                supported_info_keys = (
+                    "exif",
+                    "xmp",
+                    "metadata",
+                    "primary",
+                    "icc_profile",
+                    "icc_profile_type",
+                    "nclx_profile",
+                )
+                for k in supported_info_keys:
                     if k in frame.info:
                         additional_info[k] = frame.info[k]
+                if ignore_primary:
+                    additional_info["primary"] = False
                 if "xmp" not in additional_info and "XML:com.adobe.xmp" in frame.info:
                     additional_info["xmp"] = frame.info["XML:com.adobe.xmp"]
                 if "xmp" in additional_info and isinstance(additional_info["xmp"], str):
@@ -524,35 +561,32 @@ class HeifFile:
                     frame = ImageOps.exif_transpose(frame)
                 # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?
                 _bit_depth = 8
-                self._add_frombytes(_bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info})
+                added_image = self._add_frombytes(
+                    _bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info}
+                )
                 for thumb in frame.info.get("thumbnails", []):
-                    self._images[len(self._images) - 1].thumbnails.append(
-                        self.__get_image_thumb_frombytes(
-                            thumb.bit_depth,
-                            thumb.mode,
-                            thumb.size,
-                            thumb.data,
-                            stride=thumb.stride,
-                        )
-                    )
-            if load_one:
-                break
+                    added_image.thumbnails.append(thumb.clone(ref_original=added_image))
+                if load_one:
+                    break
         return self
 
-    def add_from_heif(self, heif_image):
+    def add_from_heif(self, heif_image, load_one=False, ignore_primary=True):
         """Add image(s) to container.
 
-        :param heif_image: ``HeifFile`` or ``HeifImage`` class to get images from."""
+        :param heif_image: ``HeifFile`` or ``HeifImage`` class to get images from.
+        :param load_one: should be only one frame loaded. Default=``False``
+        :param ignore_primary: force ``PrimaryImage=False`` flag to all added images."""
 
         if isinstance(heif_image, HeifFile):
             heif_images = list(heif_image)
         else:
             heif_images = [heif_image]
         for image in heif_images:
-            image.load()
             additional_info = image.info.copy()
             additional_info.pop("img_id", None)
-            self._add_frombytes(
+            if ignore_primary:
+                additional_info["primary"] = False
+            added_image = self._add_frombytes(
                 image.bit_depth,
                 image.mode,
                 image.size,
@@ -561,20 +595,13 @@ class HeifFile:
                 add_info={**additional_info},
             )
             for thumb in image.thumbnails:
-                self._images[len(self._images) - 1].thumbnails.append(
-                    self.__get_image_thumb_frombytes(
-                        thumb.bit_depth,
-                        thumb.mode,
-                        thumb.size,
-                        thumb.data,
-                        stride=thumb.stride,
-                    )
-                )
+                added_image.thumbnails.append(thumb.clone(ref_original=added_image))
+            if load_one:
+                break
         return self
 
     def add_thumbnails(self, boxes: Union[List[int], int]) -> None:
-        """
-        Add thumbnail(s) to all images.
+        """Add thumbnail(s) to all images.
 
         :param boxes: int or list of ints determining size of thumbnail(s) to generate for images.
 
@@ -596,24 +623,50 @@ class HeifFile:
             ``append_images`` - do the same as in Pillow.
             Accept ``HeifFile``, ``HeifImage`` and ``PIL.Image``
 
+            .. note:: Appended images always will have ``info["primary"]=False``
+
             ``quality`` - see :py:attr:`~pillow_heif._options.PyLibHeifOptions.quality`
 
             ``enc_params`` - tuple of name:value to pass to :ref:`x265 <hevc-encoder>` encoder.
+
+            ``exif`` - override primary image's EXIF with specified. Accept ``None`` or ``bytes``.
+
+            ``xmp`` - override primary image's XMP with specified. Accept ``None`` or ``bytes``.
+
+            ``primary_index`` - ignore ``info["primary"]`` and set `PrimaryImage` by index.
 
         :param fp: A filename (string), pathlib.Path object or file object.
 
         :returns: None
         :raises: :py:exc:`~pillow_heif.HeifError` or :py:exc:`ValueError`"""
 
-        save_all = kwargs.get("save_all", True)
-        append_images = self.__heif_images_from(kwargs.get("append_images", [])) if save_all else []
         if not options().hevc_enc:
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
-        if not self._images and not append_images:
-            raise ValueError("Cannot write empty image as HEIF.")
+        save_all = kwargs.get("save_all", True)
+        images_to_append = kwargs.get("append_images", [])
+        append_one_image = not len(self._images) and not save_all
+        images_to_save = self._images + self.__heif_images_from(images_to_append, append_one_image)
+        if not save_all:
+            images_to_save = images_to_save[:1]
+        if not images_to_save:
+            raise ValueError("Cannot write file with no images as HEIF.")
+        primary_index = kwargs.get("primary_index", None)
+        if primary_index is None:
+            primary_index = 0
+            for i, img in enumerate(images_to_save):
+                if img.info["primary"]:
+                    primary_index = i
+        elif primary_index == -1 or primary_index >= len(images_to_save):
+            primary_index = len(images_to_save) - 1
         heif_ctx_write = LibHeifCtxWrite()
         heif_ctx_write.set_encoder_parameters(kwargs.get("enc_params", []), kwargs.get("quality", options().quality))
-        self._save(heif_ctx_write, not save_all, append_images)
+        self._save(
+            heif_ctx_write,
+            images_to_save,
+            primary_index,
+            primary_exif=kwargs.get("exif", -1),
+            primary_xmp=kwargs.get("xmp", -1),
+        )
         heif_ctx_write.write(fp)
 
     def __repr__(self):
@@ -636,19 +689,36 @@ class HeifFile:
             raise IndexError(f"invalid image index: {key}")
         del self._images[key]
 
-    def _save(self, ctx: LibHeifCtxWrite, save_one: bool, append_images: List[HeifImage]) -> None:
+    def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
+        __ids = [i.info["img_id"] for i in self._images] + [0]
+        __new_id = 2 + max(__ids)
+        __heif_ctx = HeifCtxAsDict(bit_depth, mode, size, data, **kwargs)
+        added_image = HeifImage(__new_id, __heif_ctx)
+        self._images.append(added_image)
+        return added_image
+
+    @staticmethod
+    def _save(ctx: LibHeifCtxWrite, img_list: List[HeifImage], primary_index: int, **kwargs) -> None:
         enc_options = lib.heif_encoding_options_alloc()
         enc_options = ffi.gc(enc_options, lib.heif_encoding_options_free)
-        for img in list(self) + append_images:
-            img.load()
+        for i, img in enumerate(img_list):
             new_img = create_image(img.size, img.chroma, img.bit_depth, img.data, stride=img.stride)
             set_color_profile(new_img, img.info)
             p_new_img_handle = ffi.new("struct heif_image_handle **")
             error = lib.heif_context_encode_image(ctx.ctx, new_img, ctx.encoder, enc_options, p_new_img_handle)
             check_libheif_error(error)
             new_img_handle = ffi.gc(p_new_img_handle[0], lib.heif_image_handle_release)
-            set_exif(ctx, new_img_handle, img.info)
-            set_xmp(ctx, new_img_handle, img.info)
+            exif = img.info["exif"]
+            xmp = img.info["xmp"]
+            if i == primary_index:
+                if i:
+                    lib.heif_context_set_primary_image(ctx.ctx, new_img_handle)
+                if kwargs["primary_exif"] != -1:
+                    exif = kwargs["primary_exif"]
+                if kwargs["primary_xmp"] != -1:
+                    xmp = kwargs["primary_xmp"]
+            set_exif(ctx, new_img_handle, exif)
+            set_xmp(ctx, new_img_handle, xmp)
             set_metadata(ctx, new_img_handle, img.info)
             for thumbnail in img.thumbnails:
                 thumb_box = max(thumbnail.size)
@@ -666,33 +736,20 @@ class HeifFile:
                     check_libheif_error(error)
                     if p_new_thumb_handle[0] != ffi.NULL:
                         lib.heif_image_handle_release(p_new_thumb_handle[0])
-            if save_one:
-                break
-
-    def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
-        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
-        __new_id = 2 + max(__ids)
-        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
-        self._images.append(HeifImage(__new_id, len(self), __heif_ctx))
-        return self
-
-    def __get_image_thumb_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
-        __ids = [i.info["img_id"] for i in self._images] + [i.info["thumb_id"] for i in self.thumbnails_all()] + [0]
-        __new_id = 2 + max(__ids)
-        __heif_ctx = heif_ctx_as_dict(bit_depth, mode, size, data, **kwargs)
-        __img_index = kwargs.get("img_index", len(self._images))
-        return HeifThumbnail(__heif_ctx, None, __new_id, __img_index)
 
     @staticmethod
-    def __heif_images_from(images: list) -> List[HeifImage]:
+    def __heif_images_from(images: list, load_one: bool) -> List[HeifImage]:
         """Accepts list of Union[HeifFile, HeifImage, Image.Image] and returns List[HeifImage]"""
+
         result = []
         for img in images:
-            if isinstance(img, HeifImage):
-                result.append(img)
+            if isinstance(img, Image.Image):
+                heif_file = from_pillow(img, load_one)
             else:
-                heif_file = from_pillow(img) if isinstance(img, Image.Image) else img
-                result += list(heif_file)
+                heif_file = HeifFile().add_from_heif(img, load_one)
+            result += list(heif_file)
+            if load_one:
+                break
         return result
 
 
@@ -742,10 +799,7 @@ def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
     :exception HeifError: If file is corrupted or is not in Heif format."""
 
     heif_ctx = LibHeifCtx(fp, convert_hdr_to_8bit)
-    main_image_id = heif_ctx.get_main_img_id()
-    top_img_ids = heif_ctx.get_top_images_ids()
-    top_img_list = [main_image_id] + [i for i in top_img_ids if i != main_image_id]
-    return HeifFile(heif_ctx, top_img_list)
+    return HeifFile(heif_ctx, heif_ctx.get_top_images_ids(), heif_ctx.get_main_img_id())
 
 
 def read_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
@@ -766,15 +820,16 @@ def read_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
     return heif_file
 
 
-def from_pillow(pil_image: Image.Image, load_one: bool = False) -> HeifFile:
+def from_pillow(pil_image: Image.Image, load_one: bool = False, ignore_primary=True) -> HeifFile:
     """Creates :py:class:`~pillow_heif.HeifFile` from a Pillow Image.
 
     :param pil_image: Pillow :external:py:class:`~PIL.Image.Image` class
     :param load_one: If ``True``, then all frames will be loaded.
+    :param ignore_primary: force ``PrimaryImage=False`` flag to all added images.
 
     :returns: An :py:class:`~pillow_heif.HeifFile` object."""
 
-    return HeifFile().add_from_pillow(pil_image, load_one)
+    return HeifFile().add_from_pillow(pil_image, load_one, ignore_primary)
 
 
 # --------------------------------------------------------------------

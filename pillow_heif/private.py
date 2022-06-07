@@ -2,11 +2,31 @@
 Undocumented private functions for other code to look better.
 """
 
+from typing import Union
+
 from _pillow_heif_cffi import ffi, lib
 
 from ._libheif_ctx import LibHeifCtxWrite
 from .constants import HeifChannel, HeifChroma, HeifColorProfileType, HeifColorspace
 from .error import check_libheif_error
+
+
+# from dataclasses import dataclass
+# @dataclass                # Avalaible from Python 3.7
+class HeifCtxAsDict:  # noqa # pylint: disable=too-few-public-methods
+    """Representation of one image"""
+
+    def __init__(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
+        stride = kwargs.get("stride", None)
+        if stride is None:
+            factor = 1 if bit_depth == 8 else 2
+            stride = size[0] * 3 * factor if mode == "RGB" else size[0] * 4 * factor
+        self.bit_depth = bit_depth
+        self.mode = mode
+        self.size = size
+        self.data = data
+        self.stride = stride
+        self.additional_info = kwargs.get("add_info", {})
 
 
 def create_image(size: tuple, chroma: HeifChroma, bit_depth: int, data, stride: int, **kwargs):
@@ -31,21 +51,6 @@ def copy_image_data(dest_data, src_data, dest_stride: int, source_stride: int, h
         p_source = ffi.from_buffer("uint8_t*", src_data)
         for i in range(height):
             ffi.memmove(dest_data + dest_stride * i, p_source + source_stride * i, dest_stride)
-
-
-def heif_ctx_as_dict(bit_depth: int, mode: str, size: tuple, data, **kwargs) -> dict:
-    stride = kwargs.get("stride", None)
-    if stride is None:
-        factor = 1 if bit_depth == 8 else 2
-        stride = size[0] * 3 * factor if mode == "RGB" else size[0] * 4 * factor
-    return {
-        "bit_depth": bit_depth,
-        "mode": mode,
-        "size": size,
-        "data": data,
-        "stride": stride,
-        "additional_info": kwargs.get("add_info", {}),
-    }
 
 
 def read_color_profile(handle) -> dict:
@@ -100,9 +105,9 @@ def retrieve_exif(metadata: list):
     return _result
 
 
-def set_exif(ctx: LibHeifCtxWrite, heif_img_handle, info: dict) -> None:
-    if info["exif"] is not None:
-        error = lib.heif_context_add_exif_metadata(ctx.ctx, heif_img_handle, info["exif"], len(info["exif"]))
+def set_exif(ctx: LibHeifCtxWrite, heif_img_handle, exif: Union[bytes, None]) -> None:
+    if exif is not None:
+        error = lib.heif_context_add_exif_metadata(ctx.ctx, heif_img_handle, exif, len(exif))
         check_libheif_error(error)
 
 
@@ -119,9 +124,9 @@ def retrieve_xmp(metadata: list):
     return _result
 
 
-def set_xmp(ctx: LibHeifCtxWrite, heif_img_handle, info: dict) -> None:
-    if info["xmp"] is not None:
-        error = lib.heif_context_add_XMP_metadata(ctx.ctx, heif_img_handle, info["xmp"], len(info["xmp"]))
+def set_xmp(ctx: LibHeifCtxWrite, heif_img_handle, xmp: Union[bytes, None]) -> None:
+    if xmp is not None:
+        error = lib.heif_context_add_XMP_metadata(ctx.ctx, heif_img_handle, xmp, len(xmp))
         check_libheif_error(error)
 
 

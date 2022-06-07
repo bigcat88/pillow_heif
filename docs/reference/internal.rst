@@ -18,3 +18,8 @@ LibHeifCtxWrite Object
 ----------------------
 
 .. autoclass:: LibHeifCtxWrite
+
+HeifCtxAsDict Object
+--------------------
+
+.. autoclass:: pillow_heif.private.HeifCtxAsDict

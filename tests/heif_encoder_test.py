@@ -49,6 +49,9 @@ def test_save_empty_with_append():
     out_buffer = BytesIO()
     empty_heic_file.save(out_buffer, append_images=heic_file)
     compare_heif_files_fields(heic_file, open_heif(out_buffer))
+    empty_heic_file.save(out_buffer, append_images=heic_file, save_all=False)
+    heic_file = open_heif(out_buffer)
+    assert len(heic_file) == 1
 
 
 @pytest.mark.parametrize(
@@ -199,7 +202,8 @@ def test_scale():
 def test_add_from():
     heif_file1 = open_heif(Path("images/rgb8_512_512_1_0.heic"))
     heif_file2 = open_heif(Path("images/rgb8_210_128_2_2.heic"))
-    heif_file1.add_from_heif(heif_file2)
+    heif_file1.add_from_heif(heif_file2, load_one=True)
+    heif_file1.add_from_heif(heif_file2[1], load_one=True)
     heif_file1.add_from_heif(heif_file2[1])
     gc.collect()
     out_buf = BytesIO()
@@ -220,3 +224,72 @@ def test_add_from():
     pillow_image.seek(2)
     pillow_original.seek(1)
     imagehash.compare_hashes([pillow_image, pillow_original])
+
+
+def test_primary_image():
+    img1_2 = open_heif(Path("images/rgb8_128_128_2_1.heic"))
+    img3 = open_heif(Path("images/rgb8_512_512_1_0.heic"))
+    out_buf1 = BytesIO()
+    img3.save(out_buf1, append_images=[img1_2[0], img1_2[1]], save_all=True, primary_index=1, quality=-1)
+    heif_file = open_heif(out_buf1)
+    assert heif_file.primary_index() == 1
+    assert heif_file[1].info["primary"]
+    out_buf2 = BytesIO()
+    heif_file.save(out_buf2, quality=1)
+    heif_file = open_heif(out_buf2)
+    assert heif_file.primary_index() == 1
+    assert heif_file[1].info["primary"]
+    heif_file.save(out_buf1, quality=1, append_images=[heif_file])
+    heif_file = open_heif(out_buf1)
+    assert heif_file.primary_index() == 1
+    heif_file.save(out_buf1, quality=1, primary_index=0)
+    assert heif_file.primary_index() == 1
+    heif_file2 = open_heif(out_buf1)
+    assert heif_file2.primary_index() == 0
+    heif_file2.save(out_buf2, primary_index=-1, quality=1)
+    assert heif_file2.primary_index() == 0
+    heif_file = open_heif(out_buf2)
+    assert heif_file.primary_index() == 5
+    heif_file2.save(out_buf1, primary_index=99, quality=1)
+    assert heif_file2.primary_index() == 0
+    heif_file = open_heif(out_buf1)
+    assert heif_file.primary_index() == 5
+
+
+def test_exif_removing():
+    heif_file = open_heif(Path("images/rgb8_128_128_2_1.heic"))
+    for frame in heif_file:
+        assert frame.info["exif"]
+    out_buf = BytesIO()
+    heif_file.save(out_buf, exif=None, save_all=True)  # remove Exif from primary image
+    assert heif_file.info["exif"]
+    saved_heif = open_heif(out_buf)
+    for i, frame in enumerate(saved_heif):
+        assert frame.info["exif"] if i else not frame.info["exif"]
+
+
+def test_xmp_add_remove():
+    xmp_data = b"<xmp_data>"
+    heif_file = open_heif(Path("images/rgb8_128_128_2_1.heic"))
+    # No XMP in images
+    for frame in heif_file:
+        assert not frame.info["xmp"]
+    out_buf = BytesIO()
+    heif_file.save(out_buf, xmp=xmp_data, save_all=True)
+    # Checking `heif_file` to not change
+    for frame in heif_file:
+        assert not frame.info["xmp"]
+    saved_heif = open_heif(out_buf)
+    # Checking that output  of`heif_file` was changed
+    for i, frame in enumerate(saved_heif):
+        assert not frame.info["xmp"] if i else frame.info["xmp"]
+    out_buf2 = BytesIO()
+    # Remove XMP from primary image
+    saved_heif.save(out_buf2, xmp=None, save_all=True)
+    # Checking `saved_heif` to not change
+    for i, frame in enumerate(saved_heif):
+        assert not frame.info["xmp"] if i else frame.info["xmp"]
+    saved_heif2 = open_heif(out_buf2)
+    # Checking that output has no XMP
+    for i, frame in enumerate(saved_heif2):
+        assert not frame.info["xmp"]
