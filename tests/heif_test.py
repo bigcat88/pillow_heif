@@ -124,6 +124,7 @@ def test_thumbnail_references():
     assert thumbnails_all[2].get_original() == heif_file[1]
     assert thumbnails_all[3].get_original() == heif_file[1]
     del heif_file[0]
+    collect()
     assert thumbnails_all[0].get_original() is None
     assert thumbnails_all[0].get_original() is None
     assert str(thumbnails_all[0]).find("Original:None") != -1

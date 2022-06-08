@@ -109,7 +109,7 @@ class HeifImageFile(ImageFile.ImageFile):
     def _init_from_heif_file(self, heif_image) -> None:
         self._size = heif_image.size
         self.mode = heif_image.mode
-        for k in ("exif", "xmp", "metadata", "img_id"):
+        for k in ("exif", "xmp", "metadata", "primary", "img_id"):
             self.info[k] = heif_image.info[k]
         for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
             if k in heif_image.info:
@@ -123,7 +123,7 @@ def _save(im, fp, _filename):
 
 
 def _save_all(im, fp, _filename):
-    from_pillow(im).save(fp, save_all=True, **im.encoderinfo)
+    from_pillow(im, ignore_primary=False).save(fp, save_all=True, **im.encoderinfo)
 
 
 def register_heif_opener(**kwargs) -> None:

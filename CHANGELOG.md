@@ -2,18 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.6 - 2022-06-xx]
+## [0.3.0 - 2022-06-xx]
 
 ### Added
 
-- (HeifImagePlugin, Heif) - `save` now recognizes `exif=` optional parameter. Works as in other Pillow plugins. #25
-- Docs page: [Encoding](https://pillow-heif.readthedocs.io/en/latest/encoding.html)
+- (HeifImagePlugin, Heif) - `save` now recognizes `exif=` and `xmp=` optional parameters. Works as in other Pillow plugins. #25
+- (HeifImagePlugin, Heif) - `save` now recognizes `primary_index` optional parameter.
+- (HeifImagePlugin, Heif) - `info["primary"]` value.
+- (Heif) - `primary_index` method to `HeifFile` class.
+- Docs: [Encoding](https://pillow-heif.readthedocs.io/en/latest/encoding.html)
+- Docs: [Changes in Order Of Images](https://pillow-heif.readthedocs.io/en/latest/v0.3-order-of-images.html)
 
 ### Changed
 
+- Changed image order when multiply images present, `HeifFile` points to primary image as it was before, but it **can be not** the first image in a list.
+- When using as a Pillow's plugin the only way to know is an image `Primary` or not is to perform check of `info["primary"]` value.
 - (Heif) - optimized code of `HeifImageThumbnail`, added `get_original` method.
 
 ### Fixed
+
+- Other little speed optimizations.
 
 ## [0.2.5 - 2022-05-30]
 

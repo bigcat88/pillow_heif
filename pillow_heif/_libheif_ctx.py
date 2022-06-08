@@ -62,7 +62,7 @@ class LibHeifCtx:
         check_libheif_error(lib.heif_context_get_primary_image_ID(self.ctx, p_main_image_id))
         return p_main_image_id[0]
 
-    def get_top_images_ids(self) -> list:
+    def get_top_images_ids(self) -> List[int]:
         top_img_count = lib.heif_context_get_number_of_top_level_images(self.ctx)
         top_img_ids = ffi.new("heif_item_id[]", top_img_count)
         top_img_count = lib.heif_context_get_list_of_top_level_image_IDs(self.ctx, top_img_ids, top_img_count)

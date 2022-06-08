@@ -30,7 +30,7 @@ HeifImage class object
     .. py:attribute:: info["icc_profile"]
         :type: bytes
 
-        ICC Profile. Can be absent.
+        ICC Profile. Can be absent. Can be empty.
 
     .. py:attribute:: info["icc_profile_type"]
         :type: str
@@ -43,3 +43,11 @@ HeifImage class object
         Can be absent. Maybe later, will be added some stuff to work with nclx profiles.
 
         If you need it now, look at `heif.h` for struct describing it in ``C`` language.
+
+    .. py:attribute:: info["primary"]
+        :type: bool
+
+        A boolean value that specifies whether the image is the main image when the file
+        contains more than one image.
+
+        More info can be read here: :ref:`order-of-images` and here :ref:`changing-order-of-images`

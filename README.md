@@ -24,7 +24,7 @@ Features:
  * Decoding of `8`, `10`, `12` bit HEIF images.
  * Encoding of `8`, `10`, `12` bit HEIF images.
  * `EXIF`, `XMP`, `IPTC` metadata support.
- * Support multiple images in one file, e.g **HEIC** files.
+ * Support of multiple images in one file, e.g **HEIC** files and `PrimaryImage` attribute.
  * HEIF `native thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
  * Includes AVIF(x264) decoder.

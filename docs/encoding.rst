@@ -31,7 +31,49 @@ And this code is valid too:
 
 Limitations of second code variant is that when file has multiply images inside,
 setting ``exif`` during save affects only Primary(Main) image and not all images.
-To edit metadata of all images in a file just iterate throw all images and change metadata you want.
 
+To edit metadata of all images in a file just iterate throw all images and change metadata you want(do not work for Pillow plugin).
 
-To be continued...
+When you want edit metadata when using as Pillow plugin for all images you can do something like this:
+
+.. code-block:: python
+
+    heic_pillow = Image.open(Path("test.heic"))
+    output_wo_exif = []
+    for frame in ImageSequence.Iterator(heic_pillow):
+        copied_frame = frame.copy()
+        copied_frame.info["exif"] = None
+        output_wo_exif.append(copied_frame)
+    empty_pillow = Image.new("P", (0, 0))
+    empty_pillow.save("no_exif.heic", save_all=True, append_images=output_wo_exif)
+
+.. _changing-order-of-images:
+
+Changing order of images
+""""""""""""""""""""""""
+
+Let's create image where second image will be primary:
+
+.. code-block:: python
+
+    img1 = Image.open(Path("images/jpeg_gif_png/1.png"))
+    img2 = Image.open(Path("images/jpeg_gif_png/2.png"))
+    img3 = Image.open(Path("images/jpeg_gif_png/3.png"))
+    img1.save("1_2P_3.heic", append_images=[img2, img3], save_all=True, primary_index=1, quality=-1)
+
+Now as example lets change primary image in already created HEIC file:
+
+.. code-block:: python
+
+    img1 = Image.open(Path("1_2P_3.heic"))
+    img1.save("1_2_3P.heic", save_all=True, primary_index=-1, quality=-1)
+
+And here is an example how we can change order of images in container:
+
+.. code-block:: python
+
+    src_img = Image.open(Path("1_2_3P.heic"))
+    img3 = ImageSequence.Iterator(src_img)[2].copy()
+    img2 = ImageSequence.Iterator(src_img)[1].copy()
+    img1 = ImageSequence.Iterator(src_img)[0].copy()
+    img3.save("3P_1_2.heic", save_all=True, append_images=[img1, img2], quality=-1)
