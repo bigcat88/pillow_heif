@@ -230,6 +230,8 @@ class HeifThumbnail(HeifImageBase):
         return referenced if isinstance(referenced, HeifImage) else None
 
     def clone_no_data(self):
+        """Used only when encoding an image."""
+
         heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, self.size, None, stride=0)
         return HeifThumbnail(heif_ctx, heif_ctx)
 
@@ -356,6 +358,8 @@ class HeifImage(HeifImageBase):
             self.thumbnails.append(HeifThumbnail(__heif_ctx, self))
 
     def copy_thumbnails(self, thumbnails: List[HeifThumbnail], **kwargs):
+        """Private. For use only in ``add_from_pillow`` and ``add_from_heif``."""
+
         for thumb in thumbnails:
             if kwargs.get("thumbs_no_data", False):
                 cloned_thumb = thumb.clone_no_data()
