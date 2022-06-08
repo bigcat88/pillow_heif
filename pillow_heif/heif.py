@@ -644,7 +644,7 @@ class HeifFile:
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
         save_all = kwargs.get("save_all", True)
         images_to_append = kwargs.get("append_images", [])
-        append_one_image = not len(self._images) and not save_all
+        append_one_image = not self._images and not save_all
         images_to_save = self._images + self.__heif_images_from(images_to_append, append_one_image)
         if not save_all:
             images_to_save = images_to_save[:1]

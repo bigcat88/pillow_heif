@@ -31,6 +31,8 @@ profile = "black"
 master.py-version = "3.7"
 master.unsafe-load-any-extension = "yes"
 design.max-attributes = 8
+design.max-locals = 16
+design.max-branches = 14
 basic.good-names = [
     "a", "b", "c", "d", "e", "f", "i", "j", "k", "v",
     "ex", "_", "fp", "im", "HeifImagePlugin",
