@@ -34,7 +34,7 @@ setting ``exif`` during save affects only Primary(Main) image and not all images
 
 To edit metadata of all images in a file just iterate throw all images and change metadata you want(do not work for Pillow plugin).
 
-When you want edit metadata when using as Pillow plugin for all images you can do something like this:
+When you want edit metadata when using as Pillow plugin for all images you can do something like this(editing ``info["exif"]`` field of each image):
 
 .. code-block:: python
 
@@ -61,7 +61,7 @@ Let's create image where second image will be primary:
     img3 = Image.open(Path("images/jpeg_gif_png/3.png"))
     img1.save("1_2P_3.heic", append_images=[img2, img3], save_all=True, primary_index=1, quality=-1)
 
-Now as example lets change primary image in already created HEIC file:
+Now as example lets change primary image in a HEIC file:
 
 .. code-block:: python
 
