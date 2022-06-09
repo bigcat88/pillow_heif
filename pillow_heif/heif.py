@@ -359,7 +359,6 @@ class HeifImage(HeifImageBase):
 
     def copy_thumbnails(self, thumbnails: List[HeifThumbnail], **kwargs):
         """Private. For use only in ``add_from_pillow`` and ``add_from_heif``."""
-
         for thumb in thumbnails:
             if kwargs.get("thumbs_no_data", False):
                 cloned_thumb = thumb.clone_no_data()
@@ -545,7 +544,6 @@ class HeifFile:
 
         for frame in ImageSequence.Iterator(pil_image):
             if frame.width > 0 and frame.height > 0:
-                frame.load()
                 additional_info = {}
                 supported_info_keys = (
                     "exif",
@@ -574,7 +572,7 @@ class HeifFile:
                 elif frame.mode == "L":
                     frame = frame.convert(mode="RGB")
 
-                if original_orientation is not None:
+                if original_orientation is not None and original_orientation != 1:
                     frame = ImageOps.exif_transpose(frame)
                 # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?
                 _bit_depth = 8

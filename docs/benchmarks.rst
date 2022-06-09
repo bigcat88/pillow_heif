@@ -1,5 +1,5 @@
-Benchmarks
-==========
+Decoding Benchmarks
+===================
 
 Tests performed on Intel CPU i7-9700.
 
@@ -91,3 +91,50 @@ Moving to ``ctx_mem`` = ``True`` what is by default now, gives much more signifi
 Reading HEIF metadata and image properties gives us ``3x`` faster speed.
 Decoding of small images, what we test here by decoding thumbnails, gives us ``30%`` increase of speed.
 Decoding of big images becomes faster by 5%, after we switch to ``ctx_mem`` = ``True``.
+
+Encoding benchmarks
+===================
+
+Comparing 0.2.x and 0.3.x on CPython 3.10
+
+.. code-block:: python
+
+    DATASET = [Path("rgb8_512_512_1_2.heic"), Path("etc_heif/nokia/alpha_3_2.heic"), Path("rgb10_639_480_1_3.heic")]
+
+Benchmark code A
+----------------
+
+.. code-block:: python
+
+    def save_heif_file():
+        out_buf = BytesIO()
+        for image_path in DATASET:
+            heif_file = open_heif(image_path)
+            heif_file.save(out_buf)
+
+    benchmark.pedantic(save_heif_file, iterations=1, rounds=40, warmup_rounds=1)
+
+Benchmark code B
+----------------
+
+.. code-block:: python
+
+    def pillow_save_heif():
+        out_buf = BytesIO()
+        for image_path in DATASET:
+            image = Image.open(image_path)
+            image.save(out_buf, save_all=True, format="HEIF")
+
+    benchmark.pedantic(pillow_save_heif, iterations=1, rounds=40, warmup_rounds=1)
+
++-------------------------------+--------------+----------------+
+| Benchmark                     | 0.2.5        | 0.3.0          |
++===============================+==============+================+
+| **A** `HeiFile` mem_ctx=False | 1.81 s       | 1.79 s         |
++-------------------------------+--------------+----------------+
+| **A** `HeiFile` mem_ctx=True  | 1.80 s       | 1.78 s         |
++-------------------------------+--------------+----------------+
+| **B** `Pillow` mem_ctx=False  | 1.92 s       | 1.90 s         |
++-------------------------------+--------------+----------------+
+| **B** `Pillow` mem_ctx=True   | 1.91 s       | 1.89 s         |
++-------------------------------+--------------+----------------+

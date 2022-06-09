@@ -10,7 +10,7 @@ from PIL import Image, ImageFile
 from ._options import options
 from .constants import HeifErrorCode
 from .error import HeifError
-from .heif import HeifImage, from_pillow, is_supported, open_heif
+from .heif import HeifFile, HeifImage, is_supported, open_heif
 from .misc import getxmp, set_orientation
 
 
@@ -119,11 +119,13 @@ class HeifImageFile(ImageFile.ImageFile):
 
 
 def _save(im, fp, _filename):
-    from_pillow(im, load_one=True).save(fp, save_all=False, **im.encoderinfo)
+    heif_file = HeifFile().add_from_pillow(im, load_one=True, thumbs_no_data=True)
+    heif_file.save(fp, save_all=False, **im.encoderinfo)
 
 
 def _save_all(im, fp, _filename):
-    from_pillow(im, ignore_primary=False).save(fp, save_all=True, **im.encoderinfo)
+    heif_file = HeifFile().add_from_pillow(im, ignore_primary=False, thumbs_no_data=True)
+    heif_file.save(fp, save_all=True, **im.encoderinfo)
 
 
 def register_heif_opener(**kwargs) -> None:
