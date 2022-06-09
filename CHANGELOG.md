@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.0 - 2022-06-xx]
+## [0.3.0 - 2022-06-11]
 
 ### Added
 
@@ -21,7 +21,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Other little speed optimizations.
+- Minor usage fixes.
+- Speed optimizations.
 
 ## [0.2.5 - 2022-05-30]
 
