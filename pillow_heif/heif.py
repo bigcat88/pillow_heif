@@ -48,8 +48,9 @@ class HeifImageBase:
         else:
             self._handle = None
             self.size = heif_ctx.size
-            _img = create_image(self.size, self.chroma, self.bit_depth, heif_ctx.data, stride=heif_ctx.stride)
-            self._img_to_img_data_dict(_img)
+            if heif_ctx.data:
+                _img = create_image(self.size, self.chroma, self.bit_depth, heif_ctx.data, stride=heif_ctx.stride)
+                self._img_to_img_data_dict(_img)
 
     @property
     def bit_depth(self):
@@ -228,6 +229,12 @@ class HeifThumbnail(HeifImageBase):
         referenced = self.parent()
         return referenced if isinstance(referenced, HeifImage) else None
 
+    def clone_no_data(self):
+        """Used only when encoding an image."""
+
+        heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, self.size, None, stride=0)
+        return HeifThumbnail(heif_ctx, heif_ctx)
+
 
 class HeifImage(HeifImageBase):
     """Class represents one frame in a file."""
@@ -349,6 +356,15 @@ class HeifImage(HeifImageBase):
             data = ffi.buffer(p_data, __size[1] * dest_stride)
             __heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, __size, data, stride=dest_stride)
             self.thumbnails.append(HeifThumbnail(__heif_ctx, self))
+
+    def copy_thumbnails(self, thumbnails: List[HeifThumbnail], **kwargs):
+        """Private. For use only in ``add_from_pillow`` and ``add_from_heif``."""
+        for thumb in thumbnails:
+            if kwargs.get("thumbs_no_data", False):
+                cloned_thumb = thumb.clone_no_data()
+            else:
+                cloned_thumb = thumb.clone(ref_original=self)
+            self.thumbnails.append(cloned_thumb)
 
     def __read_thumbnails(self) -> List[HeifThumbnail]:
         result: List[HeifThumbnail] = []
@@ -519,7 +535,7 @@ class HeifFile:
 
         self._images[self.primary_index()].scale(width, height)
 
-    def add_from_pillow(self, pil_image: Image.Image, load_one=False, ignore_primary=True):
+    def add_from_pillow(self, pil_image: Image.Image, load_one=False, ignore_primary=True, **kwargs):
         """Add image(s) to container.
 
         :param pil_image: ``PIL.Image`` class to get images from.
@@ -528,7 +544,6 @@ class HeifFile:
 
         for frame in ImageSequence.Iterator(pil_image):
             if frame.width > 0 and frame.height > 0:
-                frame.load()
                 additional_info = {}
                 supported_info_keys = (
                     "exif",
@@ -557,20 +572,19 @@ class HeifFile:
                 elif frame.mode == "L":
                     frame = frame.convert(mode="RGB")
 
-                if original_orientation is not None:
+                if original_orientation is not None and original_orientation != 1:
                     frame = ImageOps.exif_transpose(frame)
                 # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?
                 _bit_depth = 8
                 added_image = self._add_frombytes(
                     _bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info}
                 )
-                for thumb in frame.info.get("thumbnails", []):
-                    added_image.thumbnails.append(thumb.clone(ref_original=added_image))
+                added_image.copy_thumbnails(frame.info.get("thumbnails", []), **kwargs)
                 if load_one:
                     break
         return self
 
-    def add_from_heif(self, heif_image, load_one=False, ignore_primary=True):
+    def add_from_heif(self, heif_image, load_one=False, ignore_primary=True, **kwargs):
         """Add image(s) to container.
 
         :param heif_image: ``HeifFile`` or ``HeifImage`` class to get images from.
@@ -594,8 +608,7 @@ class HeifFile:
                 stride=image.stride,
                 add_info={**additional_info},
             )
-            for thumb in image.thumbnails:
-                added_image.thumbnails.append(thumb.clone(ref_original=added_image))
+            added_image.copy_thumbnails(image.thumbnails, **kwargs)
             if load_one:
                 break
         return self
@@ -744,9 +757,9 @@ class HeifFile:
         result = []
         for img in images:
             if isinstance(img, Image.Image):
-                heif_file = from_pillow(img, load_one)
+                heif_file = HeifFile().add_from_pillow(img, load_one, thumbs_no_data=True)
             else:
-                heif_file = HeifFile().add_from_heif(img, load_one)
+                heif_file = HeifFile().add_from_heif(img, load_one, thumbs_no_data=True)
             result += list(heif_file)
             if load_one:
                 break
