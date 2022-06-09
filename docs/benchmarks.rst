@@ -1,5 +1,8 @@
+Benchmarks
+==========
+
 Decoding Benchmarks
-===================
+-------------------
 
 Tests performed on Intel CPU i7-9700.
 
@@ -8,7 +11,7 @@ Tests performed on Intel CPU i7-9700.
     DATASET = [Path("etc_heif/arrow.heic"), Path("etc_heif/nokia/alpha_3_2.heic"), Path("etc_heif/cat.hif")]
 
 Benchmark code A
-----------------
+^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -27,7 +30,7 @@ Benchmark code A
     benchmark.pedantic(open_heif_file, iterations=2, rounds=30, warmup_rounds=1)
 
 Benchmark code B
-----------------
+^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -41,7 +44,7 @@ Benchmark code B
     benchmark.pedantic(load_thumbnails, iterations=2, rounds=30, warmup_rounds=1)
 
 Benchmark code C
-----------------
+^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -54,7 +57,7 @@ Benchmark code C
     benchmark.pedantic(load_image, iterations=1, rounds=30, warmup_rounds=1)
 
 Results
--------
+^^^^^^^
 
 +-------------------------------+--------------+----------------+
 | Benchmark                     | CPython 3.10 | PyPy 3.8 7.3.9 |
@@ -81,7 +84,7 @@ Results
 Reference: :py:attr:`~pillow_heif._options.PyLibHeifOptions.ctx_in_memory`
 
 Conclusion
-----------
+^^^^^^^^^^
 
 After optimizations it became faster from 1% to 17%, depending on operations types.
 If you only decode main image you barely notice this changes,
@@ -93,16 +96,16 @@ Decoding of small images, what we test here by decoding thumbnails, gives us ``3
 Decoding of big images becomes faster by 5%, after we switch to ``ctx_mem`` = ``True``.
 
 Encoding benchmarks
-===================
+-------------------
 
-Comparing 0.2.5 and 0.3.0 on CPython 3.10
+Comparing 0.2.x and 0.3.x on CPython 3.10
 
 .. code-block:: python
 
     DATASET = [Path("rgb8_512_512_1_2.heic"), Path("etc_heif/nokia/alpha_3_2.heic"), Path("rgb10_639_480_1_3.heic")]
 
 Benchmark code A
-----------------
+^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -115,7 +118,7 @@ Benchmark code A
     benchmark.pedantic(save_heif_file, iterations=1, rounds=40, warmup_rounds=1)
 
 Benchmark code B
-----------------
+^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -127,14 +130,14 @@ Benchmark code B
 
     benchmark.pedantic(pillow_save_heif, iterations=1, rounds=40, warmup_rounds=1)
 
-+-------------------------------+----------+----------+
-| Benchmark                     |   0.2.5  |   0.3.0  |
-+===============================+==========+==========+
-| **A** `HeiFile` mem_ctx=False |  1.81 s  |  1.79 s  |
-+-------------------------------+----------+----------+
-| **A** `HeiFile` mem_ctx=True  |  1.80 s  |  1.78 s  |
-+-------------------------------+----------+----------+
-| **B** `Pillow` mem_ctx=False  |  1.92 s  |  1.90 s  |
-+-------------------------------+----------+----------+
-| **B** `Pillow` mem_ctx=True   |  1.91 s  |  1.89 s  |
-+-------------------------------+----------+----------+
++-------------------------------+--------------+----------------+
+| Benchmark                     | 0.2.5        | 0.3.0          |
++===============================+==============+================+
+| **A** `HeiFile` mem_ctx=False | 1.81 s       | 1.79 s         |
++-------------------------------+--------------+----------------+
+| **A** `HeiFile` mem_ctx=True  | 1.80 s       | 1.78 s         |
++-------------------------------+--------------+----------------+
+| **B** `Pillow` mem_ctx=False  | 1.92 s       | 1.90 s         |
++-------------------------------+--------------+----------------+
+| **B** `Pillow` mem_ctx=True   | 1.91 s       | 1.89 s         |
++-------------------------------+--------------+----------------+
