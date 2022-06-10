@@ -21,8 +21,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Minor usage fixes.
-- Speed optimizations.
+- (HeifImagePlugin) - `save` bug, when first frame was saved instead of current.
+- Minor usage fixes and optimizations.
 
 ## [0.2.5 - 2022-05-30]
 
