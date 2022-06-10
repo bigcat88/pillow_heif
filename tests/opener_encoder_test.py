@@ -79,6 +79,9 @@ def test_gif():
     out_heic = BytesIO()
     gif_pillow.save(out_heic, format="HEIF")
     imagehash.compare_hashes([gif_pillow, out_heic], hash_type="dhash")
+    # save second gif frame
+    ImageSequence.Iterator(gif_pillow)[1].save(out_heic, format="HEIF")
+    imagehash.compare_hashes([gif_pillow, out_heic], hash_type="dhash")
     # convert all frames of gif(pillow_heif does not skip identical frames and saves all frames like in source)
     out_all_heic = BytesIO()
     gif_pillow.save(out_all_heic, format="HEIF", save_all=True, quality=80)

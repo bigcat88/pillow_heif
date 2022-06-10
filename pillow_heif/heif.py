@@ -542,47 +542,52 @@ class HeifFile:
         :param load_one: should be only one frame loaded. Default=``False``
         :param ignore_primary: force ``PrimaryImage=False`` flag to all added images."""
 
-        for frame in ImageSequence.Iterator(pil_image):
-            if frame.width > 0 and frame.height > 0:
-                additional_info = {}
-                supported_info_keys = (
-                    "exif",
-                    "xmp",
-                    "metadata",
-                    "primary",
-                    "icc_profile",
-                    "icc_profile_type",
-                    "nclx_profile",
-                )
-                for k in supported_info_keys:
-                    if k in frame.info:
-                        additional_info[k] = frame.info[k]
-                if ignore_primary:
-                    additional_info["primary"] = False
-                if "xmp" not in additional_info and "XML:com.adobe.xmp" in frame.info:
-                    additional_info["xmp"] = frame.info["XML:com.adobe.xmp"]
-                if "xmp" in additional_info and isinstance(additional_info["xmp"], str):
-                    additional_info["xmp"] = additional_info["xmp"].encode("utf-8")
-                original_orientation = set_orientation(additional_info)
-                if frame.mode == "P":
-                    mode = "RGBA" if frame.info.get("transparency") else "RGB"
-                    frame = frame.convert(mode=mode)
-                elif frame.mode == "LA":
-                    frame = frame.convert(mode="RGBA")
-                elif frame.mode == "L":
-                    frame = frame.convert(mode="RGB")
-
-                if original_orientation is not None and original_orientation != 1:
-                    frame = ImageOps.exif_transpose(frame)
-                # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?
-                _bit_depth = 8
-                added_image = self._add_frombytes(
-                    _bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info}
-                )
-                added_image.copy_thumbnails(frame.info.get("thumbnails", []), **kwargs)
-                if load_one:
-                    break
+        if load_one:
+            self.__add_frame_from_pillow(pil_image, ignore_primary, **kwargs)
+        else:
+            for frame in ImageSequence.Iterator(pil_image):
+                self.__add_frame_from_pillow(frame, ignore_primary, **kwargs)
         return self
+
+    def __add_frame_from_pillow(self, frame: Image.Image, ignore_primary: bool, **kwargs) -> None:
+        if frame.width <= 0 or frame.height <= 0:
+            return
+        additional_info = {}
+        supported_info_keys = (
+            "exif",
+            "xmp",
+            "metadata",
+            "primary",
+            "icc_profile",
+            "icc_profile_type",
+            "nclx_profile",
+        )
+        for k in supported_info_keys:
+            if k in frame.info:
+                additional_info[k] = frame.info[k]
+        if ignore_primary:
+            additional_info["primary"] = False
+        if "xmp" not in additional_info and "XML:com.adobe.xmp" in frame.info:
+            additional_info["xmp"] = frame.info["XML:com.adobe.xmp"]
+        if "xmp" in additional_info and isinstance(additional_info["xmp"], str):
+            additional_info["xmp"] = additional_info["xmp"].encode("utf-8")
+        original_orientation = set_orientation(additional_info)
+        if frame.mode == "P":
+            mode = "RGBA" if frame.info.get("transparency") else "RGB"
+            frame = frame.convert(mode=mode)
+        elif frame.mode == "LA":
+            frame = frame.convert(mode="RGBA")
+        elif frame.mode == "L":
+            frame = frame.convert(mode="RGB")
+
+        if original_orientation is not None and original_orientation != 1:
+            frame = ImageOps.exif_transpose(frame)
+        # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?
+        _bit_depth = 8
+        added_image = self._add_frombytes(
+            _bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info}
+        )
+        added_image.copy_thumbnails(frame.info.get("thumbnails", []), **kwargs)
 
     def add_from_heif(self, heif_image, load_one=False, ignore_primary=True, **kwargs):
         """Add image(s) to container.
