@@ -37,7 +37,7 @@ def test_zero(size: tuple):
         im.save(out_heif, format="HEIF")
 
 
-@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow > 8.3")
+@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 def test_jpeg_to_heic_with_orientation():
     jpeg_pillow = Image.open(Path("images/jpeg_gif_png/pug_90_flipped.jpeg"))
     out_heic = BytesIO()
@@ -49,7 +49,7 @@ def test_jpeg_to_heic_with_orientation():
     imagehash.compare_hashes([jpeg_pillow, out_jpeg], hash_type="dhash", hash_size=8, max_difference=1)
 
 
-@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow > 8.3")
+@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 def test_png_xmp_orientation():
     png_pillow = Image.open(Path("images/jpeg_gif_png/xmp_tags_orientation.png"))
     out_heic = BytesIO()
