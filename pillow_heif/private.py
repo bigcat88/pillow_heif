@@ -12,7 +12,7 @@ from .error import check_libheif_error
 
 
 # from dataclasses import dataclass
-# @dataclass                # Avalaible from Python 3.7
+# @dataclass                # Available from Python 3.7
 class HeifCtxAsDict:  # noqa # pylint: disable=too-few-public-methods
     """Representation of one image"""
 

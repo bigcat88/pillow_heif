@@ -390,14 +390,12 @@ class HeifFile:
 
     .. note:: To get empty container to fill it later, create a class without parameters."""
 
-    images: List[HeifImage] = []
-    """List of images in container."""
-
     def __init__(
         self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict] = None, img_ids: List[int] = None, main_id: int = None
     ):
         if heif_ctx is None:
             heif_ctx = HeifCtxAsDict(0, "", (0, 0), None)
+        self.images: List[HeifImage] = []
         self.mimetype = heif_ctx.get_mimetype() if isinstance(heif_ctx, LibHeifCtx) else ""
         if img_ids:
             for img_id in img_ids:

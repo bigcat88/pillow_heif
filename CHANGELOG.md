@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1 - 2022-0x-xx]
+
+### Added
+
+- (Heif) - `HeifFile` gets `images: List[HeifImage]` and alternative method of changing order of images by editing it.
+
+### Changed
+
+- Updated docs.
+
+### Fixed
+
 ## [0.3.0 - 2022-06-11]
 
 ### Added
