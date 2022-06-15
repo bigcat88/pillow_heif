@@ -188,3 +188,24 @@ def test_exif_overwriting():
             assert exif_data[0x0132] == new_date_time == exif_data[0xC71B]
         else:
             assert not exif_data.get(0xC71B, None)
+
+
+def test_info_changing():
+    image = Image.open(Path("images/rgb8_128_128_2_1.heic"))
+    assert image.info["primary"]
+    assert image.info["exif"]
+    image.info["primary"] = False
+    image.info["exif"] = None
+    image.seek(1)
+    assert not image.info["primary"]
+    assert image.info["exif"]
+    image.info["primary"] = True
+    image.info["exif"] = None
+    out_buf = BytesIO()
+    image.save(out_buf, format="HEIF", save_all=True)
+    image = Image.open(out_buf)
+    assert not image.info["primary"]
+    assert image.info["exif"] is None
+    image.seek(1)
+    assert image.info["primary"]
+    assert image.info["exif"] is None

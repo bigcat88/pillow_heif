@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.1 - 2022-0x-xx]
+## [0.3.1 - 2022-06-xx]
 
 ### Added
 
@@ -13,6 +13,9 @@ All notable changes to this project will be documented in this file.
 - Updated docs.
 
 ### Fixed
+
+- (HeifImagePlugin) Again fixing image order, for Pillow plugin it was not fixed fully in 0.3.0.
+- Optimizing code.
 
 ## [0.3.0 - 2022-06-11]
 

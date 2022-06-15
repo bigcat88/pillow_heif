@@ -122,14 +122,11 @@ def test_open_images(image_path):
     pillow_image.verify()
     # Here we must check verify, but currently verify just loads thumbnails...
     images_count = len([_ for _ in ImageSequence.Iterator(pillow_image)])
-    _last_img_id = -1
     for i, image in enumerate(ImageSequence.Iterator(pillow_image)):
         assert image.info
         assert image.custom_mimetype in ("image/heic", "image/heif", "image/heif-sequence", "image/avif")
         if "icc_profile" in image.info and len(image.info["icc_profile"]) > 0:
             ImageCms.getOpenProfile(BytesIO(pillow_image.info["icc_profile"]))
-        assert image.info["img_id"] != _last_img_id
-        _last_img_id = image.info["img_id"]
         collect()
         assert len(ImageSequence.Iterator(pillow_image)[i].tobytes())
         for thumb in ImageSequence.Iterator(pillow_image)[i].info["thumbnails"]:
@@ -157,6 +154,15 @@ def test_xmp_tags():
     assert isinstance(heif_pillow.info["xmp"], bytes)
     assert getxmp(heif_file.info["xmp"])
     assert isinstance(heif_file.info["xmp"], bytes)
+
+
+def test_image_order():
+    img = Image.open(Path("images/etc_heif/nokia/alpha.heic"))
+    assert not img.info["primary"]
+    img.seek(1)
+    assert not img.info["primary"]
+    img.seek(2)
+    assert img.info["primary"]
 
 
 def test_truncated_fail():
