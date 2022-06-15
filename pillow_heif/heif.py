@@ -230,7 +230,7 @@ class HeifThumbnail(HeifImageBase):
         return referenced if isinstance(referenced, HeifImage) else None
 
     def clone_no_data(self):
-        """Used only when encoding an image."""
+        """Private. For use only when encoding an image."""
 
         heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, self.size, None, stride=0)
         return HeifThumbnail(heif_ctx, heif_ctx)
@@ -280,8 +280,8 @@ class HeifImage(HeifImageBase):
         _bytes = f"{len(self.data)} bytes" if self._img_data else "no"
         return (
             f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
-            f"with id = {self.info['img_id']}, {len(self.thumbnails)} thumbnails "
-            f"and with {_bytes} image data>"
+            f"with id = {self.info['img_id']}, {len(self.thumbnails)} thumbnails. "
+            f"{_bytes} image data>"
         )
 
     def load(self):
@@ -395,11 +395,11 @@ class HeifFile:
     ):
         if heif_ctx is None:
             heif_ctx = HeifCtxAsDict(0, "", (0, 0), None)
-        self._images: List[HeifImage] = []
+        self.images: List[HeifImage] = []
         self.mimetype = heif_ctx.get_mimetype() if isinstance(heif_ctx, LibHeifCtx) else ""
         if img_ids:
             for img_id in img_ids:
-                self._images.append(HeifImage(img_id, heif_ctx, img_id == main_id))
+                self.images.append(HeifImage(img_id, heif_ctx, img_id == main_id))
 
     @property
     def original_bit_depth(self):
@@ -408,7 +408,7 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].original_bit_depth
+        return self.images[self.primary_index()].original_bit_depth
 
     @property
     def bit_depth(self):
@@ -417,7 +417,7 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].bit_depth
+        return self.images[self.primary_index()].bit_depth
 
     @property
     def size(self):
@@ -426,7 +426,7 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].size
+        return self.images[self.primary_index()].size
 
     @property
     def mode(self):
@@ -435,7 +435,7 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].mode
+        return self.images[self.primary_index()].mode
 
     @property
     def data(self):
@@ -444,7 +444,7 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].data
+        return self.images[self.primary_index()].data
 
     @property
     def stride(self):
@@ -453,7 +453,7 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].stride
+        return self.images[self.primary_index()].stride
 
     @property
     def chroma(self):
@@ -462,7 +462,7 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].chroma
+        return self.images[self.primary_index()].chroma
 
     @property
     def color(self):
@@ -471,7 +471,7 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].color
+        return self.images[self.primary_index()].color
 
     @property
     def has_alpha(self):
@@ -480,7 +480,7 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].has_alpha
+        return self.images[self.primary_index()].has_alpha
 
     @property
     def info(self):
@@ -488,7 +488,7 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].info
+        return self.images[self.primary_index()].info
 
     @property
     def thumbnails(self):
@@ -496,13 +496,13 @@ class HeifFile:
 
         :exception IndexError: If there is no images."""
 
-        return self._images[self.primary_index()].thumbnails
+        return self.images[self.primary_index()].thumbnails
 
     def primary_index(self, image_list=None) -> int:
         """Returns index of the ``PrimaryImage`` in the container."""
 
         if image_list is None:
-            image_list = self._images
+            image_list = self.images
         i = 0
         for index, _ in enumerate(image_list):
             if _.info["primary"]:
@@ -527,13 +527,13 @@ class HeifFile:
             for img in self:
                 img.load()
         else:
-            self._images[self.primary_index()].load()
+            self.images[self.primary_index()].load()
         return self
 
     def scale(self, width: int, height: int) -> None:
         """Scale primary image in the container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
 
-        self._images[self.primary_index()].scale(width, height)
+        self.images[self.primary_index()].scale(width, height)
 
     def add_from_pillow(self, pil_image: Image.Image, load_one=False, ignore_primary=True, **kwargs):
         """Add image(s) to container.
@@ -625,7 +625,7 @@ class HeifFile:
 
         :returns: None."""
 
-        for img in self._images:
+        for img in self.images:
             img.add_thumbnails(boxes)
 
     def save(self, fp, **kwargs) -> None:
@@ -662,8 +662,8 @@ class HeifFile:
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
         save_all = kwargs.get("save_all", True)
         images_to_append = kwargs.get("append_images", [])
-        append_one_image = not self._images and not save_all
-        images_to_save = self._images + self.__heif_images_from(images_to_append, append_one_image)
+        append_one_image = not self.images and not save_all
+        images_to_save = self.images + self.__heif_images_from(images_to_append, append_one_image)
         if not save_all:
             images_to_save = images_to_save[:1]
         if not images_to_save:
@@ -691,28 +691,28 @@ class HeifFile:
         return f"<{self.__class__.__name__} with {len(self)} images: {[str(i) for i in self]}>"
 
     def __len__(self):
-        return len(self._images)
+        return len(self.images)
 
     def __iter__(self):
-        for _ in self._images:
+        for _ in self.images:
             yield _
 
     def __getitem__(self, index):
-        if index < 0 or index >= len(self._images):
+        if index < 0 or index >= len(self.images):
             raise IndexError(f"invalid image index: {index}")
-        return self._images[index]
+        return self.images[index]
 
     def __delitem__(self, key):
-        if key < 0 or key >= len(self._images):
+        if key < 0 or key >= len(self.images):
             raise IndexError(f"invalid image index: {key}")
-        del self._images[key]
+        del self.images[key]
 
     def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
-        __ids = [i.info["img_id"] for i in self._images] + [0]
+        __ids = [i.info["img_id"] for i in self.images] + [0]
         __new_id = 2 + max(__ids)
         __heif_ctx = HeifCtxAsDict(bit_depth, mode, size, data, **kwargs)
         added_image = HeifImage(__new_id, __heif_ctx)
-        self._images.append(added_image)
+        self.images.append(added_image)
         return added_image
 
     @staticmethod
