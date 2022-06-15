@@ -17,6 +17,7 @@ Pillow-Heif documentation!
    options.rst
    reference/index.rst
    encoding.rst
+   cooking-heif-file.rst
    v0.3-order-of-images.rst
    workaround-orientation.rst
    benchmarks.rst

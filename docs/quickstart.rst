@@ -56,7 +56,8 @@ With call to :py:func:`pillow_heif.options()`
 Advanced usage
 **************
 
-For usage without Pillow plugin as a base, look at examples started with ``reader_``
+For usage without Pillow plugin as a base, look at: :ref:`cooking_heif_file`
+and to examples started with ``reader_``.
 
 For using it as a Pillow plugin, refer to Pillow's documentation:
 `Pillow Tutorial <https://pillow.readthedocs.io/en/stable/handbook/tutorial.html>`_
