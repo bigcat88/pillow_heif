@@ -130,6 +130,9 @@ Benchmark code B
 
     benchmark.pedantic(pillow_save_heif, iterations=1, rounds=40, warmup_rounds=1)
 
+Results
+^^^^^^^
+
 +-------------------------------+--------------+----------------+
 | Benchmark                     | 0.2.5        | 0.3.0          |
 +===============================+==============+================+
@@ -141,3 +144,98 @@ Benchmark code B
 +-------------------------------+--------------+----------------+
 | **B** `Pillow` mem_ctx=True   | 1.91 s       | 1.89 s         |
 +-------------------------------+--------------+----------------+
+
+OS & CPU benchmarks
+-------------------
+
+Version 0.3.0
+
+Member 1: CPython 3.10, M1 Mac Mini(2020).
+
+Member 2: CPython 3.9, i9-10900 Linux Debian.
+
+Member 3: CPython 3.10, i7-9700, Windows 10.
+
+Member 4: CPython 3.10, i7-9700, WSL.
+
+.. note::
+
+    There are different compilers used for Windows - MacOS - Linux builds, so this test did not show real CPU & OS performance.
+    It is more for study and for understanding relative performance between builds.
+    Also x265 encoder use older codebase for MacOS builds, that's why it is so much slower in encoding.
+
+Dataset
+^^^^^^^
+
+Images for dataset available in ``tests/images/etc_heif`` folder.
+
+**iPhone8Plus** - ``arrow.heic``, sample image from Iphone 8 Plus.
+
+**10bit** - ``cat.hif``, 10 bit image taken on Sony camera.
+
+**10bit_to_8bit** - previous image, opened in 8 bit mode.
+
+**with_alpha** - ``nokia/alpha.heic``, three images in a file, last image with alpha channel.
+
+Benchmark code A
+^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    def decode_img(img_path, convert_hdr_to_8bit):
+        _ = read_heif(img_path, convert_hdr_to_8bit=convert_hdr_to_8bit)
+
+
+    @pytest.mark.parametrize("args", (
+            ("etc_heif/cat.hif", False),
+            ("etc_heif/cat.hif", True),
+            ("etc_heif/nokia/alpha.heic", False),
+            ("etc_heif/arrow.heic", False),
+    ), ids=["10bit", "10bit_to_8bit", "with_alpha", "iPhone8Plus"])
+    @pytest.mark.benchmark(group="1:decoding_file")
+    def test_decode(benchmark, args):
+        benchmark.pedantic(decode_img, args=(Path(args[0]), args[1]), iterations=1, rounds=50, warmup_rounds=1)
+
+Benchmark code B
+^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    def encode_img(img_path, convert_hdr_to_8bit):
+        _ = read_heif(img_path, convert_hdr_to_8bit=convert_hdr_to_8bit)
+        out_buf = BytesIO()
+        _.save(out_buf, quality=80)
+
+
+    @pytest.mark.parametrize("args", (
+            ("etc_heif/cat.hif", False),
+            ("etc_heif/cat.hif", True),
+            ("etc_heif/nokia/alpha.heic", False),
+            ("etc_heif/arrow.heic", False),
+    ), ids=["10bit", "10bit_to_8bit", "with_alpha", "iPhone8Plus"])
+    @pytest.mark.benchmark(group="2:encoding_file")
+    def test_encode(benchmark, args):
+        benchmark.pedantic(encode_img, args=(Path(args[0]), args[1]), iterations=1, rounds=50, warmup_rounds=1)
+
+Results
+^^^^^^^
+
++-----------------------+-------------+----------------+----------------+-------------+
+| Benchmark             | Mac Mini M1 | i9-10900_Linux | i7-9700 Win 10 | i7-9700 WSL |
++=======================+=============+================+================+=============+
+| decode[iPhone8Plus]   | 166 ms      | 211 ms         | 604 ms         | 216 ms      |
++-----------------------+-------------+----------------+----------------+-------------+
+| decode[with_alpha]    | 264 ms      | 360 ms         | 514 ms         | 380 ms      |
++-----------------------+-------------+----------------+----------------+-------------+
+| decode[10bit]         | 276 ms      | 392 ms         | 1.36 s         | 398 ms      |
++-----------------------+-------------+----------------+----------------+-------------+
+| decode[10bit_to_8bit] | 290 ms      | 410 ms         | 1.38 s         | 432 ms      |
++-----------------------+-------------+----------------+----------------+-------------+
+| encode[iPhone8Plus]   | 3.87 s      | 2.14 s         | 3.17 s         | 2.72 s      |
++-----------------------+-------------+----------------+----------------+-------------+
+| encode[with_alpha]    | 2.66 s      | 1.85 s         | 2.04 s         | 1.88 s      |
++-----------------------+-------------+----------------+----------------+-------------+
+| encode[10bit]         | 4.70 s      | 2.90 s         | 4.48 s         | 3.35 s      |
++-----------------------+-------------+----------------+----------------+-------------+
+| encode[10bit_to_8bit] | 5.27 s      | 3.16 s         | 4.92 s         | 3.80 s      |
++-----------------------+-------------+----------------+----------------+-------------+
