@@ -23,37 +23,42 @@ Python bindings to [libheif](https://github.com/strukturag/libheif) for working 
 Features:
  * Decoding of `8`, `10`, `12` bit HEIF images.
  * Encoding of `8`, `10`, `12` bit HEIF images.
- * `EXIF`, `XMP`, `IPTC` metadata support.
+ * `EXIF`, `XMP`, `IPTC` read & write support.
  * Support of multiple images in one file, e.g **HEIC** files and `PrimaryImage` attribute.
  * HEIF `native thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
  * Includes AVIF(x264) decoder.
 
+## Install
 
-## Example of use as pillow plugin.
+```console
+python3 -m pip install pillow-heif
+```
+
+## Example of use as pillow plugin
 ```python3
 from PIL import Image, ImageSequence
 from pillow_heif import register_heif_opener
 
 register_heif_opener()
 
-image = Image.open('images/input.heic')
+image = Image.open("images/input.heic")
 for i, frame in enumerate(ImageSequence.Iterator(image)):
     rotated = frame.rotate(13)
-    rotated.save(f'rotated_frame{i}.heic', quality=90)
+    rotated.save(f"rotated_frame{i}.heic", quality=90)
 ```
 
 ## Standalone example use
 ```python3
 import pillow_heif
 
-if pillow_heif.is_supported('input.heic'):
-    heif_file = pillow_heif.open_heif('input.heic')
+if pillow_heif.is_supported("input.heic"):
+    heif_file = pillow_heif.open_heif("input.heic")
     for img in heif_file:  # you still can use it without iteration, like before.
         img.scale(1024, 768) # scaling each image in file.
     heif_file.add_thumbnails([768, 512, 256]) # add three new thumbnail boxes.
     # default quality is probably ~77 in x265, set it a bit lower.
-    heif_file.save('output.heic', quality=70, save_all=False) # save_all is True by default.
+    heif_file.save("output.heic", quality=70, save_all=False) # save_all is True by default.
 ```
 
 ## More Information
