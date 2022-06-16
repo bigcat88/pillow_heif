@@ -31,7 +31,7 @@ Features:
 
 ## Install
 
-```bash
+```properties
 python3 -m pip install pillow-heif
 ```
 
