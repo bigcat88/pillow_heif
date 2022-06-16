@@ -23,14 +23,19 @@ Python bindings to [libheif](https://github.com/strukturag/libheif) for working 
 Features:
  * Decoding of `8`, `10`, `12` bit HEIF images.
  * Encoding of `8`, `10`, `12` bit HEIF images.
- * `EXIF`, `XMP`, `IPTC` metadata support.
+ * `EXIF`, `XMP`, `IPTC` read & write support.
  * Support of multiple images in one file, e.g **HEIC** files and `PrimaryImage` attribute.
  * HEIF `native thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
  * Includes AVIF(x264) decoder.
 
+## Install
 
-## Example of use as pillow plugin.
+```bash
+python3 -m pip install pillow-heif
+```
+
+## Example of use as pillow plugin
 ```python3
 from PIL import Image, ImageSequence
 from pillow_heif import register_heif_opener

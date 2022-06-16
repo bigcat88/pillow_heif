@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.1 - 2022-06-xx]
+## [0.3.1 - 2022-06-17]
 
 ### Added
 
 - (Heif) - `HeifFile` gets `images: List[HeifImage]` and alternative method of changing order of images by editing it.
+- (HeifImagePlugin) - `info` image dictionary can be now edited in place and it will be saved for image sequences.
 
 ### Changed
 
