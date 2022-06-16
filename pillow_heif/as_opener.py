@@ -10,7 +10,7 @@ from PIL import Image, ImageFile
 from ._options import options
 from .constants import HeifErrorCode
 from .error import HeifError
-from .heif import HeifFile, HeifImage, is_supported, open_heif
+from .heif import HeifFile, is_supported, open_heif
 from .misc import getxmp, set_orientation
 
 
@@ -23,6 +23,7 @@ class HeifImageFile(ImageFile.ImageFile):
     _close_exclusive_fp_after_loading = False
 
     def __init__(self, *args, **kwargs):
+        self.__frame = 0
         self.heif_file = None
         super().__init__(*args, **kwargs)
 
@@ -33,12 +34,12 @@ class HeifImageFile(ImageFile.ImageFile):
             raise SyntaxError(str(exception)) from None
         self.custom_mimetype = heif_file.mimetype
         self.heif_file = heif_file
-        self._init_from_heif_file(heif_file)
+        self._init_from_heif_file(self.__frame)
         self.tile = []
 
     def load(self):
         if self.heif_file:
-            frame_heif = self._heif_image_by_index(self.tell())
+            frame_heif = self.heif_file[self.tell()]
             self.load_prepare()
             truncated = False
             try:
@@ -69,16 +70,11 @@ class HeifImageFile(ImageFile.ImageFile):
     def seek(self, frame):
         if not self._seek_check(frame):
             return
-        self._init_from_heif_file(self._heif_image_by_index(frame))
+        self.__frame = frame
+        self._init_from_heif_file(frame)
 
     def tell(self):
-        i = 0
-        if self.heif_file:
-            for heif in self.heif_file:
-                if self.info["img_id"] == heif.info["img_id"]:
-                    break
-                i += 1
-        return i
+        return self.__frame
 
     def verify(self) -> None:
         for _ in self.info["thumbnails"]:
@@ -103,18 +99,11 @@ class HeifImageFile(ImageFile.ImageFile):
             raise EOFError("attempt to seek outside sequence")
         return self.tell() != frame
 
-    def _heif_image_by_index(self, index) -> HeifImage:
-        return self.heif_file[index]
-
-    def _init_from_heif_file(self, heif_image) -> None:
-        self._size = heif_image.size
-        self.mode = heif_image.mode
-        for k in ("exif", "xmp", "metadata", "primary", "img_id"):
-            self.info[k] = heif_image.info[k]
-        for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
-            if k in heif_image.info:
-                self.info[k] = heif_image.info[k]
-        self.info["thumbnails"] = heif_image.thumbnails
+    def _init_from_heif_file(self, img_index: int) -> None:
+        self._size = self.heif_file[img_index].size
+        self.mode = self.heif_file[img_index].mode
+        self.info = self.heif_file[img_index].info
+        self.info["thumbnails"] = self.heif_file[img_index].thumbnails
         self.info["original_orientation"] = set_orientation(self.info)
 
 

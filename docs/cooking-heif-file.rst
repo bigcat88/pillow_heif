@@ -75,7 +75,8 @@ Starting from version `0.3.1` all images are in public list, and you can swap th
 Saving images
 -------------
 
-Refer to :py:meth:`~pillow_heif.HeifFile.save` to see what additional parameters is supported.
+Refer to :py:meth:`~pillow_heif.HeifFile.save` to see what additional parameters is supported
+and to :ref:`encoding` for some explanations.
 
 .. code-block:: python
 

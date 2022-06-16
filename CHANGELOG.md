@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1 - 2022-06-17]
+
+### Added
+
+- (Heif) - `HeifFile` gets `images: List[HeifImage]` and alternative method of changing order of images by editing it.
+- (HeifImagePlugin) - `info` image dictionary can be now edited in place and it will be saved for image sequences.
+
+### Changed
+
+- Updated docs.
+
+### Fixed
+
+- (HeifImagePlugin) Again fixing image order, for Pillow plugin it was not fixed fully in 0.3.0.
+- Optimizing code.
+
 ## [0.3.0 - 2022-06-11]
 
 ### Added
