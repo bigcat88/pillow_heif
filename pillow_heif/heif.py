@@ -268,7 +268,6 @@ class HeifImage(HeifImageBase):
             additional_info.update(heif_ctx.additional_info)
         super().__init__(heif_ctx, handle)
         self.info = {
-            "img_id": img_id,
             "exif": _exif,
             "xmp": _xmp,
             "primary": primary,
@@ -280,8 +279,7 @@ class HeifImage(HeifImageBase):
         _bytes = f"{len(self.data)} bytes" if self._img_data else "no"
         return (
             f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
-            f"with id = {self.info['img_id']}, {len(self.thumbnails)} thumbnails. "
-            f"{_bytes} image data>"
+            f"with {_bytes} image data and {len(self.thumbnails)} thumbnails>"
         )
 
     def load(self):
@@ -602,7 +600,6 @@ class HeifFile:
             heif_images = [heif_image]
         for image in heif_images:
             additional_info = image.info.copy()
-            additional_info.pop("img_id", None)
             if ignore_primary:
                 additional_info["primary"] = False
             added_image = self._add_frombytes(
@@ -708,10 +705,8 @@ class HeifFile:
         del self.images[key]
 
     def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
-        __ids = [i.info["img_id"] for i in self.images] + [0]
-        __new_id = 2 + max(__ids)
         __heif_ctx = HeifCtxAsDict(bit_depth, mode, size, data, **kwargs)
-        added_image = HeifImage(__new_id, __heif_ctx)
+        added_image = HeifImage(0, __heif_ctx)
         self.images.append(added_image)
         return added_image
 
