@@ -48,8 +48,11 @@ class HeifImageBase:
         else:
             self._handle = None
             self.size = heif_ctx.size
+            if heif_ctx.mode == "L":
+                self._colorspace = HeifColorspace.MONOCHROME
             if heif_ctx.data:
-                _img = create_image(self.size, self.chroma, self.bit_depth, heif_ctx.data, stride=heif_ctx.stride)
+                chroma_color = (self.chroma, self._colorspace)
+                _img = create_image(self.size, chroma_color, self.bit_depth, heif_ctx.data, heif_ctx.stride)
                 self._img_to_img_data_dict(_img)
 
     @property
@@ -88,10 +91,14 @@ class HeifImageBase:
 
     @property
     def mode(self):
-        """Returns “RGBA” for images with alpha channel, and “RGB” for images without.
+        """Returns “L“ for Greyscale images, “RGBA” for images with alpha channel and “RGB” for other cases.
 
-        :returns: "RGB" or "RGBA" """
+        .. note:: Images with "L" mode currently only possible to get when adding from Pillow.
 
+        :returns: "RGB", "RGBA" or "L" """
+
+        if self.color == HeifColorspace.MONOCHROME:
+            return "L"
         return "RGBA" if self.has_alpha else "RGB"  # noqa
 
     @property
@@ -123,6 +130,8 @@ class HeifImageBase:
 
         :returns: Value from :py:class:`~pillow_heif.HeifChroma`"""
 
+        if self.mode == "L":
+            return HeifChroma.MONOCHROME
         if self.bit_depth <= 8:
             return HeifChroma.INTERLEAVED_RGBA if self.has_alpha else HeifChroma.INTERLEAVED_RGB
         return HeifChroma.INTERLEAVED_RRGGBBAA_BE if self.has_alpha else HeifChroma.INTERLEAVED_RRGGBB_BE
@@ -186,7 +195,8 @@ class HeifImageBase:
 
     def _img_to_img_data_dict(self, heif_img):
         p_stride = ffi.new("int *")
-        p_data = lib.heif_image_get_plane(heif_img, HeifChannel.INTERLEAVED, p_stride)
+        channel = HeifChannel.Y if self.color == HeifColorspace.MONOCHROME else HeifChannel.INTERLEAVED
+        p_data = lib.heif_image_get_plane(heif_img, channel, p_stride)
         stride = p_stride[0]
         data_length = self.size[1] * stride
         data_buffer = ffi.buffer(p_data, data_length)
@@ -575,8 +585,6 @@ class HeifFile:
             frame = frame.convert(mode=mode)
         elif frame.mode == "LA":
             frame = frame.convert(mode="RGBA")
-        elif frame.mode == "L":
-            frame = frame.convert(mode="RGB")
 
         if original_orientation is not None and original_orientation != 1:
             frame = ImageOps.exif_transpose(frame)

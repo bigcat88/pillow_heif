@@ -2,13 +2,20 @@
 Undocumented private functions for other code to look better.
 """
 
-from typing import Union
+from typing import Tuple, Union
 
 from _pillow_heif_cffi import ffi, lib
 
 from ._libheif_ctx import LibHeifCtxWrite
 from .constants import HeifChannel, HeifChroma, HeifColorProfileType, HeifColorspace
 from .error import check_libheif_error
+
+MODE_CHANNELS = {
+    "RGBA": 4,
+    "RGB": 3,
+    "L": 1,
+    "": 0,
+}
 
 
 # from dataclasses import dataclass
@@ -20,7 +27,7 @@ class HeifCtxAsDict:  # noqa # pylint: disable=too-few-public-methods
         stride = kwargs.get("stride", None)
         if stride is None:
             factor = 1 if bit_depth == 8 else 2
-            stride = size[0] * 3 * factor if mode == "RGB" else size[0] * 4 * factor
+            stride = size[0] * MODE_CHANNELS[mode] * factor
         self.bit_depth = bit_depth
         self.mode = mode
         self.size = size
@@ -29,16 +36,18 @@ class HeifCtxAsDict:  # noqa # pylint: disable=too-few-public-methods
         self.additional_info = kwargs.get("add_info", {})
 
 
-def create_image(size: tuple, chroma: HeifChroma, bit_depth: int, data, stride: int, **kwargs):
+def create_image(size: tuple, chroma_color: Tuple[HeifChroma, HeifColorspace], bit_depth: int, data, stride: int):
     width, height = size
+    chroma, color = chroma_color
     p_new_img = ffi.new("struct heif_image **")
-    error = lib.heif_image_create(width, height, kwargs.get("color", HeifColorspace.RGB), chroma, p_new_img)
+    error = lib.heif_image_create(width, height, color, chroma, p_new_img)
     check_libheif_error(error)
     new_img = ffi.gc(p_new_img[0], lib.heif_image_release)
-    error = lib.heif_image_add_plane(new_img, HeifChannel.INTERLEAVED, width, height, bit_depth)
+    channel = HeifChannel.Y if color == HeifColorspace.MONOCHROME else HeifChannel.INTERLEAVED
+    error = lib.heif_image_add_plane(new_img, channel, width, height, bit_depth)
     check_libheif_error(error)
     p_dest_stride = ffi.new("int *")
-    p_data = lib.heif_image_get_plane(new_img, HeifChannel.INTERLEAVED, p_dest_stride)
+    p_data = lib.heif_image_get_plane(new_img, channel, p_dest_stride)
     dest_stride = p_dest_stride[0]
     copy_image_data(p_data, data, dest_stride, stride, height)
     return new_img
