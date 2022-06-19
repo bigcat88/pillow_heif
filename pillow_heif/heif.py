@@ -657,12 +657,7 @@ class HeifFile:
 
         if not options().hevc_enc:
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
-        save_all = kwargs.get("save_all", True)
-        images_to_append = kwargs.get("append_images", [])
-        append_one_image = not self.images and not save_all
-        images_to_save = self.images + self.__heif_images_from(images_to_append, append_one_image)
-        if not save_all:
-            images_to_save = images_to_save[:1]
+        images_to_save = self.__get_images_for_save(self.images, **kwargs)
         if not images_to_save:
             raise ValueError("Cannot write file with no images as HEIF.")
         primary_index = kwargs.get("primary_index", None)
@@ -715,12 +710,11 @@ class HeifFile:
         enc_options = lib.heif_encoding_options_alloc()
         enc_options = ffi.gc(enc_options, lib.heif_encoding_options_free)
         for i, img in enumerate(img_list):
-            new_img = create_image(img.size, img.chroma, img.bit_depth, img.data, stride=img.stride)
-            set_color_profile(new_img, img.info)
-            p_new_img_handle = ffi.new("struct heif_image_handle **")
-            error = lib.heif_context_encode_image(ctx.ctx, new_img, ctx.encoder, enc_options, p_new_img_handle)
+            set_color_profile(img.heif_img, img.info)
+            p_img_handle = ffi.new("struct heif_image_handle **")
+            error = lib.heif_context_encode_image(ctx.ctx, img.heif_img, ctx.encoder, enc_options, p_img_handle)
             check_libheif_error(error)
-            new_img_handle = ffi.gc(p_new_img_handle[0], lib.heif_image_handle_release)
+            new_img_handle = ffi.gc(p_img_handle[0], lib.heif_image_handle_release)
             exif = img.info["exif"]
             xmp = img.info["xmp"]
             if i == primary_index:
@@ -739,7 +733,7 @@ class HeifFile:
                     p_new_thumb_handle = ffi.new("struct heif_image_handle **")
                     error = lib.heif_context_encode_thumbnail(
                         ctx.ctx,
-                        new_img,
+                        img.heif_img,
                         new_img_handle,
                         ctx.encoder,
                         enc_options,
@@ -751,18 +745,21 @@ class HeifFile:
                         lib.heif_image_handle_release(p_new_thumb_handle[0])
 
     @staticmethod
-    def __heif_images_from(images: list, load_one: bool) -> List[HeifImage]:
+    def __get_images_for_save(images: List[HeifImage], **kwargs) -> List[HeifImage]:
         """Accepts list of Union[HeifFile, HeifImage, Image.Image] and returns List[HeifImage]"""
 
+        images_to_save = images + list(kwargs.get("append_images", []))
+        save_one = not kwargs.get("save_all", True)
+        if save_one:
+            images_to_save = images_to_save[:1]
         result = []
-        for img in images:
+        for img in images_to_save:
             if isinstance(img, Image.Image):
-                heif_file = HeifFile().add_from_pillow(img, load_one, thumbs_no_data=True)
+                heif_file = HeifFile().add_from_pillow(img, save_one, thumbs_no_data=True)
             else:
-                heif_file = HeifFile().add_from_heif(img, load_one, thumbs_no_data=True)
+                no_primary = not bool(img in images)
+                heif_file = HeifFile().add_from_heif(img, save_one, no_primary, thumbs_no_data=True)
             result += list(heif_file)
-            if load_one:
-                break
         return result
 
 
