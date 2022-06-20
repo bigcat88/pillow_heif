@@ -143,6 +143,15 @@ def test_LA_color_mode():
     imagehash.compare_hashes([png_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
 
 
+def test_1_color_mode():
+    png_pillow = Image.open(Path("images/jpeg_gif_png/L_color_mode_image.png"))
+    png_pillow = png_pillow.convert(mode="1")
+    out_heic = BytesIO()
+    png_pillow.save(out_heic, format="HEIF", quality=-1, save_all=True)
+    heic_pillow = Image.open(out_heic)
+    imagehash.compare_hashes([png_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
+
+
 def test_append_images():
     heic_pillow = Image.open(Path("images/rgb8_512_512_1_0.heic"))
     heic_pillow2 = Image.open(Path("images/rgb8_150_128_2_1.heic"))

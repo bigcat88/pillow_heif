@@ -585,6 +585,8 @@ class HeifFile:
             frame = frame.convert(mode=mode)
         elif frame.mode == "LA":
             frame = frame.convert(mode="RGBA")
+        elif frame.mode == "1":
+            frame = frame.convert(mode="L")
 
         if original_orientation is not None and original_orientation != 1:
             frame = ImageOps.exif_transpose(frame)
