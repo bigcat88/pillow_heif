@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2 - 2022-0x-xx]
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Saving images with mode=`"1"`
+- Images with mode=`"P"` are now saved natively in `Monochrome` mode(increase speed & decreased required memory and a bit less size)
+- Speed optimization for `save` `append_images` parameter
+- Possible `SEGFAULT` during encoding with some `stride` values.
+
 ## [0.3.1 - 2022-06-17]
 
 ### Added
