@@ -48,8 +48,11 @@ class HeifImageBase:
         else:
             self._handle = None
             self.size = heif_ctx.size
+            if heif_ctx.mode == "L":
+                self._colorspace = HeifColorspace.MONOCHROME
             if heif_ctx.data:
-                _img = create_image(self.size, self.chroma, self.bit_depth, heif_ctx.data, stride=heif_ctx.stride)
+                chroma_color = (self.chroma, self._colorspace)
+                _img = create_image(self.size, chroma_color, self.bit_depth, heif_ctx.data, heif_ctx.stride)
                 self._img_to_img_data_dict(_img)
 
     @property
@@ -88,10 +91,14 @@ class HeifImageBase:
 
     @property
     def mode(self):
-        """Returns “RGBA” for images with alpha channel, and “RGB” for images without.
+        """Returns “L“ for Greyscale images, “RGBA” for images with alpha channel and “RGB” for other cases.
 
-        :returns: "RGB" or "RGBA" """
+        .. note:: Images with "L" mode currently only possible to get from Pillow.
 
+        :returns: "RGB", "RGBA" or "L" """
+
+        if self.color == HeifColorspace.MONOCHROME:
+            return "L"
         return "RGBA" if self.has_alpha else "RGB"  # noqa
 
     @property
@@ -123,6 +130,8 @@ class HeifImageBase:
 
         :returns: Value from :py:class:`~pillow_heif.HeifChroma`"""
 
+        if self.mode == "L":
+            return HeifChroma.MONOCHROME
         if self.bit_depth <= 8:
             return HeifChroma.INTERLEAVED_RGBA if self.has_alpha else HeifChroma.INTERLEAVED_RGB
         return HeifChroma.INTERLEAVED_RRGGBBAA_BE if self.has_alpha else HeifChroma.INTERLEAVED_RRGGBB_BE
@@ -186,7 +195,8 @@ class HeifImageBase:
 
     def _img_to_img_data_dict(self, heif_img):
         p_stride = ffi.new("int *")
-        p_data = lib.heif_image_get_plane(heif_img, HeifChannel.INTERLEAVED, p_stride)
+        channel = HeifChannel.Y if self.color == HeifColorspace.MONOCHROME else HeifChannel.INTERLEAVED
+        p_data = lib.heif_image_get_plane(heif_img, channel, p_stride)
         stride = p_stride[0]
         data_length = self.size[1] * stride
         data_buffer = ffi.buffer(p_data, data_length)
@@ -575,8 +585,8 @@ class HeifFile:
             frame = frame.convert(mode=mode)
         elif frame.mode == "LA":
             frame = frame.convert(mode="RGBA")
-        elif frame.mode == "L":
-            frame = frame.convert(mode="RGB")
+        elif frame.mode == "1":
+            frame = frame.convert(mode="L")
 
         if original_orientation is not None and original_orientation != 1:
             frame = ImageOps.exif_transpose(frame)
@@ -657,12 +667,7 @@ class HeifFile:
 
         if not options().hevc_enc:
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
-        save_all = kwargs.get("save_all", True)
-        images_to_append = kwargs.get("append_images", [])
-        append_one_image = not self.images and not save_all
-        images_to_save = self.images + self.__heif_images_from(images_to_append, append_one_image)
-        if not save_all:
-            images_to_save = images_to_save[:1]
+        images_to_save = self.__get_images_for_save(self.images, **kwargs)
         if not images_to_save:
             raise ValueError("Cannot write file with no images as HEIF.")
         primary_index = kwargs.get("primary_index", None)
@@ -715,12 +720,11 @@ class HeifFile:
         enc_options = lib.heif_encoding_options_alloc()
         enc_options = ffi.gc(enc_options, lib.heif_encoding_options_free)
         for i, img in enumerate(img_list):
-            new_img = create_image(img.size, img.chroma, img.bit_depth, img.data, stride=img.stride)
-            set_color_profile(new_img, img.info)
-            p_new_img_handle = ffi.new("struct heif_image_handle **")
-            error = lib.heif_context_encode_image(ctx.ctx, new_img, ctx.encoder, enc_options, p_new_img_handle)
+            set_color_profile(img.heif_img, img.info)
+            p_img_handle = ffi.new("struct heif_image_handle **")
+            error = lib.heif_context_encode_image(ctx.ctx, img.heif_img, ctx.encoder, enc_options, p_img_handle)
             check_libheif_error(error)
-            new_img_handle = ffi.gc(p_new_img_handle[0], lib.heif_image_handle_release)
+            new_img_handle = ffi.gc(p_img_handle[0], lib.heif_image_handle_release)
             exif = img.info["exif"]
             xmp = img.info["xmp"]
             if i == primary_index:
@@ -739,7 +743,7 @@ class HeifFile:
                     p_new_thumb_handle = ffi.new("struct heif_image_handle **")
                     error = lib.heif_context_encode_thumbnail(
                         ctx.ctx,
-                        new_img,
+                        img.heif_img,
                         new_img_handle,
                         ctx.encoder,
                         enc_options,
@@ -751,18 +755,21 @@ class HeifFile:
                         lib.heif_image_handle_release(p_new_thumb_handle[0])
 
     @staticmethod
-    def __heif_images_from(images: list, load_one: bool) -> List[HeifImage]:
+    def __get_images_for_save(images: List[HeifImage], **kwargs) -> List[HeifImage]:
         """Accepts list of Union[HeifFile, HeifImage, Image.Image] and returns List[HeifImage]"""
 
+        images_to_save = images + list(kwargs.get("append_images", []))
+        save_one = not kwargs.get("save_all", True)
+        if save_one:
+            images_to_save = images_to_save[:1]
         result = []
-        for img in images:
+        for img in images_to_save:
             if isinstance(img, Image.Image):
-                heif_file = HeifFile().add_from_pillow(img, load_one, thumbs_no_data=True)
+                heif_file = HeifFile().add_from_pillow(img, save_one, thumbs_no_data=True)
             else:
-                heif_file = HeifFile().add_from_heif(img, load_one, thumbs_no_data=True)
+                no_primary = not bool(img in images)
+                heif_file = HeifFile().add_from_heif(img, save_one, no_primary, thumbs_no_data=True)
             result += list(heif_file)
-            if load_one:
-                break
         return result
 
 

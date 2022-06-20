@@ -13,6 +13,7 @@ from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
 import pillow_heif.HeifImagePlugin  # noqa
 from pillow_heif import (
+    HeifChroma,
     HeifError,
     HeifFile,
     HeifImage,
@@ -29,7 +30,7 @@ def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail
     def compare_images_fields(heif_image: Union[HeifImage, HeifThumbnail], pillow_image: Image):
         assert heif_image.size == pillow_image.size
         assert heif_image.mode == pillow_image.mode
-        for k in ("exif", "xmp", "metadata"):
+        for k in ("exif", "xmp", "metadata", "primary"):
             if heif_image.info.get(k, None):
                 if isinstance(heif_image.info[k], (bool, int, float, str)):
                     assert heif_image.info[k] == pillow_image.info[k]
@@ -54,6 +55,17 @@ def test_corrupted_open(img_path):
     with pytest.raises(UnidentifiedImageError):
         with open(img_path, "rb") as f:
             Image.open(BytesIO(f.read()))
+
+
+def test_add_L_mode():
+    img = Image.open(Path("images/jpeg_gif_png/L_color_mode_image.png"))
+    img = img.convert(mode="L")
+    heif_file = HeifFile().add_from_pillow(img)
+    assert heif_file.mode == "L"
+    assert heif_file.chroma == HeifChroma.MONOCHROME
+    img2 = heif_file[0].to_pillow()
+    assert img2.mode == "L"
+    assert img.tobytes() == img2.tobytes()
 
 
 @pytest.mark.parametrize("img_path", dataset.MINIMAL_DATASET)
