@@ -30,7 +30,7 @@ def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail
     def compare_images_fields(heif_image: Union[HeifImage, HeifThumbnail], pillow_image: Image):
         assert heif_image.size == pillow_image.size
         assert heif_image.mode == pillow_image.mode
-        for k in ("exif", "xmp", "metadata", "primary"):
+        for k in ("exif", "xmp", "metadata"):
             if heif_image.info.get(k, None):
                 if isinstance(heif_image.info[k], (bool, int, float, str)):
                     assert heif_image.info[k] == pillow_image.info[k]
