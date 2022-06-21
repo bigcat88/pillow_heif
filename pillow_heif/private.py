@@ -58,9 +58,10 @@ def copy_image_data(dest_data, src_data, dest_stride: int, source_stride: int, h
         ffi.memmove(dest_data, src_data, len(src_data))
     else:
         p_source = ffi.from_buffer("uint8_t*", src_data)
-        print(dest_stride, source_stride)
+        stride = min(dest_stride, source_stride)
+        print(dest_stride, source_stride, "->", stride)
         for i in range(height):
-            ffi.memmove(dest_data + dest_stride * i, p_source + source_stride * i, source_stride)
+            ffi.memmove(dest_data + dest_stride * i, p_source + source_stride * i, stride)
 
 
 def read_color_profile(handle) -> dict:
