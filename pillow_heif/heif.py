@@ -249,7 +249,7 @@ class HeifThumbnail(HeifImageBase):
 class HeifImage(HeifImageBase):
     """Class represents one frame in a file."""
 
-    def __init__(self, img_id: int, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict], primary=False):
+    def __init__(self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict], img_id=-1, primary=False):
         additional_info = {}
         if isinstance(heif_ctx, LibHeifCtx):
             p_handle = ffi.new("struct heif_image_handle **")
@@ -368,7 +368,7 @@ class HeifImage(HeifImageBase):
     def copy_thumbnails(self, thumbnails: List[HeifThumbnail], **kwargs):
         """Private. For use only in ``add_from_pillow`` and ``add_from_heif``."""
         for thumb in thumbnails:
-            if kwargs.get("thumbs_no_data", False):
+            if kwargs.get("for_encoding", False):
                 cloned_thumb = thumb.clone_no_data()
             else:
                 cloned_thumb = thumb.clone(ref_original=self)
@@ -407,7 +407,7 @@ class HeifFile:
         self.mimetype = heif_ctx.get_mimetype() if isinstance(heif_ctx, LibHeifCtx) else ""
         if img_ids:
             for img_id in img_ids:
-                self.images.append(HeifImage(img_id, heif_ctx, img_id == main_id))
+                self.images.append(HeifImage(heif_ctx, img_id, img_id == main_id))
 
     @property
     def original_bit_depth(self):
@@ -711,7 +711,7 @@ class HeifFile:
 
     def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
         __heif_ctx = HeifCtxAsDict(bit_depth, mode, size, data, **kwargs)
-        added_image = HeifImage(0, __heif_ctx)
+        added_image = HeifImage(__heif_ctx)
         self.images.append(added_image)
         return added_image
 
@@ -765,10 +765,10 @@ class HeifFile:
         result = []
         for img in images_to_save:
             if isinstance(img, Image.Image):
-                heif_file = HeifFile().add_from_pillow(img, save_one, thumbs_no_data=True)
+                heif_file = HeifFile().add_from_pillow(img, save_one, for_encoding=True)
             else:
                 no_primary = not bool(img in images)
-                heif_file = HeifFile().add_from_heif(img, save_one, no_primary, thumbs_no_data=True)
+                heif_file = HeifFile().add_from_heif(img, save_one, no_primary, for_encoding=True)
             result += list(heif_file)
         return result
 
