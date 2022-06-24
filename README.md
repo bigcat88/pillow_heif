@@ -86,4 +86,4 @@ if pillow_heif.is_supported("input.heic"):
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
-#### **_Versions 0.3.X will be last to support Python 3.6_**
+#### **_Versions 0.4.X will be last to support Python 3.6_**
