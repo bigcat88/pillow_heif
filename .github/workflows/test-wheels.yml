@@ -92,8 +92,12 @@ jobs:
 
       - name: Preparations
         run: |
-          python3 -m pip install pytest piexif pillow cffi numpy pympler defusedxml opencv-python
+          python3 -m pip install pytest piexif pillow cffi numpy pympler defusedxml
           python3 -m pip install --only-binary=:all: pillow_heif
+
+      - name: Install OpenCV for CPython
+        if: ! startsWith(matrix.python-version, "pypy")
+        run: python3 -m pip install opencv-python
 
       - name: Test wheel
         run: cd .. && python3 -m pytest -rs pillow_heif
@@ -120,8 +124,12 @@ jobs:
       - name: Preparations
         run: |
           brew install libjpeg little-cms2
-          python3 -m pip install pytest piexif cffi pillow numpy pympler defusedxml opencv-python
+          python3 -m pip install pytest piexif cffi pillow numpy pympler defusedxml
           python3 -m pip install --only-binary=:all: pillow_heif
+
+      - name: Install OpenCV for CPython
+        if: ! startsWith(matrix.python-version, "pypy")
+        run: python3 -m pip install opencv-python
 
       - name: Test wheel
         run: cd .. && python3 -m pytest -rs pillow_heif
