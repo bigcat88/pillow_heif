@@ -124,7 +124,7 @@ jobs:
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Install OpenCV for CPython
-        if: startsWith(matrix.python-version, "3.")
+        if: startsWith(matrix.python-version, '3.')
         run: python3 -m pip install opencv-python
 
       - name: Test wheel
@@ -156,7 +156,7 @@ jobs:
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Install OpenCV for CPython
-        if: startsWith(matrix.python-version, "3.")
+        if: startsWith(matrix.python-version, '3.')
         run: python3 -m pip install opencv-python
 
       - name: Test wheel
