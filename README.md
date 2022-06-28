@@ -20,6 +20,8 @@
 
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
 
+README for versions `0.2 - 0.3` lives [here](https://github.com/bigcat88/pillow_heif/blob/9d2045111d27ff842678097175c7d95b5f1ec212/README.md).
+
 Features:
  * Decoding of `8`, `10`, `12` bit HEIF images.
  * Encoding of `8`, `10`, `12` bit HEIF images.
@@ -35,20 +37,34 @@ Features:
 python3 -m pip install pillow-heif
 ```
 
-## Example of use as pillow plugin
+## Example of use as a Pillow plugin
 ```python3
 from PIL import Image, ImageSequence
 from pillow_heif import register_heif_opener
 
 register_heif_opener()
 
-image = Image.open("images/input.heic")
+image = Image.open("images/input.heic")  # do whatever need with a Pillow image
 for i, frame in enumerate(ImageSequence.Iterator(image)):
     rotated = frame.rotate(13)
     rotated.save(f"rotated_frame{i}.heic", quality=90)
 ```
 
-## Standalone example use
+## Converting 16 bit PNG to 10 bit HEIF
+```python3
+import cv2
+import pillow_heif
+
+cv_img = cv2.imread("images/jpeg_gif_png/RGBA_16.png", cv2.IMREAD_UNCHANGED)
+heif_file = pillow_heif.from_bytes(
+    mode="BGRA;16",
+    size=(cv_img.shape[1], cv_img.shape[0]),
+    data=bytes(cv_img)
+)
+heif_file.save("RGBA_10bit.heif", quality=-1)
+```
+
+## Scaling and adding thumbnails
 ```python3
 import pillow_heif
 
@@ -56,9 +72,23 @@ if pillow_heif.is_supported("input.heic"):
     heif_file = pillow_heif.open_heif("input.heic")
     for img in heif_file:  # you still can use it without iteration, like before.
         img.scale(1024, 768) # scaling each image in file.
-    heif_file.add_thumbnails([768, 512, 256]) # add three new thumbnail boxes.
+    heif_file.add_thumbnails([768, 512, 256])  # add three new thumbnail boxes.
     # default quality is probably ~77 in x265, set it a bit lower.
     heif_file.save("output.heic", quality=70, save_all=False) # save_all is True by default.
+```
+
+## Accessing image data
+```python3
+# Many libraries does not support `stride`, maybe in next version `numpy.array` will be implemented...
+import pillow_heif
+
+if pillow_heif.is_supported("images/rgb10.heif"):
+    heif_file = pillow_heif.open_heif("images/rgb10.heif", convert_hdr_to_8bit=False)
+    print("image mode:", heif_file.mode)
+    print("image data length:", len(heif_file.data))
+    print("image data stride:", heif_file.stride)
+    heif_file[0].convert_to("RGB;16")  # convert 10 bit image to RGB 16 bit.
+    print("image mode:", heif_file.mode)
 ```
 
 ## More Information
@@ -66,6 +96,7 @@ if pillow_heif.is_supported("input.heic"):
 - [Documentation](https://pillow-heif.readthedocs.io/)
   - [Installation](https://pillow-heif.readthedocs.io/en/latest/installation.html)
   - [Quickstart](https://pillow-heif.readthedocs.io/en/latest/quickstart.html)
+  - [Concepts](https://pillow-heif.readthedocs.io/en/latest/concepts.html)
 - [Contribute](https://github.com/bigcat88/pillow_heif/blob/master/.github/CONTRIBUTING.md)
   - [Discussions](https://github.com/bigcat88/pillow_heif/discussions)
   - [Issues](https://github.com/bigcat88/pillow_heif/issues)
@@ -86,4 +117,4 @@ if pillow_heif.is_supported("input.heic"):
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
-#### **_Versions 0.3.X will be last to support Python 3.6_**
+#### **_Versions 0.5.X will be last to support Python 3.6_**

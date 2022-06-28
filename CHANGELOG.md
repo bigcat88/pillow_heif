@@ -2,7 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.2 - 2022-06-2x]
+## [0.4.0 - 2022-07-0x]
+
+### Added
+
+- (Heif) - `add_from_bytes` method  and `from_bytes` function added. Allows to read 16-bit color images with `OpenCV`(or any other library) and save it as 10 bit HEIF.
+- (Heif) - `convert_to_16bit` method to `HeifImage` to provide an easy way to open 10 or 12 bit images as 16 bit for `OpenCV`(or any other library)
+- (Heif, HeifImagePlugin) - support for saving images from `I`, `I;16`, `BGRA;16`, `BGR;16`, `BGRA`, `BGR` modes.
+
+### Changed
+
+- IMPORTANT!!! `10/12` bit images changed their byte order from `Big Endian` to `Little Endian`. Probably no one still use that API it, but who knows...
+- (Heif) - `HeifFile.chroma` and `HeifFile.color` properties was removed(they were not documented so probably no one will notice this), that info now stored in `mode`.
+- (Heif, HeifImagePlugin) - `mode` for `10`/`12` bits was changed and accepts wider range of values, look here: [Concepts](https://pillow-heif.readthedocs.io/en/latest/concepts.html)
+- Docs was updated to reflect all those changes.
+
+### Fixed
+
+## [0.3.2 - 2022-06-25]
 
 ### Added
 
@@ -10,7 +27,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Saving images with mode=`"1"` in `"L"` mode.
+- Support of saving images with mode=`"1"` in `"L"` mode.
 - Images with mode=`"L"` are now saved natively in `Monochrome` mode(increase speed & decreased required memory and a bit less size)
 - Speed optimization for `save` `append_images` parameter
 - Possible `SEGFAULT` during encoding with some `stride` values.
