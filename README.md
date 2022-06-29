@@ -66,7 +66,7 @@ heif_file.save("RGBA_10bit.heif", quality=-1)
 
 ## Accessing image data
 ```python3
-# Many libraries does not support `stride`, maybe in next versions exporting/importing from/to`numpy array` will be implemented...
+# Many libraries does not support `stride`, maybe in next versions exporting/importing from/to `numpy array` will be implemented...
 import pillow_heif
 
 if pillow_heif.is_supported("images/rgb10.heif"):
@@ -96,7 +96,7 @@ if pillow_heif.is_supported("input.heic"):
 - [Documentation](https://pillow-heif.readthedocs.io/)
   - [Installation](https://pillow-heif.readthedocs.io/en/latest/installation.html)
   - [Pillow plugin](https://pillow-heif.readthedocs.io/en/latest/pillow-plugin.html)
-  - [Using HeifFile](https://pillow-heif.readthedocs.io/en/latest/heif-file.html)             !
+  - [Using HeifFile](https://pillow-heif.readthedocs.io/en/latest/heif-file.html)
   - [Image modes](https://pillow-heif.readthedocs.io/en/latest/image-modes.html)
   - [Options](https://pillow-heif.readthedocs.io/en/latest/options.html)
   - [Encoding](https://pillow-heif.readthedocs.io/en/latest/encoding.html)
