@@ -17,7 +17,7 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
-###**_v0.4.0_**
+### **_v0.4.0_**
 
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
 
@@ -100,7 +100,7 @@ if pillow_heif.is_supported("input.heic"):
   - [Image modes](https://pillow-heif.readthedocs.io/en/latest/image-modes.html)
   - [Options](https://pillow-heif.readthedocs.io/en/latest/options.html)
   - [Encoding](https://pillow-heif.readthedocs.io/en/latest/encoding.html)
-  - [Examples](https://github.com/bigcat88/pillow_heif/tree/master/examples)
+- [Examples](https://github.com/bigcat88/pillow_heif/tree/master/examples)
 - [Contribute](https://github.com/bigcat88/pillow_heif/blob/master/.github/CONTRIBUTING.md)
   - [Discussions](https://github.com/bigcat88/pillow_heif/discussions)
   - [Issues](https://github.com/bigcat88/pillow_heif/issues)
