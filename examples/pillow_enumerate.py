@@ -15,5 +15,5 @@ if __name__ == "__main__":
     for i, frame in enumerate(ImageSequence.Iterator(img)):
         for thumb in img.info["thumbnails"]:
             thumb_img = thumb.to_pillow()
-            thumb_img.show(title=f"Img={i} Thumbnail={thumb.info['thumb_id']}")
+            thumb_img.show(title=f"Thumbnail for img={i}")
         img.show(title=f"Image index={i}")
