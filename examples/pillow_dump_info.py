@@ -2,34 +2,22 @@ import sys
 from io import BytesIO
 
 import piexif
-from PIL import ImageCms
+from PIL import Image, ImageCms, ImageSequence
 
-import pillow_heif
+import pillow_heif.HeifImagePlugin
 
 if __name__ == "__main__":
     file = sys.argv[1]
     # file = "../tests/images/rgb8_128_128_2_1.heic"
     print("Dumping info for file:", file)
-    print("Check result:", pillow_heif.HeifFiletype(pillow_heif.check_heif(file)))
-    print("Supported:", pillow_heif.is_supported(file))
-    print("Mime:", pillow_heif.get_file_mimetype(file))
-    heif_file = pillow_heif.open_heif(file, convert_hdr_to_8bit=False)
-    print("Number of images:", len(heif_file))
-    print("Number of thumbnails:", len(list(heif_file.thumbnails_all())))
+    heif_pillow = Image.open(file)
+    print("Number of images:", len([i for i in ImageSequence.Iterator(heif_pillow)]))
     print("Information about each image:")
-    for image in heif_file:
-        print("\tID:", image.info["img_id"])
-        print("\tDepth:", image.bit_depth)
+    for image in ImageSequence.Iterator(heif_pillow):
+        print("Number of thumbnails:", len(image.info["thumbnails"]))
         print("\tMode:", image.mode)
-        print("\tAlpha:", image.has_alpha)
         print("\tSize:", image.size)
-        __imagine_stride = image.size[0] * 3 if image.mode == "RGB" else image.size[0] * 4
-        if image.bit_depth > 8:
-            __imagine_stride *= 2
-        print("\tImaginable Stride:", __imagine_stride)
-        print("\tReal Stride:", image.stride)
-        print("\tChroma:", image.chroma)
-        print("\tColor:", image.color)
+        print("\tData size:", len(image.tobytes()))
         if image.info.get("icc_profile", None) is not None:
             if len(image.info["icc_profile"]):
                 icc_profile = BytesIO(image.info["icc_profile"])
@@ -59,19 +47,9 @@ if __name__ == "__main__":
                 print("\t\tcontent_type:", block["content_type"])
                 print("\t\tData length:", len(block["data"]))
         print("\tThumbnails:")
-        for thumbnail in image.thumbnails:
-            print("\t\tID:", thumbnail.info["thumb_id"])
-            print("\t\tFor image with index:", thumbnail.info["img_index"])
-            print("\t\tDepth:", thumbnail.bit_depth)
+        for thumbnail in image.info["thumbnails"]:
             print("\t\tMode:", thumbnail.mode)
-            print("\t\tAlpha:", thumbnail.has_alpha)
             print("\t\tSize:", thumbnail.size)
-            __imagine_stride = thumbnail.size[0] * 3 if thumbnail.mode == "RGB" else thumbnail.size[0] * 4
-            if thumbnail.bit_depth > 8:
-                __imagine_stride *= 2
-            print("\t\tImaginable Stride:", __imagine_stride)
-            print("\t\tReal Stride:", thumbnail.stride)
-            print("\t\tChroma:", thumbnail.chroma)
-            print("\t\tColor:", thumbnail.color)
+            print("\t\tData size:", len(thumbnail.data))
             print("")
         print("")

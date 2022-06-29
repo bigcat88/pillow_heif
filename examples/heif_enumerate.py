@@ -10,9 +10,9 @@ if __name__ == "__main__":
     image_path = Path("images/etc_heif/nokia/alpha_3_2.heic")
     heif_image = pillow_heif.open_heif(image_path)
     print(f"number of images in file: {len(heif_image)}")
-    for image in heif_image:
+    for i, image in enumerate(heif_image):
         for thumb in image.thumbnails:
             thumbnail_img = thumb.to_pillow()
-            thumbnail_img.show(title=f"Thumbnail {thumb.info['thumb_id']}")
+            thumbnail_img.show(title=f"Thumbnail for img={i}")
         _img = image.to_pillow()
-        _img.show(title=f"Image {image.info['img_id']}")
+        _img.show(title=f"Image index={i}")
