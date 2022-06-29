@@ -34,8 +34,8 @@ def copy_image_data(dest_data, src_data, dest_stride: int, source_stride: int, h
     else:
         p_source = ffi.from_buffer("uint8_t*", src_data)
         stride = min(dest_stride, source_stride)
-        for i in range(height):
-            ffi.memmove(dest_data + dest_stride * i, p_source + source_stride * i, stride)
+        for i_row in range(height):
+            ffi.memmove(dest_data + dest_stride * i_row, p_source + source_stride * i_row, stride)
 
 
 def convert_i16_to_i10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -44,11 +44,11 @@ def convert_i16_to_i10(dest_data, src_data, dest_stride: int, source_stride: int
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w] = source_row[w] >> 6
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i] = source_row[i] >> 6
 
 
 def convert_bgr16_to_rgb10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -58,13 +58,13 @@ def convert_bgr16_to_rgb10(dest_data, src_data, dest_stride: int, source_stride:
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 3)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 3 + 0] = source_row[w * 3 + 2] >> 6
-            dest_row[w * 3 + 1] = source_row[w * 3 + 1] >> 6
-            dest_row[w * 3 + 2] = source_row[w * 3 + 0] >> 6
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 3 + 0] = source_row[i * 3 + 2] >> 6
+            dest_row[i * 3 + 1] = source_row[i * 3 + 1] >> 6
+            dest_row[i * 3 + 2] = source_row[i * 3 + 0] >> 6
 
 
 def convert_bgra16_to_rgba10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -74,14 +74,14 @@ def convert_bgra16_to_rgba10(dest_data, src_data, dest_stride: int, source_strid
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 4)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 4 + 0] = source_row[w * 4 + 2] >> 6
-            dest_row[w * 4 + 1] = source_row[w * 4 + 1] >> 6
-            dest_row[w * 4 + 2] = source_row[w * 4 + 0] >> 6
-            dest_row[w * 4 + 3] = source_row[w * 4 + 3] >> 6
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 4 + 0] = source_row[i * 4 + 2] >> 6
+            dest_row[i * 4 + 1] = source_row[i * 4 + 1] >> 6
+            dest_row[i * 4 + 2] = source_row[i * 4 + 0] >> 6
+            dest_row[i * 4 + 3] = source_row[i * 4 + 3] >> 6
 
 
 def convert_rgb16_to_rgb10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -91,13 +91,13 @@ def convert_rgb16_to_rgb10(dest_data, src_data, dest_stride: int, source_stride:
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 3)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 3 + 0] = source_row[w * 3 + 0] >> 6
-            dest_row[w * 3 + 1] = source_row[w * 3 + 1] >> 6
-            dest_row[w * 3 + 2] = source_row[w * 3 + 2] >> 6
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 3 + 0] = source_row[i * 3 + 0] >> 6
+            dest_row[i * 3 + 1] = source_row[i * 3 + 1] >> 6
+            dest_row[i * 3 + 2] = source_row[i * 3 + 2] >> 6
 
 
 def convert_rgba16_to_rgba10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -107,14 +107,14 @@ def convert_rgba16_to_rgba10(dest_data, src_data, dest_stride: int, source_strid
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 4)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 4 + 0] = source_row[w * 4 + 0] >> 6
-            dest_row[w * 4 + 1] = source_row[w * 4 + 1] >> 6
-            dest_row[w * 4 + 2] = source_row[w * 4 + 2] >> 6
-            dest_row[w * 4 + 3] = source_row[w * 4 + 3] >> 6
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 4 + 0] = source_row[i * 4 + 0] >> 6
+            dest_row[i * 4 + 1] = source_row[i * 4 + 1] >> 6
+            dest_row[i * 4 + 2] = source_row[i * 4 + 2] >> 6
+            dest_row[i * 4 + 3] = source_row[i * 4 + 3] >> 6
 
 
 def convert_rgba12_to_rgba16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -124,14 +124,14 @@ def convert_rgba12_to_rgba16(dest_data, src_data, dest_stride: int, source_strid
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 4)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 4 + 0] = source_row[w * 4 + 0] << 4
-            dest_row[w * 4 + 1] = source_row[w * 4 + 1] << 4
-            dest_row[w * 4 + 2] = source_row[w * 4 + 2] << 4
-            dest_row[w * 4 + 3] = source_row[w * 4 + 3] << 4
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 4 + 0] = source_row[i * 4 + 0] << 4
+            dest_row[i * 4 + 1] = source_row[i * 4 + 1] << 4
+            dest_row[i * 4 + 2] = source_row[i * 4 + 2] << 4
+            dest_row[i * 4 + 3] = source_row[i * 4 + 3] << 4
 
 
 def convert_rgba12_to_bgra16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -141,14 +141,14 @@ def convert_rgba12_to_bgra16(dest_data, src_data, dest_stride: int, source_strid
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 4)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 4 + 0] = source_row[w * 4 + 2] << 4
-            dest_row[w * 4 + 1] = source_row[w * 4 + 1] << 4
-            dest_row[w * 4 + 2] = source_row[w * 4 + 0] << 4
-            dest_row[w * 4 + 3] = source_row[w * 4 + 3] << 4
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 4 + 0] = source_row[i * 4 + 2] << 4
+            dest_row[i * 4 + 1] = source_row[i * 4 + 1] << 4
+            dest_row[i * 4 + 2] = source_row[i * 4 + 0] << 4
+            dest_row[i * 4 + 3] = source_row[i * 4 + 3] << 4
 
 
 def convert_rgb12_to_rgb16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -158,13 +158,13 @@ def convert_rgb12_to_rgb16(dest_data, src_data, dest_stride: int, source_stride:
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 3)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 3 + 0] = source_row[w * 3 + 0] << 4
-            dest_row[w * 3 + 1] = source_row[w * 3 + 1] << 4
-            dest_row[w * 3 + 2] = source_row[w * 3 + 2] << 4
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 3 + 0] = source_row[i * 3 + 0] << 4
+            dest_row[i * 3 + 1] = source_row[i * 3 + 1] << 4
+            dest_row[i * 3 + 2] = source_row[i * 3 + 2] << 4
 
 
 def convert_rgb12_to_bgr16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -174,13 +174,13 @@ def convert_rgb12_to_bgr16(dest_data, src_data, dest_stride: int, source_stride:
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 3)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 3 + 0] = source_row[w * 3 + 2] << 4
-            dest_row[w * 3 + 1] = source_row[w * 3 + 1] << 4
-            dest_row[w * 3 + 2] = source_row[w * 3 + 0] << 4
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 3 + 0] = source_row[i * 3 + 2] << 4
+            dest_row[i * 3 + 1] = source_row[i * 3 + 1] << 4
+            dest_row[i * 3 + 2] = source_row[i * 3 + 0] << 4
 
 
 def convert_rgba10_to_rgba16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -190,14 +190,14 @@ def convert_rgba10_to_rgba16(dest_data, src_data, dest_stride: int, source_strid
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 4)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 4 + 0] = source_row[w * 4 + 0] << 6
-            dest_row[w * 4 + 1] = source_row[w * 4 + 1] << 6
-            dest_row[w * 4 + 2] = source_row[w * 4 + 2] << 6
-            dest_row[w * 4 + 3] = source_row[w * 4 + 3] << 6
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 4 + 0] = source_row[i * 4 + 0] << 6
+            dest_row[i * 4 + 1] = source_row[i * 4 + 1] << 6
+            dest_row[i * 4 + 2] = source_row[i * 4 + 2] << 6
+            dest_row[i * 4 + 3] = source_row[i * 4 + 3] << 6
 
 
 def convert_rgba10_to_bgra16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -207,14 +207,14 @@ def convert_rgba10_to_bgra16(dest_data, src_data, dest_stride: int, source_strid
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 4)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 4 + 0] = source_row[w * 4 + 2] << 6
-            dest_row[w * 4 + 1] = source_row[w * 4 + 1] << 6
-            dest_row[w * 4 + 2] = source_row[w * 4 + 0] << 6
-            dest_row[w * 4 + 3] = source_row[w * 4 + 3] << 6
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 4 + 0] = source_row[i * 4 + 2] << 6
+            dest_row[i * 4 + 1] = source_row[i * 4 + 1] << 6
+            dest_row[i * 4 + 2] = source_row[i * 4 + 0] << 6
+            dest_row[i * 4 + 3] = source_row[i * 4 + 3] << 6
 
 
 def convert_rgb10_to_rgb16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -224,13 +224,13 @@ def convert_rgb10_to_rgb16(dest_data, src_data, dest_stride: int, source_stride:
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 3)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 3 + 0] = source_row[w * 3 + 0] << 6
-            dest_row[w * 3 + 1] = source_row[w * 3 + 1] << 6
-            dest_row[w * 3 + 2] = source_row[w * 3 + 2] << 6
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 3 + 0] = source_row[i * 3 + 0] << 6
+            dest_row[i * 3 + 1] = source_row[i * 3 + 1] << 6
+            dest_row[i * 3 + 2] = source_row[i * 3 + 2] << 6
 
 
 def convert_rgb10_to_bgr16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -240,13 +240,13 @@ def convert_rgb10_to_bgr16(dest_data, src_data, dest_stride: int, source_stride:
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 3)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 3 + 0] = source_row[w * 3 + 2] << 6
-            dest_row[w * 3 + 1] = source_row[w * 3 + 1] << 6
-            dest_row[w * 3 + 2] = source_row[w * 3 + 0] << 6
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 3 + 0] = source_row[i * 3 + 2] << 6
+            dest_row[i * 3 + 1] = source_row[i * 3 + 1] << 6
+            dest_row[i * 3 + 2] = source_row[i * 3 + 0] << 6
 
 
 def convert_rgba_to_rgba16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -255,14 +255,14 @@ def convert_rgba_to_rgba16(dest_data, src_data, dest_stride: int, source_stride:
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 4)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 4 + 0] = source_row[w * 4 + 0] << 8
-            dest_row[w * 4 + 1] = source_row[w * 4 + 1] << 8
-            dest_row[w * 4 + 2] = source_row[w * 4 + 2] << 8
-            dest_row[w * 4 + 3] = source_row[w * 4 + 3] << 8
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 4 + 0] = source_row[i * 4 + 0] << 8
+            dest_row[i * 4 + 1] = source_row[i * 4 + 1] << 8
+            dest_row[i * 4 + 2] = source_row[i * 4 + 2] << 8
+            dest_row[i * 4 + 3] = source_row[i * 4 + 3] << 8
 
 
 def convert_rgba_to_bgra16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -271,14 +271,14 @@ def convert_rgba_to_bgra16(dest_data, src_data, dest_stride: int, source_stride:
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 4)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 4 + 0] = source_row[w * 4 + 2] << 8
-            dest_row[w * 4 + 1] = source_row[w * 4 + 1] << 8
-            dest_row[w * 4 + 2] = source_row[w * 4 + 0] << 8
-            dest_row[w * 4 + 3] = source_row[w * 4 + 3] << 8
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 4 + 0] = source_row[i * 4 + 2] << 8
+            dest_row[i * 4 + 1] = source_row[i * 4 + 1] << 8
+            dest_row[i * 4 + 2] = source_row[i * 4 + 0] << 8
+            dest_row[i * 4 + 3] = source_row[i * 4 + 3] << 8
 
 
 def convert_rgb_to_rgb16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -287,13 +287,13 @@ def convert_rgb_to_rgb16(dest_data, src_data, dest_stride: int, source_stride: i
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 3)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 3 + 0] = source_row[w * 3 + 0] << 8
-            dest_row[w * 3 + 1] = source_row[w * 3 + 1] << 8
-            dest_row[w * 3 + 2] = source_row[w * 3 + 2] << 8
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 3 + 0] = source_row[i * 3 + 0] << 8
+            dest_row[i * 3 + 1] = source_row[i * 3 + 1] << 8
+            dest_row[i * 3 + 2] = source_row[i * 3 + 2] << 8
 
 
 def convert_rgb_to_bgr16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -302,13 +302,13 @@ def convert_rgb_to_bgr16(dest_data, src_data, dest_stride: int, source_stride: i
     dest_stride = int(dest_stride / 2)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 3)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 3 + 0] = source_row[w * 3 + 2] << 8
-            dest_row[w * 3 + 1] = source_row[w * 3 + 1] << 8
-            dest_row[w * 3 + 2] = source_row[w * 3 + 0] << 8
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 3 + 0] = source_row[i * 3 + 2] << 8
+            dest_row[i * 3 + 1] = source_row[i * 3 + 1] << 8
+            dest_row[i * 3 + 2] = source_row[i * 3 + 0] << 8
 
 
 def convert_between_bgra_and_rgba(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -316,14 +316,14 @@ def convert_between_bgra_and_rgba(dest_data, src_data, dest_stride: int, source_
     p_dest = ffi.cast("uint8_t*", dest_data)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 4)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 4 + 0] = source_row[w * 4 + 2]
-            dest_row[w * 4 + 1] = source_row[w * 4 + 1]
-            dest_row[w * 4 + 2] = source_row[w * 4 + 0]
-            dest_row[w * 4 + 3] = source_row[w * 4 + 3]
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 4 + 0] = source_row[i * 4 + 2]
+            dest_row[i * 4 + 1] = source_row[i * 4 + 1]
+            dest_row[i * 4 + 2] = source_row[i * 4 + 0]
+            dest_row[i * 4 + 3] = source_row[i * 4 + 3]
 
 
 def convert_between_bgr_and_rgb(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -331,13 +331,13 @@ def convert_between_bgr_and_rgb(dest_data, src_data, dest_stride: int, source_st
     p_dest = ffi.cast("uint8_t*", dest_data)
     stride_elements = min(source_stride, dest_stride)
     stride_elements = int(stride_elements / 3)
-    for i in range(height):
-        source_row = p_source + source_stride * i
-        dest_row = p_dest + dest_stride * i
-        for w in range(stride_elements):
-            dest_row[w * 3 + 0] = source_row[w * 3 + 2]
-            dest_row[w * 3 + 1] = source_row[w * 3 + 1]
-            dest_row[w * 3 + 2] = source_row[w * 3 + 0]
+    for i_row in range(height):
+        source_row = p_source + source_stride * i_row
+        dest_row = p_dest + dest_stride * i_row
+        for i in range(stride_elements):
+            dest_row[i * 3 + 0] = source_row[i * 3 + 2]
+            dest_row[i * 3 + 1] = source_row[i * 3 + 1]
+            dest_row[i * 3 + 2] = source_row[i * 3 + 0]
 
 
 MODE_CONVERT = {
