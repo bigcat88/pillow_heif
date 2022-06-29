@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.0 - 2022-07-0x]
+## [0.4.0 - 2022-07-02]
 
 ### Added
 
@@ -12,12 +12,14 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- IMPORTANT!!! `10/12` bit images changed their byte order from `Big Endian` to `Little Endian`. Probably no one still use that API it, but who knows...
+- **IMPORTANT!!!** `10/12` bit images changed their byte order from `Big Endian` to `Little Endian`. Probably no one still use that API, but who knows...
 - (Heif) - `HeifFile.chroma` and `HeifFile.color` properties was removed(they were not documented so probably no one will notice this), that info now stored in `mode`.
-- (Heif, HeifImagePlugin) - `mode` for `10`/`12` bits was changed and accepts wider range of values, look here: [Concepts](https://pillow-heif.readthedocs.io/en/latest/concepts.html)
-- Docs was updated to reflect all those changes.
+- (Heif, HeifImagePlugin) - `mode` for `10`/`12` bits was changed and accepts wider range of values, look [here](https://pillow-heif.readthedocs.io/en/latest/image-modes.html)
+- Docs were `updated` & `rewritten` to reflect all those changes.
 
 ### Fixed
+
+- `Examples` were `fixed` & `rewritten`(were broken for `0.3.1`+ versions).
 
 ## [0.3.2 - 2022-06-25]
 

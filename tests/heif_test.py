@@ -9,8 +9,6 @@ import dataset
 import pytest
 
 from pillow_heif import (
-    HeifChroma,
-    HeifColorspace,
     HeifError,
     HeifErrorCode,
     HeifFile,
@@ -101,8 +99,6 @@ def test_etc():
     assert heif_file.mode == heif_file[0].mode
     assert len(heif_file.data) == len(heif_file[0].data)
     assert heif_file.stride == heif_file[0].stride
-    assert heif_file.chroma == heif_file[0].chroma
-    assert heif_file.color == heif_file[0].color
     assert heif_file.has_alpha == heif_file[0].has_alpha
     assert heif_file.bit_depth == heif_file[0].bit_depth
 
@@ -236,8 +232,8 @@ def test_only_heif_image_reference():
 
 @pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
 def test_all(image_path):
-    def perform_test_all():
-        heif_file = open_heif(image_path)
+    def perform_test_all(convert_hdr_to_8bit: bool) -> bool:
+        heif_file = open_heif(image_path, convert_hdr_to_8bit=convert_hdr_to_8bit)
         assert heif_file.mimetype in (
             "image/heic",
             "image/heif",
@@ -245,40 +241,38 @@ def test_all(image_path):
             "image/heic-sequence",
             "image/heif-sequence",
         )
-        for c, image in enumerate(heif_file):
-            image._heif_ctx.to_8bit = True
-            pass_count = 2 if heif_file.original_bit_depth > 8 else 1
-            for i in range(pass_count):
-                if i == 1:
-                    image._heif_ctx.to_8bit = False
-                    image.unload()
-                assert isinstance(getxmp(image.info["xmp"]), dict)
-                assert min(image.size) > 0
-                assert image.mode == "RGBA" if image.has_alpha else "RGB"
-                assert image.bit_depth >= 8
-                assert image.chroma != HeifChroma.UNDEFINED
-                assert image.color != HeifColorspace.UNDEFINED
-                minimal_stride = image.size[0] * 4 if image.has_alpha else image.size[0] * 3
-                if image.bit_depth > 8:
+        for image in heif_file:
+            assert isinstance(getxmp(image.info["xmp"]), dict)
+            assert min(image.size) > 0
+            assumed_mode = "RGBA" if image.has_alpha else "RGB"
+            if image.bit_depth > 8:
+                assumed_mode += f";{image.bit_depth}"
+            assert image.mode == assumed_mode
+            assert image.bit_depth >= 8
+            minimal_stride = image.size[0] * 4 if image.has_alpha else image.size[0] * 3
+            if image.bit_depth > 8:
+                minimal_stride *= 2
+            assert image.stride >= minimal_stride
+            assert len(image.data) == image.stride * image.size[1]
+            # This will load thumbnails too
+            assert isinstance(image.load(), HeifImage)
+            for thumbnail in image.thumbnails:
+                minimal_stride = thumbnail.size[0] * 4 if thumbnail.has_alpha else thumbnail.size[0] * 3
+                if thumbnail.bit_depth > 8:
                     minimal_stride *= 2
-                assert image.stride >= minimal_stride
-                assert len(image.data) == image.stride * image.size[1]
-                # This will load thumbnails too
-                assert isinstance(image.load(), HeifImage)
-                for thumbnail in image.thumbnails:
-                    minimal_stride = thumbnail.size[0] * 4 if thumbnail.has_alpha else thumbnail.size[0] * 3
-                    if thumbnail.bit_depth > 8:
-                        minimal_stride *= 2
-                    assert thumbnail.stride >= minimal_stride
-                    assert len(thumbnail.data) == thumbnail.stride * thumbnail.size[1]
-                    assert thumbnail.chroma != HeifChroma.UNDEFINED
-                    assert thumbnail.color != HeifColorspace.UNDEFINED
-                    assert isinstance(thumbnail.load(), HeifThumbnail)
+                assert thumbnail.stride >= minimal_stride
+                assert len(thumbnail.data) == thumbnail.stride * thumbnail.size[1]
+                assert isinstance(thumbnail.load(), HeifThumbnail)
+        return heif_file.bit_depth > 8
 
-    perform_test_all()
+    one_more = perform_test_all(False)
+    if one_more:
+        perform_test_all(True)
     try:
         options().ctx_in_memory = False
-        perform_test_all()
+        one_more = perform_test_all(False)
+        if one_more:
+            perform_test_all(True)
     finally:
         options().ctx_in_memory = True
 

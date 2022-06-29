@@ -1,0 +1,154 @@
+Pillow Plugin
+=============
+
+For using it as a Pillow plugin, refer to Pillow's documentation:
+`Pillow Tutorial <https://pillow.readthedocs.io/en/stable/handbook/tutorial.html>`_
+and to examples started with ``pillow_``.
+
+Here are described only some differences and peculiarities.
+
+.. _registering-plugin:
+
+Registering plugin
+******************
+
+There are two ways to register it as a plugin, here are both of them:
+
+Automatic
+"""""""""
+
+.. code-block:: python
+
+    from PIL import Image, ImageFilter
+    from pillow_heif import HeifImagePlugin
+
+    with Image.open("image.heic") as im:
+        im.filter(filter=ImageFilter.BLUR).save("blurred_image.heic")
+
+Manual
+""""""
+
+.. note:: Function :py:func:`~pillow_heif.register_heif_opener` can override default
+    :py:class:`~pillow_heif._options.PyLibHeifOptions` if you needed to.
+
+.. code-block:: python
+
+    from PIL import Image
+    from pillow_heif import register_heif_opener
+
+    register_heif_opener()
+    with Image.open("image.heic") as im:
+        im.rotate(45).save("rotated_image.heic")
+
+Image Modes
+***********
+
+Currently all images are opened in ``RGB`` or ``RGBA`` 8 bit modes.
+There is a restriction in ``libheif`` that we cant check before decoding if an image is ``monochrome`` or not.
+
+See here :ref:`image-modes` for a list of supported modes for saving.
+
+Metadata
+********
+
+Avalaible metadata are stored in ``info`` dictionary as in other Pillow plugins.
+
+Those are:
+``exif``, ``xmp``, ``metadata`` and ``primary``
+
+During saving operation all known metadata in ``info`` dictionary are **saved**.
+So it can be edited in place.
+
+Removing EXIF and XMP information inside ``info`` dictionary:
+
+.. code-block:: python
+
+    image = Image.open(Path("test.heic"))
+    image.info["exif"] = None
+    image.info["xmp"] = None
+    image.save("output.heic")
+
+Removing EXIF and XMP specifying them when calling ``save``:
+
+.. code-block:: python
+
+    image = Image.open(Path("test.heic"))
+    image.save("output.heic", exif=None, xmp=None)
+
+Limitations of second code variant is that when file has multiply images inside,
+setting ``exif`` or ``xmp`` during ``save`` affects only Primary(Main) image and not all images.
+
+To edit metadata of all images in a file just iterate throw all images and change metadata in place.
+
+Here are two ways as an example:
+
+Edit ``info["exif"]`` field of each copy of image:
+
+.. code-block:: python
+
+    heic_pillow = Image.open(Path("test.heic"))
+    output_wo_exif = []
+    for frame in ImageSequence.Iterator(heic_pillow):
+        copied_frame = frame.copy()
+        copied_frame.info["exif"] = None
+        output_wo_exif.append(copied_frame)
+    empty_pillow = Image.new("P", (0, 0))
+    empty_pillow.save("no_exif.heic", save_all=True, append_images=output_wo_exif)
+
+Or editing ``info["exif"]`` in place(from version `0.3.1`):
+
+.. code-block:: python
+
+    heic_pillow = Image.open(Path("test.heic"))
+    for frame in ImageSequence.Iterator(heic_pillow):
+        frame.info["exif"] = None
+    heic_pillow.save("no_exif.heic", save_all=True)
+
+Save operation
+**************
+
+For save operations next extensions are registered: ``.heic``, ``.heif`` and ``.hif``.
+
+Also images can be saved to memory, using ``format`` parameter:
+
+.. code-block:: python
+
+    output_buffer = BytesIO()
+    with Image.open("image.heic") as im:
+        im.save(output_buffer, format="HEIF")
+
+See here :ref:`save-parameters` for additional information.
+
+Changing order of images
+""""""""""""""""""""""""
+
+There is no such easy way to change order as for `HeifFile` usage, but the standard Pillow way to do so looks fine.
+Let's create image where second image will be primary:
+
+.. code-block:: python
+
+    img1 = Image.open(Path("images/jpeg_gif_png/1.png"))
+    img2 = Image.open(Path("images/jpeg_gif_png/2.png"))
+    img3 = Image.open(Path("images/jpeg_gif_png/3.png"))
+    img1.save("1_2P_3.heic", append_images=[img2, img3], save_all=True, primary_index=1, quality=-1)
+
+Now as example lets change primary image in a HEIC file:
+
+.. code-block:: python
+
+    img1 = Image.open(Path("1_2P_3.heic"))
+    img1.save("1_2_3P.heic", save_all=True, primary_index=-1, quality=-1)
+
+.. note::
+
+    As a ``primary`` field are in `info` dictionary, you can change it in a place like with metadata before.
+
+And here is an example how we can change order of images in container:
+
+.. code-block:: python
+
+    src_img = Image.open(Path("1_2_3P.heic"))
+    img3 = ImageSequence.Iterator(src_img)[2].copy()
+    img2 = ImageSequence.Iterator(src_img)[1].copy()
+    img1 = ImageSequence.Iterator(src_img)[0].copy()
+    img3.save("3P_1_2.heic", save_all=True, append_images=[img1, img2], quality=-1)

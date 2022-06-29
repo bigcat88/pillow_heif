@@ -6,7 +6,7 @@ from enum import IntEnum
 
 
 class HeifChroma(IntEnum):
-    """Chroma subsampling definitions. Used in :py:attr:`pillow_heif.HeifImage.chroma`"""
+    """Chroma subsampling definitions."""
 
     UNDEFINED = 99
     """Undefined chroma."""
@@ -33,7 +33,7 @@ class HeifChroma(IntEnum):
 
 
 class HeifColorspace(IntEnum):
-    """Colorspace format of the image. Used in :py:attr:`pillow_heif.HeifImage.color`"""
+    """Colorspace format of the image."""
 
     UNDEFINED = 99
     """Undefined colorspace."""

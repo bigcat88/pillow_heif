@@ -34,6 +34,7 @@ from .heif import (
     HeifThumbnail,
     check,
     check_heif,
+    from_bytes,
     from_pillow,
     is_supported,
     open,

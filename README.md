@@ -17,6 +17,7 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
+###**_v0.4.0_**
 
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
 
@@ -27,12 +28,11 @@ Features:
  * Encoding of `8`, `10`, `12` bit HEIF images.
  * `EXIF`, `XMP`, `IPTC` read & write support.
  * Support of multiple images in one file, e.g **HEIC** files and `PrimaryImage` attribute.
- * HEIF `native thumbnails` support.
+ * HEIF `native thumbnails` support(API for this is still in `alpha` and could be changed).
  * Adding all this features to Pillow in one line of code as a plugin.
  * Includes AVIF(x264) decoder.
 
 ## Install
-
 ```console
 python3 -m pip install pillow-heif
 ```
@@ -50,7 +50,7 @@ for i, frame in enumerate(ImageSequence.Iterator(image)):
     rotated.save(f"rotated_frame{i}.heic", quality=90)
 ```
 
-## Converting 16 bit PNG to 10 bit HEIF
+## 16 bit PNG to 10 bit HEIF using OpenCV
 ```python3
 import cv2
 import pillow_heif
@@ -62,6 +62,20 @@ heif_file = pillow_heif.from_bytes(
     data=bytes(cv_img)
 )
 heif_file.save("RGBA_10bit.heif", quality=-1)
+```
+
+## Accessing image data
+```python3
+# Many libraries does not support `stride`, maybe in next versions exporting/importing from/to`numpy array` will be implemented...
+import pillow_heif
+
+if pillow_heif.is_supported("images/rgb10.heif"):
+    heif_file = pillow_heif.open_heif("images/rgb10.heif", convert_hdr_to_8bit=False)
+    print("image mode:", heif_file[0].mode)
+    print("image data length:", len(heif_file[0].data))
+    print("image data stride:", heif_file[0].stride)
+    heif_file[0].convert_to("RGB;16")  # convert 10 bit image to RGB 16 bit.
+    print("image mode:", heif_file[0].mode)
 ```
 
 ## Scaling and adding thumbnails
@@ -77,26 +91,16 @@ if pillow_heif.is_supported("input.heic"):
     heif_file.save("output.heic", quality=70, save_all=False) # save_all is True by default.
 ```
 
-## Accessing image data
-```python3
-# Many libraries does not support `stride`, maybe in next version `numpy.array` will be implemented...
-import pillow_heif
-
-if pillow_heif.is_supported("images/rgb10.heif"):
-    heif_file = pillow_heif.open_heif("images/rgb10.heif", convert_hdr_to_8bit=False)
-    print("image mode:", heif_file.mode)
-    print("image data length:", len(heif_file.data))
-    print("image data stride:", heif_file.stride)
-    heif_file[0].convert_to("RGB;16")  # convert 10 bit image to RGB 16 bit.
-    print("image mode:", heif_file.mode)
-```
-
 ## More Information
 
 - [Documentation](https://pillow-heif.readthedocs.io/)
   - [Installation](https://pillow-heif.readthedocs.io/en/latest/installation.html)
-  - [Quickstart](https://pillow-heif.readthedocs.io/en/latest/quickstart.html)
-  - [Concepts](https://pillow-heif.readthedocs.io/en/latest/concepts.html)
+  - [Pillow plugin](https://pillow-heif.readthedocs.io/en/latest/pillow-plugin.html)
+  - [Using HeifFile](https://pillow-heif.readthedocs.io/en/latest/heif-file.html)             !
+  - [Image modes](https://pillow-heif.readthedocs.io/en/latest/image-modes.html)
+  - [Options](https://pillow-heif.readthedocs.io/en/latest/options.html)
+  - [Encoding](https://pillow-heif.readthedocs.io/en/latest/encoding.html)
+  - [Examples](https://github.com/bigcat88/pillow_heif/tree/master/examples)
 - [Contribute](https://github.com/bigcat88/pillow_heif/blob/master/.github/CONTRIBUTING.md)
   - [Discussions](https://github.com/bigcat88/pillow_heif/discussions)
   - [Issues](https://github.com/bigcat88/pillow_heif/issues)

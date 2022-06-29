@@ -11,3 +11,4 @@ HeifThumbnail class object
     :members:
 
     .. autoattribute:: size
+    .. autoattribute:: mode

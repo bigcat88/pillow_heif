@@ -3,21 +3,23 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Pillow-Heif documentation!
-=======================================
+Pillow-Heif documentation
+=========================
 
-| Pillow-Heif is a library for reading & writing **HEIF** image files, that can be used as standalone, but mostly as a Pillow's plugin.
+| Pillow-Heif is a library for reading & writing **HEIF** image files.
+| It can be used as a Pillow's plugin or be used as a standalone.
 | As underlying layer it uses `libheif <https://github.com/strukturag/libheif>`_ library via `CFFI <https://cffi.readthedocs.io>`_
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    installation.rst
-   quickstart.rst
+   pillow-plugin.rst
+   heif-file.rst
+   image-modes.rst
    options.rst
-   reference/index.rst
    encoding.rst
-   cooking-heif-file.rst
+   reference/index.rst
    v0.3-order-of-images.rst
    workaround-orientation.rst
    benchmarks.rst

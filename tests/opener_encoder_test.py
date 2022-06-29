@@ -152,6 +152,21 @@ def test_1_color_mode():
     imagehash.compare_hashes([png_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
 
 
+@pytest.mark.parametrize("img_path", ("images/jpeg_gif_png/I_color_mode_image.pgm",))
+# "images/jpeg_gif_png/I_color_mode_image.png"
+# when Pillow will be able to properly convert PNG from "I" mode to "L"(for imagehash) - add to test.
+def test_I_color_modes(img_path):
+    src_pillow = Image.open(Path(img_path))
+    assert src_pillow.mode == "I"
+    for mode in ("I", "I;16", "I;16L"):
+        i_mode_img = src_pillow.convert(mode=mode)
+        out_heic = BytesIO()
+        i_mode_img.save(out_heic, format="HEIF", quality=-1)
+        assert open_heif(out_heic, convert_hdr_to_8bit=False).bit_depth == 10
+        heic_pillow = Image.open(out_heic)
+        imagehash.compare_hashes([src_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=0)
+
+
 def test_append_images():
     heic_pillow = Image.open(Path("images/rgb8_512_512_1_0.heic"))
     heic_pillow2 = Image.open(Path("images/rgb8_150_128_2_1.heic"))
