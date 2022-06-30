@@ -2,8 +2,8 @@ include README.md
 include CHANGELOG.md
 include pyproject.toml
 
-pillow_heif/helpers.c
-pillow_heif/helpers.h
+recursive-include pillow_heif *.c
+recursive-include pillow_heif *.h
 
 graft libheif
 graft tests
