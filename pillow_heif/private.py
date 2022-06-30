@@ -34,16 +34,6 @@ def get_pure_stride(mode: str, width: int):
     return width * MODE_INFO[mode][0] * ceil(MODE_INFO[mode][1] / 8)
 
 
-def copy_image_data(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    if dest_stride == source_stride:
-        ffi.memmove(dest_data, src_data, len(src_data))
-    else:
-        p_source = ffi.from_buffer("uint8_t*", src_data)
-        stride = min(dest_stride, source_stride)
-        for i_row in range(height):
-            ffi.memmove(dest_data + dest_stride * i_row, p_source + source_stride * i_row, stride)
-
-
 def convert_i16_to_i10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
     p_source = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)

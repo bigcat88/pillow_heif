@@ -20,7 +20,6 @@ from .private import (
     MODE_CONVERT,
     MODE_INFO,
     HeifCtxAsDict,
-    copy_image_data,
     get_pure_stride,
     read_color_profile,
     read_metadata,
@@ -234,14 +233,14 @@ class HeifImageBase:
             MODE_CONVERT[self.mode][new_mode](dest_data, src_data, dest_stride, src_stride, height)
             self.mode = new_mode
         else:
-            copy_image_data(dest_data, src_data, dest_stride, src_stride, height)
+            lib.copy_image_data(ffi.from_buffer(src_data), src_stride, dest_data, dest_stride, height)
         return new_img
 
     def _get_pure_data(self):
         new_stride = get_pure_stride(self.mode, self.size[0])
         new_size = new_stride * self.size[1]
         new_data = FFI_DRY_ALLOC("char[]", new_size)
-        lib.get_pure_data(ffi.from_buffer(self.data), self.stride, new_data, new_stride, self.size[1])
+        lib.copy_image_data(ffi.from_buffer(self.data), self.stride, new_data, new_stride, self.size[1])
         return ffi.buffer(new_data, new_size)
 
 
