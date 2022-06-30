@@ -64,9 +64,20 @@ heif_file = pillow_heif.from_bytes(
 heif_file.save("RGBA_10bit.heif", quality=-1)
 ```
 
-## Accessing image data
+## 8/10/12 bit HEIF to 16 bit PNG using OpenCV
 ```python3
-# Many libraries does not support `stride`, maybe in next versions exporting/importing from/to `numpy array` will be implemented...
+import numpy as np
+import cv2
+import pillow_heif
+
+heif_file = pillow_heif.open_heif("images/rgb12.heif", convert_hdr_to_8bit=False)
+heif_file[0].convert_to("BGR;16")
+np_array = np.asarray(heif_file[0])
+cv2.imwrite("rgb16.png", np_array)
+```
+
+## Accessing decoded image data
+```python3
 import pillow_heif
 
 if pillow_heif.is_supported("images/rgb10.heif"):
@@ -76,6 +87,16 @@ if pillow_heif.is_supported("images/rgb10.heif"):
     print("image data stride:", heif_file[0].stride)
     heif_file[0].convert_to("RGB;16")  # convert 10 bit image to RGB 16 bit.
     print("image mode:", heif_file[0].mode)
+```
+
+## Get decoded image data as a Numpy array
+```python3
+import numpy as np
+import pillow_heif
+
+if pillow_heif.is_supported("images/rgb8_512_512_1_0.heic"):
+    heif_file = pillow_heif.open_heif("images/rgb8_512_512_1_0.heic")
+    np_array = np.asarray(heif_file[0])
 ```
 
 ## Scaling and adding thumbnails
