@@ -1,6 +1,7 @@
 # With OpenCV we test BGR, BGRA, BGR;15 and BGRA;16 modes
 
 import os
+import tempfile
 from io import BytesIO
 from pathlib import Path
 
@@ -69,3 +70,28 @@ def test_save_bgra_8bit_color_mode():
     png_pillow = Image.open(Path(image_path))
     heif_pillow = Image.open(out_heic)
     imagehash.compare_hashes([png_pillow, heif_pillow], hash_type="dhash", hash_size=8, max_difference=0)
+
+
+@pytest.mark.parametrize(
+    "img_path",
+    (
+        "images/rgb10.heif",
+        "images/rgba10.heif",
+        "images/rgb12.heif",
+        "images/rgba12.heif",
+    ),
+)
+def test_read_10_12_bit(img_path):
+    import numpy as np
+
+    image_path = Path(img_path)
+    heif_file = open_heif(image_path, convert_hdr_to_8bit=False)
+    heif_file[0].convert_to("BGRA;16" if heif_file[0].has_alpha else "BGR;16")
+    np_array = np.asarray(heif_file[0])
+    tmp_fd, tmp_name = tempfile.mkstemp(suffix=".png")
+    os.close(tmp_fd)
+    try:
+        cv2.imwrite(tmp_name, np_array)
+        imagehash.compare_hashes([tmp_name, image_path], hash_type="dhash", hash_size=8, max_difference=0)
+    finally:
+        os.unlink(tmp_name)

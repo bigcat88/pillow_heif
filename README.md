@@ -71,7 +71,7 @@ import cv2
 import pillow_heif
 
 heif_file = pillow_heif.open_heif("images/rgb12.heif", convert_hdr_to_8bit=False)
-heif_file[0].convert_to("BGR;16")
+heif_file[0].convert_to("BGRA;16" if heif_file[0].has_alpha else "BGR;16")
 np_array = np.asarray(heif_file[0])
 cv2.imwrite("rgb16.png", np_array)
 ```

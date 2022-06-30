@@ -11,6 +11,8 @@ from ._libheif_ctx import LibHeifCtxWrite
 from .constants import HeifChroma, HeifColorProfileType, HeifColorspace
 from .error import check_libheif_error
 
+FFI_DRY_ALLOC = ffi.new_allocator(should_clear_after_alloc=False)
+
 
 # from dataclasses import dataclass
 # @dataclass                # Avalaible from Python 3.7
@@ -20,12 +22,16 @@ class HeifCtxAsDict:  # noqa # pylint: disable=too-few-public-methods
     def __init__(self, mode: str, size: tuple, data, **kwargs):
         stride = kwargs.get("stride", None)
         if stride is None:
-            stride = size[0] * MODE_INFO[mode][0] * ceil(MODE_INFO[mode][1] / 8)
+            stride = get_pure_stride(mode, size[0])
         self.mode = mode
         self.size = size
         self.data = data
         self.stride = stride
         self.additional_info = kwargs.get("add_info", {})
+
+
+def get_pure_stride(mode: str, width: int):
+    return width * MODE_INFO[mode][0] * ceil(MODE_INFO[mode][1] / 8)
 
 
 def copy_image_data(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
@@ -365,30 +371,30 @@ MODE_CONVERT = {
 
 
 MODE_INFO = {
-    # name -> (channels, bits per pixel channel, colorspace, chroma, mode_for_saving)
-    "BGRA;16": (4, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, "RGBA;10"),
-    "BGR;16": (3, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, "RGB;10"),
-    "RGBA;16": (4, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, "RGBA;10"),
-    "RGB;16": (3, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, "RGB;10"),
-    "L;16": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, "L;10"),
-    "I;16": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, "L;10"),
-    "I;16L": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, "L;10"),
-    "RGBA;12": (4, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, None),
-    "RGB;12": (3, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, None),
-    "RGBA;12B": (4, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_BE, None),
-    "RGB;12B": (3, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_BE, None),
-    "L;12": (1, 12, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, None),
-    "RGBA;10": (4, 10, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, None),
-    "RGB;10": (3, 10, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, None),
-    "RGBA;10B": (4, 10, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_BE, None),
-    "RGB;10B": (3, 10, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_BE, None),
-    "L;10": (1, 10, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, None),
-    "RGBA": (4, 8, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RGBA, None),
-    "RGB": (3, 8, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RGB, None),
-    "BGRA": (4, 8, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RGBA, "RGBA"),
-    "BGR": (3, 8, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RGB, "RGB"),
-    "L": (1, 8, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, None),
-    "": (0, 0, HeifColorspace.UNDEFINED, HeifChroma.UNDEFINED, None),
+    # name -> (channels, bits per pixel channel, colorspace, chroma, mode_for_saving, numpy_typestr)
+    "BGRA;16": (4, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, "RGBA;10", "<u2"),
+    "BGR;16": (3, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, "RGB;10", "<u2"),
+    "RGBA;16": (4, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, "RGBA;10", "<u2"),
+    "RGB;16": (3, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, "RGB;10", "<u2"),
+    "L;16": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, "L;10", "<u2"),
+    "I;16": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, "L;10", "<u2"),
+    "I;16L": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, "L;10", "<u2"),
+    "RGBA;12": (4, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, None, "<u2"),
+    "RGB;12": (3, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, None, "<u2"),
+    "RGBA;12B": (4, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_BE, None, ">u2"),
+    "RGB;12B": (3, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_BE, None, ">u2"),
+    "L;12": (1, 12, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, None, "<u2"),
+    "RGBA;10": (4, 10, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, None, "<u2"),
+    "RGB;10": (3, 10, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, None, "<u2"),
+    "RGBA;10B": (4, 10, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_BE, None, ">u2"),
+    "RGB;10B": (3, 10, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_BE, None, ">u2"),
+    "L;10": (1, 10, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, None, "<u2"),
+    "RGBA": (4, 8, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RGBA, None, "|u1"),
+    "RGB": (3, 8, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RGB, None, "|u1"),
+    "BGRA": (4, 8, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RGBA, "RGBA", "|u1"),
+    "BGR": (3, 8, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RGB, "RGB", "|u1"),
+    "L": (1, 8, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, None, "|u1"),
+    "": (0, 0, HeifColorspace.UNDEFINED, HeifChroma.UNDEFINED, None, ""),
 }
 
 

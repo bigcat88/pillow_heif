@@ -93,17 +93,19 @@ Starting from version `0.3.1` all images are in public list, and you can swap th
 Saving images
 -------------
 
-Refer to :py:meth:`~pillow_heif.HeifFile.save` to see what additional parameters is supported
-and to :ref:`encoding` for some explanations.
+Refer to :py:meth:`~pillow_heif.HeifFile.save` to see what additional parameters is supported and to :ref:`encoding`.
 
 .. code-block:: python
 
     heif_file.save("output.heif", quality=-1)
 
+.. _image_data:
+
 Accessing image data
 --------------------
 
-Decoded image data available throw ``data`` property with help of ``stride`` property.
+Decoded image data from ``libheif`` available throw :py:attr:`~pillow_heif.HeifImage.data` property
+with the help of :py:attr:`~pillow_heif.HeifImage.stride` property.
 
 .. code-block:: python
 
@@ -114,3 +116,20 @@ Or you can access each image by index:
 .. code-block:: python
 
     print(len(heif_file[0].data), heif_file[0].stride)
+
+.. note:: Actual size of data returned by ``data`` can be bigger then ``width * height * pixel size``.
+    Use Numpy array to get decoded data without libheif ``padding`` at each row at the end.
+
+Numpy array interface
+---------------------
+
+Next code gets decoded image data as a numpy array(in the same format as ``Pillow`` does):
+
+.. code-block:: python
+
+    heif_file = pillow_heif.open_heif("file.heif")
+    np_array = np.asarray(heif_file[0])
+
+After that you can load it at any library that supports numpy arrays.
+
+.. note:: You can use ``convert_to`` before getting a numpy array to get it in other format.

@@ -23,6 +23,10 @@ ffi.cdef(
 """
 )
 
+with open("pillow_heif/helpers.h", "r", encoding="utf-8") as f:
+    ffi.cdef(f.read())
+
+
 include_dirs = ["/usr/local/include", "/usr/include"]
 library_dirs = ["/usr/local/lib", "/usr/lib", "/lib"]
 
@@ -63,7 +67,8 @@ include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
 ffi.set_source(
     "_pillow_heif_cffi",
     r"""
-     #include "libheif/heif.h"
+    #include "libheif/heif.h"
+    #include "pillow_heif/helpers.c"
     """,
     include_dirs=include_dirs,
     library_dirs=library_dirs,

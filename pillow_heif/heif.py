@@ -16,10 +16,12 @@ from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifFiletype
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, set_orientation
 from .private import (
+    FFI_DRY_ALLOC,
     MODE_CONVERT,
     MODE_INFO,
     HeifCtxAsDict,
     copy_image_data,
+    get_pure_stride,
     read_color_profile,
     read_metadata,
     retrieve_exif,
@@ -102,9 +104,11 @@ class HeifImageBase:
 
     @property
     def data(self):
-        """Decodes image and returns image data.
+        """Decodes image and returns image data from ``libheif``. See :ref:`image_data`
 
-        :returns: ``bytes`` of the decoded image."""
+        .. note:: Actual size of data returned by ``data`` can be bigger then ``width * height * pixel size``.
+
+        :returns: ``bytes`` of the decoded image from ``libheif``."""
 
         self._load_if_not()
         return self._img_data.get("data", None)
@@ -169,6 +173,22 @@ class HeifImageBase:
         if self._handle is not None:
             self._img_data.clear()
 
+    class _ArrayData:  # pylint: disable=too-few-public-methods
+        def __init__(self, new):
+            self.__array_interface__ = new
+
+    def __array__(self, dtype=None):
+        """Numpy array interface support"""
+        import numpy as np  # pylint: disable=import-outside-toplevel
+
+        shape = (self.size[1], self.size[0])
+        if MODE_INFO[self.mode][0] > 1:
+            shape += (MODE_INFO[self.mode][0],)
+        typestr = MODE_INFO[self.mode][5]
+        data = bytes(self._get_pure_data())
+        new = {"shape": shape, "typestr": typestr, "version": 3, "data": data}
+        return np.array(self._ArrayData(new), dtype)  # noqa
+
     def _color(self) -> HeifColorspace:
         return MODE_INFO[self.mode][2]
 
@@ -216,6 +236,13 @@ class HeifImageBase:
         else:
             copy_image_data(dest_data, src_data, dest_stride, src_stride, height)
         return new_img
+
+    def _get_pure_data(self):
+        new_stride = get_pure_stride(self.mode, self.size[0])
+        new_size = new_stride * self.size[1]
+        new_data = FFI_DRY_ALLOC("char[]", new_size)
+        lib.get_pure_data(ffi.from_buffer(self.data), self.stride, new_data, new_stride, self.size[1])
+        return ffi.buffer(new_data, new_size)
 
 
 class HeifThumbnail(HeifImageBase):
