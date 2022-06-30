@@ -11,6 +11,18 @@ void copy_image_data(const uint8_t *in, int in_stride, uint8_t *out, int out_str
             memcpy(out + out_stride * i, in + in_stride * i, out_stride);
 }
 
+void convert_i16_to_i10(const uint16_t *in, int in_stride, uint16_t *out, int out_stride, int n_rows, int stride_elements)
+{
+    uint16_t* in_row = in;
+    uint16_t* out_row = out;
+    for (int i = 0; i < n_rows; i++) {
+        for (int i2 = 0; i2 < stride_elements; i2++)
+            out_row[i2] = in_row[i2] >> 6;
+        in_row += in_stride;
+        out_row += out_stride;
+    }
+}
+
 void convert_rgba_to_rgba16(const uint8_t *in, int in_stride, uint16_t *out, int out_stride, int n_rows, int stride_elements)
 {
     uint8_t* in_row = in;
