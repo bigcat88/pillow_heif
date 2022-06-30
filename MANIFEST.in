@@ -2,6 +2,9 @@ include README.md
 include CHANGELOG.md
 include pyproject.toml
 
+pillow_heif/helpers.c
+pillow_heif/helpers.h
+
 graft libheif
 graft tests
 graft examples
