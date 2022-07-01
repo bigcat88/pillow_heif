@@ -9,6 +9,7 @@ HeifImage class object
     :members:
 
     .. autoattribute:: size
+    .. autoattribute:: mode
 
     .. py:attribute:: info["exif"]
         :type: bytes
@@ -49,5 +50,3 @@ HeifImage class object
 
         A boolean value that specifies whether the image is the main image when the file
         contains more than one image.
-
-        More info can be read here: :ref:`order-of-images` and here :ref:`changing-order-of-images`
