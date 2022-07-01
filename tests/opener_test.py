@@ -13,7 +13,6 @@ from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
 import pillow_heif.HeifImagePlugin  # noqa
 from pillow_heif import (
-    HeifChroma,
     HeifError,
     HeifFile,
     HeifImage,
@@ -59,10 +58,8 @@ def test_corrupted_open(img_path):
 
 def test_add_L_mode():
     img = Image.open(Path("images/jpeg_gif_png/L_color_mode_image.png"))
-    img = img.convert(mode="L")
     heif_file = HeifFile().add_from_pillow(img)
     assert heif_file.mode == "L"
-    assert heif_file.chroma == HeifChroma.MONOCHROME
     img2 = heif_file[0].to_pillow()
     assert img2.mode == "L"
     assert img.tobytes() == img2.tobytes()
