@@ -24,7 +24,9 @@ RUN \
       aom-dev \
       openjpeg-dev \
       nasm \
-      py3-numpy; \
+      py3-numpy \
+      py3-pillow \
+      py3-cffi; \
   elif [ -f /usr/bin/apt ]; then \
     apt-get update && \
     apt-get install -y \
