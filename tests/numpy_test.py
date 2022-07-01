@@ -17,6 +17,7 @@ pillow_heif.register_heif_opener()
 @pytest.mark.parametrize(
     "img_path, modes",
     (
+        ("images/rgba10.heif", ("L", "RGBA")),
         ("images/rgb8_512_512_1_0.heic", ("L", "RGB", "RGBA")),
         ("images/rgb8_150_128_2_1.heic", ("L", "RGB", "RGBA")),
         ("images/jpeg_gif_png/I_color_mode_image.pgm", ("I;16", "L", "RGB", "RGBA")),
