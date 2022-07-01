@@ -16,8 +16,11 @@ from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifFiletype
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, set_orientation
 from .private import (
+    FFI_DRY_ALLOC,
+    MODE_CONVERT,
+    MODE_INFO,
     HeifCtxAsDict,
-    create_image,
+    get_pure_stride,
     read_color_profile,
     read_metadata,
     retrieve_exif,
@@ -35,35 +38,41 @@ class HeifImageBase:
     size: tuple
     """Width and height of the image."""
 
-    def __init__(self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict], handle):
+    mode: str
+    """A string which defines the type and depth of a pixel in the image:
+    `Pillow Modes <https://pillow.readthedocs.io/en/stable/handbook/concepts.html#modes>`_
+    For currently supported modes by Pillow-Heif see :ref:`image-modes`."""
+
+    def __init__(self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict], handle, for_encoding=False):
         self._img_data: Dict[str, Any] = {}
         self._heif_ctx = heif_ctx
-        self._colorspace = HeifColorspace.RGB
         if isinstance(heif_ctx, LibHeifCtx):
             self._handle = ffi.gc(handle, lib.heif_image_handle_release)
             self.size = (
                 lib.heif_image_handle_get_width(self._handle),
                 lib.heif_image_handle_get_height(self._handle),
             )
+            self.mode = "RGBA" if bool(lib.heif_image_handle_has_alpha_channel(self._handle)) else "RGB"
+            bit_depth = 8 if heif_ctx.to_8bit else lib.heif_image_handle_get_luma_bits_per_pixel(self._handle)
+            if bit_depth > 8:
+                self.mode += f";{bit_depth}"
         else:
             self._handle = None
             self.size = heif_ctx.size
-            if heif_ctx.mode == "L":
-                self._colorspace = HeifColorspace.MONOCHROME
+            self.mode = heif_ctx.mode
             if heif_ctx.data:
-                chroma_color = (self.chroma, self._colorspace)
-                _img = create_image(self.size, chroma_color, self.bit_depth, heif_ctx.data, heif_ctx.stride)
+                new_mode = MODE_INFO[self.mode][4] if for_encoding else None
+                _img = self._create_image(heif_ctx.data, heif_ctx.stride, new_mode)
                 self._img_to_img_data_dict(_img)
 
     @property
     def bit_depth(self):
-        """Image channel pixel bit depth. Possible values: 8, 10, 12
+        """Image channel pixel bit depth. Possible values: 8, 10, 12, 16
 
-        .. note:: When ``convert_hdr_to_8bit`` is True, return value will be always ``8``"""
+        .. note:: When ``convert_hdr_to_8bit`` is True, return value will be always ``8`` when
+         image opened from file(e.g. was not created with ``from_pillow`` or ``add_from_*`` functions)."""
 
-        if isinstance(self._heif_ctx, HeifCtxAsDict):
-            return self._heif_ctx.bit_depth
-        return 8 if self._heif_ctx.to_8bit else lib.heif_image_handle_get_luma_bits_per_pixel(self._handle)
+        return MODE_INFO[self.mode][1]
 
     @property
     def original_bit_depth(self):
@@ -85,21 +94,7 @@ class HeifImageBase:
 
         :returns: "True" or "False" """
 
-        if isinstance(self._heif_ctx, LibHeifCtx):
-            return bool(lib.heif_image_handle_has_alpha_channel(self._handle))
-        return self._heif_ctx.mode == "RGBA"
-
-    @property
-    def mode(self):
-        """Returns “L“ for Greyscale images, “RGBA” for images with alpha channel and “RGB” for other cases.
-
-        .. note:: Images with "L" mode currently only possible to get from Pillow.
-
-        :returns: "RGB", "RGBA" or "L" """
-
-        if self.color == HeifColorspace.MONOCHROME:
-            return "L"
-        return "RGBA" if self.has_alpha else "RGB"  # noqa
+        return self.mode.find("A") != -1
 
     @property
     def heif_img(self):
@@ -108,9 +103,11 @@ class HeifImageBase:
 
     @property
     def data(self):
-        """Decodes image and returns image data.
+        """Decodes image and returns image data from ``libheif``. See :ref:`image_data`
 
-        :returns: ``bytes`` of the decoded image."""
+        .. note:: Actual size of data returned by ``data`` can be bigger then ``width * height * pixel size``.
+
+        :returns: ``bytes`` of the decoded image from ``libheif``."""
 
         self._load_if_not()
         return self._img_data.get("data", None)
@@ -124,25 +121,18 @@ class HeifImageBase:
         self._load_if_not()
         return self._img_data.get("stride", None)
 
-    @property
-    def chroma(self):
-        """Chroma subsampling of the image.
+    def convert_to(self, mode: str) -> None:
+        """Decode and convert in place image to specified mode.
 
-        :returns: Value from :py:class:`~pillow_heif.HeifChroma`"""
+        :param mode: for list of supported conversions, see: :ref:`convert_to`
 
-        if self.mode == "L":
-            return HeifChroma.MONOCHROME
-        if self.bit_depth <= 8:
-            return HeifChroma.INTERLEAVED_RGBA if self.has_alpha else HeifChroma.INTERLEAVED_RGB
-        return HeifChroma.INTERLEAVED_RRGGBBAA_BE if self.has_alpha else HeifChroma.INTERLEAVED_RRGGBB_BE
+        :exception KeyError: If conversion between modes is not supported."""
 
-    @property
-    def color(self):
-        """Colorspace used to decode the image.
-
-        :returns: Value from :py:class:`~pillow_heif.HeifColorspace`"""
-
-        return self._colorspace
+        current_stride = self.stride
+        current_data = bytes(self.data)  # copying `data` to bytes so it will not be GC collected.
+        self.unload()
+        _img = self._create_image(current_data, current_stride, mode)
+        self._img_to_img_data_dict(_img)
 
     def to_pillow(self, ignore_thumbnails: bool = False) -> Image.Image:
         """Helper method to create :py:class:`PIL.Image.Image`
@@ -182,6 +172,31 @@ class HeifImageBase:
         if self._handle is not None:
             self._img_data.clear()
 
+    class _ArrayData:  # pylint: disable=too-few-public-methods
+        def __init__(self, new):
+            self.__array_interface__ = new
+
+    def __array__(self, dtype=None):
+        """Numpy array interface support"""
+        import numpy as np  # pylint: disable=import-outside-toplevel
+
+        shape = (self.size[1], self.size[0])
+        if MODE_INFO[self.mode][0] > 1:
+            shape += (MODE_INFO[self.mode][0],)
+        typestr = MODE_INFO[self.mode][5]
+        data = bytes(self._get_pure_data())
+        new = {"shape": shape, "typestr": typestr, "version": 3, "data": data}
+        return np.array(self._ArrayData(new), dtype)  # noqa
+
+    def _color(self) -> HeifColorspace:
+        return MODE_INFO[self.mode][2]
+
+    def _chroma(self) -> HeifChroma:
+        return MODE_INFO[self.mode][3]
+
+    def _channel(self) -> HeifChannel:
+        return HeifChannel.Y if self._color() == HeifColorspace.MONOCHROME else HeifChannel.INTERLEAVED
+
     def _load_if_not(self):
         if self._img_data or self._handle is None:
             return
@@ -189,18 +204,44 @@ class HeifImageBase:
         p_options = ffi.gc(p_options, lib.heif_decoding_options_free)
         p_options.convert_hdr_to_8bit = int(self._heif_ctx.to_8bit)
         p_img = ffi.new("struct heif_image **")
-        check_libheif_error(lib.heif_decode_image(self._handle, p_img, self.color, self.chroma, p_options))
+        check_libheif_error(lib.heif_decode_image(self._handle, p_img, self._color(), self._chroma(), p_options))
         heif_img = ffi.gc(p_img[0], lib.heif_image_release)
         self._img_to_img_data_dict(heif_img)
 
     def _img_to_img_data_dict(self, heif_img):
         p_stride = ffi.new("int *")
-        channel = HeifChannel.Y if self.color == HeifColorspace.MONOCHROME else HeifChannel.INTERLEAVED
-        p_data = lib.heif_image_get_plane(heif_img, channel, p_stride)
+        p_data = lib.heif_image_get_plane(heif_img, self._channel(), p_stride)
         stride = p_stride[0]
         data_length = self.size[1] * stride
         data_buffer = ffi.buffer(p_data, data_length)
         self._img_data.update(img=heif_img, data=data_buffer, stride=stride)
+
+    def _create_image(self, src_data, src_stride: int, new_mode=None):
+        width, height = self.size
+        p_new_img = ffi.new("struct heif_image **")
+        chroma = MODE_INFO[new_mode][3] if new_mode else self._chroma()
+        error = lib.heif_image_create(width, height, self._color(), chroma, p_new_img)
+        check_libheif_error(error)
+        new_img = ffi.gc(p_new_img[0], lib.heif_image_release)
+        depth = MODE_INFO[new_mode][1] if new_mode else self.bit_depth
+        error = lib.heif_image_add_plane(new_img, self._channel(), width, height, depth)
+        check_libheif_error(error)
+        p_dest_stride = ffi.new("int *")
+        dest_data = lib.heif_image_get_plane(new_img, self._channel(), p_dest_stride)
+        dest_stride = p_dest_stride[0]
+        if new_mode and new_mode != self.mode:
+            MODE_CONVERT[self.mode][new_mode](dest_data, src_data, dest_stride, src_stride, height)
+            self.mode = new_mode
+        else:
+            lib.copy_image_data(ffi.from_buffer(src_data), src_stride, dest_data, dest_stride, height)
+        return new_img
+
+    def _get_pure_data(self):
+        new_stride = get_pure_stride(self.mode, self.size[0])
+        new_size = new_stride * self.size[1]
+        new_data = FFI_DRY_ALLOC("char[]", new_size)
+        lib.copy_image_data(ffi.from_buffer(self.data), self.stride, new_data, new_stride, self.size[1])
+        return ffi.buffer(new_data, new_size)
 
 
 class HeifThumbnail(HeifImageBase):
@@ -226,7 +267,7 @@ class HeifThumbnail(HeifImageBase):
         return self.clone()
 
     def clone(self, ref_original=None):
-        heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, self.size, self.data, stride=self.stride)
+        heif_ctx = HeifCtxAsDict(self.mode, self.size, self.data, stride=self.stride)
         return HeifThumbnail(heif_ctx, ref_original if ref_original else heif_ctx)
 
     def get_original(self):
@@ -242,14 +283,14 @@ class HeifThumbnail(HeifImageBase):
     def clone_no_data(self):
         """Private. For use only when encoding an image."""
 
-        heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, self.size, None, stride=0)
+        heif_ctx = HeifCtxAsDict(self.mode, self.size, None, stride=0)
         return HeifThumbnail(heif_ctx, heif_ctx)
 
 
 class HeifImage(HeifImageBase):
-    """Class represents one frame in a file."""
+    """Class represents one frame in a :py:class:`~pillow_heif.HeifFile`"""
 
-    def __init__(self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict], img_id=-1, primary=False):
+    def __init__(self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict], img_id=-1, primary=False, for_encoding=False):
         additional_info = {}
         if isinstance(heif_ctx, LibHeifCtx):
             p_handle = ffi.new("struct heif_image_handle **")
@@ -276,7 +317,7 @@ class HeifImage(HeifImageBase):
             _xmp = None
             additional_info["metadata"] = []
             additional_info.update(heif_ctx.additional_info)
-        super().__init__(heif_ctx, handle)
+        super().__init__(heif_ctx, handle, for_encoding)
         self.info = {
             "exif": _exif,
             "xmp": _xmp,
@@ -307,10 +348,10 @@ class HeifImage(HeifImageBase):
     def scale(self, width: int, height: int):
         """Rescale image by a specific width and height given in parameters.
 
-        .. note:: Image will be scaled in place.
+        .. note:: Image will be scaled in place. Images converted to some specific modes not always can be scaled.
 
         :param width: new image width.
-        :param height: new image height"""
+        :param height: new image height."""
 
         self._load_if_not()
         p_scaled_img = ffi.new("struct heif_image **")
@@ -326,9 +367,11 @@ class HeifImage(HeifImageBase):
     def add_thumbnails(self, boxes: Union[List[int], int]) -> None:
         """Add thumbnail(s) to an image.
 
+        .. note:: Method creates thumbnails without image data, they will be encoded during `save` operation.
+
         :param boxes: int or list of ints determining size of thumbnail(s) to generate for image.
 
-        :returns: None."""
+        :returns: None"""
 
         if isinstance(boxes, list):
             boxes_list = boxes
@@ -350,23 +393,12 @@ class HeifImage(HeifImageBase):
             thumb_width = thumb_width - 1 if (thumb_width & 1) else thumb_width
             if max((thumb_height, thumb_width)) in [max(i.size) for i in self.thumbnails]:
                 continue
-            p_new_thumbnail = ffi.new("struct heif_image **")
-            error = lib.heif_image_scale_image(self.heif_img, p_new_thumbnail, thumb_width, thumb_height, ffi.NULL)
-            check_libheif_error(error)
-            new_thumbnail = ffi.gc(p_new_thumbnail[0], lib.heif_image_release)
-            __size = (
-                lib.heif_image_get_width(new_thumbnail, HeifChannel.INTERLEAVED),
-                lib.heif_image_get_height(new_thumbnail, HeifChannel.INTERLEAVED),
-            )
-            p_dest_stride = ffi.new("int *")
-            p_data = lib.heif_image_get_plane(new_thumbnail, HeifChannel.INTERLEAVED, p_dest_stride)
-            dest_stride = p_dest_stride[0]
-            data = ffi.buffer(p_data, __size[1] * dest_stride)
-            __heif_ctx = HeifCtxAsDict(self.bit_depth, self.mode, __size, data, stride=dest_stride)
+            __heif_ctx = HeifCtxAsDict(self.mode, (thumb_width, thumb_height), None, stride=0)
             self.thumbnails.append(HeifThumbnail(__heif_ctx, self))
 
     def copy_thumbnails(self, thumbnails: List[HeifThumbnail], **kwargs):
         """Private. For use only in ``add_from_pillow`` and ``add_from_heif``."""
+
         for thumb in thumbnails:
             if kwargs.get("for_encoding", False):
                 cloned_thumb = thumb.clone_no_data()
@@ -395,6 +427,7 @@ class HeifFile:
 
     * :py:func:`~pillow_heif.open_heif`
     * :py:func:`~pillow_heif.from_pillow`
+    * :py:func:`~pillow_heif.from_bytes`
 
     .. note:: To get empty container to fill it later, create a class without parameters."""
 
@@ -402,7 +435,7 @@ class HeifFile:
         self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict] = None, img_ids: List[int] = None, main_id: int = None
     ):
         if heif_ctx is None:
-            heif_ctx = HeifCtxAsDict(0, "", (0, 0), None)
+            heif_ctx = HeifCtxAsDict("", (0, 0), None)
         self.images: List[HeifImage] = []
         self.mimetype = heif_ctx.get_mimetype() if isinstance(heif_ctx, LibHeifCtx) else ""
         if img_ids:
@@ -462,24 +495,6 @@ class HeifFile:
         :exception IndexError: If there is no images."""
 
         return self.images[self.primary_index()].stride
-
-    @property
-    def chroma(self):
-        """Points to :py:attr:`~pillow_heif.HeifImage.chroma` property of the
-        primary :py:class:`~pillow_heif.HeifImage` in the container.
-
-        :exception IndexError: If there is no images."""
-
-        return self.images[self.primary_index()].chroma
-
-    @property
-    def color(self):
-        """Points to :py:attr:`~pillow_heif.HeifImage.color` property of the
-        primary :py:class:`~pillow_heif.HeifImage` in the container.
-
-        :exception IndexError: If there is no images."""
-
-        return self.images[self.primary_index()].color
 
     @property
     def has_alpha(self):
@@ -583,17 +598,21 @@ class HeifFile:
         if frame.mode == "P":
             mode = "RGBA" if frame.info.get("transparency") else "RGB"
             frame = frame.convert(mode=mode)
-        elif frame.mode == "LA":
+        elif frame.mode == "LA":  # libheif doesnt not support INTERLEAVED_MONOCHROME mode
             frame = frame.convert(mode="RGBA")
+        elif frame.mode == "I":
+            frame = frame.convert(mode="I;16L")
         elif frame.mode == "1":
             frame = frame.convert(mode="L")
 
         if original_orientation is not None and original_orientation != 1:
             frame = ImageOps.exif_transpose(frame)
-        # check image.bits / pallete.rawmode to detect > 8 bit or maybe something else?
-        _bit_depth = 8
-        added_image = self._add_frombytes(
-            _bit_depth, frame.mode, frame.size, frame.tobytes(), add_info={**additional_info}
+        added_image = self.add_frombytes(
+            frame.mode,
+            frame.size,
+            frame.tobytes(),
+            add_info={**additional_info},
+            for_encoding=kwargs.get("for_encoding", False),
         )
         added_image.copy_thumbnails(frame.info.get("thumbnails", []), **kwargs)
 
@@ -612,13 +631,13 @@ class HeifFile:
             additional_info = image.info.copy()
             if ignore_primary:
                 additional_info["primary"] = False
-            added_image = self._add_frombytes(
-                image.bit_depth,
+            added_image = self.add_frombytes(
                 image.mode,
                 image.size,
                 image.data,
                 stride=image.stride,
                 add_info={**additional_info},
+                for_encoding=kwargs.get("for_encoding", False),
             )
             added_image.copy_thumbnails(image.thumbnails, **kwargs)
             if load_one:
@@ -709,9 +728,19 @@ class HeifFile:
             raise IndexError(f"invalid image index: {key}")
         del self.images[key]
 
-    def _add_frombytes(self, bit_depth: int, mode: str, size: tuple, data, **kwargs):
-        __heif_ctx = HeifCtxAsDict(bit_depth, mode, size, data, **kwargs)
-        added_image = HeifImage(__heif_ctx)
+    def add_frombytes(self, mode: str, size: tuple, data, **kwargs):
+        """Adds image from bytes to container.
+
+        .. note:: Supports ``stride`` value if needed.
+
+        :param mode: `BGR(A);16`, `L;16`, `I;16L`, `RGB(A);12`, `L;12`, `RGB(A);10`, `L;10`, `RGB(A)`, `BGR(A)`, `L`
+        :param size: tuple with ``width`` and ``height`` of image.
+        :param data: bytes object with raw image data.
+
+        :returns: :py:class:`~pillow_heif.HeifImage` object that was appended to HeifFile."""
+
+        for_encoding = kwargs.get("for_encoding", False)
+        added_image = HeifImage(HeifCtxAsDict(mode, size, data, **kwargs), for_encoding=for_encoding)
         self.images.append(added_image)
         return added_image
 
@@ -843,13 +872,29 @@ def read_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
 def from_pillow(pil_image: Image.Image, load_one: bool = False, ignore_primary=True) -> HeifFile:
     """Creates :py:class:`~pillow_heif.HeifFile` from a Pillow Image.
 
-    :param pil_image: Pillow :external:py:class:`~PIL.Image.Image` class
+    :param pil_image: Pillow :external:py:class:`~PIL.Image.Image` class.
     :param load_one: If ``True``, then all frames will be loaded.
     :param ignore_primary: force ``PrimaryImage=False`` flag to all added images.
 
     :returns: An :py:class:`~pillow_heif.HeifFile` object."""
 
     return HeifFile().add_from_pillow(pil_image, load_one, ignore_primary)
+
+
+def from_bytes(mode: str, size: tuple, data, **kwargs) -> HeifFile:
+    """Creates :py:class:`~pillow_heif.HeifFile` from bytes.
+
+    .. note:: Supports ``stride`` value if needed.
+
+    :param mode: `BGR(A);16`, `L;16`, `I;16L`, `RGB(A);12`, `L;12`, `RGB(A);10`, `L;10`, `RGB(A)`, `BGR(A)`, `L`
+    :param size: tuple with ``width`` and ``height`` of image.
+    :param data: bytes object with raw image data.
+
+    :returns: An :py:class:`~pillow_heif.HeifFile` object."""
+
+    _ = HeifFile()
+    _.add_frombytes(mode, size, data, **kwargs)
+    return _
 
 
 # --------------------------------------------------------------------
