@@ -7,8 +7,11 @@ void copy_image_data(const uint8_t *in, int in_stride, uint8_t *out, int out_str
     if (in_stride == out_stride)
         memcpy(out, in, out_stride * n_rows);
     else
+    {
+        int stride_elements = out_stride > in_stride ? in_stride : out_stride;
         for (int i = 0; i < n_rows; i++)
-            memcpy(out + out_stride * i, in + in_stride * i, out_stride);
+            memcpy(out + out_stride * i, in + in_stride * i, stride_elements);
+    }
 }
 
 void convert_i16_to_i10(const uint16_t *in, int in_stride, uint16_t *out, int out_stride, int n_rows, int stride_elements)
