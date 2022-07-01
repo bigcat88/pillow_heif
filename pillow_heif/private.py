@@ -43,208 +43,112 @@ def convert_i16_to_i10(dest_data, src_data, dest_stride: int, source_stride: int
     lib.convert_i16_to_i10(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
 def convert_bgr16_to_rgb10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 3)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 3 + 0] = source_row[i * 3 + 2] >> 6
-            dest_row[i * 3 + 1] = source_row[i * 3 + 1] >> 6
-            dest_row[i * 3 + 2] = source_row[i * 3 + 0] >> 6
+    stride_elements = int(min(source_stride, dest_stride) / 3)
+    lib.convert_bgr16_to_rgb10(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_bgra16_to_rgba10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 4)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 4 + 0] = source_row[i * 4 + 2] >> 6
-            dest_row[i * 4 + 1] = source_row[i * 4 + 1] >> 6
-            dest_row[i * 4 + 2] = source_row[i * 4 + 0] >> 6
-            dest_row[i * 4 + 3] = source_row[i * 4 + 3] >> 6
+    stride_elements = int(min(source_stride, dest_stride) / 4)
+    lib.convert_bgra16_to_rgba10(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgb16_to_rgb10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 3)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 3 + 0] = source_row[i * 3 + 0] >> 6
-            dest_row[i * 3 + 1] = source_row[i * 3 + 1] >> 6
-            dest_row[i * 3 + 2] = source_row[i * 3 + 2] >> 6
+    stride_elements = int(min(source_stride, dest_stride) / 3)
+    lib.convert_rgb16_to_rgb10(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgba16_to_rgba10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 4)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 4 + 0] = source_row[i * 4 + 0] >> 6
-            dest_row[i * 4 + 1] = source_row[i * 4 + 1] >> 6
-            dest_row[i * 4 + 2] = source_row[i * 4 + 2] >> 6
-            dest_row[i * 4 + 3] = source_row[i * 4 + 3] >> 6
+    stride_elements = int(min(source_stride, dest_stride) / 4)
+    lib.convert_rgba16_to_rgba10(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgba12_to_rgba16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 4)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 4 + 0] = source_row[i * 4 + 0] << 4
-            dest_row[i * 4 + 1] = source_row[i * 4 + 1] << 4
-            dest_row[i * 4 + 2] = source_row[i * 4 + 2] << 4
-            dest_row[i * 4 + 3] = source_row[i * 4 + 3] << 4
+    stride_elements = int(min(source_stride, dest_stride) / 4)
+    lib.convert_rgba12_to_rgba16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgba12_to_bgra16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 4)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 4 + 0] = source_row[i * 4 + 2] << 4
-            dest_row[i * 4 + 1] = source_row[i * 4 + 1] << 4
-            dest_row[i * 4 + 2] = source_row[i * 4 + 0] << 4
-            dest_row[i * 4 + 3] = source_row[i * 4 + 3] << 4
+    stride_elements = int(min(source_stride, dest_stride) / 4)
+    lib.convert_rgba12_to_bgra16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgb12_to_rgb16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 3)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 3 + 0] = source_row[i * 3 + 0] << 4
-            dest_row[i * 3 + 1] = source_row[i * 3 + 1] << 4
-            dest_row[i * 3 + 2] = source_row[i * 3 + 2] << 4
+    stride_elements = int(min(source_stride, dest_stride) / 3)
+    lib.convert_rgb12_to_rgb16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgb12_to_bgr16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 3)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 3 + 0] = source_row[i * 3 + 2] << 4
-            dest_row[i * 3 + 1] = source_row[i * 3 + 1] << 4
-            dest_row[i * 3 + 2] = source_row[i * 3 + 0] << 4
+    stride_elements = int(min(source_stride, dest_stride) / 3)
+    lib.convert_rgb12_to_bgr16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgba10_to_rgba16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 4)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 4 + 0] = source_row[i * 4 + 0] << 6
-            dest_row[i * 4 + 1] = source_row[i * 4 + 1] << 6
-            dest_row[i * 4 + 2] = source_row[i * 4 + 2] << 6
-            dest_row[i * 4 + 3] = source_row[i * 4 + 3] << 6
+    stride_elements = int(min(source_stride, dest_stride) / 4)
+    lib.convert_rgba10_to_rgba16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgba10_to_bgra16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 4)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 4 + 0] = source_row[i * 4 + 2] << 6
-            dest_row[i * 4 + 1] = source_row[i * 4 + 1] << 6
-            dest_row[i * 4 + 2] = source_row[i * 4 + 0] << 6
-            dest_row[i * 4 + 3] = source_row[i * 4 + 3] << 6
+    stride_elements = int(min(source_stride, dest_stride) / 4)
+    lib.convert_rgba10_to_bgra16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgb10_to_rgb16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 3)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 3 + 0] = source_row[i * 3 + 0] << 6
-            dest_row[i * 3 + 1] = source_row[i * 3 + 1] << 6
-            dest_row[i * 3 + 2] = source_row[i * 3 + 2] << 6
+    stride_elements = int(min(source_stride, dest_stride) / 3)
+    lib.convert_rgb10_to_rgb16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgb10_to_bgr16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_source = ffi.from_buffer("uint16_t*", src_data)
+    p_src = ffi.from_buffer("uint16_t*", src_data)
     source_stride = int(source_stride / 2)
     p_dest = ffi.cast("uint16_t*", dest_data)
     dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    stride_elements = int(stride_elements / 3)
-    for i_row in range(height):
-        source_row = p_source + source_stride * i_row
-        dest_row = p_dest + dest_stride * i_row
-        for i in range(stride_elements):
-            dest_row[i * 3 + 0] = source_row[i * 3 + 2] << 6
-            dest_row[i * 3 + 1] = source_row[i * 3 + 1] << 6
-            dest_row[i * 3 + 2] = source_row[i * 3 + 0] << 6
-
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    stride_elements = int(min(source_stride, dest_stride) / 3)
+    lib.convert_rgb10_to_bgr16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
 
 
 def convert_rgba_to_rgba16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
