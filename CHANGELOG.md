@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.0 - 2022-07-02]
+## [0.4.0 - 2022-07-03]
 
 ### Added
 
@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - `Examples` were `fixed` & `rewritten`(were broken from `0.3.1`+ versions).
+- `exif` loading in HEIF sequence for `Pillow 9.2+` (https://github.com/python-pillow/Pillow/pull/6335)
 
 ## [0.3.2 - 2022-06-25]
 
