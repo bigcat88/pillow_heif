@@ -72,6 +72,10 @@ class HeifImageFile(ImageFile.ImageFile):
             return
         self.__frame = frame
         self._init_from_heif_file(frame)
+        _exif = getattr(self, "_exif", None)  # Pillow 9.2+ do no reload exif between frames.
+        if _exif is not None:
+            if getattr(_exif, "_loaded", None):
+                _exif._loaded = False  # pylint: disable=protected-access
 
     def tell(self):
         return self.__frame
