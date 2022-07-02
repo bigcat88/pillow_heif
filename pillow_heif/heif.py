@@ -172,21 +172,16 @@ class HeifImageBase:
         if self._handle is not None:
             self._img_data.clear()
 
-    class _ArrayData:  # pylint: disable=too-few-public-methods
-        def __init__(self, new):
-            self.__array_interface__ = new
-
-    def __array__(self, dtype=None):
+    @property
+    def __array_interface__(self):
         """Numpy array interface support"""
-        import numpy as np  # pylint: disable=import-outside-toplevel
 
         shape = (self.size[1], self.size[0])
         if MODE_INFO[self.mode][0] > 1:
             shape += (MODE_INFO[self.mode][0],)
         typestr = MODE_INFO[self.mode][5]
         data = bytes(self._get_pure_data())
-        new = {"shape": shape, "typestr": typestr, "version": 3, "data": data}
-        return np.array(self._ArrayData(new), dtype)  # noqa
+        return {"shape": shape, "typestr": typestr, "version": 3, "data": data}
 
     def _color(self) -> HeifColorspace:
         return MODE_INFO[self.mode][2]
