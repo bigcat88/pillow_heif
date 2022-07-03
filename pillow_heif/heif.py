@@ -62,6 +62,8 @@ class HeifImageBase:
             self.mode = heif_ctx.mode
             if heif_ctx.data:
                 new_mode = MODE_INFO[self.mode][4] if for_encoding else None
+                if isinstance(new_mode, tuple):
+                    new_mode = new_mode[1] if options().save_to_12bit else new_mode[0]
                 _img = self._create_image(heif_ctx.data, heif_ctx.stride, new_mode)
                 self._img_to_img_data_dict(_img)
 
@@ -172,21 +174,16 @@ class HeifImageBase:
         if self._handle is not None:
             self._img_data.clear()
 
-    class _ArrayData:  # pylint: disable=too-few-public-methods
-        def __init__(self, new):
-            self.__array_interface__ = new
-
-    def __array__(self, dtype=None):
+    @property
+    def __array_interface__(self):
         """Numpy array interface support"""
-        import numpy as np  # pylint: disable=import-outside-toplevel
 
         shape = (self.size[1], self.size[0])
         if MODE_INFO[self.mode][0] > 1:
             shape += (MODE_INFO[self.mode][0],)
         typestr = MODE_INFO[self.mode][5]
         data = bytes(self._get_pure_data())
-        new = {"shape": shape, "typestr": typestr, "version": 3, "data": data}
-        return np.array(self._ArrayData(new), dtype)  # noqa
+        return {"shape": shape, "typestr": typestr, "version": 3, "data": data}
 
     def _color(self) -> HeifColorspace:
         return MODE_INFO[self.mode][2]
@@ -229,11 +226,12 @@ class HeifImageBase:
         p_dest_stride = ffi.new("int *")
         dest_data = lib.heif_image_get_plane(new_img, self._channel(), p_dest_stride)
         dest_stride = p_dest_stride[0]
+        src_data = ffi.from_buffer(src_data)
         if new_mode and new_mode != self.mode:
-            MODE_CONVERT[self.mode][new_mode](dest_data, src_data, dest_stride, src_stride, height)
+            MODE_CONVERT[self.mode][new_mode](src_data, src_stride, dest_data, dest_stride, height)
             self.mode = new_mode
         else:
-            lib.copy_image_data(ffi.from_buffer(src_data), src_stride, dest_data, dest_stride, height)
+            lib.copy_image_data(src_data, src_stride, dest_data, dest_stride, height)
         return new_img
 
     def _get_pure_data(self):

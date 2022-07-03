@@ -1,15 +1,16 @@
-# Changelog
+_# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.0 - 2022-07-02]
+## [0.4.0 - 2022-07-04]
 
 ### Added
 
 - (Heif) - Numpy array interface support.
-- (Heif) - `add_from_bytes` method  and `from_bytes` function added. Allows to read 16-bit color images with `OpenCV`(or any other library) and save it as 10 bit HEIF.
+- (Heif) - `add_from_bytes` method  and `from_bytes` function added. Allows to read 16-bit color images with `OpenCV`(or any other library) and save it as 10(12) bit HEIF.
 - (Heif) - `convert_to` method to `HeifImage` to provide an easy way to open 10 or 12 bit images as 16 bit for `OpenCV`(or any other library)
 - (Heif, HeifImagePlugin) - support for saving images from `I`, `I;16`, `BGRA;16`, `BGR;16`, `BGRA`, `BGR` modes.
+- (Heif) - added `save_to_12bit` to `options`, default `False`. Determines to what bitness will be converted 16 bit images during saving.
 
 ### Changed
 
@@ -21,6 +22,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - `Examples` were `fixed` & `rewritten`(were broken from `0.3.1`+ versions).
+- `exif` loading in HEIF sequence for `Pillow 9.2+` (https://github.com/python-pillow/Pillow/pull/6335)
 
 ## [0.3.2 - 2022-06-25]
 
@@ -377,4 +379,4 @@ This will not affect any user code, changes are internal.
 - x265 version=3.5
 - libheif version=1.12.0
 
-### Fixed
+### Fixed_

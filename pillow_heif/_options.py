@@ -89,11 +89,21 @@ class PyLibHeifOptions:
     def ctx_in_memory(self, value):
         self._cfg["ctx_in_memory"] = value
 
+    @property
+    def save_to_12bit(self) -> bool:
+        """Should 16 bit images be saved to 12 bit instead of 10. Default = ``False``"""
+
+        return self._cfg["save_to_12bit"]
+
+    @save_to_12bit.setter
+    def save_to_12bit(self, value):
+        self._cfg["save_to_12bit"] = value
+
     def update(self, **kwargs) -> None:
         """Method for at once update multiply values in config."""
 
         _keys = kwargs.keys()
-        for k in ("avif", "strict", "thumbnails", "quality", "ctx_in_memory"):
+        for k in ("avif", "strict", "thumbnails", "quality", "ctx_in_memory", "save_to_12bit"):
             if k in _keys:
                 setattr(self, k, kwargs[k])
 
@@ -105,6 +115,7 @@ class PyLibHeifOptions:
         self._cfg["thumbnails"] = True
         self._cfg["quality"] = None
         self._cfg["ctx_in_memory"] = True
+        self._cfg["save_to_12bit"] = False
 
 
 CFG_OPTIONS: PyLibHeifOptions = PyLibHeifOptions()

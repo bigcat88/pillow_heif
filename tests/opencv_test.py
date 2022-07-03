@@ -20,30 +20,68 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 register_heif_opener()
 
 
-def test_save_bgr_16bit_color_mode():
+def test_save_bgr_16bit_to_10_bit_color_mode():
     image_path = "images/jpeg_gif_png/RGB_16.png"
     cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
     assert cv_img.shape[2] == 3  # 3 channels(BGR)
     heif_file = from_bytes(mode="BGR;16", size=(cv_img.shape[1], cv_img.shape[0]), data=bytes(cv_img))
     out_heic = BytesIO()
     heif_file.save(out_heic, quality=-1)
-    assert open_heif(out_heic, convert_hdr_to_8bit=False).bit_depth == 10
+    heif_file = open_heif(out_heic, convert_hdr_to_8bit=False)
+    assert heif_file.bit_depth == 10
     png_pillow = Image.open(Path(image_path))
     heif_pillow = Image.open(out_heic)
     imagehash.compare_hashes([png_pillow, heif_pillow], hash_type="dhash", hash_size=8, max_difference=0)
 
 
-def test_save_bgra_16bit_color_mode():
+def test_save_bgr_16bit_to_12_bit_color_mode():
+    try:
+        options().save_to_12bit = True
+        image_path = "images/jpeg_gif_png/RGB_16.png"
+        cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+        assert cv_img.shape[2] == 3  # 3 channels(BGR)
+        heif_file = from_bytes(mode="BGR;16", size=(cv_img.shape[1], cv_img.shape[0]), data=bytes(cv_img))
+        out_heic = BytesIO()
+        heif_file.save(out_heic, quality=-1)
+        heif_file = open_heif(out_heic, convert_hdr_to_8bit=False)
+        assert heif_file.bit_depth == 12
+        png_pillow = Image.open(Path(image_path))
+        heif_pillow = Image.open(out_heic)
+        imagehash.compare_hashes([png_pillow, heif_pillow], hash_type="dhash", hash_size=8, max_difference=0)
+    finally:
+        options().reset()
+
+
+def test_save_bgra_16bit_to_10_bit_color_mode():
     image_path = "images/jpeg_gif_png/RGBA_16.png"
     cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
     assert cv_img.shape[2] == 4  # 4 channels(BGRA)
     heif_file = from_bytes(mode="BGRA;16", size=(cv_img.shape[1], cv_img.shape[0]), data=bytes(cv_img))
     out_heic = BytesIO()
     heif_file.save(out_heic, quality=-1)
-    assert open_heif(out_heic, convert_hdr_to_8bit=False).bit_depth == 10
+    heif_file = open_heif(out_heic, convert_hdr_to_8bit=False)
+    assert heif_file.bit_depth == 10
     png_pillow = Image.open(Path(image_path))
     heif_pillow = Image.open(out_heic)
     imagehash.compare_hashes([png_pillow, heif_pillow], hash_type="dhash", hash_size=8, max_difference=1)
+
+
+def test_save_bgra_16bit_to_12_bit_color_mode():
+    try:
+        options().save_to_12bit = True
+        image_path = "images/jpeg_gif_png/RGBA_16.png"
+        cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+        assert cv_img.shape[2] == 4  # 4 channels(BGRA)
+        heif_file = from_bytes(mode="BGRA;16", size=(cv_img.shape[1], cv_img.shape[0]), data=bytes(cv_img))
+        out_heic = BytesIO()
+        heif_file.save(out_heic, quality=-1)
+        heif_file = open_heif(out_heic, convert_hdr_to_8bit=False)
+        assert heif_file.bit_depth == 12
+        png_pillow = Image.open(Path(image_path))
+        heif_pillow = Image.open(out_heic)
+        imagehash.compare_hashes([png_pillow, heif_pillow], hash_type="dhash", hash_size=8, max_difference=1)
+    finally:
+        options().reset()
 
 
 def test_save_bgr_8bit_color_mode():
