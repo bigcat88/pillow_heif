@@ -83,6 +83,7 @@ def perform_open_to_numpy(iterations, image_path):
         _array = np.asarray(heif_file[0])  # noqa
 
 
+@pytest.mark.skipif(sys.platform.lower() == "win32", reason="requires Unix or macOS")
 def test_open_to_numpy_mem_leaks():
     mem_limit = None
     for i in range(1000):
