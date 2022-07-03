@@ -85,7 +85,7 @@ def perform_open_to_numpy(iterations, image_path):
 
 
 @pytest.mark.skipif(sys.platform.lower() == "win32", reason="requires Unix or macOS")
-@pytest.mark.skipif(machine().find("armv7") == -1, reason="skip on 32 bit arm")
+@pytest.mark.skipif(machine().find("armv7") != -1, reason="skip on 32 bit arm")
 def test_open_to_numpy_mem_leaks():
     mem_limit = None
     for i in range(1000):
