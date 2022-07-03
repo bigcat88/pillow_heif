@@ -34,200 +34,39 @@ def get_pure_stride(mode: str, width: int):
     return width * MODE_INFO[mode][0] * ceil(MODE_INFO[mode][1] / 8)
 
 
-def convert_i16_to_i10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = min(source_stride, dest_stride)
-    lib.convert_i16_to_i10(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_bgr16_to_rgb10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 3)
-    lib.convert_bgr16_to_rgb10(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_bgra16_to_rgba10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 4)
-    lib.convert_bgra16_to_rgba10(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgb16_to_rgb10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 3)
-    lib.convert_rgb16_to_rgb10(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgba16_to_rgba10(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 4)
-    lib.convert_rgba16_to_rgba10(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgba12_to_rgba16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 4)
-    lib.convert_rgba12_to_rgba16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgba12_to_bgra16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 4)
-    lib.convert_rgba12_to_bgra16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgb12_to_rgb16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 3)
-    lib.convert_rgb12_to_rgb16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgb12_to_bgr16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 3)
-    lib.convert_rgb12_to_bgr16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgba10_to_rgba16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 4)
-    lib.convert_rgba10_to_rgba16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgba10_to_bgra16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 4)
-    lib.convert_rgba10_to_bgra16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgb10_to_rgb16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 3)
-    lib.convert_rgb10_to_rgb16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgb10_to_bgr16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint16_t*", src_data)
-    source_stride = int(source_stride / 2)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 3)
-    lib.convert_rgb10_to_bgr16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgba_to_rgba16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint8_t*", src_data)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 4)
-    lib.convert_rgba_to_rgba16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgba_to_bgra16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint8_t*", src_data)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 4)
-    lib.convert_rgba_to_bgra16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgb_to_rgb16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint8_t*", src_data)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 3)
-    lib.convert_rgb_to_rgb16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_rgb_to_bgr16(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint8_t*", src_data)
-    p_dest = ffi.cast("uint16_t*", dest_data)
-    dest_stride = int(dest_stride / 2)
-    stride_elements = int(min(source_stride, dest_stride) / 3)
-    lib.convert_rgb_to_bgr16(p_src, source_stride, p_dest, dest_stride, height, stride_elements)
-
-
-def convert_between_bgra_and_rgba(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint8_t*", src_data)
-    stride_elements = int(min(source_stride, dest_stride) / 4)
-    lib.convert_bgra_rgba(p_src, source_stride, dest_data, dest_stride, height, stride_elements)
-
-
-def convert_between_bgr_and_rgb(dest_data, src_data, dest_stride: int, source_stride: int, height: int):
-    p_src = ffi.from_buffer("uint8_t*", src_data)
-    stride_elements = int(min(source_stride, dest_stride) / 3)
-    lib.convert_bgr_rgb(p_src, source_stride, dest_data, dest_stride, height, stride_elements)
-
-
 MODE_CONVERT = {
     # source_mode: {target_mode: convert_function,}
-    "BGRA;16": {"RGBA;10": convert_bgra16_to_rgba10},
-    "BGR;16": {"RGB;10": convert_bgr16_to_rgb10},
-    "RGBA;16": {"RGBA;10": convert_rgba16_to_rgba10},
-    "RGB;16": {"RGB;10": convert_rgb16_to_rgb10},
-    "L;16": {"L;10": convert_i16_to_i10},
-    "I;16": {"L;10": convert_i16_to_i10},
-    "I;16L": {"L;10": convert_i16_to_i10},
-    "RGBA;12": {"RGBA;16": convert_rgba12_to_rgba16, "BGRA;16": convert_rgba12_to_bgra16},
-    "RGB;12": {"RGB;16": convert_rgb12_to_rgb16, "BGR;16": convert_rgb12_to_bgr16},
-    "RGBA;10": {"RGBA;16": convert_rgba10_to_rgba16, "BGRA;16": convert_rgba10_to_bgra16},
-    "RGB;10": {"RGB;16": convert_rgb10_to_rgb16, "BGR;16": convert_rgb10_to_bgr16},
-    "BGRA": {"RGBA": convert_between_bgra_and_rgba},
-    "BGR": {"RGB": convert_between_bgr_and_rgb},
+    "BGRA;16": {"RGBA;10": lib.convert_bgra16_to_rgba10, "RGBA;12": lib.convert_bgra16_to_rgba12},
+    "BGR;16": {"RGB;10": lib.convert_bgr16_to_rgb10, "RGB;12": lib.convert_bgr16_to_rgb12},
+    "RGBA;16": {"RGBA;10": lib.convert_rgba16_to_rgba10, "RGBA;12": lib.convert_rgba16_to_rgba12},
+    "RGB;16": {"RGB;10": lib.convert_rgb16_to_rgb10, "RGB;12": lib.convert_rgb16_to_rgb12},
+    "L;16": {"L;10": lib.convert_i16_to_i10, "L;12": lib.convert_i16_to_i12},
+    "I;16": {"L;10": lib.convert_i16_to_i10, "L;12": lib.convert_i16_to_i12},
+    "I;16L": {"L;10": lib.convert_i16_to_i10, "L;12": lib.convert_i16_to_i12},
+    "RGBA;12": {"RGBA;16": lib.convert_rgba12_to_rgba16, "BGRA;16": lib.convert_rgba12_to_bgra16},
+    "RGB;12": {"RGB;16": lib.convert_rgb12_to_rgb16, "BGR;16": lib.convert_rgb12_to_bgr16},
+    "RGBA;10": {"RGBA;16": lib.convert_rgba10_to_rgba16, "BGRA;16": lib.convert_rgba10_to_bgra16},
+    "RGB;10": {"RGB;16": lib.convert_rgb10_to_rgb16, "BGR;16": lib.convert_rgb10_to_bgr16},
+    "BGRA": {"RGBA": lib.convert_bgra_rgba},
+    "BGR": {"RGB": lib.convert_bgr_rgb},
     "RGBA": {
-        "BGRA": convert_between_bgra_and_rgba,
-        "RGBA;16": convert_rgba_to_rgba16,
-        "BGRA;16": convert_rgba_to_bgra16,
+        "BGRA": lib.convert_bgra_rgba,
+        "RGBA;16": lib.convert_rgba_to_rgba16,
+        "BGRA;16": lib.convert_rgba_to_bgra16,
     },
-    "RGB": {"BGR": convert_between_bgr_and_rgb, "RGB;16": convert_rgb_to_rgb16, "BGR;16": convert_rgb_to_bgr16},
+    "RGB": {"BGR": lib.convert_bgr_rgb, "RGB;16": lib.convert_rgb_to_rgb16, "BGR;16": lib.convert_rgb_to_bgr16},
 }
 
 
 MODE_INFO = {
-    # name -> (channels, bits per pixel channel, colorspace, chroma, mode_for_saving, numpy_typestr)
-    "BGRA;16": (4, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, "RGBA;10", "<u2"),
-    "BGR;16": (3, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, "RGB;10", "<u2"),
-    "RGBA;16": (4, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, "RGBA;10", "<u2"),
-    "RGB;16": (3, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, "RGB;10", "<u2"),
-    "L;16": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, "L;10", "<u2"),
-    "I;16": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, "L;10", "<u2"),
-    "I;16L": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, "L;10", "<u2"),
+    # name -> [channels, bits per pixel channel, colorspace, chroma, (mode_for_saving 10,12 bit), numpy_typestr]
+    "BGRA;16": (4, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, ("RGBA;10", "RGBA;12"), "<u2"),
+    "BGR;16": (3, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, ("RGB;10", "RGB;12"), "<u2"),
+    "RGBA;16": (4, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, ("RGBA;10", "RGBA;12"), "<u2"),
+    "RGB;16": (3, 16, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, ("RGB;10", "RGB;12"), "<u2"),
+    "L;16": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, ("L;10", "L;12"), "<u2"),
+    "I;16": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, ("L;10", "L;12"), "<u2"),
+    "I;16L": (1, 16, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME, ("L;10", "L;12"), "<u2"),
     "RGBA;12": (4, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_LE, None, "<u2"),
     "RGB;12": (3, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBB_LE, None, "<u2"),
     "RGBA;12B": (4, 12, HeifColorspace.RGB, HeifChroma.INTERLEAVED_RRGGBBAA_BE, None, ">u2"),
