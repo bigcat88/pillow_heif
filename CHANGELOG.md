@@ -2,14 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.0 - 2022-07-03]
+## [0.4.0 - 2022-07-04]
 
 ### Added
 
 - (Heif) - Numpy array interface support.
-- (Heif) - `add_from_bytes` method  and `from_bytes` function added. Allows to read 16-bit color images with `OpenCV`(or any other library) and save it as 10 bit HEIF.
+- (Heif) - `add_from_bytes` method  and `from_bytes` function added. Allows to read 16-bit color images with `OpenCV`(or any other library) and save it as 10(12) bit HEIF.
 - (Heif) - `convert_to` method to `HeifImage` to provide an easy way to open 10 or 12 bit images as 16 bit for `OpenCV`(or any other library)
 - (Heif, HeifImagePlugin) - support for saving images from `I`, `I;16`, `BGRA;16`, `BGR;16`, `BGRA`, `BGR` modes.
+- (Heif) - added `save_to_12bit` to `options`, default `False`. Determines to what bitness will be converted 16 bit images during saving.
 
 ### Changed
 
