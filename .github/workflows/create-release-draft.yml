@@ -263,7 +263,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   draft_release:
-    needs: [sdist, wheels_linux, wheels_macos, wheels_windows]
+    needs: [sdist, wheels_linux_cpython, wheels_linux_pypy, wheels_macos, wheels_windows]
     runs-on: ubuntu-20.04
     name: Build and create release
 
