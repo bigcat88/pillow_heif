@@ -3,7 +3,7 @@ from setuptools import setup
 from wheel.bdist_wheel import bdist_wheel
 
 
-class Abi3Wheels(bdist_wheel):
+class WheelsABI3(bdist_wheel):
     def get_tag(self):
         python, abi, plat = super().get_tag()
         if python.startswith("cp"):
@@ -27,5 +27,5 @@ def get_version():
 setup(
     version=get_version(),
     cffi_modules=["libheif/build.py:ffi"],
-    cmdclass={"bdist_wheel": Abi3Wheels},
+    cmdclass={"bdist_wheel": WheelsABI3},
 )
