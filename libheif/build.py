@@ -74,6 +74,8 @@ ffi.set_source(
     library_dirs=library_dirs,
     libraries=["libheif"] if platform.lower() == "win32" else ["heif"],
     extra_compile_args=["/d2FH4-"] if platform.lower() == "win32" else [],
+    define_macros=[("Py_LIMITED_API", "0x03060000")],
+    py_limited_api=True,
 )
 
 if __name__ == "__main__":

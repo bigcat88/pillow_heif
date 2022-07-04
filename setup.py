@@ -9,7 +9,7 @@ class Abi3Wheels(bdist_wheel):
         if python.startswith("cp"):
             python = "cp36"
             abi = "abi3"
-            if plat.startswith("win32"):
+            if not plat.startswith("linux"):
                 python = "cp37"
         return python, abi, plat
 

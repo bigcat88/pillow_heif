@@ -39,7 +39,6 @@ jobs:
         run: cibuildwheel
         env:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
-#          CIBW_BUILD: "cp37-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
 
