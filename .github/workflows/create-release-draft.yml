@@ -128,7 +128,7 @@ jobs:
 #      - name: Run cibuildwheel
 #        run: cibuildwheel
 #        env:
-#          CIBW_BUILD: "cp36-* cp37-* cp38-* cp39-* cp310-*"
+#          CIBW_BUILD: ${{ format('cp3*-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
 #          CIBW_ARCHS: ${{ matrix.cibw_arch }}
 #          CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
 #          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
@@ -170,11 +170,6 @@ jobs:
       - name: Install cibuildwheel & twine
         run: python3 -m pip install cibuildwheel twine
 
-      - name: manylinux preparations
-        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel"
-
       - name: Only minimal testing on aarch64
         if: matrix.cibw_arch == 'aarch64'
         run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
@@ -196,6 +191,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
+          INSTALL_OS_PACKAGES:  "yum makecache && yum install -y git-all libjpeg-turbo-devel lcms2-devel"
 
       - name: Check builded wheels
         run: twine check wheelhouse/*
