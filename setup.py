@@ -6,8 +6,8 @@ from wheel.bdist_wheel import bdist_wheel
 class WheelsABI3(bdist_wheel):
     def get_tag(self):
         python, abi, plat = super().get_tag()
+        print(f"OMG:{python} - {abi} - {plat}")
         if python.startswith("cp"):
-            print("OMG", plat)
             python = "cp36"
             abi = "abi3"
             if plat.startswith("macosx"):
@@ -15,7 +15,6 @@ class WheelsABI3(bdist_wheel):
             elif not plat.startswith("linux"):
                 python = "cp37"
         elif python.startswith("pp"):
-            print("OMG", plat)
             python = "pp37"
             abi = "abi3"
         return python, abi, plat
