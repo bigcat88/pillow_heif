@@ -791,10 +791,10 @@ class HeifFile:
             images_to_save = images_to_save[:1]
         result = []
         for img in images_to_save:
+            no_primary = not bool(img in images)
             if isinstance(img, Image.Image):
-                heif_file = HeifFile().add_from_pillow(img, save_one, for_encoding=True)
+                heif_file = HeifFile().add_from_pillow(img, save_one, no_primary, for_encoding=True)
             else:
-                no_primary = not bool(img in images)
                 heif_file = HeifFile().add_from_heif(img, save_one, no_primary, for_encoding=True)
             result += list(heif_file)
         return result
