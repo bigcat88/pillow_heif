@@ -188,7 +188,7 @@ jobs:
         env:
           CIBW_BUILD: ${{ format('pp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
-          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y git-all libjpeg-turbo-devel lcms2-devel libffi-dev"
+          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
 
       - name: Check builded wheels
