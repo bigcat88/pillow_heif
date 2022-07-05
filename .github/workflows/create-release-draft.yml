@@ -6,7 +6,7 @@ on:
 
 jobs:
   wheels_armv7l:
-    name: Wheels • Debian 11+ • ARMv7l • CPython3.9+
+    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"

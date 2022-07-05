@@ -15,8 +15,12 @@ RUN \
     git \
     cmake && \
   python3 -m pip install --upgrade pip && \
-  python3 -m pip install -v "pillow_heif/.[tests]" && \
+  echo "**** Start building ****" && \
+  ls -la && \
+  cd pillow_heif && \
+  python3 setup.py bdist_wheel && \
+  echo "**** Repairing wheel ****" && \
+  python3 -m pip install auditwheel && \
+  echo "**** Testing wheel ****" && \
   echo "**** Build Done ****" && \
-  python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
-  pytest -s pillow_heif && \
-  echo "**** Test Done ****"
+  ls -la && ls -la dist
