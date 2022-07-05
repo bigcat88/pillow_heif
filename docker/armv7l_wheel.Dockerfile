@@ -15,6 +15,8 @@ RUN \
     git \
     cmake && \
   python3 -m pip install --upgrade pip && \
+  echo "**** Install python build dependencies ****" && \
+  python3 -m pip install cffi && \
   echo "**** Start building ****" && \
   ls -la && \
   cd pillow_heif && \
