@@ -18,11 +18,11 @@ RUN \
   echo "**** Install python build dependencies ****" && \
   python3 -m pip install cffi && \
   echo "**** Start building ****" && \
-  ls -la && \
   cd pillow_heif && \
   python3 setup.py bdist_wheel && \
   echo "**** Repairing wheel ****" && \
   python3 -m pip install auditwheel && \
+  auditwheel repair -w repaired_dist/ dist/pillow_heif-0.4.0-cp36-abi3-linux_armv7l.whl && \
   echo "**** Testing wheel ****" && \
   echo "**** Build Done ****" && \
-  ls -la && ls -la dist
+  ls -la && ls -la dist && ls -la repaired_dist
