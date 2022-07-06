@@ -18,7 +18,7 @@ jobs:
 
       - name: Build pillow_heif
         run: |
-          docker buildx build --tag "armv7l_wheel" --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
+          docker buildx build --name "armv7l_wheel" --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
           mkdir wheelhouse
           docker cp armv7l_wheel:/pillow_heif/repaired_dist/pillow_heif-0.4.0-cp36-abi3-manylinux_2_31_armv7l.whl wheelhouse/
 
