@@ -5,8 +5,6 @@ COPY . /pillow_heif
 RUN \
   curl -LO https://github.com/NixOS/patchelf/releases/download/0.14.5/patchelf-0.14.5-armv7l.tar.gz && \
   tar -xf patchelf-0.14.5-armv7l.tar.gz && \
-  export PATH="$PATH:/bin" && \
-  patchelf --version && \
   apt-get update && \
   apt-get install -y \
     python3-pip \
