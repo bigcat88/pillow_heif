@@ -13,7 +13,8 @@ RUN \
     libffi-dev \
     libtool \
     git \
-    cmake && \
+    cmake \
+    patchelf && \
   python3 -m pip install --upgrade pip && \
   echo "**** Install python build dependencies ****" && \
   python3 -m pip install cffi && \
@@ -22,8 +23,6 @@ RUN \
   python3 setup.py bdist_wheel && \
   echo "**** Repairing wheel ****" && \
   python3 -m pip install auditwheel && \
-  curl -LO https://github.com/NixOS/patchelf/releases/download/0.14.5/patchelf-0.14.5-armv7l.tar.gz && \
-  tar -xf patchelf-0.14.5-armv7l.tar.gz && \
   auditwheel repair -w repaired_dist/ dist/pillow_heif-0.4.0-cp36-abi3-linux_armv7l.whl \
   --plat manylinux_2_31_armv7l && \
   echo "**** Testing wheel ****" && \
