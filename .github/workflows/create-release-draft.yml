@@ -18,18 +18,19 @@ jobs:
 
       - name: Build pillow_heif
         run: |
-          mkdir wheelhouse
-          docker buildx build --output type=local,dest=./wheelhouse --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
-          ls -la ./wheelhouse
+          mkdir dock_out
+          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
+          ls -la ./dock_out/pillow_heif
+          ls -la ./dock_out/pillow_heif/repaired_dist
 
       - name: Check builded wheels
-        run: twine check wheelhouse/*
+        run: twine check ./dock_out/pillow_heif/repaired_dist/*
 
       - name: Upload builded wheels
         uses: actions/upload-artifact@v3
         with:
           name: wheels
-          path: wheelhouse/*.whl
+          path: ./dock_out/pillow_heif/repaired_dist/*.whl
           if-no-files-found: error
 
 #  wheels_windows:
