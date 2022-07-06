@@ -24,7 +24,9 @@ jobs:
           ls -la ./dock_out/pillow_heif/repaired_dist
 
       - name: Check builded wheels
-        run: twine check ./dock_out/pillow_heif/repaired_dist/*
+        run: |
+          python3 -m pip install twine
+          twine check ./dock_out/pillow_heif/repaired_dist/*
 
       - name: Upload builded wheels
         uses: actions/upload-artifact@v3

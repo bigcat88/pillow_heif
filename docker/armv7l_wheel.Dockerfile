@@ -27,5 +27,4 @@ RUN \
   echo "**** Testing wheel ****" && \
   python3 -m pip install repaired_dist/pillow_heif-0.4.0-cp36-abi3-manylinux_2_31_armv7l.whl && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
-  echo "**** Build Done ****" && \
-  ls -la && ls -la dist && ls -la repaired_dist
+  echo "**** Build Done ****"
