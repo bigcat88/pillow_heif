@@ -20,7 +20,6 @@ jobs:
         run: |
           mkdir dock_out
           docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
-          ls -la ./dock_out/pillow_heif
           ls -la ./dock_out/pillow_heif/repaired_dist
 
       - name: Check builded wheels
