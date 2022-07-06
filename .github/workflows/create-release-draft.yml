@@ -20,7 +20,7 @@ jobs:
         run: |
           docker buildx build --tag "armv7l_wheel" --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
           mkdir wheelhouse
-          docker cp armv7l_wheel:pillow_heif/repaired_dist/* wheelhouse/
+          docker cp armv7l_wheel:/pillow_heif/repaired_dist/pillow_heif-0.4.0-cp36-abi3-manylinux_2_31_armv7l.whl wheelhouse/
 
       - name: Check builded wheels
         run: twine check wheelhouse/*
