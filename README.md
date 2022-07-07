@@ -142,4 +142,5 @@ if pillow_heif.is_supported("input.heic"):
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
-#### **_Versions 0.5.X will be last to support Python 3.6_**
+For `armv7l` there is a `pillow_heif-0.4.0-cp38-abi3-manylinux_2_31_armv7l.whl` wheel on pypi for Debian11+ systems.
+It supports only decoding and builds without `x265` encoder.
