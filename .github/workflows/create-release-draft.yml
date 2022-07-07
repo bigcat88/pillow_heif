@@ -5,6 +5,35 @@ on:
   workflow_dispatch:
 
 jobs:
+#  wheels_armv7l:
+#    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
+#    runs-on: ubuntu-20.04
+#    env:
+#      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Set up QEMU
+#        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#
+#      - name: Build pillow_heif
+#        run: |
+#          mkdir dock_out
+#          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
+#          ls -la ./dock_out/pillow_heif/repaired_dist
+#
+#      - name: Check builded wheels
+#        run: |
+#          python3 -m pip install twine
+#          twine check ./dock_out/pillow_heif/repaired_dist/*
+#
+#      - name: Upload builded wheels
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: wheels
+#          path: ./dock_out/pillow_heif/repaired_dist/*.whl
+#          if-no-files-found: error
+
   wheels_windows:
     name: Wheels • windows • x86_64
     runs-on: windows-2019
@@ -76,21 +105,13 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-  wheels_linux:
+  wheels_linux_cpython:
     strategy:
       fail-fast: true
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "aarch64", "i686", "x86_64" ]
-        cibw_build: [ "cp36", "cp37", "cp38", "cp39", "cp310", "pp37", "pp38", "pp39" ]
-        exclude:
-          - cibw_buildlinux: musllinux
-            cibw_build: pp37
-          - cibw_buildlinux: musllinux
-            cibw_build: pp38
-          - cibw_buildlinux: musllinux
-            cibw_build: pp39
-    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
+    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
@@ -111,7 +132,7 @@ jobs:
         if: matrix.cibw_buildlinux == 'manylinux'
         run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
         env:
-          OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel"
+          OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
 
       - name: musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux'
@@ -136,9 +157,68 @@ jobs:
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
-          CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
+          CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
+          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
+
+      - name: Check builded wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload builded wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+
+  wheels_linux_pypy:
+    strategy:
+      fail-fast: true
+      matrix:
+        cibw_buildlinux: [ manylinux ]
+        cibw_arch: [ "aarch64", "i686", "x86_64" ]
+        cibw_build: [ "pp37", "pp38", "pp39" ]
+    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
+    runs-on: ubuntu-20.04
+    env:
+      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
+      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'aarch64'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: arm64
+
+      - name: Install cibuildwheel & twine
+        run: python3 -m pip install cibuildwheel twine
+
+      - name: Only minimal testing on aarch64
+        if: matrix.cibw_arch == 'aarch64'
+        run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
+
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
+
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
+
+      - name: Run cibuildwheel
+        run: cibuildwheel
+        env:
+          CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
+          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
 
       - name: Check builded wheels
@@ -200,7 +280,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   draft_release:
-    needs: [sdist, wheels_linux, wheels_macos, wheels_windows]
+    needs: [sdist, wheels_linux_cpython, wheels_linux_pypy, wheels_macos, wheels_windows]
     runs-on: ubuntu-20.04
     name: Build and create release
 
