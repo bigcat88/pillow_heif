@@ -2,6 +2,16 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1 - 2022-xx-xx]
+
+### Added
+
+### Changed
+
+- Universal wheels(`py3-none-xxx.whl`) for CPython and PyPy.
+
+### Fixed
+
 ## [0.4.0 - 2022-07-04]
 
 ### Added
