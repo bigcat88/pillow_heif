@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  wheels_armv7l:
+  wheel_armv7l:
     name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
     runs-on: ubuntu-20.04
 
@@ -91,7 +91,7 @@ jobs:
           cibuildwheel
         env:
           CIBW_BUILD: "*-macosx_x86_64"
-          CIBW_SKIP: "cp36-*"
+          CIBW_SKIP: "cp36-* pp39-*"
 
       - name: Check built wheels
         run: twine check wheelhouse/*
@@ -179,7 +179,7 @@ jobs:
       matrix:
         cibw_buildlinux: [ manylinux ]
         cibw_arch: [ "aarch64", "i686", "x86_64" ]
-        cibw_build: [ "pp37", "pp38", "pp39" ]
+        cibw_build: [ "pp37", "pp38" ]
     name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
     runs-on: ubuntu-20.04
     env:
@@ -278,7 +278,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   draft_release:
-    needs: [sdist, wheels_linux_cpython, wheels_linux_pypy, wheels_macos, wheels_windows]
+    needs: [sdist, wheels_linux_cpython, wheels_linux_pypy, wheels_macos, wheels_windows, wheel_armv7l]
     runs-on: ubuntu-20.04
     name: Build and create release
 
