@@ -23,8 +23,8 @@ RUN \
   python3 setup.py bdist_wheel && \
   echo "**** Repairing wheel ****" && \
   python3 -m pip install auditwheel && \
-  auditwheel repair -w repaired_dist/ dist/pillow_heif-0.4.0-cp38-abi3-linux_armv7l.whl --plat manylinux_2_31_armv7l && \
+  auditwheel repair -w repaired_dist/ dist/pillow_heif-0.4.1-cp38-abi3-linux_armv7l.whl --plat manylinux_2_31_armv7l && \
   echo "**** Testing wheel ****" && \
-  python3 -m pip install repaired_dist/pillow_heif-0.4.0-cp38-abi3-manylinux_2_31_armv7l.whl && \
+  python3 -m pip install repaired_dist/pillow_heif-0.4.1-cp38-abi3-manylinux_2_31_armv7l.whl && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
   echo "**** Build Done ****"
