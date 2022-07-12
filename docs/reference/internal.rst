@@ -3,23 +3,23 @@
 Internal
 ========
 
-HeifImageBase class object
---------------------------
+HeifImageBase class
+-------------------
 
 .. autoclass:: pillow_heif.heif.HeifImageBase
     :members:
 
-LibHeifCtx Object
+LibHeifCtx object
 -----------------
 
 .. autoclass:: LibHeifCtx
 
-LibHeifCtxWrite Object
+LibHeifCtxWrite object
 ----------------------
 
 .. autoclass:: LibHeifCtxWrite
 
-HeifCtxAsDict Object
+HeifCtxAsDict object
 --------------------
 
 .. autoclass:: pillow_heif.private.HeifCtxAsDict

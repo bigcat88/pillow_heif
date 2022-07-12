@@ -1,8 +1,8 @@
 Pillow Plugin
-====================
+=============
 
-HeifImageFile Object
----------------------------------
+HeifImageFile object
+--------------------
 
 | Plugin supports decoding and encoding multiply image frames.
 | How to register it see: :ref:`registering-plugin`

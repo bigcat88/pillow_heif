@@ -5,7 +5,7 @@ from io import SEEK_END, BytesIO
 from pathlib import Path
 
 import pytest
-from heif_test import compare_heif_files_fields
+from heif_read_test import compare_heif_files_fields
 from PIL import Image
 
 from pillow_heif import _options  # noqa

@@ -1,7 +1,7 @@
 .. py:currentmodule:: pillow_heif
 
-HeifImage class object
-======================
+HeifImage object
+================
 
 .. autoclass:: pillow_heif.HeifImage
     :show-inheritance:

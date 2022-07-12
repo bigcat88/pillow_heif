@@ -19,6 +19,7 @@ Pillow-Heif documentation
    image-modes.rst
    options.rst
    encoding.rst
+   thumbnails.rst
    reference/index.rst
    v0.3-order-of-images.rst
    workaround-orientation.rst

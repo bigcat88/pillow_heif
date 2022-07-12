@@ -17,7 +17,7 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
-### **_v0.4.0_**
+### **_v0.5.0_**
 
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
 
@@ -28,7 +28,7 @@ Features:
  * Encoding of `8`, `10`, `12` bit HEIF images.
  * `EXIF`, `XMP`, `IPTC` read & write support.
  * Support of multiple images in one file, e.g **HEIC** files and `PrimaryImage` attribute.
- * HEIF `native thumbnails` support(API for this is still in `alpha` and could be changed).
+ * HEIF `native thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
  * Includes AVIF(x264) decoder.
 
@@ -112,6 +112,30 @@ if pillow_heif.is_supported("input.heic"):
     heif_file.save("output.heic", quality=70, save_all=False) # save_all is True by default.
 ```
 
+## Using thumbnails with a Pillow when they are present in a file(from version 0.5.0)
+```python3
+from PIL import Image, ImageSequence
+import pillow_heif
+
+pillow_heif.register_heif_opener()
+
+pil_img = Image.open("input.heic")
+for img in ImageSequence.Iterator(pil_img):
+    img = pillow_heif.thumbnail(img)
+    print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
+```
+
+## Using thumbnails when they are present in a file(from version 0.5.0)
+```python3
+import pillow_heif
+
+if pillow_heif.is_supported("input.heic"):
+    heif_file = pillow_heif.open_heif("input.heic")
+    for img in heif_file:
+        img = pillow_heif.thumbnail(img)
+        print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
+```
+
 ## More Information
 
 - [Documentation](https://pillow-heif.readthedocs.io/)
@@ -136,6 +160,7 @@ if pillow_heif.is_supported("input.heic"):
 | CPython 3.8        |        ✅        |        N/A        |         ✅         |     ✅      |     ✅      |
 | CPython 3.9        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
+| CPython 3.11       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | PyPy 3.7 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 | PyPy 3.8 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 

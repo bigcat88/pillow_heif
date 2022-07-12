@@ -43,3 +43,4 @@ from .heif import (
     read_heif,
 )
 from .misc import get_file_mimetype, getxmp, set_orientation
+from .thumbnails import thumbnail

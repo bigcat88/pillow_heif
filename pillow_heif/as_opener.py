@@ -2,7 +2,6 @@
 Plugin for Pillow library.
 """
 
-from copy import deepcopy
 from typing import Any
 
 from PIL import Image, ImageFile
@@ -41,7 +40,6 @@ class HeifImageFile(ImageFile.ImageFile):
         if self.heif_file:
             frame_heif = self.heif_file[self.tell()]
             self.load_prepare()
-            truncated = False
             try:
                 self.frombytes(frame_heif.data, "raw", (frame_heif.mode, frame_heif.stride))
             except HeifError as exc:
@@ -51,7 +49,7 @@ class HeifImageFile(ImageFile.ImageFile):
             if self.is_animated:
                 frame_heif.unload()
             else:
-                self.info["thumbnails"] = deepcopy(self.info["thumbnails"]) if not truncated else []
+                self.info["thumbnails"] = [i.clone_nd() for i in self.info["thumbnails"]]
                 self.heif_file = None
                 self._close_exclusive_fp_after_loading = True
                 if self.fp and getattr(self, "_exclusive_fp", False) and hasattr(self.fp, "close"):
@@ -81,8 +79,7 @@ class HeifImageFile(ImageFile.ImageFile):
         return self.__frame
 
     def verify(self) -> None:
-        for _ in self.info["thumbnails"]:
-            _.load()
+        pass
 
     @property
     def n_frames(self) -> int:
