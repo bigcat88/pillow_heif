@@ -17,8 +17,6 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
-### **_v0.5.0_**
-
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
 
 README for versions `0.2 - 0.3` lives [here](https://github.com/bigcat88/pillow_heif/blob/9d2045111d27ff842678097175c7d95b5f1ec212/README.md).
@@ -166,5 +164,5 @@ if pillow_heif.is_supported("input.heic"):
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
-For `armv7l` there is a `pillow_heif-0.4.0-cp38-abi3-manylinux_2_31_armv7l.whl` wheel on `pypi` for Debian11+ systems.
+For `armv7l` there is a `pillow_heif-x.x.x-cp38-abi3-manylinux_2_31_armv7l.whl` wheel on `pypi` for Debian11+ systems.
 It supports only decoding and builds without `x265` encoder.
