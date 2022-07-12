@@ -110,7 +110,18 @@ if pillow_heif.is_supported("input.heic"):
     heif_file.save("output.heic", quality=70, save_all=False) # save_all is True by default.
 ```
 
-## Using thumbnails with a Pillow when they are present in a file(from version 0.5.0)
+## Using thumbnails when they are present in a file(from version 0.5.0)
+```python3
+import pillow_heif
+
+if pillow_heif.is_supported("input.heic"):
+    heif_file = pillow_heif.open_heif("input.heic")
+    for img in heif_file:
+        img = pillow_heif.thumbnail(img)
+        print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
+```
+
+## (Pillow)Using thumbnails when they are present in a file(from version 0.5.0)
 ```python3
 from PIL import Image, ImageSequence
 import pillow_heif
@@ -121,17 +132,6 @@ pil_img = Image.open("input.heic")
 for img in ImageSequence.Iterator(pil_img):
     img = pillow_heif.thumbnail(img)
     print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
-```
-
-## Using thumbnails when they are present in a file(from version 0.5.0)
-```python3
-import pillow_heif
-
-if pillow_heif.is_supported("input.heic"):
-    heif_file = pillow_heif.open_heif("input.heic")
-    for img in heif_file:
-        img = pillow_heif.thumbnail(img)
-        print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
 ```
 
 ## More Information
