@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 import pytest
-from numpy import __version__ as numpy_version
 from packaging.version import parse as parse_version
 from PIL import Image
 
@@ -35,7 +34,7 @@ def test_numpy_array(img_path, modes):
         assert np.array_equal(pil_array, heif_array)
 
 
-@pytest.mark.skipif(parse_version(numpy_version) < parse_version("1.23.0"), reason="Requires numpy >= 1.23")
+@pytest.mark.skipif(parse_version(np.__version__) < parse_version("1.23.0"), reason="Requires numpy >= 1.23")
 def test_numpy_array_thumbnail_pillow():
     pil_img = Image.open(Path("images/rgb8_512_512_1_2.heic"))
     thumbnail = pillow_heif.thumbnail(pil_img)
