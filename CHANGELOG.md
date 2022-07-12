@@ -18,7 +18,7 @@ It is a final API release, no more further changes to API are planned, only bugf
 
 ### Fixed
 
-- Nice speed up for reading images having thumbnails in a `Pillow plugin` mode.
+- Nice `speed up` for reading images having thumbnails in a `Pillow plugin` mode.
 
 ## [0.4.0 - 2022-07-04]
 
