@@ -3,10 +3,11 @@
 ![analysis](https://github.com/bigcat88/pillow_heif/actions/workflows/analysis-coverage.yml/badge.svg)
 ![build](https://github.com/bigcat88/pillow_heif/actions/workflows/create-release-draft.yml/badge.svg)
 ![wheels test](https://github.com/bigcat88/pillow_heif/actions/workflows/test-wheels.yml/badge.svg)
+[![docs](https://readthedocs.org/projects/pillow-heif/badge/?version=latest)](https://pillow-heif.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/bigcat88/pillow_heif/branch/master/graph/badge.svg?token=JY64F2OL6V)](https://codecov.io/gh/bigcat88/pillow_heif)
 ![style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
-![PythonVersion](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)
+![PythonVersion](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
 ![impl](https://img.shields.io/pypi/implementation/pillow_heif)
 ![pypi](https://img.shields.io/pypi/v/pillow_heif.svg)
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pillow-heif)
@@ -17,8 +18,6 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
-### **_v0.4.0_**
-
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
 
 README for versions `0.2 - 0.3` lives [here](https://github.com/bigcat88/pillow_heif/blob/9d2045111d27ff842678097175c7d95b5f1ec212/README.md).
@@ -28,7 +27,7 @@ Features:
  * Encoding of `8`, `10`, `12` bit HEIF images.
  * `EXIF`, `XMP`, `IPTC` read & write support.
  * Support of multiple images in one file, e.g **HEIC** files and `PrimaryImage` attribute.
- * HEIF `native thumbnails` support(API for this is still in `alpha` and could be changed).
+ * HEIF `native thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
  * Includes AVIF(x264) decoder.
 
@@ -112,6 +111,30 @@ if pillow_heif.is_supported("input.heic"):
     heif_file.save("output.heic", quality=70, save_all=False) # save_all is True by default.
 ```
 
+## Using thumbnails when they are present in a file(from version 0.5.0)
+```python3
+import pillow_heif
+
+if pillow_heif.is_supported("input.heic"):
+    heif_file = pillow_heif.open_heif("input.heic")
+    for img in heif_file:
+        img = pillow_heif.thumbnail(img)
+        print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
+```
+
+## (Pillow)Using thumbnails when they are present in a file(from version 0.5.0)
+```python3
+from PIL import Image, ImageSequence
+import pillow_heif
+
+pillow_heif.register_heif_opener()
+
+pil_img = Image.open("input.heic")
+for img in ImageSequence.Iterator(pil_img):
+    img = pillow_heif.thumbnail(img)
+    print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
+```
+
 ## More Information
 
 - [Documentation](https://pillow-heif.readthedocs.io/)
@@ -136,10 +159,11 @@ if pillow_heif.is_supported("input.heic"):
 | CPython 3.8        |        ✅        |        N/A        |         ✅         |     ✅      |     ✅      |
 | CPython 3.9        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
+| CPython 3.11       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | PyPy 3.7 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 | PyPy 3.8 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
-For `armv7l` there is a `pillow_heif-0.4.0-cp38-abi3-manylinux_2_31_armv7l.whl` wheel on `pypi` for Debian11+ systems.
+For `armv7l` there is a `pillow_heif-x.x.x-cp38-abi3-manylinux_2_31_armv7l.whl` wheel on `pypi` for Debian11+ systems.
 It supports only decoding and builds without `x265` encoder.

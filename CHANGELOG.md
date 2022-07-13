@@ -1,6 +1,24 @@
-# Changelog
+_# Changelog
 
 All notable changes to this project will be documented in this file.
+
+## [0.5.0 - 2022-07-xx]
+
+Thumbnails was reworked, if you was not use them before, then this release is fully compatible with `0.4.0` version.
+It is a final API release, no more further changes to API are planned, only bugfixes if any and etc.
+
+### Added
+
+- `thumbnail` function, `docs` for it.
+
+### Changed
+
+- Wheels now are in ABI3 format for CPython(`cp3x-abi3-xxx.whl`), `3x` less size on PyPi.
+- `to_pillow` method, now fills `metadata` from an original image if called for thumbnails.
+
+### Fixed
+
+- Nice speed up for reading images having thumbnails in a `Pillow plugin` mode.
 
 ## [0.4.0 - 2022-07-04]
 
@@ -379,4 +397,4 @@ This will not affect any user code, changes are internal.
 - x265 version=3.5
 - libheif version=1.12.0
 
-### Fixed
+### Fixed_
