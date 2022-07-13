@@ -2,7 +2,6 @@
 Functions and classes for heif images to read and write.
 """
 
-from copy import deepcopy
 from typing import Any, Dict, Iterator, List, Union
 from warnings import warn
 from weakref import ref
@@ -136,12 +135,10 @@ class HeifImageBase:
         _img = self._create_image(current_data, current_stride, mode)
         self._img_to_img_data_dict(_img)
 
-    def to_pillow(self, ignore_thumbnails: bool = False) -> Image.Image:
+    def to_pillow(self) -> Image.Image:
         """Helper method to create :py:class:`PIL.Image.Image`
 
-        :param ignore_thumbnails: Shall ``info["thumbnails"]`` be empty or not.
-
-        :returns: :py:class:`PIL.Image.Image` class created from this image."""
+        :returns: :py:class:`PIL.Image.Image` class created from this image/thumbnail."""
 
         image = Image.frombytes(
             self.mode,  # noqa
@@ -151,13 +148,19 @@ class HeifImageBase:
             self.mode,
             self.stride,
         )
+        info = None
         if isinstance(self, HeifImage):
+            image.info["thumbnails"] = [i.clone_nd() for i in getattr(self, "thumbnails", [])]
+            info = self.info
+        elif isinstance(self, HeifThumbnail):
+            _ = self.get_original()
+            info = _.info if _ else None
+        if info:
             for k in ("exif", "xmp", "metadata"):
-                image.info[k] = self.info[k]
+                image.info[k] = info[k]
             for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
-                if k in self.info:
-                    image.info[k] = self.info[k]
-            image.info["thumbnails"] = [] if ignore_thumbnails else deepcopy(self.thumbnails)
+                if k in info:
+                    image.info[k] = info[k]
             image.info["original_orientation"] = set_orientation(image.info)
         return image
 
@@ -178,6 +181,8 @@ class HeifImageBase:
     def __array_interface__(self):
         """Numpy array interface support"""
 
+        if isinstance(self, HeifThumbnail) and self.data is None:
+            raise ValueError("Usage error: thumbnail has no data.")
         shape = (self.size[1], self.size[0])
         if MODE_INFO[self.mode][0] > 1:
             shape += (MODE_INFO[self.mode][0],)
@@ -261,13 +266,6 @@ class HeifThumbnail(HeifImageBase):
             f"with {_bytes} image data> Original:{self.parent()}"
         )
 
-    def __deepcopy__(self, memo):
-        return self.clone()
-
-    def clone(self, ref_original=None):
-        heif_ctx = HeifCtxAsDict(self.mode, self.size, self.data, stride=self.stride)
-        return HeifThumbnail(heif_ctx, ref_original if ref_original else heif_ctx)
-
     def get_original(self):
         """Return an :py:class:`~pillow_heif.HeifImage` frame to which thumbnail belongs.
 
@@ -278,11 +276,11 @@ class HeifThumbnail(HeifImageBase):
         referenced = self.parent()
         return referenced if isinstance(referenced, HeifImage) else None
 
-    def clone_no_data(self):
-        """Private. For use only when encoding an image."""
+    def clone_nd(self, ref_original=None):
+        """Private. Cloning thumbnail without actual data."""
 
         heif_ctx = HeifCtxAsDict(self.mode, self.size, None, stride=0)
-        return HeifThumbnail(heif_ctx, heif_ctx)
+        return HeifThumbnail(heif_ctx, ref_original if ref_original else heif_ctx)
 
 
 class HeifImage(HeifImageBase):
@@ -330,18 +328,6 @@ class HeifImage(HeifImageBase):
             f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
             f"with {_bytes} image data and {len(self.thumbnails)} thumbnails>"
         )
-
-    def load(self):
-        super().load()
-        for thumbnail in self.thumbnails:
-            thumbnail.load()
-        return self
-
-    def unload(self):
-        super().unload()
-        for thumbnail in self.thumbnails:
-            thumbnail.unload()
-        return self
 
     def scale(self, width: int, height: int):
         """Rescale image by a specific width and height given in parameters.
@@ -394,15 +380,11 @@ class HeifImage(HeifImageBase):
             __heif_ctx = HeifCtxAsDict(self.mode, (thumb_width, thumb_height), None, stride=0)
             self.thumbnails.append(HeifThumbnail(__heif_ctx, self))
 
-    def copy_thumbnails(self, thumbnails: List[HeifThumbnail], **kwargs):
+    def copy_thumbnails(self, thumbnails: List[HeifThumbnail]):
         """Private. For use only in ``add_from_pillow`` and ``add_from_heif``."""
 
         for thumb in thumbnails:
-            if kwargs.get("for_encoding", False):
-                cloned_thumb = thumb.clone_no_data()
-            else:
-                cloned_thumb = thumb.clone(ref_original=self)
-            self.thumbnails.append(cloned_thumb)
+            self.thumbnails.append(thumb.clone_nd(ref_original=self))
 
     def __read_thumbnails(self) -> List[HeifThumbnail]:
         result: List[HeifThumbnail] = []
@@ -612,7 +594,7 @@ class HeifFile:
             add_info={**additional_info},
             for_encoding=kwargs.get("for_encoding", False),
         )
-        added_image.copy_thumbnails(frame.info.get("thumbnails", []), **kwargs)
+        added_image.copy_thumbnails(frame.info.get("thumbnails", []))
 
     def add_from_heif(self, heif_image, load_one=False, ignore_primary=True, **kwargs):
         """Add image(s) to container.
@@ -637,7 +619,7 @@ class HeifFile:
                 add_info={**additional_info},
                 for_encoding=kwargs.get("for_encoding", False),
             )
-            added_image.copy_thumbnails(image.thumbnails, **kwargs)
+            added_image.copy_thumbnails(image.thumbnails)
             if load_one:
                 break
         return self
@@ -791,10 +773,10 @@ class HeifFile:
             images_to_save = images_to_save[:1]
         result = []
         for img in images_to_save:
+            no_primary = not bool(img in images)
             if isinstance(img, Image.Image):
-                heif_file = HeifFile().add_from_pillow(img, save_one, for_encoding=True)
+                heif_file = HeifFile().add_from_pillow(img, save_one, no_primary, for_encoding=True)
             else:
-                no_primary = not bool(img in images)
                 heif_file = HeifFile().add_from_heif(img, save_one, no_primary, for_encoding=True)
             result += list(heif_file)
         return result

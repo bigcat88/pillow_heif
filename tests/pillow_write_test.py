@@ -3,10 +3,10 @@ from io import SEEK_END, BytesIO
 from pathlib import Path
 
 import pytest
-from opener_test import compare_heif_to_pillow_fields
 from packaging.version import parse as parse_version
 from PIL import Image, ImageSequence
 from PIL import __version__ as pil_version
+from pillow_read_test import compare_heif_to_pillow_fields
 
 from pillow_heif import from_pillow, open_heif, options, register_heif_opener
 

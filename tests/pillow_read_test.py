@@ -8,7 +8,7 @@ from unittest import mock
 
 import dataset
 import pytest
-from heif_test import compare_heif_files_fields
+from heif_read_test import compare_heif_files_fields
 from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
 import pillow_heif.HeifImagePlugin  # noqa
@@ -110,7 +110,7 @@ def test_after_load():
         assert len(ImageSequence.Iterator(img)[1].tobytes())
 
 
-@pytest.mark.parametrize("image_path", dataset.MINIMAL_DATASET)
+@pytest.mark.parametrize("image_path", dataset.MINIMAL_DATASET[1:2])
 def test_to_from_pillow(image_path):
     heif_file = open_heif(image_path)
     images_list = [i.to_pillow() for i in heif_file]
@@ -139,7 +139,10 @@ def test_open_images(image_path):
         collect()
         assert len(ImageSequence.Iterator(pillow_image)[i].tobytes())
         for thumb in ImageSequence.Iterator(pillow_image)[i].info["thumbnails"]:
-            assert len(thumb.data)
+            if images_count > 1:
+                assert thumb.data is not None
+            else:
+                assert thumb.data is None
         assert isinstance(image.getxmp(), dict)
     if images_count > 1:
         assert getattr(pillow_image, "fp") is not None

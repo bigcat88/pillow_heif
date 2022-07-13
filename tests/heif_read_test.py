@@ -45,9 +45,6 @@ def compare_heif_files_fields(
             if "original_bit_depth" not in ignore:
                 assert thumbnail.original_bit_depth == image2.thumbnails[i_thumb].original_bit_depth
             assert thumbnail.bit_depth == image2.thumbnails[i_thumb].bit_depth
-            if "t_stride" not in ignore:
-                assert thumbnail.stride == image2.thumbnails[i_thumb].stride
-                assert len(thumbnail.data) == len(image2.thumbnails[i_thumb].data)
         assert image1.info["exif"] == image2.info["exif"]
         assert image1.info["xmp"] == image2.info["xmp"]
         for block_i, block in enumerate(image1.info["metadata"]):
@@ -186,6 +183,7 @@ def test_inputs(img_path):
                     for thumbnail in image.thumbnails:
                         assert not getattr(thumbnail, "_img_data")
                         assert len(thumbnail.data) > 0
+                        thumbnail.unload()
                     image.unload()
                 collect()
                 for image in heif_file:
@@ -292,4 +290,6 @@ def test_read_heif():
     for img in heif_file:
         assert img._img_data
         for thumbnail in img.thumbnails:
+            assert not thumbnail._img_data
+            thumbnail.load()
             assert thumbnail._img_data

@@ -48,3 +48,7 @@ def test_heif_str():
     assert str(heif_file[0]).find("no image data") != -1
     assert str(heif_file.thumbnails[0]).find("HeifThumbnail 64x64 RGB") != -1
     assert str(heif_file.thumbnails[0]).find("no image data") != -1
+    heif_file.load()
+    heif_file.thumbnails[0].load()
+    assert str(heif_file[0]).find("with 65536 bytes image data") != -1
+    assert str(heif_file.thumbnails[0]).find("with 16384 bytes image data") != -1
