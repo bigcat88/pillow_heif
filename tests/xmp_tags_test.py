@@ -40,39 +40,65 @@ def test_xmp_from_png(img_path):
 @pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
 def test_pillow_xmp_add_remove():
     xmp_data = b"<xmp_data>"
-    im = Image.new("RGB", (15, 15), 0)
+    out_heif_no_xmp = BytesIO()
     out_heif = BytesIO()
-    # test `xmp=` during save.
+    im = Image.new("RGB", (15, 15), 0)
+    # filling `xmp` during save.
     im.save(out_heif, format="HEIF", xmp=xmp_data)
-    assert "xmp" not in im.info
+    assert "xmp" not in im.info or im.info["xmp"] is None
     im_heif = Image.open(out_heif)
     assert im_heif.info["xmp"]
-    # test `info["xmp"]= ` before save.
+    # filling `info["xmp"]` before save.
     im.info["xmp"] = xmp_data
     im.save(out_heif, format="HEIF")
     im_heif = Image.open(out_heif)
     assert im_heif.info["xmp"]
+    # setting `xmp` to None during save.
+    im_heif.save(out_heif_no_xmp, format="HEIF", xmp=None)
+    assert im_heif.info["xmp"]
+    im_heif_no_xmp = Image.open(out_heif_no_xmp)
+    assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
+    # filling `info["xmp"]` with None before save.
+    im_heif.info["xmp"] = None
+    im_heif.save(out_heif_no_xmp, format="HEIF")
+    im_heif_no_xmp = Image.open(out_heif_no_xmp)
+    assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
+    # removing `info["xmp"]` before save.
+    im_heif.info.pop("xmp")
+    im_heif.save(out_heif_no_xmp, format="HEIF")
+    im_heif_no_xmp = Image.open(out_heif_no_xmp)
+    assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
 
-    # heif_file = open_heif(Path("images/rgb8_128_128_2_1.heic"))
-    # # No XMP in images
-    # for frame in heif_file:
-    #     assert not frame.info["xmp"]
-    # out_buf =
-    # heif_file.save(out_buf, xmp=xmp_data, save_all=True)
-    # # Checking `heif_file` to not change
-    # for frame in heif_file:
-    #     assert not frame.info["xmp"]
-    # saved_heif = open_heif(out_buf)
-    # # Checking that output  of`heif_file` was changed
-    # for i, frame in enumerate(saved_heif):
-    #     assert not frame.info["xmp"] if i else frame.info["xmp"]
-    # out_buf2 = BytesIO()
-    # # Remove XMP from primary image
-    # saved_heif.save(out_buf2, xmp=None, save_all=True)
-    # # Checking `saved_heif` to not change
-    # for i, frame in enumerate(saved_heif):
-    #     assert not frame.info["xmp"] if i else frame.info["xmp"]
-    # saved_heif2 = open_heif(out_buf2)
-    # # Checking that output has no XMP
-    # for i, frame in enumerate(saved_heif2):
-    #     assert not frame.info["xmp"]
+
+@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+def test_heif_xmp_add_remove():
+    xmp_data = b"<xmp_data>"
+    out_heif_no_xmp = BytesIO()
+    out_heif = BytesIO()
+    # test filling `xmp` during save.
+    im_heif = pillow_heif.from_pillow(Image.new("RGB", (15, 15), 0))
+    im_heif.save(out_heif, xmp=xmp_data)
+    assert "xmp" not in im_heif.info or im_heif.info["xmp"] is None
+    im_heif = pillow_heif.open_heif(out_heif)
+    assert im_heif.info["xmp"]
+    # test filling `info["xmp"]` before save.
+    im_heif = pillow_heif.from_pillow(Image.new("RGB", (15, 15), 0))
+    im_heif.info["xmp"] = xmp_data
+    im_heif.save(out_heif)
+    im_heif = pillow_heif.open_heif(out_heif)
+    assert im_heif.info["xmp"]
+    # setting `xmp` to None during save.
+    im_heif.save(out_heif_no_xmp, xmp=None)
+    assert im_heif.info["xmp"]
+    im_heif_no_xmp = pillow_heif.open_heif(out_heif_no_xmp)
+    assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
+    # filling `info["xmp"]` with None before save.
+    im_heif.info["xmp"] = None
+    im_heif.save(out_heif_no_xmp)
+    im_heif_no_xmp = pillow_heif.open_heif(out_heif_no_xmp)
+    assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
+    # removing `info["xmp"]` before save.
+    im_heif.info.pop("xmp")
+    im_heif.save(out_heif_no_xmp)
+    im_heif_no_xmp = pillow_heif.open_heif(out_heif_no_xmp)
+    assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
