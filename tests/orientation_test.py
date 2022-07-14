@@ -41,6 +41,7 @@ def assert_image_similar(a, b, epsilon=0):
     assert epsilon >= ave_diff
 
 
+@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 @pytest.mark.parametrize("orientation", (1, 2, 3, 4, 5, 6, 7, 8))
 def test_jpeg_exif_orientation(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
