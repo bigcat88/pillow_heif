@@ -24,7 +24,7 @@ pillow_heif.register_heif_opener()
         "images/jpeg_gif_png/xmp.webp",
     ),
 )
-def test_xmp_from_png(img_path):
+def test_xmp_from_pillow(img_path):
     im = Image.open(Path(img_path))
     xmp = im.getxmp() if hasattr(im, "getxmp") else pillow_heif.getxmp(im.info["xmp"])  # noqa
     assert xmp["xmpmeta"]["RDF"]["Description"]["subject"]["Bag"]["li"] == "TestSubject"
