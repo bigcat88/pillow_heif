@@ -18,7 +18,6 @@ from pillow_heif import (
     HeifImage,
     HeifThumbnail,
     from_pillow,
-    getxmp,
     open_heif,
 )
 
@@ -156,16 +155,6 @@ def test_open_images(image_path):
         collect()
         assert pillow_image.tobytes()
         assert len(ImageSequence.Iterator(pillow_image)[0].tobytes())
-
-
-def test_xmp_tags():
-    png_xmp = Image.open(Path("images/jpeg_gif_png/xmp_tags_orientation.png"))
-    heif_file = from_pillow(png_xmp)
-    heif_pillow = heif_file[0].to_pillow()
-    assert getxmp(heif_pillow.info["xmp"])
-    assert isinstance(heif_pillow.info["xmp"], bytes)
-    assert getxmp(heif_file.info["xmp"])
-    assert isinstance(heif_file.info["xmp"], bytes)
 
 
 def test_image_order():

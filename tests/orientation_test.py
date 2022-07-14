@@ -1,4 +1,3 @@
-import os
 from io import BytesIO
 
 import pytest
@@ -7,8 +6,6 @@ from PIL import Image, ImageMath, ImageOps
 from PIL import __version__ as pil_version
 
 import pillow_heif
-
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 pillow_heif.register_heif_opener()
 

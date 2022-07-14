@@ -28,6 +28,7 @@ from .private import (
     set_exif,
     set_metadata,
     set_xmp,
+    xmp_from_pillow,
 )
 
 
@@ -570,8 +571,7 @@ class HeifFile:
                 additional_info[k] = frame.info[k]
         if ignore_primary:
             additional_info["primary"] = False
-        if "xmp" not in additional_info and "XML:com.adobe.xmp" in frame.info:
-            additional_info["xmp"] = frame.info["XML:com.adobe.xmp"]
+        xmp_from_pillow(additional_info, frame)
         if "xmp" in additional_info and isinstance(additional_info["xmp"], str):
             additional_info["xmp"] = additional_info["xmp"].encode("utf-8")
         original_orientation = set_orientation(additional_info)
