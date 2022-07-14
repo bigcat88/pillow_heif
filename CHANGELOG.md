@@ -19,8 +19,8 @@ It is a final API release, no more further changes to API are planned, only bugf
 ### Fixed
 
 - (HeifImagePlugin) Nice `speed up` for reading images having thumbnails in a `Pillow plugin` mode.
-- (HeifImagePlugin) `XMP` metadata save from `TIFF`
-- (HeifImagePlugin) `XMP` metadata save from `JPEG`
+- (HeifImagePlugin) `XMP` metadata save from `TIFF` and `JPEG`.
+- (HeifImagePlugin) `EXIF` metadata save from `TIFF`(only for Pillow >= 9.2).
 
 ## [0.4.0 - 2022-07-04]
 

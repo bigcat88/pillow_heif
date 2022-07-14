@@ -54,6 +54,8 @@ def test_jpeg_exif_orientation(orientation):
     # We are testing next two lines. They are equal to `save+open` operations.
     im_heif = pillow_heif.from_pillow(im)
     im_heif = im_heif[0].to_pillow()
+    im_heif_exif = im_heif.getexif()
+    assert 0x0112 not in im_heif_exif or im_heif_exif[0x0112] == 1
     transposed_im = ImageOps.exif_transpose(im)
     assert_image_similar(transposed_im, im_heif)
     if orientation > 1:
@@ -100,8 +102,10 @@ def test_heif_exif_orientation(orientation):
     exif_data[0x0112] = orientation
     im.save(out_im_heif, format="HEIF", exif=exif_data.tobytes(), quality=-1)
     im_heif = Image.open(out_im_heif)
-    assert im_heif.info["original_orientation"] == orientation
     # We should ignore all EXIF rotation flags for HEIF
+    assert im_heif.info["original_orientation"] == orientation
+    im_heif_exif = im_heif.getexif()
+    assert 0x0112 not in im_heif_exif or im_heif_exif[0x0112] == 1
     assert_image_similar(im, im_heif)
 
 
@@ -124,6 +128,6 @@ def test_heif_xmp_orientation(orientation):
     out_im_heif = BytesIO()
     im.save(out_im_heif, format="HEIF", xmp=xmp.encode("utf-8"), quality=-1)
     im_heif = Image.open(out_im_heif)
+    # We should ignore all XMP rotation flags for HEIF
     assert im_heif.info["original_orientation"] == orientation
-    # We should ignore all EXIF rotation flags for HEIF
     assert_image_similar(im, im_heif)

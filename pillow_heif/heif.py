@@ -19,6 +19,7 @@ from .private import (
     MODE_CONVERT,
     MODE_INFO,
     HeifCtxAsDict,
+    exif_from_pillow,
     get_pure_stride,
     read_color_profile,
     read_metadata,
@@ -571,6 +572,7 @@ class HeifFile:
                 additional_info[k] = frame.info[k]
         if ignore_primary:
             additional_info["primary"] = False
+        exif_from_pillow(additional_info, frame)
         xmp_from_pillow(additional_info, frame)
         if "xmp" in additional_info and isinstance(additional_info["xmp"], str):
             additional_info["xmp"] = additional_info["xmp"].encode("utf-8")

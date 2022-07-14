@@ -53,12 +53,12 @@ def test_pillow_xmp_add_remove():
     im.save(out_heif, format="HEIF")
     im_heif = Image.open(out_heif)
     assert im_heif.info["xmp"]
-    # setting `xmp` to None during save.
+    # setting `xmp` to `None` during save.
     im_heif.save(out_heif_no_xmp, format="HEIF", xmp=None)
     assert im_heif.info["xmp"]
     im_heif_no_xmp = Image.open(out_heif_no_xmp)
     assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
-    # filling `info["xmp"]` with None before save.
+    # filling `info["xmp"]` with `None` before save.
     im_heif.info["xmp"] = None
     im_heif.save(out_heif_no_xmp, format="HEIF")
     im_heif_no_xmp = Image.open(out_heif_no_xmp)
@@ -87,12 +87,12 @@ def test_heif_xmp_add_remove():
     im_heif.save(out_heif)
     im_heif = pillow_heif.open_heif(out_heif)
     assert im_heif.info["xmp"]
-    # setting `xmp` to None during save.
+    # setting `xmp` to `None` during save.
     im_heif.save(out_heif_no_xmp, xmp=None)
     assert im_heif.info["xmp"]
     im_heif_no_xmp = pillow_heif.open_heif(out_heif_no_xmp)
     assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
-    # filling `info["xmp"]` with None before save.
+    # filling `info["xmp"]` with `None` before save.
     im_heif.info["xmp"] = None
     im_heif.save(out_heif_no_xmp)
     im_heif_no_xmp = pillow_heif.open_heif(out_heif_no_xmp)
