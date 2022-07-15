@@ -206,11 +206,10 @@ def set_metadata(ctx: LibHeifCtxWrite, heif_img_handle, info: dict) -> None:
 def exif_from_pillow(additional_info: dict, frame) -> None:
     if "exif" not in additional_info:
         if hasattr(frame, "getexif"):
-            if pil_version[:2] in ("6.", "7.", "8.") or pil_version[:4] in ("9.0.", "9.1."):
-                return
-            exif = frame.getexif()
-            if exif:
-                additional_info["exif"] = exif.tobytes()
+            if pil_version[:2] not in ("6.", "7.", "8.") or pil_version[:4] not in ("9.0.", "9.1."):
+                exif = frame.getexif()
+                if exif:
+                    additional_info["exif"] = exif.tobytes()
 
 
 def xmp_from_pillow(additional_info: dict, frame) -> None:
