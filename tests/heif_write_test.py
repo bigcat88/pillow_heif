@@ -55,69 +55,25 @@ def test_save_empty_with_append():
 
 
 @pytest.mark.parametrize(
-    "image_path,remove_img,remove_thumb,expected",
+    "image_path,remove_img,expected",
     (
-        ("images/rgb8_512_512_1_2.heic", [], [(0, 1)], (1, 1)),
-        ("images/rgb8_128_128_2_1.heic", [0], [], (1, 1)),
-        ("images/rgb8_128_128_2_1.heic", [1], [], (1, 1)),
-        ("images/rgb8_128_128_2_1.heic", [1], [(0, 0)], (1, 0)),
-        ("images/rgb8_210_128_2_2.heic", [0], [(0, 0)], (1, 1)),
-        ("images/rgb8_210_128_2_2.heic", [0], [(0, 1)], (1, 1)),
-        ("images/rgb10_639_480_1_3.heic", [], [(0, 1), (0, 0)], (1, 1)),
+        ("images/rgb8_512_512_1_2.heic", [], 1),
+        ("images/rgb8_128_128_2_1.heic", [0], 1),
+        ("images/rgb8_128_128_2_1.heic", [1], 1),
+        ("images/rgb8_128_128_2_1.heic", [1], 1),
+        ("images/rgb8_210_128_2_2.heic", [0], 1),
+        ("images/rgb8_210_128_2_2.heic", [0], 1),
+        ("images/rgb10_639_480_1_3.heic", [], 1),
     ),
 )
-def test_remove(image_path, remove_img: list, remove_thumb: list, expected: tuple):
+def test_remove(image_path, remove_img: list, expected: int):
     heic_file_2_images = open_heif(Path(image_path))
     for remove_index in remove_img:
         del heic_file_2_images[remove_index]
-    for remove_tuple in remove_thumb:
-        del heic_file_2_images[remove_tuple[0]].thumbnails[remove_tuple[1]]
     out_buffer = BytesIO()
     heic_file_2_images.save(out_buffer)
     heic_file_1_image = open_heif(out_buffer)
-    assert len(heic_file_1_image) == expected[0]
-    assert len(heic_file_1_image.thumbnails) == expected[1]
-
-
-@pytest.mark.parametrize(
-    "thumbs,expected",
-    (
-        (-1, [1, 1]),
-        ([-1], [1, 1]),
-        (0, [1, 1]),
-        ([0], [1, 1]),
-        (1, [1, 1]),
-        ([1], [1, 1]),
-        (64, [1, 2]),
-        ([64], [1, 2]),
-        ([2048], [1, 1]),
-        (96, [2, 2]),
-        ([96], [2, 2]),
-        ([84, 0], [2, 2]),
-        ([0, 84], [2, 2]),
-        ([96, 84], [3, 3]),
-    ),
-)
-def test_add_thumbs(thumbs, expected):
-    for i, image_path in enumerate((Path("images/rgb8_128_128_2_1.heic"), Path("images/rgb8_150_128_2_1.heic"))):
-        heif_file = open_heif(image_path)
-        heif_file[0].add_thumbnails(thumbs)
-        heif_file.add_thumbnails(thumbs)
-        output = BytesIO()
-        heif_file.save(output, quality=100)
-        out_heif = open_heif(output)
-        assert len(out_heif[0].thumbnails) == expected[i]
-        assert len(out_heif[1].thumbnails) == expected[i]
-        imagehash.compare_hashes(
-            [heif_file[0].to_pillow(), out_heif[0].to_pillow(), *[i.to_pillow() for i in out_heif[0].thumbnails]],
-            hash_size=8,
-            max_difference=2,
-        )
-        imagehash.compare_hashes(
-            [heif_file[1].to_pillow(), out_heif[1].to_pillow(), *[i.to_pillow() for i in out_heif[1].thumbnails]],
-            hash_size=8,
-            max_difference=2,
-        )
+    assert len(heic_file_1_image) == expected
 
 
 def test_append_images():

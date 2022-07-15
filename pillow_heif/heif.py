@@ -158,9 +158,7 @@ class HeifImageBase:
             _ = self.get_original()
             info = _.info if _ else None
         if info:
-            for k in ("exif", "xmp", "metadata"):
-                image.info[k] = info[k]
-            for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
+            for k in ("exif", "xmp", "metadata", "primary", "icc_profile", "icc_profile_type", "nclx_profile"):
                 if k in info:
                     image.info[k] = info[k]
             image.info["original_orientation"] = set_orientation(image.info)
