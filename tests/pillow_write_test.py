@@ -3,9 +3,7 @@ from io import SEEK_END, BytesIO
 from pathlib import Path
 
 import pytest
-from packaging.version import parse as parse_version
 from PIL import Image, ImageSequence
-from PIL import __version__ as pil_version
 from pillow_read_test import compare_heif_to_pillow_fields
 
 from pillow_heif import from_pillow, open_heif, options, register_heif_opener
@@ -35,32 +33,6 @@ def test_zero(size: tuple):
     im = Image.new("RGB", size)
     with pytest.raises(ValueError):
         im.save(out_heif, format="HEIF")
-
-
-@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
-def test_jpeg_to_heic_with_orientation():
-    jpeg_pillow = Image.open(Path("images/jpeg_gif_png/pug_90_flipped.jpeg"))
-    out_heic = BytesIO()
-    jpeg_pillow.save(out_heic, format="HEIF", quality=-1)
-    heic_pillow = Image.open(out_heic)
-    imagehash.compare_hashes([jpeg_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
-    out_jpeg = BytesIO()
-    heic_pillow.save(out_jpeg, format="JPEG")
-    imagehash.compare_hashes([jpeg_pillow, out_jpeg], hash_type="dhash", hash_size=8, max_difference=1)
-
-
-@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
-def test_png_xmp_orientation():
-    png_pillow = Image.open(Path("images/jpeg_gif_png/xmp_tags_orientation.png"))
-    out_heic = BytesIO()
-    png_pillow.save(out_heic, format="HEIF", quality=-1)
-    heic_pillow = Image.open(out_heic)
-    assert heic_pillow.info["xmp"]
-    assert isinstance(heic_pillow.info["xmp"], bytes)
-    imagehash.compare_hashes([png_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
-    out_png = BytesIO()
-    heic_pillow.save(out_png, format="PNG")
-    imagehash.compare_hashes([png_pillow, out_png], hash_type="dhash", hash_size=8, max_difference=1)
 
 
 def test_heic_orientation_and_quality():

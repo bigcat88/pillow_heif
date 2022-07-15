@@ -9,16 +9,18 @@ It is a final API release, no more further changes to API are planned, only bugf
 
 ### Added
 
-- `thumbnail` function, `docs` for it.
+- (Heif, HeifImagePlugin) `thumbnail` function, `docs` for it.
 
 ### Changed
 
 - Wheels now are in ABI3 format for CPython(`cp3x-abi3-xxx.whl`), `3x` less size on PyPi.
-- `to_pillow` method, now fills `metadata` from an original image if called for thumbnails.
+- (Heif) `to_pillow` method, now fills `metadata` from an original image if called for thumbnails.
 
 ### Fixed
 
-- Nice speed up for reading images having thumbnails in a `Pillow plugin` mode.
+- (HeifImagePlugin) Nice `speed up` for reading images having thumbnails in a `Pillow plugin` mode.
+- (HeifImagePlugin) `XMP` metadata save from `TIFF` and `JPEG`.
+- (HeifImagePlugin) `EXIF` metadata save from `TIFF`(only for Pillow >= 9.2).
 
 ## [0.4.0 - 2022-07-04]
 

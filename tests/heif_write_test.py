@@ -266,30 +266,3 @@ def test_exif_removing():
     saved_heif = open_heif(out_buf)
     for i, frame in enumerate(saved_heif):
         assert frame.info["exif"] if i else not frame.info["exif"]
-
-
-def test_xmp_add_remove():
-    xmp_data = b"<xmp_data>"
-    heif_file = open_heif(Path("images/rgb8_128_128_2_1.heic"))
-    # No XMP in images
-    for frame in heif_file:
-        assert not frame.info["xmp"]
-    out_buf = BytesIO()
-    heif_file.save(out_buf, xmp=xmp_data, save_all=True)
-    # Checking `heif_file` to not change
-    for frame in heif_file:
-        assert not frame.info["xmp"]
-    saved_heif = open_heif(out_buf)
-    # Checking that output  of`heif_file` was changed
-    for i, frame in enumerate(saved_heif):
-        assert not frame.info["xmp"] if i else frame.info["xmp"]
-    out_buf2 = BytesIO()
-    # Remove XMP from primary image
-    saved_heif.save(out_buf2, xmp=None, save_all=True)
-    # Checking `saved_heif` to not change
-    for i, frame in enumerate(saved_heif):
-        assert not frame.info["xmp"] if i else frame.info["xmp"]
-    saved_heif2 = open_heif(out_buf2)
-    # Checking that output has no XMP
-    for i, frame in enumerate(saved_heif2):
-        assert not frame.info["xmp"]

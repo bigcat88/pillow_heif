@@ -6,6 +6,7 @@ from math import ceil
 from typing import Union
 
 from _pillow_heif_cffi import ffi, lib
+from PIL import __version__ as pil_version
 
 from ._libheif_ctx import LibHeifCtxWrite
 from .constants import HeifChroma, HeifColorProfileType, HeifColorspace
@@ -200,3 +201,31 @@ def set_metadata(ctx: LibHeifCtxWrite, heif_img_handle, info: dict) -> None:
             metadata["content_type"],
         )
         check_libheif_error(error)
+
+
+def exif_from_pillow(additional_info: dict, frame) -> None:
+    if "exif" not in additional_info:
+        if hasattr(frame, "getexif"):
+            if pil_version[:2] in ("6.", "7.", "8.") or pil_version[:4] in ("9.0.", "9.1."):
+                return
+            exif = frame.getexif()
+            if exif:
+                additional_info["exif"] = exif.tobytes()
+
+
+def xmp_from_pillow(additional_info: dict, frame) -> None:
+    if "xmp" not in additional_info:
+        if "XML:com.adobe.xmp" in frame.info:  # PNG
+            additional_info["xmp"] = frame.info["XML:com.adobe.xmp"]
+        elif hasattr(frame, "tag_v2"):  # TIFF
+            if 700 in frame.tag_v2:
+                additional_info["xmp"] = frame.tag_v2[700]
+        elif hasattr(frame, "applist"):  # JPEG
+            for segment, content in frame.applist:
+                if segment == "APP1":
+                    marker, xmp_tags = content.rsplit(b"\x00", 1)
+                    if marker == b"http://ns.adobe.com/xap/1.0/":
+                        additional_info["xmp"] = xmp_tags
+                        break
+    if "xmp" in additional_info and isinstance(additional_info["xmp"], str):
+        additional_info["xmp"] = additional_info["xmp"].encode("utf-8")
