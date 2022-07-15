@@ -41,19 +41,23 @@ def assert_image_similar(a, b, epsilon=0):
     assert epsilon >= ave_diff
 
 
+@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
 @pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 @pytest.mark.parametrize("orientation", (1, 2, 3, 4, 5, 6, 7, 8))
-def test_jpeg_exif_orientation(orientation):
+@pytest.mark.parametrize("im_format", ("JPEG", "PNG"))
+def test_exif_orientation(orientation, im_format):
+    out_im = BytesIO()
+    out_heif_im = BytesIO()
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
     im = im.convert(mode="RGB")
     exif_data = Image.Exif()
     exif_data[0x0112] = orientation
-    out_im = BytesIO()
-    im.save(out_im, format="JPEG", exif=exif_data.tobytes())
+    im.save(out_im, format=im_format, exif=exif_data.tobytes())
     im = Image.open(out_im)
-    # We are testing next two lines. They are equal to `save+open` operations.
-    im_heif = pillow_heif.from_pillow(im)
-    im_heif = im_heif[0].to_pillow()
+    assert im.getexif()[0x0112] == orientation
+    # Saving image with EXIF to HEIF
+    im.save(out_heif_im, format="HEIF", quality=-1)
+    im_heif = Image.open(out_heif_im)
     im_heif_exif = im_heif.getexif()
     assert 0x0112 not in im_heif_exif or im_heif_exif[0x0112] == 1
     transposed_im = ImageOps.exif_transpose(im)
@@ -131,3 +135,29 @@ def test_heif_xmp_orientation(orientation):
     # We should ignore all XMP rotation flags for HEIF
     assert im_heif.info["original_orientation"] == orientation
     assert_image_similar(im, im_heif)
+
+
+@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
+@pytest.mark.parametrize("orientation", (1, 2))
+@pytest.mark.parametrize("im_format", ("JPEG", "PNG"))
+def test_exif_heif_exif_orientation(orientation, im_format):
+    out_im = BytesIO()
+    out_heif_im = BytesIO()
+    im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
+    im = im.convert(mode="RGB")
+    exif_data = Image.Exif()
+    exif_data[0x0112] = orientation
+    im.save(out_im, format=im_format, exif=exif_data.tobytes())
+    im = Image.open(out_im)
+    assert im.getexif()[0x0112] == orientation
+    # Saving image with EXIF to HEIF
+    im.save(out_heif_im, format="HEIF", quality=-1, exif=exif_data.tobytes())
+    im_heif = Image.open(out_heif_im)
+    im_heif_exif = im_heif.getexif()
+    assert 0x0112 not in im_heif_exif or im_heif_exif[0x0112] == 1
+    transposed_im = ImageOps.exif_transpose(im)
+    assert_image_similar(transposed_im, im_heif)
+    if orientation > 1:
+        with pytest.raises(AssertionError):
+            assert_image_similar(im, im_heif)
