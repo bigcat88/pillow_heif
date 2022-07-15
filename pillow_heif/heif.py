@@ -574,8 +574,6 @@ class HeifFile:
             additional_info["primary"] = False
         exif_from_pillow(additional_info, frame)
         xmp_from_pillow(additional_info, frame)
-        if "xmp" in additional_info and isinstance(additional_info["xmp"], str):
-            additional_info["xmp"] = additional_info["xmp"].encode("utf-8")
         original_orientation = set_orientation(additional_info)
         if frame.mode == "P":
             mode = "RGBA" if frame.info.get("transparency") else "RGB"

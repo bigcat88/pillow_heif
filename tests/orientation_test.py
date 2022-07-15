@@ -46,7 +46,7 @@ def assert_image_similar(a, b, epsilon=0):
 def test_jpeg_exif_orientation(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
     im = im.convert(mode="RGB")
-    exif_data = im.getexif()
+    exif_data = Image.Exif()
     exif_data[0x0112] = orientation
     out_im = BytesIO()
     im.save(out_im, format="JPEG", exif=exif_data.tobytes())
@@ -98,7 +98,7 @@ def test_heif_exif_orientation(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
     im = im.convert(mode="RGB")
     out_im_heif = BytesIO()
-    exif_data = im.getexif()
+    exif_data = Image.Exif()
     exif_data[0x0112] = orientation
     im.save(out_im_heif, format="HEIF", exif=exif_data.tobytes(), quality=-1)
     im_heif = Image.open(out_im_heif)

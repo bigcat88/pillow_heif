@@ -227,3 +227,5 @@ def xmp_from_pillow(additional_info: dict, frame) -> None:
                     if marker == b"http://ns.adobe.com/xap/1.0/":
                         additional_info["xmp"] = xmp_tags
                         break
+    if "xmp" in additional_info and isinstance(additional_info["xmp"], str):
+        additional_info["xmp"] = additional_info["xmp"].encode("utf-8")
