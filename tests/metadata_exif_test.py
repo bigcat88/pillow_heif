@@ -4,12 +4,14 @@ import pytest
 from packaging.version import parse as parse_version
 from PIL import Image
 from PIL import __version__ as pil_version
+from PIL import features
 
 import pillow_heif
 
 pillow_heif.register_heif_opener()
 
 
+@pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
 @pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
 @pytest.mark.skipif(parse_version(pil_version) < parse_version("9.2.0"), reason="Requires Pillow >= 9.2")
 @pytest.mark.parametrize(
