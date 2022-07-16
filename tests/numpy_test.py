@@ -1,7 +1,4 @@
-# Testing Numpy interface support(asarray)
-
-import os
-from pathlib import Path
+from io import BytesIO
 
 import pytest
 from packaging.version import parse as parse_version
@@ -11,62 +8,46 @@ import pillow_heif
 
 np = pytest.importorskip("numpy", reason="NumPy not installed")
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
 pillow_heif.register_heif_opener()
+if not pillow_heif.options().hevc_enc:
+    pytest.skip(reason="Requires HEIF encoder.", allow_module_level=True)
+
+# Creating HEIF file in memory with 1 image and 3 thumbnails.
+im_pillow = Image.effect_mandelbrot((512, 512), (-3, -2.5, 2, 2.5), 100)
+im_heif = pillow_heif.from_pillow(im_pillow)
+im_heif.add_thumbnails(boxes=[192, 128, 64])
+heif_buf = BytesIO()
+im_heif.save(heif_buf)
 
 
-@pytest.mark.parametrize(
-    "img_path, modes",
-    (
-        ("images/rgba10.heif", ("L", "RGBA")),
-        ("images/rgb8_512_512_1_0.heic", ("L", "RGB", "RGBA")),
-        ("images/rgb8_150_128_2_1.heic", ("L", "RGB", "RGBA")),
-        ("images/jpeg_gif_png/I_color_mode_image.pgm", ("I;16", "L", "RGB", "RGBA")),
-    ),
-)
-def test_numpy_array(img_path, modes):
-    pil_img = Image.open(Path(img_path))
-    for mode in modes:
-        converted_pil_img = pil_img.convert(mode=mode)
-        heif_file = pillow_heif.from_pillow(converted_pil_img)
-        pil_array = np.asarray(converted_pil_img)
-        heif_array = np.asarray(heif_file[0])
-        assert np.array_equal(pil_array, heif_array)
+@pytest.mark.parametrize("im_size", ((256, 128), (127, 64), (63, 64), (31, 32), (20, 100), (14, 16), (11, 16)))
+@pytest.mark.parametrize("mode", ("L", "RGB", "RGBA", "I;16"))
+def test_numpy_array2(im_size, mode):
+    im = im_pillow.convert(mode=mode)
+    heif_file = pillow_heif.from_pillow(im)
+    pil_array = np.asarray(im)
+    heif_array = np.asarray(heif_file[0])
+    assert np.array_equal(pil_array, heif_array)
 
 
 @pytest.mark.skipif(parse_version(np.__version__) < parse_version("1.23.0"), reason="Requires numpy >= 1.23")
-def test_numpy_array_thumbnail_pillow():
-    pil_img = Image.open(Path("images/rgb8_512_512_1_2.heic"))
+def test_numpy_array_pillow_thumbnail():
+    pil_img = Image.open(heif_buf)
     thumbnail = pillow_heif.thumbnail(pil_img)
     assert thumbnail.size != pil_img.size
     np.asarray(thumbnail)
-    np.asarray(pil_img.info["thumbnails"][0])
+    for i in range(3):
+        np.asarray(pil_img.info["thumbnails"][i])
     pil_img.load()
-    with pytest.raises(ValueError):
-        np.asarray(pil_img.info["thumbnails"][0])
+    for i in range(3):
+        with pytest.raises(ValueError):
+            np.asarray(pil_img.info["thumbnails"][i])
 
 
-def test_numpy_array_thumbnail_heif():
-    heif_file = pillow_heif.open_heif(Path("images/rgb8_512_512_1_2.heic"))
+def test_numpy_array_heif_thumbnail():
+    heif_file = pillow_heif.open_heif(heif_buf)
     thumbnail = pillow_heif.thumbnail(heif_file)
     assert thumbnail.size != heif_file.size
     np.asarray(thumbnail)
-    np.asarray(heif_file.thumbnails[0])
-
-
-def test_numpy_array_no_thumbnail_pillow():
-    pil_img = Image.open(Path("images/rgb8_512_512_1_0.heic"))
-    thumbnail = pillow_heif.thumbnail(pil_img)
-    assert thumbnail.size == pil_img.size
-    pil_img = Image.open(Path("images/rgb8_512_512_1_2.heic"))
-    thumbnail = pillow_heif.thumbnail(pil_img, min_box=1024 * 10)
-    assert thumbnail.size == pil_img.size
-
-
-def test_numpy_array_no_thumbnail_heif():
-    heif_file = pillow_heif.open_heif(Path("images/rgb8_512_512_1_0.heic"))
-    thumbnail = pillow_heif.thumbnail(heif_file)
-    assert thumbnail.size == heif_file.size
-    heif_file = pillow_heif.open_heif(Path("images/rgb8_512_512_1_2.heic"))
-    thumbnail = pillow_heif.thumbnail(heif_file, min_box=1024 * 10)
-    assert thumbnail.size == heif_file.size
+    for i in range(3):
+        np.asarray(heif_file.thumbnails[i])
