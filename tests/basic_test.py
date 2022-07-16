@@ -41,14 +41,20 @@ def test_heif_check_filetype(img_path):
 
 
 def test_heif_str():
+    str_heif_img_not_loaded = "<HeifImage 128x128 RGBA with no image data and 1 thumbnails>"
+    str_heif_img_loaded = "<HeifImage 128x128 RGBA with 65536 bytes image data and 1 thumbnails>"
+    str_thumb_not_loaded = "<HeifThumbnail 64x64 RGBA with no image data>"
+    str_thumb_loaded = "<HeifThumbnail 64x64 RGBA with 16384 bytes image data>"
     heif_file = pillow_heif.open_heif(Path("images/rgb8_128_128_2_1.heic"))
-    assert str(heif_file).find("HeifFile with 2 images") != -1
-    assert str(heif_file).find("no image data") != -1
-    assert str(heif_file[0]).find("HeifImage 128x128 RGB") != -1
-    assert str(heif_file[0]).find("no image data") != -1
-    assert str(heif_file.thumbnails[0]).find("HeifThumbnail 64x64 RGB") != -1
-    assert str(heif_file.thumbnails[0]).find("no image data") != -1
+    assert str(heif_file) == f"<HeifFile with 2 images: ['{str_heif_img_not_loaded}', '{str_heif_img_not_loaded}']>"
+    assert str(heif_file[0]) == str_heif_img_not_loaded
+    assert str(heif_file.thumbnails[0]) == f"{str_thumb_not_loaded} Original:{str_heif_img_not_loaded}"
     heif_file.load()
     heif_file.thumbnails[0].load()
-    assert str(heif_file[0]).find("with 65536 bytes image data") != -1
-    assert str(heif_file.thumbnails[0]).find("with 16384 bytes image data") != -1
+    assert str(heif_file[0]) == str_heif_img_loaded
+    assert str(heif_file.thumbnails[0]) == f"{str_thumb_loaded} Original:{str_heif_img_loaded}"
+    heif_file = pillow_heif.HeifFile().add_from_heif(heif_file[0])
+    assert str(heif_file) == f"<HeifFile with 1 images: ['{str_heif_img_loaded}']>"
+    assert str(heif_file.thumbnails[0]) == f"{str_thumb_not_loaded} Original:{str_heif_img_loaded}"
+    heif_file.thumbnails[0].load()  # Should not change anything, thumbnails are cloned without data.
+    assert str(heif_file.thumbnails[0]) == f"{str_thumb_not_loaded} Original:{str_heif_img_loaded}"

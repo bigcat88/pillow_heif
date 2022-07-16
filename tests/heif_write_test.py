@@ -6,18 +6,19 @@ from pathlib import Path
 
 import pytest
 from heif_read_test import compare_heif_files_fields
+from helpers import compare_hashes
 from PIL import Image
 
 from pillow_heif import _options  # noqa
 from pillow_heif import HeifError, HeifFile, open_heif, options, register_heif_opener
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+register_heif_opener()
 
 if not options().hevc_enc:
     pytest.skip("No HEVC encoder.", allow_module_level=True)
-imagehash = pytest.importorskip("compare_hashes", reason="NumPy not installed")
 
-register_heif_opener()
+pytest.importorskip("numpy", reason="NumPy not installed")
 
 
 def test_outputs():
@@ -152,7 +153,7 @@ def test_scale():
     heic_file.scale(754, 754)
     out_buffer = BytesIO()
     heic_file.save(out_buffer, quality=-1)
-    imagehash.compare_hashes([Path("images/rgb8_512_512_1_0.heic"), out_buffer])
+    compare_hashes([Path("images/rgb8_512_512_1_0.heic"), out_buffer])
 
 
 def test_add_from():
@@ -173,13 +174,13 @@ def test_add_from():
     compare_heif_files_fields(heif_file2[1], out_heif[2])
     compare_heif_files_fields(heif_file2[1], out_heif[3])
     pillow_image = Image.open(out_buf)
-    imagehash.compare_hashes([pillow_image, Path("images/rgb8_512_512_1_0.heic")])
+    compare_hashes([pillow_image, Path("images/rgb8_512_512_1_0.heic")])
     pillow_image.seek(1)
     pillow_original = Image.open(Path("images/rgb8_210_128_2_2.heic"))
-    imagehash.compare_hashes([pillow_image, pillow_original])
+    compare_hashes([pillow_image, pillow_original])
     pillow_image.seek(2)
     pillow_original.seek(1)
-    imagehash.compare_hashes([pillow_image, pillow_original])
+    compare_hashes([pillow_image, pillow_original], max_difference=1)
 
 
 def test_primary_image():

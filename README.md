@@ -20,8 +20,6 @@
 
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
 
-README for versions `0.2 - 0.3` lives [here](https://github.com/bigcat88/pillow_heif/blob/9d2045111d27ff842678097175c7d95b5f1ec212/README.md).
-
 Features:
  * Decoding of `8`, `10`, `12` bit HEIF images.
  * Encoding of `8`, `10`, `12` bit HEIF images.

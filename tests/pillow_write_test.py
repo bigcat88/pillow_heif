@@ -3,6 +3,7 @@ from io import SEEK_END, BytesIO
 from pathlib import Path
 
 import pytest
+from helpers import compare_hashes
 from PIL import Image, ImageSequence
 from pillow_read_test import compare_heif_to_pillow_fields
 
@@ -12,9 +13,10 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 register_heif_opener()
 
 
-imagehash = pytest.importorskip("compare_hashes", reason="NumPy not installed")
 if not options().hevc_enc:
     pytest.skip("No HEVC encoder.", allow_module_level=True)
+
+pytest.importorskip("numpy", reason="NumPy not installed")
 
 
 def test_save_one_all():
@@ -39,12 +41,12 @@ def test_heic_orientation_and_quality():
     heic_pillow = Image.open(Path("images/etc_heif/arrow.heic"))
     out_jpeg = BytesIO()
     heic_pillow.save(out_jpeg, format="JPEG")
-    imagehash.compare_hashes([heic_pillow, out_jpeg], hash_type="dhash", max_difference=1)
+    compare_hashes([heic_pillow, out_jpeg], max_difference=1)
     out_heic_q30 = BytesIO()
     out_heic_q20 = BytesIO()
     heic_pillow.save(out_heic_q30, format="HEIF", quality=30)
     heic_pillow.save(out_heic_q20, format="HEIF", quality=20)
-    imagehash.compare_hashes([heic_pillow, out_heic_q30, out_heic_q20], hash_size=8)
+    compare_hashes([heic_pillow, out_heic_q30, out_heic_q20], hash_size=8, max_difference=2)
     assert out_heic_q30.seek(0, SEEK_END) < Path("images/etc_heif/arrow.heic").stat().st_size
     assert out_heic_q20.seek(0, SEEK_END) < out_heic_q30.seek(0, SEEK_END)
 
@@ -54,17 +56,17 @@ def test_gif():
     gif_pillow = Image.open(Path("images/jpeg_gif_png/chi.gif"))
     out_heic = BytesIO()
     gif_pillow.save(out_heic, format="HEIF")
-    imagehash.compare_hashes([gif_pillow, out_heic], hash_type="dhash")
+    compare_hashes([gif_pillow, out_heic])
     # save second gif frame
     ImageSequence.Iterator(gif_pillow)[1].save(out_heic, format="HEIF")
-    imagehash.compare_hashes([gif_pillow, out_heic], hash_type="dhash")
+    compare_hashes([gif_pillow, out_heic])
     # convert all frames of gif(pillow_heif does not skip identical frames and saves all frames like in source)
     out_all_heic = BytesIO()
     gif_pillow.save(out_all_heic, format="HEIF", save_all=True, quality=80)
     assert out_heic.seek(0, SEEK_END) * 2 < out_all_heic.seek(0, SEEK_END)
     heic_pillow = Image.open(out_all_heic)
     for i, frame in enumerate(ImageSequence.Iterator(gif_pillow)):
-        imagehash.compare_hashes([ImageSequence.Iterator(heic_pillow)[i], frame], max_difference=1)
+        compare_hashes([ImageSequence.Iterator(heic_pillow)[i], frame], max_difference=1)
 
 
 def test_alpha_channel():
@@ -74,13 +76,13 @@ def test_alpha_channel():
     heic_pillow.save(out_png, format="PNG", save_all=True)
     png_pillow = Image.open(out_png)
     for i, frame in enumerate(ImageSequence.Iterator(png_pillow)):
-        imagehash.compare_hashes([ImageSequence.Iterator(heic_pillow)[i], frame])
+        compare_hashes([ImageSequence.Iterator(heic_pillow)[i], frame])
     # saving from png to heic
     out_heic = BytesIO()
     png_pillow.save(out_heic, format="HEIF", quality=90, save_all=True)
     heic_pillow = Image.open(out_heic)
     for i, frame in enumerate(ImageSequence.Iterator(png_pillow)):
-        imagehash.compare_hashes([ImageSequence.Iterator(heic_pillow)[i], frame])
+        compare_hashes([ImageSequence.Iterator(heic_pillow)[i], frame])
 
 
 def test_palette_with_bytes_transparency():
@@ -101,7 +103,7 @@ def test_L_color_mode():
     heic_pillow = Image.open(out_heic)
     assert heic_pillow.heif_file.has_alpha is False  # noqa
     assert heic_pillow.mode == "RGB"
-    imagehash.compare_hashes([png_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
+    compare_hashes([png_pillow, heic_pillow], hash_size=8, max_difference=1)
 
 
 def test_LA_color_mode():
@@ -112,7 +114,7 @@ def test_LA_color_mode():
     heic_pillow = Image.open(out_heic)
     assert heic_pillow.heif_file.has_alpha is True  # noqa
     assert heic_pillow.mode == "RGBA"
-    imagehash.compare_hashes([png_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
+    compare_hashes([png_pillow, heic_pillow], hash_size=8, max_difference=1)
 
 
 def test_1_color_mode():
@@ -121,12 +123,12 @@ def test_1_color_mode():
     out_heic = BytesIO()
     png_pillow.save(out_heic, format="HEIF", quality=-1, save_all=True)
     heic_pillow = Image.open(out_heic)
-    imagehash.compare_hashes([png_pillow, heic_pillow], hash_type="dhash", hash_size=8, max_difference=1)
+    compare_hashes([png_pillow, heic_pillow], hash_size=8, max_difference=1)
 
 
 @pytest.mark.parametrize("img_path", ("images/jpeg_gif_png/I_color_mode_image.pgm",))
 # "images/jpeg_gif_png/I_color_mode_image.png"
-# when Pillow will be able to properly convert PNG from "I" mode to "L"(for imagehash) - add to test.
+# when Pillow will be able to properly convert PNG from "I" mode to "L" - add to test.
 def test_I_color_modes_to_10bit(img_path):
     src_pillow = Image.open(Path(img_path))
     assert src_pillow.mode == "I"
@@ -136,12 +138,12 @@ def test_I_color_modes_to_10bit(img_path):
         i_mode_img.save(out_heic, format="HEIF", quality=-1)
         assert open_heif(out_heic, convert_hdr_to_8bit=False).bit_depth == 10
         heic_pillow = Image.open(out_heic)
-        imagehash.compare_hashes([src_pillow, heic_pillow], hash_type="dhash", hash_size=8)
+        compare_hashes([src_pillow, heic_pillow], hash_size=8)
 
 
 @pytest.mark.parametrize("img_path", ("images/jpeg_gif_png/I_color_mode_image.pgm",))
 # "images/jpeg_gif_png/I_color_mode_image.png"
-# when Pillow will be able to properly convert PNG from "I" mode to "L"(for imagehash) - add to test.
+# when Pillow will be able to properly convert PNG from "I" mode to "L" - add to test.
 def test_I_color_modes_to_12bit(img_path):
     try:
         options().save_to_12bit = True
@@ -153,7 +155,7 @@ def test_I_color_modes_to_12bit(img_path):
             i_mode_img.save(out_heic, format="HEIF", quality=-1)
             assert open_heif(out_heic, convert_hdr_to_8bit=False).bit_depth == 12
             heic_pillow = Image.open(out_heic)
-            imagehash.compare_hashes([src_pillow, heic_pillow], hash_type="dhash", hash_size=8)
+            compare_hashes([src_pillow, heic_pillow], hash_size=8)
     finally:
         options().reset()
 

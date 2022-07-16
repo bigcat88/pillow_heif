@@ -2,6 +2,7 @@ from gc import collect
 from io import BytesIO
 
 import pytest
+from helpers import compare_hashes
 from PIL import Image, ImageSequence
 
 import pillow_heif
@@ -221,6 +222,7 @@ def test_add_thumbs(thumbs, expected_after, way_to_add):
     out_heif = pillow_heif.open_heif(output)
     for i in range(3):
         assert len(out_heif[i].thumbnails) == expected_after[i]
+    compare_hashes([out_heif[0].to_pillow(), out_heif[0].thumbnails[0].to_pillow()], hash_size=8, max_difference=3)
 
 
 def test_remove_thumbs():
