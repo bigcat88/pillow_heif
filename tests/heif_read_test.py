@@ -200,13 +200,6 @@ def test_only_heif_image_reference():
 def test_all(image_path):
     def perform_test_all(convert_hdr_to_8bit: bool) -> bool:
         heif_file = open_heif(image_path, convert_hdr_to_8bit=convert_hdr_to_8bit)
-        assert heif_file.mimetype in (
-            "image/heic",
-            "image/heif",
-            "image/avif",
-            "image/heic-sequence",
-            "image/heif-sequence",
-        )
         for image in heif_file:
             assert isinstance(getxmp(image.info["xmp"]), dict)
             assert min(image.size) > 0

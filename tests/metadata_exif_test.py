@@ -113,3 +113,45 @@ def test_heif_exif_add_remove():
     im_heif.save(out_heif_no_exif)
     im_heif_no_exif = pillow_heif.open_heif(out_heif_no_exif)
     assert "exif" not in im_heif_no_exif.info or im_heif_no_exif.info["exif"] is None
+
+
+@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+def test_heif_multi_frame_exif_add_remove():
+    exif_desc_value = "this is a desc"
+    exif = Image.Exif()
+    exif[0x010E] = exif_desc_value
+    out_heif_no_exif = BytesIO()
+    out_heif = BytesIO()
+    # test filling `exif` during save.
+    im_heif = pillow_heif.from_pillow(Image.new("RGB", (15, 15), 0))
+    im_heif.add_from_pillow(Image.new("RGB", (13, 13), 0))
+    im_heif.save(out_heif, exif=exif.tobytes(), primary_index=1)
+    for i in range(2):
+        assert "exif" not in im_heif[i].info or im_heif[i].info["exif"] is None
+    im_heif = pillow_heif.open_heif(out_heif)
+    assert im_heif[1].info["exif"] and not im_heif[0].info["exif"]
+    # test filling `info["exif"]` before save.
+    im_heif = pillow_heif.from_pillow(Image.new("RGB", (15, 15), 0))
+    im_heif.add_from_pillow(Image.new("RGB", (13, 13), 0))
+    im_heif[1].info["exif"] = exif.tobytes()
+    im_heif.save(out_heif, primary_index=1)
+    im_heif = pillow_heif.open_heif(out_heif)
+    assert im_heif[1].info["exif"] and not im_heif[0].info["exif"]
+    # setting `exif` to `None` during save.
+    im_heif.save(out_heif_no_exif, exif=None)
+    assert im_heif[1].info["exif"] and not im_heif[0].info["exif"]
+    im_heif_no_exif = pillow_heif.open_heif(out_heif_no_exif)
+    assert "exif" not in im_heif_no_exif[0].info or im_heif_no_exif[0].info["exif"] is None
+    assert "exif" not in im_heif_no_exif[1].info or im_heif_no_exif[1].info["exif"] is None
+    # filling `info["exif"]` with `None` before save.
+    im_heif.info["exif"] = None
+    im_heif.save(out_heif_no_exif)
+    im_heif_no_exif = pillow_heif.open_heif(out_heif_no_exif)
+    assert "exif" not in im_heif_no_exif[0].info or im_heif_no_exif[0].info["exif"] is None
+    assert "exif" not in im_heif_no_exif[1].info or im_heif_no_exif[1].info["exif"] is None
+    # removing `info["exif"]` before save.
+    im_heif.info.pop("exif")
+    im_heif.save(out_heif_no_exif)
+    im_heif_no_exif = pillow_heif.open_heif(out_heif_no_exif)
+    assert "exif" not in im_heif_no_exif[0].info or im_heif_no_exif[0].info["exif"] is None
+    assert "exif" not in im_heif_no_exif[1].info or im_heif_no_exif[1].info["exif"] is None
