@@ -11,19 +11,25 @@ pillow_heif.register_heif_opener()
 if not pillow_heif.options().hevc_enc:
     pytest.skip(reason="Requires HEIF encoder.", allow_module_level=True)
 
+
 # Creating HEIF file in memory with 3 images.
 # Second image is a Primary Image with EXIF and XMP data.
 # First two images has 2 thumbnails each, third image has no thumbnails.
-_ = Image.effect_mandelbrot((512, 512), (-3, -2.5, 2, 2.5), 100)
-im_heif = pillow_heif.from_pillow(_)
-im_heif.add_from_pillow(_.crop((0, 0, 256, 256)))
-im_heif.add_thumbnails(boxes=[128, 64])
-im_heif.add_from_pillow(_.crop((0, 0, 192, 192)))
-heif_buf = BytesIO()
-exif = Image.Exif()
-exif[0x010E] = "this is a desc"
+def create_thumbnail_heif(size):
+    _ = Image.effect_mandelbrot(size, (-3, -2.5, 2, 2.5), 100)
+    im_heif = pillow_heif.from_pillow(_)
+    im_heif.add_from_pillow(_.crop((0, 0, 256, 256)))
+    im_heif.add_thumbnails(boxes=[128, 64])
+    im_heif.add_from_pillow(_.crop((0, 0, 192, 192)))
+    _heif_buf = BytesIO()
+    exif = Image.Exif()
+    exif[0x010E] = "this is a desc"
+    im_heif.save(_heif_buf, primary_index=1, exif=exif.tobytes(), xmp=xmp_data)
+    return _heif_buf
+
+
 xmp_data = b"xmp_data"
-im_heif.save(heif_buf, primary_index=1, exif=exif.tobytes(), xmp=xmp_data)
+heif_buf = create_thumbnail_heif((512, 512))
 
 
 def test_heif_enumerate_thumbnails():
@@ -148,7 +154,7 @@ def test_heif_thumbnail_no_xmp_exif():
 
 
 def test_pillow_thumbnail_no_xmp_exif():
-    thumbnail = pillow_heif.thumbnail(Image.open(heif_buf))
+    thumbnail = pillow_heif.thumbnail(ImageSequence.Iterator(Image.open(heif_buf))[0])
     assert not thumbnail.info["exif"]
     assert not thumbnail.info["xmp"]
 
@@ -160,7 +166,7 @@ def test_heif_thumbnail_xmp_exif():
 
 
 def test_pillow_thumbnail_xmp_exif():
-    thumbnail = pillow_heif.thumbnail(ImageSequence.Iterator(Image.open(heif_buf))[1])
+    thumbnail = pillow_heif.thumbnail(Image.open(heif_buf))
     assert thumbnail.info["exif"]
     assert thumbnail.info["xmp"] == xmp_data
     assert isinstance(thumbnail.getexif(), Image.Exif)
@@ -209,8 +215,9 @@ def test_heif_thumbnail_references():
     ),
 )
 @pytest.mark.parametrize("way_to_add", ("HeifFile", "HeifImage"))
-def test_add_thumbs(thumbs, expected_after, way_to_add):
-    heif_file = pillow_heif.open_heif(heif_buf)
+@pytest.mark.parametrize("heif_file_buf", (heif_buf, create_thumbnail_heif((417, 411))))
+def test_add_thumbs(thumbs, expected_after, way_to_add, heif_file_buf):
+    heif_file = pillow_heif.open_heif(heif_file_buf)
     if way_to_add == "HeifImage":
         heif_file[0].add_thumbnails(thumbs)
         heif_file[1].add_thumbnails(thumbs)

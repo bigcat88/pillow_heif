@@ -548,8 +548,11 @@ class HeifFile:
         if load_one:
             self.__add_frame_from_pillow(pil_image, ignore_primary, **kwargs)
         else:
+            current_frame = pil_image.tell() if hasattr(pil_image, "tell") else None
             for frame in ImageSequence.Iterator(pil_image):
                 self.__add_frame_from_pillow(frame, ignore_primary, **kwargs)
+            if current_frame is not None and hasattr(pil_image, "seek"):
+                pil_image.seek(current_frame)
         return self
 
     def __add_frame_from_pillow(self, frame: Image.Image, ignore_primary: bool, **kwargs) -> None:

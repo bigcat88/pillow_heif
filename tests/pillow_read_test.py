@@ -159,6 +159,8 @@ def test_open_images(image_path):
 
 def test_image_order():
     img = Image.open(Path("images/etc_heif/nokia/alpha.heic"))
+    assert img.info["primary"] and img.tell() == 2
+    img.seek(0)
     assert not img.info["primary"]
     img.seek(1)
     assert not img.info["primary"]

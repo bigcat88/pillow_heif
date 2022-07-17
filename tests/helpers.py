@@ -60,7 +60,7 @@ def compare_hashes(pillow_images: list, hash_size=16, max_difference=0):
         image_hashes.append(image_hash)
 
 
-def create_heif(size: tuple = None, thumb_boxes: list = None, n_images=1) -> BytesIO:
+def create_heif(size: tuple = None, thumb_boxes: list = None, n_images=1, **kwargs) -> BytesIO:
     if size is None:
         size = (512, 512)
     if thumb_boxes is None:
@@ -71,7 +71,7 @@ def create_heif(size: tuple = None, thumb_boxes: list = None, n_images=1) -> Byt
         size = (int(size[0] / 2), int(size[1] / 2))
     im_heif.add_thumbnails(thumb_boxes)
     heif_buf = BytesIO()
-    im_heif.save(heif_buf)
+    im_heif.save(heif_buf, **kwargs)
     return heif_buf
 
 

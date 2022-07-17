@@ -181,33 +181,3 @@ def test_add_from():
     pillow_image.seek(2)
     pillow_original.seek(1)
     compare_hashes([pillow_image, pillow_original], max_difference=1)
-
-
-def test_primary_image():
-    img1_2 = open_heif(Path("images/rgb8_128_128_2_1.heic"))
-    img3 = open_heif(Path("images/rgb8_512_512_1_0.heic"))
-    out_buf1 = BytesIO()
-    img3.save(out_buf1, append_images=[img1_2[0], img1_2[1]], save_all=True, primary_index=1, quality=-1)
-    heif_file = open_heif(out_buf1)
-    assert heif_file.primary_index() == 1
-    assert heif_file[1].info["primary"]
-    out_buf2 = BytesIO()
-    heif_file.save(out_buf2, quality=1)
-    heif_file = open_heif(out_buf2)
-    assert heif_file.primary_index() == 1
-    assert heif_file[1].info["primary"]
-    heif_file.save(out_buf1, quality=1, append_images=[heif_file])
-    heif_file = open_heif(out_buf1)
-    assert heif_file.primary_index() == 1
-    heif_file.save(out_buf1, quality=1, primary_index=0)
-    assert heif_file.primary_index() == 1
-    heif_file2 = open_heif(out_buf1)
-    assert heif_file2.primary_index() == 0
-    heif_file2.save(out_buf2, primary_index=-1, quality=1)
-    assert heif_file2.primary_index() == 0
-    heif_file = open_heif(out_buf2)
-    assert heif_file.primary_index() == 5
-    heif_file2.save(out_buf1, primary_index=99, quality=1)
-    assert heif_file2.primary_index() == 0
-    heif_file = open_heif(out_buf1)
-    assert heif_file.primary_index() == 5
