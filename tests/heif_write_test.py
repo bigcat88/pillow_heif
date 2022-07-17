@@ -211,15 +211,3 @@ def test_primary_image():
     assert heif_file2.primary_index() == 0
     heif_file = open_heif(out_buf1)
     assert heif_file.primary_index() == 5
-
-
-def test_exif_removing():
-    heif_file = open_heif(Path("images/rgb8_128_128_2_1.heic"))
-    for frame in heif_file:
-        assert frame.info["exif"]
-    out_buf = BytesIO()
-    heif_file.save(out_buf, exif=None, save_all=True)  # remove Exif from primary image
-    assert heif_file.info["exif"]
-    saved_heif = open_heif(out_buf)
-    for i, frame in enumerate(saved_heif):
-        assert frame.info["exif"] if i else not frame.info["exif"]
