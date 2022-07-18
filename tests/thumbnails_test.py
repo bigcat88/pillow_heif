@@ -11,19 +11,26 @@ pillow_heif.register_heif_opener()
 if not pillow_heif.options().hevc_enc:
     pytest.skip(reason="Requires HEIF encoder.", allow_module_level=True)
 
+
 # Creating HEIF file in memory with 3 images.
 # Second image is a Primary Image with EXIF and XMP data.
 # First two images has 2 thumbnails each, third image has no thumbnails.
-_ = Image.effect_mandelbrot((512, 512), (-3, -2.5, 2, 2.5), 100)
-im_heif = pillow_heif.from_pillow(_)
-im_heif.add_from_pillow(_.crop((0, 0, 256, 256)))
-im_heif.add_thumbnails(boxes=[128, 64])
-im_heif.add_from_pillow(_.crop((0, 0, 192, 192)))
-heif_buf = BytesIO()
-exif = Image.Exif()
-exif[0x010E] = "this is a desc"
+def create_thumbnail_heif(size):
+    _ = Image.effect_mandelbrot(size, (-3, -2.5, 2, 2.5), 100)
+    im_heif = pillow_heif.from_pillow(_)
+    im_heif.add_from_pillow(_.crop((0, 0, 256, 256)))
+    im_heif[0].add_thumbnails(boxes=[128, 64])
+    im_heif[1].add_thumbnails(boxes=[128, 64])
+    im_heif.add_from_pillow(_.crop((0, 0, 192, 192)))
+    _heif_buf = BytesIO()
+    exif = Image.Exif()
+    exif[0x010E] = "this is a desc"
+    im_heif.save(_heif_buf, primary_index=1, exif=exif.tobytes(), xmp=xmp_data)
+    return _heif_buf
+
+
 xmp_data = b"xmp_data"
-im_heif.save(heif_buf, primary_index=1, exif=exif.tobytes(), xmp=xmp_data)
+heif_buf = create_thumbnail_heif((512, 512))
 
 
 def test_heif_enumerate_thumbnails():
@@ -208,35 +215,57 @@ def test_heif_thumbnail_references():
         ([96, 84], [4, 4, 2]),
     ),
 )
-@pytest.mark.parametrize("way_to_add", ("HeifFile", "HeifImage"))
-def test_add_thumbs(thumbs, expected_after, way_to_add):
-    heif_file = pillow_heif.open_heif(heif_buf)
-    if way_to_add == "HeifImage":
-        heif_file[0].add_thumbnails(thumbs)
-        heif_file[1].add_thumbnails(thumbs)
-        heif_file[2].add_thumbnails(thumbs)
-    else:
-        heif_file.add_thumbnails(thumbs)
+@pytest.mark.parametrize("heif_file_buf", (heif_buf, create_thumbnail_heif((317, 311))))
+def test_heif_image_add_thumbs(thumbs, expected_after, heif_file_buf):
     output = BytesIO()
+    heif_file = pillow_heif.open_heif(heif_file_buf)
+    heif_file[0].add_thumbnails(thumbs)
+    heif_file[1].add_thumbnails(thumbs)
+    heif_file[2].add_thumbnails(thumbs)
     heif_file.save(output, quality=-1)
     out_heif = pillow_heif.open_heif(output)
     for i in range(3):
         assert len(out_heif[i].thumbnails) == expected_after[i]
-    compare_hashes([out_heif[0].to_pillow(), out_heif[0].thumbnails[0].to_pillow()], hash_size=8, max_difference=3)
+    compare_hashes([out_heif[0].to_pillow(), out_heif[0].thumbnails[0].to_pillow()], hash_size=8, max_difference=4)
 
 
-def test_remove_thumbs():
+@pytest.mark.parametrize(
+    "thumbs,expected_after",
+    (
+        (-1, 2),
+        (64, 2),
+        (96, 3),
+        ([96], 3),
+        ([0, 84], 3),
+        ([96, 84], 4),
+    ),
+)
+@pytest.mark.parametrize("heif_file_buf", (heif_buf, create_thumbnail_heif((537, 511))))
+def test_heif_primary_add_thumbs(thumbs, expected_after, heif_file_buf):
+    heif_file = pillow_heif.open_heif(heif_file_buf)
+    heif_file.add_thumbnails(thumbs)
+    output = BytesIO()
+    heif_file.save(output, quality=-1)
+    out_heif = pillow_heif.open_heif(output)
+    assert len(out_heif[0].thumbnails) == len(heif_file[0].thumbnails)
+    assert len(out_heif[1].thumbnails) == expected_after
+    assert len(out_heif.thumbnails) == expected_after
+    assert len(out_heif[2].thumbnails) == len(heif_file[2].thumbnails)
+
+
+def test_heif_remove_thumbs():
+    out_buffer = BytesIO()
+    # removing first thumbnail of the first image.
     heif_file = pillow_heif.open_heif(heif_buf)
     del heif_file[0].thumbnails[0]
-    out_buffer = BytesIO()
     heif_file.save(out_buffer)
     out_heif = pillow_heif.open_heif(out_buffer)
     assert len(out_heif[0].thumbnails) == 1
     assert len(out_heif[1].thumbnails) == 2
     assert len(out_heif[2].thumbnails) == 0
+    # removing all thumbnails of the primary image.
     heif_file = pillow_heif.open_heif(heif_buf)
-    heif_file[1].thumbnails = []
-    out_buffer = BytesIO()
+    heif_file.thumbnails.clear()
     heif_file.save(out_buffer)
     out_heif = pillow_heif.open_heif(out_buffer)
     assert len(out_heif[0].thumbnails) == 2
