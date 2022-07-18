@@ -722,6 +722,12 @@ class HeifFile:
         self.images.append(added_image)
         return added_image
 
+    @property
+    def __array_interface__(self):
+        """Returns Primary Image as a numpy array."""
+
+        return self.images[self.primary_index()].__array_interface__
+
     @staticmethod
     def _save(ctx: LibHeifCtxWrite, img_list: List[HeifImage], primary_index: int, **kwargs) -> None:
         enc_options = lib.heif_encoding_options_alloc()
