@@ -96,17 +96,16 @@ if pillow_heif.is_supported("images/rgb8_512_512_1_0.heic"):
     np_array = np.asarray(heif_file[0])
 ```
 
-## Scaling and adding thumbnails
+## Adding & Removing thumbnails
 ```python3
 import pillow_heif
 
 if pillow_heif.is_supported("input.heic"):
     heif_file = pillow_heif.open_heif("input.heic")
-    for img in heif_file:  # you still can use it without iteration, like before.
-        img.scale(1024, 768) # scaling each image in file.
     heif_file.add_thumbnails([768, 512, 256])  # add three new thumbnail boxes.
-    # default quality is probably ~77 in x265, set it a bit lower.
-    heif_file.save("output.heic", quality=70, save_all=False) # save_all is True by default.
+    heif_file.save("output_with_thumbnails.heic")
+    heif_file.thumbnails.clear()                # clear list with thumbnails.
+    heif_file.save("output_without_thumbnails.heic")
 ```
 
 ## Using thumbnails when they are present in a file(from version 0.5.0)

@@ -233,6 +233,7 @@ def test_add_thumbs(thumbs, expected_after, way_to_add, heif_file_buf):
 
 
 def test_remove_thumbs():
+    # removing first thumbnail of first image.
     heif_file = pillow_heif.open_heif(heif_buf)
     del heif_file[0].thumbnails[0]
     out_buffer = BytesIO()
@@ -241,9 +242,18 @@ def test_remove_thumbs():
     assert len(out_heif[0].thumbnails) == 1
     assert len(out_heif[1].thumbnails) == 2
     assert len(out_heif[2].thumbnails) == 0
+    # removing all thumbnails of second image.
     heif_file = pillow_heif.open_heif(heif_buf)
     heif_file[1].thumbnails = []
     out_buffer = BytesIO()
+    heif_file.save(out_buffer)
+    out_heif = pillow_heif.open_heif(out_buffer)
+    assert len(out_heif[0].thumbnails) == 2
+    assert len(out_heif[1].thumbnails) == 0
+    assert len(out_heif[2].thumbnails) == 0
+    # removing thumbnails of primary image.
+    heif_file = pillow_heif.open_heif(heif_buf)
+    heif_file.thumbnails.clear()
     heif_file.save(out_buffer)
     out_heif = pillow_heif.open_heif(out_buffer)
     assert len(out_heif[0].thumbnails) == 2
