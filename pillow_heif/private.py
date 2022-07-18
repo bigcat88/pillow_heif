@@ -173,7 +173,7 @@ def read_metadata(handle) -> list:
     lib.heif_image_handle_get_list_of_metadata_block_IDs(handle, ffi.NULL, blocks_ids, block_count)
     for block_id in blocks_ids:
         metadata_type = lib.heif_image_handle_get_metadata_type(handle, block_id)
-        decoded_data_type = ffi.string(metadata_type).decode()
+        metadata_type = ffi.string(metadata_type).decode("utf-8")
         content_type = ffi.string(lib.heif_image_handle_get_metadata_content_type(handle, block_id))
         data_length = lib.heif_image_handle_get_metadata_size(handle, block_id)
         if data_length > 0:
@@ -182,11 +182,9 @@ def read_metadata(handle) -> list:
             check_libheif_error(error)
             data_buffer = ffi.buffer(p_data, data_length)
             data = bytes(data_buffer)
-            if decoded_data_type == "Exif":
+            if metadata_type == "Exif":
                 data = data[4:]  # skip TIFF header, first 4 bytes
-            metadata.append(
-                {"type": decoded_data_type, "data": data, "metadata_type": metadata_type, "content_type": content_type}
-            )
+            metadata.append({"type": metadata_type, "data": data, "content_type": content_type})
     return metadata
 
 
@@ -197,7 +195,7 @@ def set_metadata(ctx: LibHeifCtxWrite, heif_img_handle, info: dict) -> None:
             heif_img_handle,
             metadata["data"],
             len(metadata["data"]),
-            metadata["metadata_type"],
+            metadata["type"].encode("utf-8"),
             metadata["content_type"],
         )
         check_libheif_error(error)
