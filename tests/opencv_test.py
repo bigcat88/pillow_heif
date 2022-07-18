@@ -122,7 +122,7 @@ def test_save_bgra_8bit_color_mode():
 def test_read_10_12_bit(img_path):
     image_path = Path(img_path)
     heif_file = open_heif(image_path, convert_hdr_to_8bit=False)
-    heif_file[0].convert_to("BGRA;16" if heif_file[0].has_alpha else "BGR;16")
-    np_array = np.asarray(heif_file[0])
+    heif_file.convert_to("BGRA;16" if heif_file.has_alpha else "BGR;16")
+    np_array = np.asarray(heif_file)
     img_encode = cv2.imencode(".png", np_array)[1]
     compare_hashes([BytesIO(img_encode), image_path], hash_size=8)

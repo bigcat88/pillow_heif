@@ -3,10 +3,10 @@ import os
 from gc import collect
 from io import BytesIO
 from pathlib import Path
-from typing import Union
 
 import dataset
 import pytest
+from helpers import compare_heif_files_fields
 
 from pillow_heif import (
     HeifError,
@@ -23,42 +23,6 @@ from pillow_heif import (
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 register_heif_opener()
-
-
-def compare_heif_files_fields(
-    heif1: Union[HeifFile, HeifImage], heif2: Union[HeifFile, HeifImage], ignore=None, thumb_size_max_differ=2
-):
-    def compare_images_fields(image1: HeifImage, image2: HeifImage):
-        assert image1.size == image2.size
-        assert image1.mode == image2.mode
-        if "original_bit_depth" not in ignore:
-            assert image1.original_bit_depth == image2.original_bit_depth
-        assert image1.bit_depth == image2.bit_depth
-        if "stride" not in ignore:
-            assert image1.stride == image2.stride
-            assert len(image1.data) == len(image2.data)
-        for i_thumb, thumbnail in enumerate(image1.thumbnails):
-            with_difference = thumbnail.size[0] - image2.thumbnails[i_thumb].size[0]
-            height_difference = thumbnail.size[1] - image2.thumbnails[i_thumb].size[1]
-            assert with_difference + height_difference <= thumb_size_max_differ
-            assert thumbnail.mode == image2.thumbnails[i_thumb].mode
-            if "original_bit_depth" not in ignore:
-                assert thumbnail.original_bit_depth == image2.thumbnails[i_thumb].original_bit_depth
-            assert thumbnail.bit_depth == image2.thumbnails[i_thumb].bit_depth
-        assert image1.info["exif"] == image2.info["exif"]
-        assert image1.info["xmp"] == image2.info["xmp"]
-        for block_i, block in enumerate(image1.info["metadata"]):
-            assert block["data"] == image1.info["metadata"][block_i]["data"]
-            assert block["content_type"] == image1.info["metadata"][block_i]["content_type"]
-            assert block["type"] == image1.info["metadata"][block_i]["type"]
-
-    if ignore is None:
-        ignore = []
-    if isinstance(heif1, HeifFile):
-        for i, image in enumerate(heif1):
-            compare_images_fields(image, heif2[i])
-    else:
-        compare_images_fields(heif1, heif2)
 
 
 @pytest.mark.parametrize("img_path", dataset.CORRUPTED_DATASET)

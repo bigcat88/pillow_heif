@@ -3,47 +3,17 @@ import os
 from gc import collect
 from io import BytesIO
 from pathlib import Path
-from typing import Union
 from unittest import mock
 
 import dataset
 import pytest
-from heif_read_test import compare_heif_files_fields
+from helpers import compare_heif_files_fields, compare_heif_to_pillow_fields
 from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
 import pillow_heif.HeifImagePlugin  # noqa
-from pillow_heif import (
-    HeifError,
-    HeifFile,
-    HeifImage,
-    HeifThumbnail,
-    from_pillow,
-    open_heif,
-)
+from pillow_heif import HeifError, HeifFile, from_pillow, open_heif
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-
-def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail], pillow: Image):
-    def compare_images_fields(heif_image: Union[HeifImage, HeifThumbnail], pillow_image: Image):
-        assert heif_image.size == pillow_image.size
-        assert heif_image.mode == pillow_image.mode
-        for k in ("exif", "xmp", "metadata"):
-            if heif_image.info.get(k, None):
-                if isinstance(heif_image.info[k], (bool, int, float, str)):
-                    assert heif_image.info[k] == pillow_image.info[k]
-                else:
-                    assert len(heif_image.info[k]) == len(pillow_image.info[k])
-        for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
-            if heif_image.info.get(k, None):
-                assert len(heif_image.info[k]) == len(pillow_image.info[k])
-
-    if isinstance(heif, HeifFile):
-        for i, image in enumerate(heif):
-            pillow.seek(i)
-            compare_images_fields(image, pillow)
-    else:
-        compare_images_fields(heif, pillow)
 
 
 @pytest.mark.parametrize("img_path", dataset.CORRUPTED_DATASET)
@@ -56,12 +26,12 @@ def test_corrupted_open(img_path):
 
 
 def test_add_L_mode():
-    img = Image.open(Path("images/jpeg_gif_png/L_color_mode_image.png"))
-    heif_file = HeifFile().add_from_pillow(img)
+    im = Image.linear_gradient(mode="L")
+    heif_file = HeifFile().add_from_pillow(im)
     assert heif_file.mode == "L"
-    img2 = heif_file[0].to_pillow()
-    assert img2.mode == "L"
-    assert img.tobytes() == img2.tobytes()
+    im2 = heif_file[0].to_pillow()
+    assert im2.mode == "L"
+    assert im.tobytes() == im2.tobytes()
 
 
 @pytest.mark.parametrize("img_path", dataset.MINIMAL_DATASET)

@@ -3,9 +3,13 @@ from io import SEEK_END, BytesIO
 from pathlib import Path
 
 import pytest
-from helpers import compare_hashes
+from helpers import (
+    compare_hashes,
+    compare_heif_to_pillow_fields,
+    create_heif,
+    gradient_la_bytes,
+)
 from PIL import Image, ImageSequence
-from pillow_read_test import compare_heif_to_pillow_fields
 
 from pillow_heif import from_pillow, open_heif, options, register_heif_opener
 
@@ -20,13 +24,12 @@ pytest.importorskip("numpy", reason="NumPy not installed")
 
 
 def test_save_one_all():
-    im = Image.open(Path("images/rgb8_128_128_2_1.heic"))
-    out_heif1 = BytesIO()
-    im.save(out_heif1, format="HEIF")
-    assert len(open_heif(out_heif1)) == 1
-    out_heif2 = BytesIO()
-    im.save(out_heif2, format="HEIF", save_all=True)
-    assert len(open_heif(out_heif2)) == 2
+    im = Image.open(create_heif((61, 64), n_images=2))
+    out_heif = BytesIO()
+    im.save(out_heif, format="HEIF")
+    assert len(open_heif(out_heif)) == 1
+    im.save(out_heif, format="HEIF", save_all=True)
+    assert len(open_heif(out_heif)) == 2
 
 
 @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
@@ -86,74 +89,55 @@ def test_alpha_channel():
 
 
 def test_palette_with_bytes_transparency():
-    png_pillow = Image.open(Path("images/jpeg_gif_png/palette_with_bytes_transparency.png"))
+    png_pillow = Image.open(BytesIO(gradient_la_bytes(im_format="TIFF")))
     heif_file = from_pillow(png_pillow)
     out_heic = BytesIO()
-    heif_file.save(out_heic, format="HEIF", quality=90, save_all=True)
-    heic_pillow = Image.open(out_heic)
-    assert heic_pillow.heif_file.has_alpha is True  # noqa
-    assert heic_pillow.mode == "RGBA"
+    heif_file.save(out_heic, format="HEIF", quality=90)
+    im_heif = Image.open(out_heic)
+    assert im_heif.heif_file.has_alpha is True  # noqa
+    assert im_heif.mode == "RGBA"
+    compare_hashes([png_pillow, im_heif], hash_size=8)
 
 
 def test_L_color_mode():
-    png_pillow = Image.open(Path("images/jpeg_gif_png/L_color_mode_image.png"))
-    heif_file = from_pillow(png_pillow)
-    out_heic = BytesIO()
-    heif_file.save(out_heic, format="HEIF", quality=90, save_all=True)
-    heic_pillow = Image.open(out_heic)
-    assert heic_pillow.heif_file.has_alpha is False  # noqa
-    assert heic_pillow.mode == "RGB"
-    compare_hashes([png_pillow, heic_pillow], hash_size=8, max_difference=1)
+    im = Image.linear_gradient(mode="L")
+    out_heif = BytesIO()
+    im.save(out_heif, format="HEIF", quality=-1)
+    im_heif = Image.open(out_heif)
+    compare_hashes([im, im_heif], hash_size=8)
 
 
 def test_LA_color_mode():
-    png_pillow = Image.open(Path("images/jpeg_gif_png/LA_color_mode_image.png"))
+    png_pillow = Image.open(BytesIO(gradient_la_bytes(im_format="PNG")))
     heif_file = from_pillow(png_pillow)
     out_heic = BytesIO()
-    heif_file.save(out_heic, format="HEIF", quality=90, save_all=True)
+    heif_file.save(out_heic, format="HEIF", quality=-1)
     heic_pillow = Image.open(out_heic)
     assert heic_pillow.heif_file.has_alpha is True  # noqa
     assert heic_pillow.mode == "RGBA"
-    compare_hashes([png_pillow, heic_pillow], hash_size=8, max_difference=1)
+    compare_hashes([png_pillow, heic_pillow], hash_size=8)
 
 
 def test_1_color_mode():
-    png_pillow = Image.open(Path("images/jpeg_gif_png/L_color_mode_image.png"))
-    png_pillow = png_pillow.convert(mode="1")
-    out_heic = BytesIO()
-    png_pillow.save(out_heic, format="HEIF", quality=-1, save_all=True)
-    heic_pillow = Image.open(out_heic)
-    compare_hashes([png_pillow, heic_pillow], hash_size=8, max_difference=1)
+    im = Image.linear_gradient(mode="L")
+    im = im.convert(mode="1")
+    out_heif = BytesIO()
+    im.save(out_heif, format="HEIF", quality=-1)
+    im_heif = Image.open(out_heif)
+    compare_hashes([im, im_heif], hash_size=8)
 
 
-@pytest.mark.parametrize("img_path", ("images/jpeg_gif_png/I_color_mode_image.pgm",))
-# "images/jpeg_gif_png/I_color_mode_image.png"
-# when Pillow will be able to properly convert PNG from "I" mode to "L" - add to test.
-def test_I_color_modes_to_10bit(img_path):
-    src_pillow = Image.open(Path(img_path))
-    assert src_pillow.mode == "I"
-    for mode in ("I", "I;16", "I;16L"):
-        i_mode_img = src_pillow.convert(mode=mode)
-        out_heic = BytesIO()
-        i_mode_img.save(out_heic, format="HEIF", quality=-1)
-        assert open_heif(out_heic, convert_hdr_to_8bit=False).bit_depth == 10
-        heic_pillow = Image.open(out_heic)
-        compare_hashes([src_pillow, heic_pillow], hash_size=8)
-
-
-@pytest.mark.parametrize("img_path", ("images/jpeg_gif_png/I_color_mode_image.pgm",))
-# "images/jpeg_gif_png/I_color_mode_image.png"
-# when Pillow will be able to properly convert PNG from "I" mode to "L" - add to test.
-def test_I_color_modes_to_12bit(img_path):
+@pytest.mark.parametrize("enc_bits", (10, 12))
+def test_I_color_modes_to_10_12_bit(enc_bits):
     try:
-        options().save_to_12bit = True
-        src_pillow = Image.open(Path(img_path))
+        options().save_to_12bit = True if enc_bits == 12 else False
+        src_pillow = Image.open(Path("images/jpeg_gif_png/I_color_mode_image.pgm"))
         assert src_pillow.mode == "I"
         for mode in ("I", "I;16", "I;16L"):
             i_mode_img = src_pillow.convert(mode=mode)
             out_heic = BytesIO()
             i_mode_img.save(out_heic, format="HEIF", quality=-1)
-            assert open_heif(out_heic, convert_hdr_to_8bit=False).bit_depth == 12
+            assert open_heif(out_heic, convert_hdr_to_8bit=False).bit_depth == enc_bits
             heic_pillow = Image.open(out_heic)
             compare_hashes([src_pillow, heic_pillow], hash_size=8)
     finally:

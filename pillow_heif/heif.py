@@ -125,7 +125,7 @@ class HeifImageBase:
         return self._img_data.get("stride", None)
 
     def convert_to(self, mode: str) -> None:
-        """Decode and convert in place image to specified mode.
+        """Decode and convert in place image to the specified mode.
 
         :param mode: for list of supported conversions, see: :ref:`convert_to`
 
@@ -533,6 +533,15 @@ class HeifFile:
             self.images[self.primary_index()].load()
         return self
 
+    def convert_to(self, mode: str) -> None:
+        """Decode and convert in place primary image to the specified mode.
+
+        :param mode: for list of supported conversions, see: :ref:`convert_to`
+
+        :exception KeyError: If conversion between modes is not supported."""
+
+        self.images[self.primary_index()].convert_to(mode)
+
     def scale(self, width: int, height: int) -> None:
         """Scale primary image in the container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
 
@@ -626,14 +635,13 @@ class HeifFile:
         return self
 
     def add_thumbnails(self, boxes: Union[List[int], int]) -> None:
-        """Add thumbnail(s) to all images.
+        """Add thumbnail(s) to primary image.
 
-        :param boxes: int or list of ints determining size of thumbnail(s) to generate for images.
+        :param boxes: int or list of ints determining size of thumbnail(s) to generate.
 
         :returns: None."""
 
-        for img in self.images:
-            img.add_thumbnails(boxes)
+        self.images[self.primary_index()].add_thumbnails(boxes)
 
     def save(self, fp, **kwargs) -> None:
         """Saves image under the given fp.
@@ -724,6 +732,12 @@ class HeifFile:
         added_image = HeifImage(HeifCtxAsDict(mode, size, data, **kwargs), for_encoding=for_encoding)
         self.images.append(added_image)
         return added_image
+
+    @property
+    def __array_interface__(self):
+        """Returns Primary Image as a numpy array."""
+
+        return self.images[self.primary_index()].__array_interface__
 
     @staticmethod
     def _save(ctx: LibHeifCtxWrite, img_list: List[HeifImage], primary_index: int, **kwargs) -> None:

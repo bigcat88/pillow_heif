@@ -22,12 +22,13 @@ im_heif.save(heif_buf)
 
 @pytest.mark.parametrize("im_size", ((256, 128), (127, 64), (63, 64), (31, 32), (20, 100), (14, 16), (11, 16)))
 @pytest.mark.parametrize("mode", ("L", "RGB", "RGBA", "I;16"))
-def test_numpy_array2(im_size, mode):
+def test_numpy_array(im_size, mode):
     im = im_pillow.convert(mode=mode)
     heif_file = pillow_heif.from_pillow(im)
     pil_array = np.asarray(im)
     heif_array = np.asarray(heif_file[0])
     assert np.array_equal(pil_array, heif_array)
+    assert np.array_equal(pil_array, np.asarray(heif_file))
 
 
 @pytest.mark.skipif(parse_version(np.__version__) < parse_version("1.23.0"), reason="Requires numpy >= 1.23")

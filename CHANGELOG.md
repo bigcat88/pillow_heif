@@ -10,6 +10,8 @@ It is a final API release, no more further changes to API are planned, only bugf
 ### Added
 
 - (Heif, HeifImagePlugin) `thumbnail` function, `docs` for it.
+- `__numpy_array__` property to `HeifFile`
+- `convert_to` method to `HeifFile`
 
 ### Changed
 
@@ -22,7 +24,7 @@ It is a final API release, no more further changes to API are planned, only bugf
 - (HeifImagePlugin) Nice `speed up` for reading images having thumbnails in a `Pillow plugin` mode.
 - (HeifImagePlugin) `XMP` metadata save from `TIFF` and `JPEG`.
 - (HeifImagePlugin) `EXIF` metadata save from `TIFF`(only for Pillow >= 9.2).
-- (HeifImagePlugin) Not to change index of a current frame during saving multi frame images.
+- (HeifImagePlugin) - Not to change index of a current frame during saving multi frame images.
 
 ## [0.4.0 - 2022-07-04]
 
