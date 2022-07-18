@@ -150,11 +150,51 @@ def test_pillow_info_changing():
         assert not im_out.info["exif"] and not im_out.info["xmp"]
 
 
-# @pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
-# def test_heif_iptc_metadata():
-#     heif_buf = create_heif((64, 64))
+@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+def test_heif_iptc_metadata():
+    heif_buf = create_heif((64, 64))
+    data = (
+        b"\x1c\x02Z\x00\x08Budapest"
+        b"\x1c\x02e\x00\x07Hungary"
+        b"\x1c\x02\x19\x00\x03HvK"
+        b"\x1c\x02\x19\x00\x042006"
+        b"\x1c\x02\x19\x00\x06summer"
+        b"\x1c\x02\x19\x00\x04July"
+        b"\x1c\x02\x19\x00\x07holiday"
+        b"\x1c\x02\x19\x00\x07Hungary"
+        b"\x1c\x02\x19\x00\x08Budapest"
+    )
+    iptc_metadata = {"type": "iptc", "data": data, "content_type": b""}
+    im = pillow_heif.open_heif(heif_buf)
+    im.info["metadata"].append(iptc_metadata)
+    out_buf = BytesIO()
+    im.save(out_buf)
+    im_out = pillow_heif.open_heif(out_buf)
+    assert im_out.info["metadata"]
+    assert im_out.info["metadata"][0]["type"] == "iptc"
+    assert im_out.info["metadata"][0]["data"] == data
 
 
-# @pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
-# def test_pillow_iptc_metadata():
-#     heif_buf = create_heif((64, 64))
+@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+def test_pillow_iptc_metadata():
+    heif_buf = create_heif((64, 64))
+    data = (
+        b"\x1c\x02Z\x00\x08Budapest"
+        b"\x1c\x02e\x00\x07Hungary"
+        b"\x1c\x02\x19\x00\x03HvK"
+        b"\x1c\x02\x19\x00\x042006"
+        b"\x1c\x02\x19\x00\x06summer"
+        b"\x1c\x02\x19\x00\x04July"
+        b"\x1c\x02\x19\x00\x07holiday"
+        b"\x1c\x02\x19\x00\x07Hungary"
+        b"\x1c\x02\x19\x00\x08Budapest"
+    )
+    iptc_metadata = {"type": "iptc", "data": data, "content_type": b""}
+    im = Image.open(heif_buf)
+    im.info["metadata"].append(iptc_metadata)
+    out_buf = BytesIO()
+    im.save(out_buf, format="HEIF")
+    im_out = Image.open(out_buf)
+    assert im_out.info["metadata"]
+    assert im_out.info["metadata"][0]["type"] == "iptc"
+    assert im_out.info["metadata"][0]["data"] == data
