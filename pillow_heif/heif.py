@@ -125,7 +125,7 @@ class HeifImageBase:
         return self._img_data.get("stride", None)
 
     def convert_to(self, mode: str) -> None:
-        """Decode and convert in place image to specified mode.
+        """Decode and convert in place image to the specified mode.
 
         :param mode: for list of supported conversions, see: :ref:`convert_to`
 
@@ -532,6 +532,15 @@ class HeifFile:
         else:
             self.images[self.primary_index()].load()
         return self
+
+    def convert_to(self, mode: str) -> None:
+        """Decode and convert in place primary image to the specified mode.
+
+        :param mode: for list of supported conversions, see: :ref:`convert_to`
+
+        :exception KeyError: If conversion between modes is not supported."""
+
+        self.images[self.primary_index()].convert_to(mode)
 
     def scale(self, width: int, height: int) -> None:
         """Scale primary image in the container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
