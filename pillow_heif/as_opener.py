@@ -33,6 +33,7 @@ class HeifImageFile(ImageFile.ImageFile):
             raise SyntaxError(str(exception)) from None
         self.custom_mimetype = heif_file.mimetype
         self.heif_file = heif_file
+        self.__frame = heif_file.primary_index()
         self._init_from_heif_file(self.__frame)
         self.tile = []
 
