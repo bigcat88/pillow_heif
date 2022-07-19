@@ -635,11 +635,11 @@ class HeifFile:
         return self
 
     def add_thumbnails(self, boxes: Union[List[int], int]) -> None:
-        """Add thumbnail(s) to primary image.
+        """Add thumbnail(s) to the primary image.
 
         :param boxes: int or list of ints determining size of thumbnail(s) to generate.
 
-        :returns: None."""
+        :returns: None"""
 
         self.images[self.primary_index()].add_thumbnails(boxes)
 
