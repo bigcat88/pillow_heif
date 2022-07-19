@@ -89,14 +89,15 @@ def test_alpha_channel():
 
 
 def test_palette_with_bytes_transparency():
-    png_pillow = Image.open(BytesIO(gradient_la_bytes(im_format="TIFF")))
+    png_buffer = BytesIO(gradient_la_bytes(im_format="TIFF"))
+    png_pillow = Image.open(png_buffer)
     heif_file = from_pillow(png_pillow)
     out_heic = BytesIO()
     heif_file.save(out_heic, format="HEIF", quality=90)
     im_heif = Image.open(out_heic)
     assert im_heif.heif_file.has_alpha is True  # noqa
     assert im_heif.mode == "RGBA"
-    compare_hashes([png_pillow, im_heif], hash_size=8)
+    compare_hashes([png_buffer, im_heif], hash_size=8)
 
 
 def test_L_color_mode():
