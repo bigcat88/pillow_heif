@@ -155,7 +155,7 @@ def test_heif_thumbnail_no_xmp_exif():
 
 
 def test_pillow_thumbnail_no_xmp_exif():
-    thumbnail = pillow_heif.thumbnail(Image.open(heif_buf))
+    thumbnail = pillow_heif.thumbnail(ImageSequence.Iterator(Image.open(heif_buf))[0])
     assert not thumbnail.info["exif"]
     assert not thumbnail.info["xmp"]
 
@@ -167,7 +167,7 @@ def test_heif_thumbnail_xmp_exif():
 
 
 def test_pillow_thumbnail_xmp_exif():
-    thumbnail = pillow_heif.thumbnail(ImageSequence.Iterator(Image.open(heif_buf))[1])
+    thumbnail = pillow_heif.thumbnail(Image.open(heif_buf))
     assert thumbnail.info["exif"]
     assert thumbnail.info["xmp"] == xmp_data
     assert isinstance(thumbnail.getexif(), Image.Exif)
@@ -271,3 +271,24 @@ def test_heif_remove_thumbs():
     assert len(out_heif[0].thumbnails) == 2
     assert len(out_heif[1].thumbnails) == 0
     assert len(out_heif[2].thumbnails) == 0
+
+
+def test_pillow_remove_thumbs():
+    out_buffer = BytesIO()
+    # removing first thumbnail of the first image.
+    im = Image.open(heif_buf)
+    im.seek(0)
+    del im.info["thumbnails"][0]
+    im.save(out_buffer, format="HEIF", save_all=True)
+    im_out = Image.open(out_buffer)
+    assert len(ImageSequence.Iterator(im_out)[0].info["thumbnails"]) == 1
+    assert len(ImageSequence.Iterator(im_out)[1].info["thumbnails"]) == 2
+    assert len(ImageSequence.Iterator(im_out)[2].info["thumbnails"]) == 0
+    # removing all thumbnails of the primary image.
+    im = Image.open(heif_buf)
+    im.info["thumbnails"].clear()
+    im.save(out_buffer, format="HEIF", save_all=True)
+    im_out = Image.open(out_buffer)
+    assert len(ImageSequence.Iterator(im_out)[0].info["thumbnails"]) == 2
+    assert len(ImageSequence.Iterator(im_out)[1].info["thumbnails"]) == 0
+    assert len(ImageSequence.Iterator(im_out)[2].info["thumbnails"]) == 0
