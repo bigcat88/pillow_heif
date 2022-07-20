@@ -8,7 +8,6 @@ import pillow_heif.HeifImagePlugin
 
 if __name__ == "__main__":
     file = sys.argv[1]
-    # file = "../tests/images/rgb8_128_128_2_1.heic"
     print("Dumping info for file:", file)
     heif_pillow = Image.open(file)
     print("Number of images:", len([i for i in ImageSequence.Iterator(heif_pillow)]))
