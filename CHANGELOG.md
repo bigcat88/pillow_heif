@@ -2,10 +2,10 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.5.0 - 2022-07-2x]
+## [0.5.0 - 2022-07-23]
 
 Thumbnails was reworked, if you was not use them before, then this release is fully compatible with `0.4.0` version.
-It is a final API release, no more further changes to API are planned, only bugfixes if any and etc.
+It is a final API release, no more further changes to existing API are planned, only bugfixes if any and etc.
 
 ### Added
 
@@ -18,6 +18,7 @@ It is a final API release, no more further changes to API are planned, only bugf
 - Wheels now are in ABI3 format for CPython(`cp3x-abi3-xxx.whl`), `3x` less size on PyPi.
 - (Heif) `to_pillow` method, now fills `metadata` from an original image if was called for thumbnails.
 - (HeifImagePlugin) During `open` `current frame` in multi frame images are set to index of `Primary Image`.
+- (Heif) `add_thumbnails` method moved from `HeifFile`/`HeifImage` to separate file and now can accept a `PIL Image`.
 
 ### Fixed
 
