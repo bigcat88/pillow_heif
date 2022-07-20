@@ -6,18 +6,20 @@ from pillow_heif import options
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-AVIF_IMAGES = [i for i in Path().glob("images/**/*.avif") if i.parent.name.find("corrupted") == -1]
-HEIC_IMAGES = [i for i in Path().glob("images/**/*.heic") if i.parent.name.find("corrupted") == -1]
-HEIF_IMAGES = [i for i in Path().glob("images/**/*.heif") if i.parent.name.find("corrupted") == -1] + [
-    i for i in Path().glob("images/**/*.hif") if i.parent.name.find("corrupted") == -1
-]
-MINIMAL_DATASET = [i for i in Path().glob("images/*.*") if i.name[0] != "."]
+
+CORRUPTED_DATASET = list(Path().glob("images/heif_corrupted/?*.*"))
+TRUNCATED_DATASET = list(Path().glob("images/heif_truncated/?*.*"))
+MINIMAL_DATASET = list(Path().glob("images/heif/?*.*"))
+FULL_DATASET = MINIMAL_DATASET + list(Path().glob("images/heif_other/**/?*.*"))
+
+CORRUPTED_DATASET = [i for i in CORRUPTED_DATASET if not i.name.endswith(".txt")]
+TRUNCATED_DATASET = [i for i in TRUNCATED_DATASET if not i.name.endswith(".txt")]
+MINIMAL_DATASET = [i for i in MINIMAL_DATASET if not i.name.endswith(".txt")]
+FULL_DATASET = [i for i in FULL_DATASET if not i.name.endswith(".txt")]
 
 if not options().avif:
     warn("Skipping tests for `AV1` format due to lack of codecs.")
-    AVIF_IMAGES.clear()
+    CORRUPTED_DATASET = [i for i in CORRUPTED_DATASET if not i.name.endswith(".avif")]
+    TRUNCATED_DATASET = [i for i in TRUNCATED_DATASET if not i.name.endswith(".avif")]
     MINIMAL_DATASET = [i for i in MINIMAL_DATASET if not i.name.endswith(".avif")]
-
-FULL_DATASET = AVIF_IMAGES + HEIC_IMAGES + HEIF_IMAGES
-CORRUPTED_DATASET = list(Path().glob("images/corrupted/*.*"))
-CORRUPTED_DATASET = [i for i in CORRUPTED_DATASET if i.name.find("truncated") == -1]
+    FULL_DATASET = [i for i in FULL_DATASET if not i.name.endswith(".avif")]

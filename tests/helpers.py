@@ -1,14 +1,15 @@
 from io import BytesIO
 from pathlib import Path
+from typing import Union
 
 from PIL import Image, ImageMath, ImageOps
 
-from pillow_heif import HeifFile
+from pillow_heif import HeifFile, HeifImage, HeifThumbnail
 
 try:
     import numpy as np
-except ImportError:  # pragma: no cover
-    np = None  # pragma: no cover
+except ImportError:
+    np = None
 
 
 def assert_image_equal(a, b):
@@ -60,6 +61,64 @@ def compare_hashes(pillow_images: list, hash_size=16, max_difference=0):
         image_hashes.append(image_hash)
 
 
+def compare_heif_files_fields(
+    heif1: Union[HeifFile, HeifImage], heif2: Union[HeifFile, HeifImage], ignore=None, thumb_size_max_differ=2
+):
+    def compare_images_fields(image1: HeifImage, image2: HeifImage):
+        assert image1.size == image2.size
+        assert image1.mode == image2.mode
+        if "original_bit_depth" not in ignore:
+            assert image1.original_bit_depth == image2.original_bit_depth
+        assert image1.bit_depth == image2.bit_depth
+        if "stride" not in ignore:
+            assert image1.stride == image2.stride
+            assert len(image1.data) == len(image2.data)
+        for i_thumb, thumbnail in enumerate(image1.thumbnails):
+            with_difference = thumbnail.size[0] - image2.thumbnails[i_thumb].size[0]
+            height_difference = thumbnail.size[1] - image2.thumbnails[i_thumb].size[1]
+            assert with_difference + height_difference <= thumb_size_max_differ
+            assert thumbnail.mode == image2.thumbnails[i_thumb].mode
+            if "original_bit_depth" not in ignore:
+                assert thumbnail.original_bit_depth == image2.thumbnails[i_thumb].original_bit_depth
+            assert thumbnail.bit_depth == image2.thumbnails[i_thumb].bit_depth
+        assert image1.info["exif"] == image2.info["exif"]
+        assert image1.info["xmp"] == image2.info["xmp"]
+        for block_i, block in enumerate(image1.info["metadata"]):
+            assert block["data"] == image1.info["metadata"][block_i]["data"]
+            assert block["content_type"] == image1.info["metadata"][block_i]["content_type"]
+            assert block["type"] == image1.info["metadata"][block_i]["type"]
+
+    if ignore is None:
+        ignore = []
+    if isinstance(heif1, HeifFile):
+        for i, image in enumerate(heif1):
+            compare_images_fields(image, heif2[i])
+    else:
+        compare_images_fields(heif1, heif2)
+
+
+def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail], pillow: Image):
+    def compare_images_fields(heif_image: Union[HeifImage, HeifThumbnail], pillow_image: Image):
+        assert heif_image.size == pillow_image.size
+        assert heif_image.mode == pillow_image.mode
+        for k in ("exif", "xmp", "metadata"):
+            if heif_image.info.get(k, None):
+                if isinstance(heif_image.info[k], (bool, int, float, str)):
+                    assert heif_image.info[k] == pillow_image.info[k]
+                else:
+                    assert len(heif_image.info[k]) == len(pillow_image.info[k])
+        for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
+            if heif_image.info.get(k, None):
+                assert len(heif_image.info[k]) == len(pillow_image.info[k])
+
+    if isinstance(heif, HeifFile):
+        for i, image in enumerate(heif):
+            pillow.seek(i)
+            compare_images_fields(image, pillow)
+    else:
+        compare_images_fields(heif, pillow)
+
+
 def create_heif(size: tuple = None, thumb_boxes: list = None, n_images=1, **kwargs) -> BytesIO:
     if size is None:
         size = (512, 512)
@@ -107,4 +166,44 @@ def gradient_rgba():
 def gradient_rgba_bytes(im_format: str) -> bytearray:
     _ = BytesIO()
     gradient_rgba().save(_, format=im_format)
+    return bytearray(_.getbuffer().tobytes())
+
+
+def gradient_la():
+    return Image.merge(
+        "LA",
+        [
+            Image.linear_gradient(mode="L"),
+            Image.linear_gradient(mode="L").transpose(Image.ROTATE_90),
+        ],
+    )
+
+
+def gradient_la_bytes(im_format: str) -> bytearray:
+    _ = BytesIO()
+    gradient_la().save(_, format=im_format)
+    return bytearray(_.getbuffer().tobytes())
+
+
+def gradient_p_bytes(im_format: str) -> bytearray:
+    _ = BytesIO()
+    im = Image.linear_gradient(mode="L")
+    im = im.convert(mode="P")
+    im.save(_, format=im_format)
+    return bytearray(_.getbuffer().tobytes())
+
+
+def gradient_pa():
+    return Image.merge(
+        "PA",
+        [
+            Image.linear_gradient(mode="L"),
+            Image.linear_gradient(mode="L").transpose(Image.ROTATE_90),
+        ],
+    )
+
+
+def gradient_pa_bytes(im_format: str) -> bytearray:
+    _ = BytesIO()
+    gradient_la().save(_, format=im_format)
     return bytearray(_.getbuffer().tobytes())

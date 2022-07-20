@@ -34,7 +34,7 @@ def test_open_save_objects_leaks(ctx_in_memory):
     from pympler import summary, tracker
 
     pillow_heif.options().ctx_in_memory = ctx_in_memory
-    image_path = Path("images/rgb8_128_128_2_1.heic")
+    image_path = Path("images/heif/zPug_3.heic")
     perform_open_save(1, image_path)
     gc.collect()
     _summary1 = tracker.SummaryTracker().create_summary()
@@ -68,7 +68,7 @@ def test_open_save_leaks(ctx_in_memory):
     for i in range(1000):
         # do_save=False
         # https://bitbucket.org/multicoreware/x265_git/issues/616/x265_encoder_open-leaks-memory-zoneparam
-        perform_open_save(1, Path("images/rgb8_128_128_2_1.heic"), do_save=False)
+        perform_open_save(1, Path("images/heif/zPug_3.heic"), do_save=False)
         mem = _get_mem_usage()
         if i < 300:
             mem_limit = mem + 1
@@ -76,20 +76,17 @@ def test_open_save_leaks(ctx_in_memory):
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
 
 
-def perform_open_to_numpy(iterations, image_path):
-    import numpy as np
-
-    for _ in range(iterations):
-        heif_file = pillow_heif.open_heif(image_path)
-        _array = np.asarray(heif_file[0])  # noqa
-
-
 @pytest.mark.skipif(sys.platform.lower() == "win32", reason="requires Unix or macOS")
 @pytest.mark.skipif(machine().find("x86_64") == -1, reason="run only on x86_64")
 def test_open_to_numpy_mem_leaks():
+    import numpy as np
+
     mem_limit = None
+    im_path = Path("images/heif/zPug_3.heic")
     for i in range(500):
-        perform_open_to_numpy(1, Path("images/rgb8_512_512_1_0.heic"))
+        heif_file = pillow_heif.open_heif(im_path)
+        _array = np.asarray(heif_file[0])  # noqa
+        _array = None  # noqa
         gc.collect()
         mem = _get_mem_usage()
         if i < 300:
