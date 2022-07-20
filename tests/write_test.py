@@ -331,3 +331,29 @@ def test_remove():
     del heif_file[1]
     del heif_file[0]
     assert len(heif_file) == 0
+
+
+def test_heif_save_multi_frame():
+    heif_file = pillow_heif.open_heif(Path("images/heif_other/nokia/alpha.heic"), convert_hdr_to_8bit=False)
+    heif_buf = BytesIO()
+    heif_file.save(heif_buf, quality=-1)
+    out_heif_file = pillow_heif.open_heif(heif_buf, convert_hdr_to_8bit=False)
+    for i in range(3):
+        assert heif_file[i].size == out_heif_file[i].size
+        assert heif_file[i].mode == out_heif_file[i].mode
+        assert heif_file[i].bit_depth == out_heif_file[i].bit_depth
+        assert heif_file[i].info["primary"] == out_heif_file[i].info["primary"]
+
+
+def test_pillow_save_multi_frame():
+    im = Image.open(Path("images/heif_other/nokia/alpha.heic"))
+    heif_buf = BytesIO()
+    im.save(heif_buf, format="HEIF", quality=-1, save_all=True)
+    out_im = Image.open(heif_buf)
+    for i in range(3):
+        im.seek(i)
+        out_im.seek(i)
+        assert im.size == out_im.size
+        assert im.mode == out_im.mode
+        assert im.info["primary"] == out_im.info["primary"]
+        helpers.compare_hashes([im, out_im], hash_size=8)
