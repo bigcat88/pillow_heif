@@ -36,15 +36,14 @@ python3 -m pip install pillow-heif
 
 ## Example of use as a Pillow plugin
 ```python3
-from PIL import Image, ImageSequence
+from PIL import Image
 from pillow_heif import register_heif_opener
 
 register_heif_opener()
 
-image = Image.open("images/input.heic")  # do whatever need with a Pillow image
-for i, frame in enumerate(ImageSequence.Iterator(image)):
-    rotated = frame.rotate(13)
-    rotated.save(f"rotated_frame{i}.heic", quality=90)
+im = Image.open("images/input.heic")  # do whatever need with a Pillow image
+im = im.rotate(13)
+im.save(f"rotated_image.heic", quality=90)
 ```
 
 ## 16 bit PNG to 10 bit HEIF using OpenCV
@@ -102,10 +101,24 @@ import pillow_heif
 
 if pillow_heif.is_supported("input.heic"):
     heif_file = pillow_heif.open_heif("input.heic")
-    heif_file.add_thumbnails([768, 512, 256])  # add three new thumbnail boxes.
+    pillow_heif.add_thumbnails(heif_file, [768, 512, 256])  # add three new thumbnail boxes.
     heif_file.save("output_with_thumbnails.heic")
     heif_file.thumbnails.clear()               # clear list with thumbnails.
     heif_file.save("output_without_thumbnails.heic")
+```
+
+## (Pillow)Adding & Removing thumbnails
+```python3
+from PIL import Image
+import pillow_heif
+
+pillow_heif.register_heif_opener()
+
+im = Image.open("input.heic")
+pillow_heif.add_thumbnails(im, [768, 512, 256])  # add three new thumbnail boxes.
+im.save("output_with_thumbnails.heic")
+im.info["thumbnails"].clear()               # clear list with thumbnails.
+im.save("output_without_thumbnails.heic")
 ```
 
 ## Using thumbnails when they are present in a file

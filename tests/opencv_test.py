@@ -8,7 +8,8 @@ import pytest
 from helpers import compare_hashes, gradient_rgb_bytes, gradient_rgba_bytes
 from PIL import Image
 
-from pillow_heif import from_bytes, open_heif, options, register_heif_opener
+from pillow_heif import HeifImagePlugin  # noqa
+from pillow_heif import from_bytes, open_heif, options
 
 if not options().hevc_enc:
     pytest.skip("No HEVC encoder.", allow_module_level=True)
@@ -17,7 +18,6 @@ np = pytest.importorskip("numpy", reason="NumPy not installed")
 cv2 = pytest.importorskip("cv2", reason="OpenCV not installed")
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-register_heif_opener()
 
 
 @pytest.mark.parametrize("enc_bits", (10, 12))
