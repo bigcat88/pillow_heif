@@ -2,7 +2,6 @@ import os
 from io import SEEK_END, BytesIO
 from pathlib import Path
 
-import dataset
 import pytest
 from helpers import create_heif
 from PIL import Image, UnidentifiedImageError
@@ -18,16 +17,16 @@ def test_avif_cfg_option():
     # when `options.avif` is False, pillow_heif must refuse to open `avif` files
     try:
         options().avif = False
-        for file in dataset.AVIF_IMAGES[:3]:
-            with pytest.raises(UnidentifiedImageError):
-                Image.open(file)
+        with pytest.raises(UnidentifiedImageError):
+            Image.open(Path("images/heif/L_10.avif"))
     finally:
         options().reset()
+    Image.open(Path("images/heif/L_10.avif"))
 
 
 def test_strict_cfg_option():
     # libheif don't fully support burst images, so with strict=True pillow_heif should refuse them
-    image_path = Path("images/etc_heif/nokia/bird_burst.heic")
+    image_path = Path("images/heif_other/nokia/bird_burst.heic")
     try:
         options().update(strict=True)
         with pytest.raises(UnidentifiedImageError):

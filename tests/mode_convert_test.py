@@ -69,9 +69,9 @@ def test_rgba8_to_16_bit_color_mode(mode, enc_bits):
         options().reset()
 
 
-@pytest.mark.parametrize("img, bit", (("images/rgb10.heif", 10), ("images/rgb12.heif", 12)))
+@pytest.mark.parametrize("img, bit", (("images/heif/RGB_10.heif", 10), ("images/heif/RGB_12.heif", 12)))
 @pytest.mark.parametrize("mode", ("RGB;16", "BGR;16"))
-def test_rgb10_to_16bit_color_mode(img, mode, bit):
+def test_rgb_hdr_to_16bit_color_mode(img, mode, bit):
     heif_file = open_heif(Path(img), convert_hdr_to_8bit=False)
     assert heif_file.bit_depth == bit
     heif_file.convert_to(mode)
@@ -85,9 +85,9 @@ def test_rgb10_to_16bit_color_mode(img, mode, bit):
     compare_hashes([Path(img), out_heic], hash_size=8)
 
 
-@pytest.mark.parametrize("img, bit", (("images/rgba10.heif", 10), ("images/rgba12.heif", 12)))
+@pytest.mark.parametrize("img, bit", (("images/heif/RGBA_10.heif", 10), ("images/heif/RGBA_12.heif", 12)))
 @pytest.mark.parametrize("mode", ("RGBA;16", "BGRA;16"))
-def test_rgba10_to_16bit_color_mode(img, mode, bit):
+def test_rgba_hdr_to_16bit_color_mode(img, mode, bit):
     heif_file = open_heif(Path(img), convert_hdr_to_8bit=False)
     assert heif_file.bit_depth == bit
     heif_file.convert_to(mode)
@@ -98,4 +98,4 @@ def test_rgba10_to_16bit_color_mode(img, mode, bit):
     heif_file = open_heif(out_heic, convert_hdr_to_8bit=False)
     assert heif_file.bit_depth == 10
     assert heif_file.has_alpha
-    compare_hashes([Path(img), out_heic], hash_size=8)
+    compare_hashes([Path(img), out_heic], hash_size=8, max_difference=1)

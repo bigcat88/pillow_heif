@@ -185,6 +185,14 @@ def gradient_la_bytes(im_format: str) -> bytearray:
     return bytearray(_.getbuffer().tobytes())
 
 
+def gradient_p_bytes(im_format: str) -> bytearray:
+    _ = BytesIO()
+    im = Image.linear_gradient(mode="L")
+    im = im.convert(mode="P")
+    im.save(_, format=im_format)
+    return bytearray(_.getbuffer().tobytes())
+
+
 def gradient_pa():
     return Image.merge(
         "PA",

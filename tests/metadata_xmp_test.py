@@ -20,10 +20,10 @@ pillow_heif.register_heif_opener()
 @pytest.mark.parametrize(
     "img_path",
     (
-        "images/jpeg_gif_png/xmp.png",
-        "images/jpeg_gif_png/xmp.jpeg",
-        "images/jpeg_gif_png/xmp.tiff",
-        "images/jpeg_gif_png/xmp.webp",
+        "images/non_heif/xmp.png",
+        "images/non_heif/xmp.jpeg",
+        "images/non_heif/xmp.tiff",
+        "images/non_heif/xmp.webp",
     ),
 )
 def test_xmp_from_pillow(img_path):

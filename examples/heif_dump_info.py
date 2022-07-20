@@ -8,7 +8,6 @@ import pillow_heif
 
 if __name__ == "__main__":
     file = sys.argv[1]
-    # file = "../tests/images/rgb8_128_128_2_1.heic"
     print("Dumping info for file:", file)
     print("Check result:", pillow_heif.HeifFiletype(pillow_heif.check_heif(file)))
     print("Supported:", pillow_heif.is_supported(file))
