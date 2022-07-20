@@ -15,7 +15,7 @@ if not pillow_heif.options().hevc_enc:
 # Creating HEIF file in memory with 1 image and 3 thumbnails.
 im_pillow = Image.effect_mandelbrot((512, 512), (-3, -2.5, 2, 2.5), 100)
 im_heif = pillow_heif.from_pillow(im_pillow)
-im_heif.add_thumbnails(boxes=[192, 128, 64])
+pillow_heif.add_thumbnails(im_heif, boxes=[192, 128, 64])
 heif_buf = BytesIO()
 im_heif.save(heif_buf)
 

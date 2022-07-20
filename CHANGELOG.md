@@ -18,6 +18,7 @@ It is a final API release, no more further changes to existing API are planned, 
 - Wheels now are in ABI3 format for CPython(`cp3x-abi3-xxx.whl`), `3x` less size on PyPi.
 - (Heif) `to_pillow` method, now fills `metadata` from an original image if was called for thumbnails.
 - (HeifImagePlugin) During `open` `current frame` in multi frame images are set to index of `Primary Image`.
+- (Heif) `add_thumbnails` method moved from `HeifFile`/`HeifImage` to separate file and now can accept a `PIL Image`.
 
 ### Fixed
 
