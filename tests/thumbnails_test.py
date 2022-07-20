@@ -19,8 +19,8 @@ def create_thumbnail_heif(size):
     _ = Image.effect_mandelbrot(size, (-3, -2.5, 2, 2.5), 100)
     im_heif = pillow_heif.from_pillow(_)
     im_heif.add_from_pillow(_.crop((0, 0, 256, 256)))
-    im_heif[0].add_thumbnails(boxes=[128, 64])
-    im_heif[1].add_thumbnails(boxes=[128, 64])
+    pillow_heif.add_thumbnails(im_heif[0], boxes=[128, 64])
+    pillow_heif.add_thumbnails(im_heif[1], boxes=[128, 64])
     im_heif.add_from_pillow(_.crop((0, 0, 192, 192)))
     _heif_buf = BytesIO()
     exif = Image.Exif()
@@ -216,12 +216,16 @@ def test_heif_thumbnail_references():
     ),
 )
 @pytest.mark.parametrize("heif_file_buf", (heif_buf, create_thumbnail_heif((317, 311))))
-def test_heif_image_add_thumbs(thumbs, expected_after, heif_file_buf):
+@pytest.mark.parametrize("method", ("HeifFile", "HeifImage"))
+def test_heif_add_thumbs(thumbs, expected_after, heif_file_buf, method):
     output = BytesIO()
     heif_file = pillow_heif.open_heif(heif_file_buf)
-    heif_file[0].add_thumbnails(thumbs)
-    heif_file[1].add_thumbnails(thumbs)
-    heif_file[2].add_thumbnails(thumbs)
+    if method == "HeifFile":
+        pillow_heif.add_thumbnails(heif_file, thumbs)
+    else:
+        pillow_heif.add_thumbnails(heif_file[0], thumbs)
+        pillow_heif.add_thumbnails(heif_file[1], thumbs)
+        pillow_heif.add_thumbnails(heif_file[2], thumbs)
     heif_file.save(output, quality=-1)
     out_heif = pillow_heif.open_heif(output)
     for i in range(3):
@@ -232,25 +236,48 @@ def test_heif_image_add_thumbs(thumbs, expected_after, heif_file_buf):
 @pytest.mark.parametrize(
     "thumbs,expected_after",
     (
-        (-1, 2),
-        (64, 2),
-        (96, 3),
-        ([96], 3),
-        ([0, 84], 3),
-        ([96, 84], 4),
+        (-1, [2, 2, 0]),
+        ([0], [2, 2, 0]),
+        (64, [2, 2, 1]),
+        ([2048], [2, 2, 0]),
+        (96, [3, 3, 1]),
+        ([0, 84], [3, 3, 1]),
+        ([96, 84], [4, 4, 2]),
     ),
 )
-@pytest.mark.parametrize("heif_file_buf", (heif_buf, create_thumbnail_heif((537, 511))))
-def test_heif_primary_add_thumbs(thumbs, expected_after, heif_file_buf):
-    heif_file = pillow_heif.open_heif(heif_file_buf)
-    heif_file.add_thumbnails(thumbs)
+def test_pillow_add_thumbs(thumbs, expected_after):
     output = BytesIO()
-    heif_file.save(output, quality=-1)
+    im = Image.open(heif_buf)
+    for frame in ImageSequence.Iterator(im):
+        pillow_heif.add_thumbnails(frame, thumbs)
+    im.save(output, format="HEIF", quality=-1, save_all=True)
     out_heif = pillow_heif.open_heif(output)
-    assert len(out_heif[0].thumbnails) == len(heif_file[0].thumbnails)
-    assert len(out_heif[1].thumbnails) == expected_after
+    for i in range(3):
+        assert len(out_heif[i].thumbnails) == expected_after[i]
+    compare_hashes([out_heif[0].to_pillow(), out_heif[0].thumbnails[0].to_pillow()], hash_size=8, max_difference=4)
+
+
+@pytest.mark.parametrize(
+    "thumbs,expected_after",
+    (
+        (-1, 0),
+        ([0], 0),
+        (64, 1),
+        ([2048], 0),
+        ([0, 128], 1),
+        ([64, 128], 2),
+    ),
+)
+def test_pillow_add_thumbs_empty_info(thumbs, expected_after):
+    output = BytesIO()
+    im = Image.open(heif_buf)
+    im.info.pop("thumbnails")
+    pillow_heif.add_thumbnails(im, thumbs)
+    im.save(output, format="HEIF", quality=-1)
+    out_heif = pillow_heif.open_heif(output)
     assert len(out_heif.thumbnails) == expected_after
-    assert len(out_heif[2].thumbnails) == len(heif_file[2].thumbnails)
+    if expected_after >= 1:
+        compare_hashes([out_heif[0].to_pillow(), out_heif.thumbnails[0].to_pillow()], hash_size=8)
 
 
 def test_heif_remove_thumbs():

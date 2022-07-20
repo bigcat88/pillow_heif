@@ -4,7 +4,7 @@ from typing import Union
 
 from PIL import Image, ImageMath, ImageOps
 
-from pillow_heif import HeifFile, HeifImage, HeifThumbnail
+from pillow_heif import HeifFile, HeifImage, HeifThumbnail, add_thumbnails
 
 try:
     import numpy as np
@@ -128,7 +128,7 @@ def create_heif(size: tuple = None, thumb_boxes: list = None, n_images=1, **kwar
     for i in range(n_images):
         im_heif.add_from_pillow(Image.effect_mandelbrot(size, (-3, -2.5, 2, 2.5), 100))
         size = (int(size[0] / 2), int(size[1] / 2))
-        im_heif[i].add_thumbnails(thumb_boxes)
+        add_thumbnails(im_heif[i], thumb_boxes)
     heif_buf = BytesIO()
     im_heif.save(heif_buf, **kwargs)
     return heif_buf

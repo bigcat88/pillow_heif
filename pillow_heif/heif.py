@@ -348,38 +348,6 @@ class HeifImage(HeifImageBase):
         self._img_to_img_data_dict(scaled_heif_img)
         return self
 
-    def add_thumbnails(self, boxes: Union[List[int], int]) -> None:
-        """Add thumbnail(s) to an image.
-
-        .. note:: Method creates thumbnails without image data, they will be encoded during `save` operation.
-
-        :param boxes: int or list of ints determining size of thumbnail(s) to generate for image.
-
-        :returns: None"""
-
-        if isinstance(boxes, list):
-            boxes_list = boxes
-        else:
-            boxes_list = [boxes]
-        self.load()
-        for box in boxes_list:
-            if box <= 3:
-                continue
-            if self.size[0] <= box and self.size[1] <= box:
-                continue
-            if self.size[0] > self.size[1]:
-                thumb_height = int(self.size[1] * box / self.size[0])
-                thumb_width = box
-            else:
-                thumb_width = int(self.size[0] * box / self.size[1])
-                thumb_height = box
-            thumb_height = thumb_height - 1 if (thumb_height & 1) else thumb_height
-            thumb_width = thumb_width - 1 if (thumb_width & 1) else thumb_width
-            if max((thumb_height, thumb_width)) in [max(i.size) for i in self.thumbnails]:
-                continue
-            __heif_ctx = HeifCtxAsDict(self.mode, (thumb_width, thumb_height), None, stride=0)
-            self.thumbnails.append(HeifThumbnail(__heif_ctx, self))
-
     def copy_thumbnails(self, thumbnails: List[HeifThumbnail]):
         """Private. For use only in ``add_from_pillow`` and ``add_from_heif``."""
 
@@ -633,15 +601,6 @@ class HeifFile:
             if load_one:
                 break
         return self
-
-    def add_thumbnails(self, boxes: Union[List[int], int]) -> None:
-        """Add thumbnail(s) to the primary image.
-
-        :param boxes: int or list of ints determining size of thumbnail(s) to generate.
-
-        :returns: None"""
-
-        self.images[self.primary_index()].add_thumbnails(boxes)
 
     def save(self, fp, **kwargs) -> None:
         """Saves image under the given fp.
