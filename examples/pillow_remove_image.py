@@ -8,10 +8,10 @@ import pillow_heif.HeifImagePlugin  # noqa
 os.chdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests"))
 TARGET_FOLDER = "../converted"
 
-# rgb8_128_128_2_1 contains two images, we remove first image
+# zPug_3 contains three images, we remove first image
 if __name__ == "__main__":
     os.makedirs(TARGET_FOLDER, exist_ok=True)
-    image_path = Path("images/rgb8_128_128_2_1.heic")
+    image_path = Path("images/heif/zPug_3.heic")
     pillow_img = Image.open(image_path)
     result_path = os.path.join(TARGET_FOLDER, f"{image_path.stem}.heic")
     frames = []
