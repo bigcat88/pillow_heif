@@ -31,3 +31,34 @@ Or as a Pillow plugin:
 Function :py:func:`~pillow_heif.thumbnail` has an optional parameter ``min_box``,
 so you can specify minimal size of thumbnail you interested in.
 Images that come from iPhone usual has thumbnails with 512 box size.
+
+Adding thumbnails
+"""""""""""""""""
+
+For adding thumbnails use :py:func:`~pillow_heif.add_thumbnails`.
+
+It accepts both ``HeifImage`` or ``PIL.Image.Image`` and also can accept ``HeifFile``
+
+When input is a ``HeifFile`` it will add thumbnails to all images in that file.
+
+When you adding thumbnails, if image has already such thumbnails sizes they wil be skipped.
+
+There is two examples for adding thumbnails in `examples` folder.
+
+Removing thumbnails
+"""""""""""""""""""
+
+For Pillow you can clear list with thumbnails:
+
+.. code-block:: python
+
+    im.info["thumbnails"].clear()
+
+For ``HeifFile`` or ``HeifImage``:
+
+.. code-block:: python
+
+    im.thumbnails.clear()
+
+Or use ``del im.info["thumbnails"][index]`` for ``Pillow``
+and ``del im.thumbnails[index]`` for ``HeifImage`` to remove only one thumbnail.

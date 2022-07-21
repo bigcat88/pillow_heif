@@ -21,7 +21,6 @@ Pillow-Heif documentation
    encoding.rst
    thumbnails.rst
    reference/index.rst
-   v0.3-order-of-images.rst
    workaround-orientation.rst
    benchmarks.rst
 

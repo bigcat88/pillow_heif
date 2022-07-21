@@ -22,8 +22,8 @@ except ImportError:  # pragma: no cover
 def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
     """Sets orientation in ``EXIF`` to ``1`` by default if any orientation present.
     Removes ``XMP`` orientation tag if it is present.
-    In Pillow plugin mode it called automatically for main image.
-    When ``pillow_heif`` used as a reader, if you wish you can call it manually.
+    In Pillow plugin mode it called automatically for images.
+    When ``pillow_heif`` used in ``standalone`` mode, if you wish you can call it manually.
 
     .. note:: If there is no orientation tag, this function will not add it and do nothing.
 
