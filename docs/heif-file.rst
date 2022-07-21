@@ -98,10 +98,10 @@ Starting from version `0.3.1` all images are in public list, and you can swap th
 
     heif_file.images[0], heif_file.images[1] = heif_file.images[1], heif_file.images[0]
 
-Saving images
--------------
+Saving
+------
 
-Refer to :py:meth:`~pillow_heif.HeifFile.save` to see what additional parameters is supported and to :ref:`encoding`.
+Refer to :py:meth:`~pillow_heif.HeifFile.save` to see what additional parameters is supported and to :ref:`saving-images`.
 
 .. code-block:: python
 

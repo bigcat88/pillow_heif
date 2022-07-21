@@ -50,3 +50,8 @@ HeifImage object
 
         A boolean value that specifies whether the image is the main image when the file
         contains more than one image.
+
+    .. py:attribute:: thumbnails
+        :type: list
+
+        List of thumbnails(:class:`HeifThumbnail`) present for this image. Can be empty.

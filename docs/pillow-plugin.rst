@@ -46,7 +46,7 @@ Image Modes
 Currently all images are opened in ``RGB`` or ``RGBA`` 8 bit modes.
 There is a restriction in ``libheif`` that we cant check before decoding if an image is ``monochrome`` or not.
 
-See here :ref:`image-modes` for a list of supported modes for saving.
+See :ref:`image-modes` for a list of supported modes for saving.
 
 Metadata
 ********
@@ -120,7 +120,7 @@ Also images can be saved to memory, using ``format`` parameter:
 See here :ref:`save-parameters` for additional information.
 
 Changing order of images
-""""""""""""""""""""""""
+************************
 
 There is no such easy way to change order as for `HeifFile` usage, but the standard Pillow way to do so looks fine.
 Let's create image where second image will be primary:

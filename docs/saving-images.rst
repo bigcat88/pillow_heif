@@ -1,7 +1,7 @@
-.. _encoding:
+.. _saving-images:
 
-Encoding of images
-==================
+Saving images
+=============
 
 Current limitations of encoder
 """"""""""""""""""""""""""""""
