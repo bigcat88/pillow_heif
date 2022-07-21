@@ -365,3 +365,19 @@ def test_heif_only_image_reference():
 )
 def test_hdr_read(im_path, original_path):
     helpers.compare_hashes([im_path, original_path], max_difference=1)
+
+
+@pytest.mark.parametrize(
+    "im_path,original_path",
+    (
+        ("images/heif/L_10.avif", "images/non_heif/L_16.png"),
+        ("images/heif/L_12.avif", "images/non_heif/L_16.png"),
+        ("images/heif/RGB_10.avif", "images/non_heif/RGB_16.png"),
+        ("images/heif/RGB_12.avif", "images/non_heif/RGB_16.png"),
+        ("images/heif/RGBA_10.avif", "images/non_heif/RGBA_16.png"),
+        ("images/heif/RGBA_12.avif", "images/non_heif/RGBA_16.png"),
+    ),
+)
+@pytest.mark.skipif(not pillow_heif.options().avif, reason="requires AVIF decoder.")
+def test_hdr_read_avif(im_path, original_path):
+    helpers.compare_hashes([im_path, original_path], max_difference=1)
