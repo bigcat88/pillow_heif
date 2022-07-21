@@ -11,7 +11,12 @@ Opening HEIF file
 .. autofunction:: read_heif
 .. autofunction:: from_pillow
 .. autofunction:: from_bytes
+
+Thumbnails
+----------
+
 .. autofunction:: thumbnail
+.. autofunction:: add_thumbnails
 
 Low Level API
 -------------

@@ -808,7 +808,7 @@ def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
 def read_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
     """Opens the given HEIF image file and decodes all images.
 
-    .. note:: In most cases it better to call :py:meth:`~pillow_heif.open_heif`, and
+    .. note:: In most cases it is better to call :py:meth:`~pillow_heif.open_heif`, and
         let images decoded automatically only when needed.
 
     :param fp: See parameter ``fp`` in :func:`is_supported`

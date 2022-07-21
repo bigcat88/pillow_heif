@@ -18,10 +18,9 @@ Pillow-Heif documentation
    heif-file.rst
    image-modes.rst
    options.rst
-   encoding.rst
+   saving-images.rst
    thumbnails.rst
    reference/index.rst
-   v0.3-order-of-images.rst
    workaround-orientation.rst
    benchmarks.rst
 

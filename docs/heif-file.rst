@@ -9,12 +9,18 @@ Opening
     if pillow_heif.is_supported("image.heif"):
         heif_file = pillow_heif.open_heif("image.heif")
 
+``open_heif`` is preferred over ``read_heif``, it does not decode images immediatly.
+All image data supports `lazy loading` and will be automatically decoded when you request it,
+e.g. when access to ``data`` or ``stride`` properties occurs.
+
 Creating from Pillow
 --------------------
 
 .. code-block:: python
 
     heif_file = pillow_heif.from_pillow(Image.open("image.gif")):
+
+You can specify ``load_one=True`` if you need to add only one frame from a multi-frame image.
 
 Creating from bytes
 -------------------
@@ -38,6 +44,8 @@ Enumerating images
     print("number of images in file:", len(heif_file))
     for img in heif_file:
         print(img)
+
+.. note:: ``HeifFile`` itself points to the primary image in the container.
 
 Adding images
 -------------
@@ -90,10 +98,10 @@ Starting from version `0.3.1` all images are in public list, and you can swap th
 
     heif_file.images[0], heif_file.images[1] = heif_file.images[1], heif_file.images[0]
 
-Saving images
--------------
+Saving
+------
 
-Refer to :py:meth:`~pillow_heif.HeifFile.save` to see what additional parameters is supported and to :ref:`encoding`.
+Refer to :py:meth:`~pillow_heif.HeifFile.save` to see what additional parameters is supported and to :ref:`saving-images`.
 
 .. code-block:: python
 
@@ -106,6 +114,8 @@ Accessing image data
 
 Decoded image data from ``libheif`` available throw :py:attr:`~pillow_heif.HeifImage.data` property
 with the help of :py:attr:`~pillow_heif.HeifImage.stride` property.
+
+Accessing `Primary` image in a file:
 
 .. code-block:: python
 
@@ -123,12 +133,19 @@ Or you can access each image by index:
 Numpy array interface
 ---------------------
 
-Next code gets decoded image data as a numpy array(in the same format as ``Pillow`` does):
+Next code gets decoded primary image data as a numpy array(in the same format as ``Pillow`` does):
 
 .. code-block:: python
 
     heif_file = pillow_heif.open_heif("file.heif")
-    np_array = np.asarray(heif_file[0])
+    np_array = np.asarray(heif_file)
+
+Accessing image by index(for multi-frame images):
+
+.. code-block:: python
+
+    heif_file = pillow_heif.open_heif("file.heif")
+    np_array = np.asarray(heif_file[0])     # accessing image by index.
 
 After that you can load it at any library that supports numpy arrays.
 
