@@ -8,7 +8,7 @@ if __name__ == "__main__":
     try:
         print("Installing cibuildwheel...")
         args = [executable]
-        args += "-m pip install cibuildwheel".split()
+        args += "-m pip install -U cibuildwheel".split()
         run(args, check=True)
         print("Start building...")
         modified_env = dict(environ)

@@ -2,7 +2,7 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.5.0 - 2022-07-23]
+## [0.5.0 - 2022-07-21]
 
 Thumbnails was reworked, if you was not use them before, then this release is fully compatible with `0.4.0` version.
 It is a final API release, no more further changes to existing API are planned, only bugfixes if any and etc.

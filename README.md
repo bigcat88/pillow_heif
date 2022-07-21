@@ -36,15 +36,14 @@ python3 -m pip install pillow-heif
 
 ## Example of use as a Pillow plugin
 ```python3
-from PIL import Image, ImageSequence
+from PIL import Image
 from pillow_heif import register_heif_opener
 
 register_heif_opener()
 
-image = Image.open("images/input.heic")  # do whatever need with a Pillow image
-for i, frame in enumerate(ImageSequence.Iterator(image)):
-    rotated = frame.rotate(13)
-    rotated.save(f"rotated_frame{i}.heic", quality=90)
+im = Image.open("images/input.heic")  # do whatever need with a Pillow image
+im = im.rotate(13)
+im.save(f"rotated_image.heic", quality=90)
 ```
 
 ## 16 bit PNG to 10 bit HEIF using OpenCV
@@ -68,8 +67,8 @@ import cv2
 import pillow_heif
 
 heif_file = pillow_heif.open_heif("images/rgb12.heif", convert_hdr_to_8bit=False)
-heif_file[0].convert_to("BGRA;16" if heif_file[0].has_alpha else "BGR;16")
-np_array = np.asarray(heif_file[0])
+heif_file.convert_to("BGRA;16" if heif_file.has_alpha else "BGR;16")
+np_array = np.asarray(heif_file)
 cv2.imwrite("rgb16.png", np_array)
 ```
 
@@ -79,11 +78,11 @@ import pillow_heif
 
 if pillow_heif.is_supported("images/rgb10.heif"):
     heif_file = pillow_heif.open_heif("images/rgb10.heif", convert_hdr_to_8bit=False)
-    print("image mode:", heif_file[0].mode)
-    print("image data length:", len(heif_file[0].data))
-    print("image data stride:", heif_file[0].stride)
-    heif_file[0].convert_to("RGB;16")  # convert 10 bit image to RGB 16 bit.
-    print("image mode:", heif_file[0].mode)
+    print("image mode:", heif_file.mode)
+    print("image data length:", len(heif_file.data))
+    print("image data stride:", heif_file.stride)
+    heif_file.convert_to("RGB;16")  # convert 10 bit image to RGB 16 bit.
+    print("image mode:", heif_file.mode)
 ```
 
 ## Get decoded image data as a Numpy array
@@ -91,25 +90,38 @@ if pillow_heif.is_supported("images/rgb10.heif"):
 import numpy as np
 import pillow_heif
 
-if pillow_heif.is_supported("images/rgb8_512_512_1_0.heic"):
-    heif_file = pillow_heif.open_heif("images/rgb8_512_512_1_0.heic")
-    np_array = np.asarray(heif_file[0])
+if pillow_heif.is_supported("input.heic"):
+    heif_file = pillow_heif.open_heif("input.heic")
+    np_array = np.asarray(heif_file)
 ```
 
-## Scaling and adding thumbnails
+## Adding & Removing thumbnails
 ```python3
 import pillow_heif
 
 if pillow_heif.is_supported("input.heic"):
     heif_file = pillow_heif.open_heif("input.heic")
-    for img in heif_file:  # you still can use it without iteration, like before.
-        img.scale(1024, 768) # scaling each image in file.
-    heif_file.add_thumbnails([768, 512, 256])  # add three new thumbnail boxes.
-    # default quality is probably ~77 in x265, set it a bit lower.
-    heif_file.save("output.heic", quality=70, save_all=False) # save_all is True by default.
+    pillow_heif.add_thumbnails(heif_file, [768, 512, 256])  # add three new thumbnail boxes.
+    heif_file.save("output_with_thumbnails.heic")
+    heif_file.thumbnails.clear()               # clear list with thumbnails.
+    heif_file.save("output_without_thumbnails.heic")
 ```
 
-## Using thumbnails when they are present in a file(from version 0.5.0)
+## (Pillow)Adding & Removing thumbnails
+```python3
+from PIL import Image
+import pillow_heif
+
+pillow_heif.register_heif_opener()
+
+im = Image.open("input.heic")
+pillow_heif.add_thumbnails(im, [768, 512, 256])  # add three new thumbnail boxes.
+im.save("output_with_thumbnails.heic")
+im.info["thumbnails"].clear()               # clear list with thumbnails.
+im.save("output_without_thumbnails.heic")
+```
+
+## Using thumbnails when they are present in a file
 ```python3
 import pillow_heif
 
@@ -120,7 +132,7 @@ if pillow_heif.is_supported("input.heic"):
         print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
 ```
 
-## (Pillow)Using thumbnails when they are present in a file(from version 0.5.0)
+## (Pillow)Using thumbnails when they are present in a file
 ```python3
 from PIL import Image, ImageSequence
 import pillow_heif
