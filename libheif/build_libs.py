@@ -158,7 +158,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         print(f"Preconfiguring {name}...", flush=True)
         if name == "aom":
             cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0".split()
-            cmake_args += "-DENABLE_TESTDATA=0 -DCONFIG_AV1_ENCODER=0".split()
+            cmake_args += "-DENABLE_TESTDATA=0 -DCONFIG_AV1_ENCODER=1".split()
             cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
             cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
             run(["cmake"] + cmake_args, check=True)
@@ -214,8 +214,7 @@ def build_libs_linux() -> str:
         build_tools_linux(_is_musllinux)
         if sys.maxsize > 2**32:  # Build x265 encoder only on 64-bit systems.
             build_lib_linux(
-                # "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
-                "https://bitbucket.org/multicoreware/x265_git/get/3.5.tar.gz",
+                "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                 "x265",
                 _is_musllinux,
             )
