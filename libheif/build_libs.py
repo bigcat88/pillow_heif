@@ -1,7 +1,6 @@
 import sys
 from os import chdir, environ, getcwd, makedirs, mkdir, path, remove
-
-# from platform import machine
+from platform import machine
 from re import IGNORECASE, MULTILINE, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
 
@@ -224,8 +223,7 @@ def build_libs_linux() -> str:
             "libde265",
             _is_musllinux,
         )
-        # if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
-        if not is_library_installed("aom"):
+        if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
             build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
