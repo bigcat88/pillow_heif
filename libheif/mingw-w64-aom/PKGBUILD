@@ -1,0 +1,62 @@
+# Maintainer: wirx6 <wirx654@gmail.com>
+
+_realname=aom
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=3.3.0
+pkgrel=1
+pkgdesc='AV1 codec library (mingw-w64)'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
+url="https://aomedia.org/"
+license=('BSD-2-Clause')
+replaces=("${MINGW_PACKAGE_PREFIX}-${_realname}-git")
+conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}-git")
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+makedepends=("perl"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-yasm"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-python")
+source=("https://storage.googleapis.com/aom-releases/libaom-${pkgver}.tar.gz"{,.asc})
+sha256sums=('1dafde32bc2237bf0570294661ae61db30e818840f77dc4e90d1ebf5a6286664'
+            'SKIP')
+validpgpkeys=('B002F08B74A148DAA01F7123A48E86DB0B830498')
+
+prepare() {
+  cd "${srcdir}/libaom-${pkgver}"
+}
+
+build() {
+  cd "${srcdir}"/libaom-${pkgver}
+  [[ -d "${srcdir}"/build-${MSYSTEM} ]] && rm -rf "${srcdir}"/build-${MSYSTEM}
+  mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
+
+  declare -a extra_config
+  if check_option "debug" "n"; then
+    extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    ${MINGW_PREFIX}/bin/cmake \
+      -GNinja \
+      -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+      "${extra_config[@]}" \
+      -DBUILD_SHARED_LIBS=ON \
+      -DENABLE_TESTS=OFF \
+      ../libaom-${pkgver}
+
+  ${MINGW_PREFIX}/bin/cmake --build .
+}
+
+package() {
+  cd "${srcdir}"/build-${MSYSTEM}
+
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install .
+
+  install -Dm644 ${srcdir}/libaom-${pkgver}/LICENSE ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+  install -Dm644 ${srcdir}/libaom-${pkgver}/PATENTS ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/PATENTS
+}

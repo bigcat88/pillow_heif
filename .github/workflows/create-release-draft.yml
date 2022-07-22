@@ -5,32 +5,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  wheel_armv7l:
-    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up QEMU
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
-      - name: Build pillow_heif
-        run: |
-          mkdir dock_out
-          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
-          ls -la ./dock_out/pillow_heif/repaired_dist
-
-      - name: Check builded wheels
-        run: |
-          python3 -m pip install twine
-          twine check ./dock_out/pillow_heif/repaired_dist/*
-
-      - name: Upload builded wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: ./dock_out/pillow_heif/repaired_dist/*.whl
-          if-no-files-found: error
+#  wheel_armv7l:
+#    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
+#    runs-on: ubuntu-20.04
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Set up QEMU
+#        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#
+#      - name: Build pillow_heif
+#        run: |
+#          mkdir dock_out
+#          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
+#          ls -la ./dock_out/pillow_heif/repaired_dist
+#
+#      - name: Check builded wheels
+#        run: |
+#          python3 -m pip install twine
+#          twine check ./dock_out/pillow_heif/repaired_dist/*
+#
+#      - name: Upload builded wheels
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: wheels
+#          path: ./dock_out/pillow_heif/repaired_dist/*.whl
+#          if-no-files-found: error
 
   wheels_windows:
     name: Wheels • windows • x86_64
@@ -54,7 +54,11 @@ jobs:
       - name: Build libheif and dependencies
         shell: msys2 {0}
         run: |
-            cd libheif/mingw-w64-libheif
+            cd libheif/mingw-w64-aom
+            sed -i 's/^M//' *
+            makepkg-mingw --syncdeps --noconfirm -f
+            ls -la
+            cd ../mingw-w64-libheif
             sed -i 's/^M//' *
             makepkg-mingw --syncdeps --noconfirm -f
             pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst --noconfirm
@@ -79,241 +83,241 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-  wheels_macos:
-    name: Wheels • macosx • x86_64
-    runs-on: macos-11
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run cibuildwheel
-        run: |
-          python3 -m pip install cibuildwheel twine
-          cibuildwheel
-        env:
-          CIBW_BUILD: "*-macosx_x86_64"
-          CIBW_SKIP: "cp36-* pp39-*"
-
-      - name: Check built wheels
-        run: twine check wheelhouse/*
-
-      - name: Upload built wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: wheelhouse/*.whl
-          if-no-files-found: error
-
-  wheels_linux_cpython:
-    strategy:
-      fail-fast: true
-      matrix:
-        cibw_buildlinux: [ manylinux, musllinux ]
-        cibw_arch: [ "aarch64", "i686", "x86_64" ]
-    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
-    runs-on: ubuntu-20.04
-    env:
-      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
-      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up QEMU
-        if: matrix.cibw_arch == 'aarch64'
-        uses: docker/setup-qemu-action@v1
-        with:
-          platforms: arm64
-
-      - name: Install cibuildwheel & twine
-        run: python3 -m pip install cibuildwheel twine
-
-      - name: manylinux preparations
-        if: matrix.cibw_buildlinux == 'manylinux'
-        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
-
-      - name: musllinux preparations
-        if: matrix.cibw_buildlinux == 'musllinux'
-        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
-
-      - name: Only minimal testing on aarch64
-        if: matrix.cibw_arch == 'aarch64'
-        run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
-
-      - name: Run cibuildwheel
-        run: cibuildwheel
-        env:
-          CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
-          CIBW_ARCHS: ${{ matrix.cibw_arch }}
-          CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
-          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
-
-      - name: Check builded wheels
-        run: twine check wheelhouse/*
-
-      - name: Upload builded wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: wheelhouse/*.whl
-          if-no-files-found: error
-
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
-
-  wheels_linux_pypy:
-    strategy:
-      fail-fast: true
-      matrix:
-        cibw_buildlinux: [ manylinux ]
-        cibw_arch: [ "aarch64", "i686", "x86_64" ]
-        cibw_build: [ "pp37", "pp38" ]
-    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
-    runs-on: ubuntu-20.04
-    env:
-      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
-      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up QEMU
-        if: matrix.cibw_arch == 'aarch64'
-        uses: docker/setup-qemu-action@v1
-        with:
-          platforms: arm64
-
-      - name: Install cibuildwheel & twine
-        run: python3 -m pip install cibuildwheel twine
-
-      - name: Only minimal testing on aarch64
-        if: matrix.cibw_arch == 'aarch64'
-        run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
-
-      - name: Run cibuildwheel
-        run: cibuildwheel
-        env:
-          CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
-          CIBW_ARCHS: ${{ matrix.cibw_arch }}
-          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
-          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
-
-      - name: Check builded wheels
-        run: twine check wheelhouse/*
-
-      - name: Upload builded wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: wheelhouse/*.whl
-          if-no-files-found: error
-
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
-
-  sdist:
-    name: Source distribution
-    runs-on: macos-11
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install requirements
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install --user check-manifest twine
-
-      - name: Run check-manifest
-        run: python3 -m check_manifest
-
-      - name: Install brew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install x265 libjpeg libde265 libheif
-
-      - name: Build sdist
-        run: |
-          python3 -m pip install pytest piexif coverage pillow numpy pympler defusedxml
-          python3 -m build --sdist --outdir wheelhouse
-
-      - name: Install and check sdist
-        run: |
-          python3 -m pip install --user wheelhouse/*.tar.gz
-          python3 -m twine check wheelhouse/*
-
-      - name: Generate coverage report
-        run: coverage run -m pytest && coverage xml
-
-      - name: Upload report to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          file: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
-
-      - name: Upload sdist
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: wheelhouse/*.tar.gz
-
-  draft_release:
-    needs: [sdist, wheels_linux_cpython, wheels_linux_pypy, wheels_macos, wheels_windows, wheel_armv7l]
-    runs-on: ubuntu-20.04
-    name: Build and create release
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Get release info
-        id: get_release_info
-        run: |
-          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
-          echo "::set-output name=version::v${RELEASE_VERSION}"
-          echo "::set-output name=tag::v${RELEASE_VERSION}"
-          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
-          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
-          if [ "$CHANGELOG" == "" ]; then
-            echo "changelog is empty!"
-            exit 1
-          fi
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          echo "$CHANGELOG" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Collect sdist and wheels
-        uses: actions/download-artifact@v3
-        with:
-          name: wheels
-          path: wheelhouse
-
-      - name: Create release draft
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          name: ${{ steps.get_release_info.outputs.version }}
-          tag: ${{ steps.get_release_info.outputs.tag }}
-          commit: ${{ github.ref }}
-          draft: true
-          body: ${{ env.CHANGELOG }}
-          artifacts: wheelhouse/*
-          token: ${{ secrets.GITHUB_TOKEN }}
-          artifactErrorsFailBuild: true
+#  wheels_macos:
+#    name: Wheels • macosx • x86_64
+#    runs-on: macos-11
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Run cibuildwheel
+#        run: |
+#          python3 -m pip install cibuildwheel twine
+#          cibuildwheel
+#        env:
+#          CIBW_BUILD: "*-macosx_x86_64"
+#          CIBW_SKIP: "cp36-* pp39-*"
+#
+#      - name: Check built wheels
+#        run: twine check wheelhouse/*
+#
+#      - name: Upload built wheels
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: wheels
+#          path: wheelhouse/*.whl
+#          if-no-files-found: error
+#
+#  wheels_linux_cpython:
+#    strategy:
+#      fail-fast: true
+#      matrix:
+#        cibw_buildlinux: [ manylinux, musllinux ]
+#        cibw_arch: [ "aarch64", "i686", "x86_64" ]
+#    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
+#    runs-on: ubuntu-20.04
+#    env:
+#      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
+#      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Set up QEMU
+#        if: matrix.cibw_arch == 'aarch64'
+#        uses: docker/setup-qemu-action@v1
+#        with:
+#          platforms: arm64
+#
+#      - name: Install cibuildwheel & twine
+#        run: python3 -m pip install cibuildwheel twine
+#
+#      - name: manylinux preparations
+#        if: matrix.cibw_buildlinux == 'manylinux'
+#        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
+#        env:
+#          OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
+#
+#      - name: musllinux preparations
+#        if: matrix.cibw_buildlinux == 'musllinux'
+#        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
+#        env:
+#          OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
+#
+#      - name: Only minimal testing on aarch64
+#        if: matrix.cibw_arch == 'aarch64'
+#        run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
+#
+#      - uses: actions/cache@v3
+#        with:
+#          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
+#          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
+#
+#      - uses: actions/cache@v3
+#        with:
+#          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
+#          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
+#
+#      - name: Run cibuildwheel
+#        run: cibuildwheel
+#        env:
+#          CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
+#          CIBW_ARCHS: ${{ matrix.cibw_arch }}
+#          CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
+#          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
+#
+#      - name: Check builded wheels
+#        run: twine check wheelhouse/*
+#
+#      - name: Upload builded wheels
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: wheels
+#          path: wheelhouse/*.whl
+#          if-no-files-found: error
+#
+#      - name: Fix cache permissions
+#        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+#
+#  wheels_linux_pypy:
+#    strategy:
+#      fail-fast: true
+#      matrix:
+#        cibw_buildlinux: [ manylinux ]
+#        cibw_arch: [ "aarch64", "i686", "x86_64" ]
+#        cibw_build: [ "pp37", "pp38" ]
+#    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
+#    runs-on: ubuntu-20.04
+#    env:
+#      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
+#      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Set up QEMU
+#        if: matrix.cibw_arch == 'aarch64'
+#        uses: docker/setup-qemu-action@v1
+#        with:
+#          platforms: arm64
+#
+#      - name: Install cibuildwheel & twine
+#        run: python3 -m pip install cibuildwheel twine
+#
+#      - name: Only minimal testing on aarch64
+#        if: matrix.cibw_arch == 'aarch64'
+#        run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
+#
+#      - uses: actions/cache@v3
+#        with:
+#          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
+#          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
+#
+#      - uses: actions/cache@v3
+#        with:
+#          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
+#          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
+#
+#      - name: Run cibuildwheel
+#        run: cibuildwheel
+#        env:
+#          CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
+#          CIBW_ARCHS: ${{ matrix.cibw_arch }}
+#          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
+#          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
+#
+#      - name: Check builded wheels
+#        run: twine check wheelhouse/*
+#
+#      - name: Upload builded wheels
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: wheels
+#          path: wheelhouse/*.whl
+#          if-no-files-found: error
+#
+#      - name: Fix cache permissions
+#        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+#
+#  sdist:
+#    name: Source distribution
+#    runs-on: macos-11
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Install requirements
+#        run: |
+#          python3 -m pip install --upgrade pip
+#          python3 -m pip install --user check-manifest twine
+#
+#      - name: Run check-manifest
+#        run: python3 -m check_manifest
+#
+#      - name: Install brew
+#        run: |
+#          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+#          brew install x265 libjpeg libde265 libheif
+#
+#      - name: Build sdist
+#        run: |
+#          python3 -m pip install pytest piexif coverage pillow numpy pympler defusedxml
+#          python3 -m build --sdist --outdir wheelhouse
+#
+#      - name: Install and check sdist
+#        run: |
+#          python3 -m pip install --user wheelhouse/*.tar.gz
+#          python3 -m twine check wheelhouse/*
+#
+#      - name: Generate coverage report
+#        run: coverage run -m pytest && coverage xml
+#
+#      - name: Upload report to Codecov
+#        uses: codecov/codecov-action@v2
+#        with:
+#          file: ./coverage.xml
+#          fail_ci_if_error: true
+#          verbose: true
+#
+#      - name: Upload sdist
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: wheels
+#          path: wheelhouse/*.tar.gz
+#
+#  draft_release:
+#    needs: [sdist, wheels_linux_cpython, wheels_linux_pypy, wheels_macos, wheels_windows, wheel_armv7l]
+#    runs-on: ubuntu-20.04
+#    name: Build and create release
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Get release info
+#        id: get_release_info
+#        run: |
+#          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
+#          echo "::set-output name=version::v${RELEASE_VERSION}"
+#          echo "::set-output name=tag::v${RELEASE_VERSION}"
+#          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
+#          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
+#          if [ "$CHANGELOG" == "" ]; then
+#            echo "changelog is empty!"
+#            exit 1
+#          fi
+#          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+#          echo "$CHANGELOG" >> $GITHUB_ENV
+#          echo "EOF" >> $GITHUB_ENV
+#
+#      - name: Collect sdist and wheels
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: wheels
+#          path: wheelhouse
+#
+#      - name: Create release draft
+#        uses: ncipollo/release-action@v1.10.0
+#        with:
+#          name: ${{ steps.get_release_info.outputs.version }}
+#          tag: ${{ steps.get_release_info.outputs.tag }}
+#          commit: ${{ github.ref }}
+#          draft: true
+#          body: ${{ env.CHANGELOG }}
+#          artifacts: wheelhouse/*
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          artifactErrorsFailBuild: true
