@@ -224,7 +224,7 @@ def build_libs_linux() -> str:
             _is_musllinux,
         )
         if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
-            build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.3.0.tar.gz", "aom", _is_musllinux)
+            build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
             "libheif",
