@@ -214,7 +214,8 @@ def build_libs_linux() -> str:
         build_tools_linux(_is_musllinux)
         if sys.maxsize > 2**32:  # Build x265 encoder only on 64-bit systems.
             build_lib_linux(
-                "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
+                # "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
+                "https://bitbucket.org/multicoreware/x265_git/get/3.5.tar.gz",
                 "x265",
                 _is_musllinux,
             )

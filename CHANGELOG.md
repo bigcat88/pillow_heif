@@ -2,6 +2,17 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1 - 2022-xx-xx]
+
+### Added
+
+### Changed
+
+- Updated `libaom` on Linux from `3.3.0` to `3.4.0` version. MacOS builds had already that version in `0.5.0`.
+- Updated `libaom` on Windows from `3.3.0` to `3.4.0` version.
+
+### Fixed
+
 ## [0.5.0 - 2022-07-23]
 
 Thumbnails was reworked, if you was not use them before, then this release is fully compatible with `0.4.0` version.
