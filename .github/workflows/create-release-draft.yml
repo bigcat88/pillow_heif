@@ -5,103 +5,103 @@ on:
   workflow_dispatch:
 
 jobs:
-#  wheel_armv7l:
-#    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
-#    runs-on: ubuntu-20.04
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Set up QEMU
-#        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-#
-#      - name: Build pillow_heif
-#        run: |
-#          mkdir dock_out
-#          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
-#          ls -la ./dock_out/pillow_heif/repaired_dist
-#
-#      - name: Check builded wheels
-#        run: |
-#          python3 -m pip install twine
-#          twine check ./dock_out/pillow_heif/repaired_dist/*
-#
-#      - name: Upload builded wheels
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: wheels
-#          path: ./dock_out/pillow_heif/repaired_dist/*.whl
-#          if-no-files-found: error
+  wheel_armv7l:
+    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
+    runs-on: ubuntu-20.04
 
-#  wheels_windows:
-#    name: Wheels • windows • x86_64
-#    runs-on: windows-2019
-#    env:
-#      VCPKG_PREFIX: "C:/temp/msys64/mingw64"
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - name: Python preparing
-#        run: python3 -m pip install cibuildwheel twine
-#
-#      - uses: msys2/setup-msys2@v2
-#        with:
-#          location: C:/temp
-#          install: >-
-#            patch
-#            mingw-w64-x86_64-binutils
-#
-#      - name: Build libheif and dependencies
-#        shell: msys2 {0}
-#        run: |
-#            cd libheif/mingw-w64-libheif
-#            sed -i 's/^M//' *
-#            makepkg-mingw --syncdeps --noconfirm -f
-#            pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst --noconfirm
-#
-#      - name: Remove DLL trailing data
-#        run: ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/*.dll
-#
-#      - name: Run cibuildwheel
-#        run: cibuildwheel
-#        env:
-#          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
-#          CIBW_ARCHS_WINDOWS: "AMD64"
-#          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
-#
-#      - name: Check built wheels
-#        run: twine check wheelhouse/*
-#
-#      - name: Upload built wheels
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-#  wheels_macos:
-#    name: Wheels • macosx • x86_64
-#    runs-on: macos-11
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Run cibuildwheel
-#        run: |
-#          python3 -m pip install cibuildwheel twine
-#          cibuildwheel
-#        env:
-#          CIBW_BUILD: "*-macosx_x86_64"
-#          CIBW_SKIP: "cp36-* pp39-*"
-#
-#      - name: Check built wheels
-#        run: twine check wheelhouse/*
-#
-#      - name: Upload built wheels
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
+      - name: Build pillow_heif
+        run: |
+          mkdir dock_out
+          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
+          ls -la ./dock_out/pillow_heif/repaired_dist
+
+      - name: Check builded wheels
+        run: |
+          python3 -m pip install twine
+          twine check ./dock_out/pillow_heif/repaired_dist/*
+
+      - name: Upload builded wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./dock_out/pillow_heif/repaired_dist/*.whl
+          if-no-files-found: error
+
+  wheels_windows:
+    name: Wheels • windows • x86_64
+    runs-on: windows-2019
+    env:
+      VCPKG_PREFIX: "C:/temp/msys64/mingw64"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python preparing
+        run: python3 -m pip install cibuildwheel twine
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          location: C:/temp
+          install: >-
+            patch
+            mingw-w64-x86_64-binutils
+
+      - name: Build libheif and dependencies
+        shell: msys2 {0}
+        run: |
+            cd libheif/mingw-w64-libheif
+            sed -i 's/^M//' *
+            makepkg-mingw --syncdeps --noconfirm -f
+            pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst --noconfirm
+
+      - name: Remove DLL trailing data
+        run: ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/*.dll
+
+      - name: Run cibuildwheel
+        run: cibuildwheel
+        env:
+          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
+          CIBW_ARCHS_WINDOWS: "AMD64"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
+
+      - name: Check built wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  wheels_macos:
+    name: Wheels • macosx • x86_64
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run cibuildwheel
+        run: |
+          python3 -m pip install cibuildwheel twine
+          cibuildwheel
+        env:
+          CIBW_BUILD: "*-macosx_x86_64"
+          CIBW_SKIP: "cp36-* pp39-*"
+
+      - name: Check built wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
 
   wheels_linux_cpython:
     strategy:
@@ -277,43 +277,43 @@ jobs:
           name: wheels
           path: wheelhouse/*.tar.gz
 
-#  draft_release:
-#    needs: [sdist, wheels_linux_cpython, wheels_linux_pypy, wheels_macos, wheels_windows, wheel_armv7l]
-#    runs-on: ubuntu-20.04
-#    name: Build and create release
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Get release info
-#        id: get_release_info
-#        run: |
-#          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
-#          echo "::set-output name=version::v${RELEASE_VERSION}"
-#          echo "::set-output name=tag::v${RELEASE_VERSION}"
-#          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
-#          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
-#          if [ "$CHANGELOG" == "" ]; then
-#            echo "changelog is empty!"
-#            exit 1
-#          fi
-#          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-#          echo "$CHANGELOG" >> $GITHUB_ENV
-#          echo "EOF" >> $GITHUB_ENV
-#
-#      - name: Collect sdist and wheels
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse
-#
-#      - name: Create release draft
-#        uses: ncipollo/release-action@v1.10.0
-#        with:
-#          name: ${{ steps.get_release_info.outputs.version }}
-#          tag: ${{ steps.get_release_info.outputs.tag }}
-#          commit: ${{ github.ref }}
-#          draft: true
-#          body: ${{ env.CHANGELOG }}
-#          artifacts: wheelhouse/*
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          artifactErrorsFailBuild: true
+  draft_release:
+    needs: [sdist, wheels_linux_cpython, wheels_linux_pypy, wheels_macos, wheels_windows, wheel_armv7l]
+    runs-on: ubuntu-20.04
+    name: Build and create release
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get release info
+        id: get_release_info
+        run: |
+          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
+          echo "::set-output name=version::v${RELEASE_VERSION}"
+          echo "::set-output name=tag::v${RELEASE_VERSION}"
+          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
+          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
+          if [ "$CHANGELOG" == "" ]; then
+            echo "changelog is empty!"
+            exit 1
+          fi
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Collect sdist and wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse
+
+      - name: Create release draft
+        uses: ncipollo/release-action@v1.10.0
+        with:
+          name: ${{ steps.get_release_info.outputs.version }}
+          tag: ${{ steps.get_release_info.outputs.tag }}
+          commit: ${{ github.ref }}
+          draft: true
+          body: ${{ env.CHANGELOG }}
+          artifacts: wheelhouse/*
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifactErrorsFailBuild: true
