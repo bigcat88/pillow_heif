@@ -47,9 +47,7 @@ class HeifImageFile(ImageFile.ImageFile):
                 truncated = exc.code == HeifErrorCode.DECODER_PLUGIN_ERROR and exc.subcode == 100
                 if not truncated or not ImageFile.LOAD_TRUNCATED_IMAGES:
                     raise
-            if self.is_animated:
-                frame_heif.unload()
-            else:
+            if not self.is_animated:
                 self.info["thumbnails"] = [i.clone_nd() for i in self.info["thumbnails"]]
                 self.heif_file = None
                 self._close_exclusive_fp_after_loading = True
