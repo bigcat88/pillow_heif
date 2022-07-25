@@ -11,6 +11,21 @@ import pillow_heif
 pillow_heif.register_heif_opener()
 
 
+def get_xmp_with_orientation(orientation: int) -> str:
+    xmp = (
+        '<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+        '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="XMP Core 5.4.0">\n'
+        ' <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n'
+        '  <rdf:Description rdf:about=""\n'
+        '    xmlns:exif="http://ns.adobe.com/exif/1.0/"\n'
+        '    xmlns:tiff="http://ns.adobe.com/tiff/1.0/"\n'
+        '   tiff:Orientation="'
+        + str(orientation)
+        + '"/>\n </rdf:RDF>\n</x:xmpmeta>\n<?xpacket end="r"?>'
+    )
+    return xmp
+
+
 @pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
 @pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 @pytest.mark.parametrize("orientation", (1, 2, 3, 4, 5, 6, 7, 8))
@@ -42,17 +57,7 @@ def test_exif_orientation(orientation, im_format):
 def test_png_xmp_orientation(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
     im = im.convert(mode="RGB")
-    xmp = (
-        '<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
-        '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="XMP Core 5.4.0">\n'
-        ' <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n'
-        '  <rdf:Description rdf:about=""\n'
-        '    xmlns:exif="http://ns.adobe.com/exif/1.0/"\n'
-        '    xmlns:tiff="http://ns.adobe.com/tiff/1.0/"\n'
-        '   tiff:Orientation="'
-        + str(orientation)
-        + '"/>\n </rdf:RDF>\n</x:xmpmeta>\n<?xpacket end="r"?>'
-    )
+    xmp = get_xmp_with_orientation(orientation)
     im.info["XML:com.adobe.xmp"] = xmp
     # We are testing next two lines. They are equal to `save+open` operations.
     im_heif = pillow_heif.from_pillow(im)
@@ -77,7 +82,10 @@ def test_heif_exif_orientation(orientation):
     im.save(out_im_heif, format="HEIF", exif=exif_data.tobytes(), quality=-1)
     im_heif = Image.open(out_im_heif)
     # We should ignore all EXIF rotation flags for HEIF
-    assert im_heif.info["original_orientation"] == orientation
+    if orientation > 1:
+        assert im_heif.info["original_orientation"] == orientation
+    else:
+        assert im_heif.info.get("original_orientation", None) is None
     im_heif_exif = im_heif.getexif()
     assert 0x0112 not in im_heif_exif or im_heif_exif[0x0112] == 1
     assert_image_similar(im, im_heif)
@@ -88,22 +96,34 @@ def test_heif_exif_orientation(orientation):
 def test_heif_xmp_orientation(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
     im = im.convert(mode="RGB")
-    xmp = (
-        '<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
-        '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="XMP Core 5.4.0">\n'
-        ' <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n'
-        '  <rdf:Description rdf:about=""\n'
-        '    xmlns:exif="http://ns.adobe.com/exif/1.0/"\n'
-        '    xmlns:tiff="http://ns.adobe.com/tiff/1.0/"\n'
-        '   tiff:Orientation="'
-        + str(orientation)
-        + '"/>\n </rdf:RDF>\n</x:xmpmeta>\n<?xpacket end="r"?>'
-    )
+    xmp = get_xmp_with_orientation(orientation)
     out_im_heif = BytesIO()
     im.save(out_im_heif, format="HEIF", xmp=xmp.encode("utf-8"), quality=-1)
     im_heif = Image.open(out_im_heif)
+    # We should ignore all XMP rotation flags for HEIFss
+    if orientation > 1:
+        assert im_heif.info["original_orientation"] == orientation
+    else:
+        assert im_heif.info.get("original_orientation", None) is None
+    assert_image_similar(im, im_heif)
+
+
+@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.parametrize("orientation", (1, 2))
+def test_heif_xmp_orientation_with_exif_eq_1(orientation):
+    im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
+    im = im.convert(mode="RGB")
+    xmp = get_xmp_with_orientation(orientation)
+    out_im_heif = BytesIO()
+    exif_data = Image.Exif()
+    exif_data[0x0112] = 1
+    im.save(out_im_heif, format="HEIF", exif=exif_data.tobytes(), xmp=xmp.encode("utf-8"), quality=-1)
+    im_heif = Image.open(out_im_heif)
     # We should ignore all XMP rotation flags for HEIF
-    assert im_heif.info["original_orientation"] == orientation
+    if orientation > 1:
+        assert im_heif.info["original_orientation"] == orientation
+    else:
+        assert im_heif.info.get("original_orientation", None) is None
     assert_image_similar(im, im_heif)
 
 
