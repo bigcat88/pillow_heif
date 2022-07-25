@@ -11,8 +11,8 @@ import pillow_heif
 pillow_heif.register_heif_opener()
 
 
-def get_xmp_with_orientation(orientation: int) -> str:
-    xmp = (
+def get_xmp_with_orientation(orientation: int, style=1) -> str:
+    xmp_1 = (
         '<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
         '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="XMP Core 5.4.0">\n'
         ' <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n'
@@ -23,7 +23,23 @@ def get_xmp_with_orientation(orientation: int) -> str:
         + str(orientation)
         + '"/>\n </rdf:RDF>\n</x:xmpmeta>\n<?xpacket end="r"?>'
     )
-    return xmp
+    xmp_2 = (
+        '<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+        '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Image::ExifTool 12.30">\n'
+        '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n\n'
+        ' <rdf:Description rdf:about=""\n'
+        '  xmlns:exif="http://ns.adobe.com/exif/1.0/">\n'
+        "  <exif:ColorSpace>1</exif:ColorSpace>\n"
+        "  <exif:PixelXDimension>384</exif:PixelXDimension>\n"
+        "  <exif:PixelYDimension>512</exif:PixelYDimension>\n"
+        " </rdf:Description>\n\n"
+        ' <rdf:Description rdf:about=""\n'
+        '  xmlns:tiff="http://ns.adobe.com/tiff/1.0/">\n'
+        "  <tiff:Orientation>"
+        + str(orientation)
+        + '</tiff:Orientation>\n </rdf:Description>\n</rdf:RDF>\n</x:xmpmeta>\n<?xpacket end="r"?>'
+    )
+    return xmp_1 if style == 1 else xmp_2
 
 
 @pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
@@ -97,6 +113,23 @@ def test_heif_xmp_orientation(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
     im = im.convert(mode="RGB")
     xmp = get_xmp_with_orientation(orientation)
+    out_im_heif = BytesIO()
+    im.save(out_im_heif, format="HEIF", xmp=xmp.encode("utf-8"), quality=-1)
+    im_heif = Image.open(out_im_heif)
+    # We should ignore all XMP rotation flags for HEIFss
+    if orientation > 1:
+        assert im_heif.info["original_orientation"] == orientation
+    else:
+        assert im_heif.info.get("original_orientation", None) is None
+    assert_image_similar(im, im_heif)
+
+
+@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.parametrize("orientation", (1, 2))
+def test_heif_xmp_orientation_exiftool(orientation):
+    im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
+    im = im.convert(mode="RGB")
+    xmp = get_xmp_with_orientation(orientation, style=2)
     out_im_heif = BytesIO()
     im.save(out_im_heif, format="HEIF", xmp=xmp.encode("utf-8"), quality=-1)
     im_heif = Image.open(out_im_heif)
