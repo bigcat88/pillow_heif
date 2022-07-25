@@ -750,6 +750,8 @@ class HeifFile:
             no_primary = not bool(img in images)
             if isinstance(img, Image.Image):
                 heif_file = HeifFile().add_from_pillow(img, save_one, no_primary, for_encoding=True)
+            elif kwargs.get("dont_copy", False) and bool(img in images):
+                heif_file = [img] if isinstance(img, HeifImage) else img
             else:
                 heif_file = HeifFile().add_from_heif(img, save_one, no_primary, for_encoding=True)
             result += list(heif_file)
