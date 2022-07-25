@@ -46,8 +46,9 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
             if unpack(endian_mark + "H", tif_tag[pointer : pointer + 2])[0] != 274:
                 continue
             value = tif_tag[pointer + 8 : pointer + 12]
-            original_orientation = unpack(endian_mark + "H", value[0:2])[0]
-            if original_orientation != 1:
+            _original_orientation = unpack(endian_mark + "H", value[0:2])[0]
+            if _original_orientation != 1:
+                original_orientation = _original_orientation
                 p_value = 6 + pointer + 8
                 new_orientation = pack(endian_mark + "H", orientation)
                 info["exif"] = info["exif"][:p_value] + new_orientation + info["exif"][p_value + 2 :]
@@ -56,7 +57,7 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
         xmp_data = info["xmp"].decode("utf-8")
         match = re.search(r'tiff:Orientation="([0-9])"', xmp_data)
         if match:
-            if original_orientation is None:
+            if original_orientation is None and int(match[1]) != 1:
                 original_orientation = int(match[1])
             xmp_data = re.sub(r'tiff:Orientation="([0-9])"', "", xmp_data)
             info["xmp"] = xmp_data.encode("utf-8")
