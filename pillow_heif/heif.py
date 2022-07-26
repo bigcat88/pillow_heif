@@ -639,7 +639,7 @@ class HeifFile:
         images_to_save = self.__get_images_for_save(self.images, **kwargs)
         if not images_to_save:
             raise ValueError("Cannot write file with no images as HEIF.")
-        primary_index = kwargs.get("primary_index", None)
+        primary_index = kwargs.pop("primary_index", None)
         if primary_index is None:
             primary_index = 0
             for i, img in enumerate(images_to_save):
