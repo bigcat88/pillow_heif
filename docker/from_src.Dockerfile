@@ -1,4 +1,4 @@
-ARG DISTRO="alpine:3.14"
+ARG DISTRO
 
 FROM ghcr.io/linuxserver/baseimage-${DISTRO}
 
