@@ -653,13 +653,7 @@ class HeifFile:
         if chroma:
             enc_params["chroma"] = chroma if isinstance(chroma, str) else str(chroma)
         heif_ctx_write.set_encoder_parameters(enc_params, kwargs.get("quality", options().quality))
-        self._save(
-            heif_ctx_write,
-            images_to_save,
-            primary_index,
-            primary_exif=kwargs.get("exif", -1),
-            primary_xmp=kwargs.get("xmp", -1),
-        )
+        self._save(heif_ctx_write, images_to_save, primary_index, **kwargs)
         heif_ctx_write.write(fp)
 
     def __repr__(self):
@@ -719,9 +713,9 @@ class HeifFile:
             if i == primary_index:
                 if i:
                     lib.heif_context_set_primary_image(ctx.ctx, new_img_handle)
-                if kwargs["primary_exif"] != -1:
+                if kwargs.get("primary_exif", -1) != -1:
                     exif = kwargs["primary_exif"]
-                if kwargs["primary_xmp"] != -1:
+                if kwargs.get("primary_xmp", -1) != -1:
                     xmp = kwargs["primary_xmp"]
             set_exif(ctx, new_img_handle, exif)
             set_xmp(ctx, new_img_handle, xmp)

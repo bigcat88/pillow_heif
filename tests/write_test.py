@@ -367,12 +367,3 @@ def test_chroma_encoding_8bit(chroma, diff_epsilon, im):
     im_out = Image.open(im_buf)
     im = im.convert(mode=im_out.mode)
     helpers.assert_image_similar(im, im_out, diff_epsilon)
-
-
-# @pytest.mark.parametrize("im", (helpers.gradient_rgb(), helpers.gradient_rgba()))
-# def test_lossless_encoding_8bit(im):
-#     im_buf = BytesIO()
-#     im.save(im_buf, format="HEIF", quality=-1, chroma=444, matrix_coefficients=0)
-#     im_out = Image.open(im_buf)
-#     im = im.convert(mode=im_out.mode)
-#     helpers.assert_image_similar(im, im_out, 0)
