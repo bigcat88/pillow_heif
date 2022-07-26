@@ -55,12 +55,10 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
                 break
     if info.get("xmp", None):
         xmp_data = info["xmp"].decode("utf-8")
-        match = re.search(r'tiff:Orientation="([0-9])"', xmp_data)
-        if not match:
-            match = re.search(r"<tiff:Orientation>([0-9])</tiff:Orientation>", xmp_data)
+        match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_data)
         if match:
-            if original_orientation is None and int(match[1]) != 1:
-                original_orientation = int(match[1])
+            if original_orientation is None and int(match[2]) != 1:
+                original_orientation = int(match[2])
             xmp_data = re.sub(r'tiff:Orientation="([0-9])"', "", xmp_data)
             xmp_data = re.sub(r"<tiff:Orientation>([0-9])</tiff:Orientation>", "", xmp_data)
             info["xmp"] = xmp_data.encode("utf-8")
