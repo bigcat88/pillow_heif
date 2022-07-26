@@ -619,13 +619,15 @@ class HeifFile:
 
             ``quality`` - see :py:attr:`~pillow_heif._options.PyLibHeifOptions.quality`
 
-            ``enc_params`` - tuple of name:value to pass to :ref:`x265 <hevc-encoder>` encoder.
+            ``enc_params`` - list of tuple of name:value to pass to :ref:`x265 <hevc-encoder>` encoder.
 
             ``exif`` - override primary image's EXIF with specified. Accept ``None`` or ``bytes``.
 
             ``xmp`` - override primary image's XMP with specified. Accept ``None`` or ``bytes``.
 
             ``primary_index`` - ignore ``info["primary"]`` and set `PrimaryImage` by index.
+
+            ``chroma`` - one of the subsampling values: `444`, `422` or `420`. ``x265`` default is ``420``.
 
         :param fp: A filename (string), pathlib.Path object or file object.
 
@@ -646,7 +648,11 @@ class HeifFile:
         elif primary_index == -1 or primary_index >= len(images_to_save):
             primary_index = len(images_to_save) - 1
         heif_ctx_write = LibHeifCtxWrite()
-        heif_ctx_write.set_encoder_parameters(kwargs.get("enc_params", []), kwargs.get("quality", options().quality))
+        enc_params = kwargs.get("enc_params", {})
+        chroma = kwargs.get("chroma", None)
+        if chroma:
+            enc_params["chroma"] = chroma if isinstance(chroma, str) else str(chroma)
+        heif_ctx_write.set_encoder_parameters(enc_params, kwargs.get("quality", options().quality))
         self._save(
             heif_ctx_write,
             images_to_save,
