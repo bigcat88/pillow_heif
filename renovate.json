@@ -6,6 +6,7 @@
   ],
   "ignorePaths": [
     "**/docker/**",
+    "**/docs/**",
     "**/examples/**",
     "**/libheif/**",
     "**/tests/**"
