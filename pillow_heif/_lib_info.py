@@ -24,11 +24,21 @@ def have_encoder_for_format(format_id: HeifCompressionFormat) -> bool:
 
 def libheif_info() -> dict:
     """Returns dictionary with avalaible decoders & encoders and libheif version.
-    Keys are `version`, `decoders`, `encoders`.
-    """
+    Keys are `versions`, `decoders`, `encoders`."""
+
     decoders = {}
     encoders = {}
     for format_id in (HeifCompressionFormat.HEVC, HeifCompressionFormat.AV1, HeifCompressionFormat.AVC):
         decoders[format_id.name] = have_decoder_for_format(format_id)
         encoders[format_id.name] = have_encoder_for_format(format_id)
-    return {"version": libheif_version(), "decoders": decoders, "encoders": encoders}
+
+    _versions = {"libheif": libheif_version()}
+    p_enc_desc = ffi.new("struct heif_encoder_descriptor**")
+    lib.heif_context_get_encoder_descriptors(ffi.NULL, HeifCompressionFormat.HEVC, ffi.NULL, p_enc_desc, 1)
+    p_enc_name = lib.heif_encoder_descriptor_get_name(p_enc_desc[0])
+    _versions["x265"] = ffi.string(p_enc_name).decode()
+    lib.heif_context_get_encoder_descriptors(ffi.NULL, HeifCompressionFormat.AV1, ffi.NULL, p_enc_desc, 1)
+    p_enc_name = lib.heif_encoder_descriptor_get_name(p_enc_desc[0])
+    _versions["aom"] = ffi.string(p_enc_name).decode()
+
+    return {"versions": _versions, "decoders": decoders, "encoders": encoders}

@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - `enc_params` for `save` changed type from `List[Tuple[str, str]]` to `Dict`. Old code will still work, but marked as deprecated.
+- renamed key from `version` to `versions` in return result of `libheif_info`, now returns also bundled versions of `x265` and `aom`.
 
 ### Fixed
 
@@ -19,7 +20,7 @@ All notable changes to this project will be documented in this file.
 - Slightly optimizations for working in a `Pillow` plugin mode.
 - Updated `libaom` on Linux and Windows from `3.3.0` to `3.4.0` version. MacOS builds had already that version in `0.5.0`.
 
-## [0.5.0 - 2022-07-23]
+## [0.5.0 - 2022-07-21]
 
 Thumbnails was reworked, if you was not use them before, then this release is fully compatible with `0.4.0` version.
 It is a final API release, no more further changes to existing API are planned, only bugfixes if any and etc.
