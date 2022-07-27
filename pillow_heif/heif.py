@@ -713,10 +713,10 @@ class HeifFile:
             if i == primary_index:
                 if i:
                     lib.heif_context_set_primary_image(ctx.ctx, new_img_handle)
-                if kwargs.get("primary_exif", -1) != -1:
-                    exif = kwargs["primary_exif"]
-                if kwargs.get("primary_xmp", -1) != -1:
-                    xmp = kwargs["primary_xmp"]
+                if kwargs.get("exif", -1) != -1:
+                    exif = kwargs["exif"]
+                if kwargs.get("xmp", -1) != -1:
+                    xmp = kwargs["xmp"]
             set_exif(ctx, new_img_handle, exif)
             set_xmp(ctx, new_img_handle, xmp)
             set_metadata(ctx, new_img_handle, img.info)
