@@ -34,11 +34,11 @@ def libheif_info() -> dict:
 
     _versions = {"libheif": libheif_version()}
     p_enc_desc = ffi.new("struct heif_encoder_descriptor**")
-    lib.heif_context_get_encoder_descriptors(ffi.NULL, HeifCompressionFormat.HEVC, ffi.NULL, p_enc_desc, 1)
-    p_enc_name = lib.heif_encoder_descriptor_get_name(p_enc_desc[0])
-    _versions["x265"] = ffi.string(p_enc_name).decode()
-    lib.heif_context_get_encoder_descriptors(ffi.NULL, HeifCompressionFormat.AV1, ffi.NULL, p_enc_desc, 1)
-    p_enc_name = lib.heif_encoder_descriptor_get_name(p_enc_desc[0])
-    _versions["aom"] = ffi.string(p_enc_name).decode()
+    if lib.heif_context_get_encoder_descriptors(ffi.NULL, HeifCompressionFormat.HEVC, ffi.NULL, p_enc_desc, 1):
+        p_enc_name = lib.heif_encoder_descriptor_get_name(p_enc_desc[0])
+        _versions["x265"] = ffi.string(p_enc_name).decode()
+    if lib.heif_context_get_encoder_descriptors(ffi.NULL, HeifCompressionFormat.AV1, ffi.NULL, p_enc_desc, 1):
+        p_enc_name = lib.heif_encoder_descriptor_get_name(p_enc_desc[0])
+        _versions["aom"] = ffi.string(p_enc_name).decode()
 
     return {"versions": _versions, "decoders": decoders, "encoders": encoders}
