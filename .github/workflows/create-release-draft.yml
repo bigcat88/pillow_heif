@@ -50,6 +50,7 @@ jobs:
           install: >-
             patch
             mingw-w64-x86_64-binutils
+            mingw-w64-aom
 
       - name: Build libheif and dependencies
         shell: msys2 {0}
