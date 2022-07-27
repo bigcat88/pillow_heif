@@ -1,7 +1,6 @@
 import sys
 from os import chdir, environ, getcwd, makedirs, mkdir, path, remove
-
-# from platform import machine
+from platform import machine
 from re import IGNORECASE, MULTILINE, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
 
@@ -162,7 +161,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args += "-DENABLE_TESTDATA=0 -DCONFIG_AV1_ENCODER=1".split()
             cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
             cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
-            cmake_args += "-DCMAKE_TOOLCHAIN_FILE=../aom/build/cmake/toolchains/armv7-linux-gcc.cmake".split()
             run(["cmake"] + cmake_args, check=True)
             _hide_build_process = True
         elif name == "x265":
@@ -214,7 +212,6 @@ def build_libs_linux() -> str:
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         if sys.maxsize > 2**32:  # Build x265 encoder only on 64-bit systems.
             build_lib_linux(
                 "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
@@ -226,9 +223,8 @@ def build_libs_linux() -> str:
             "libde265",
             _is_musllinux,
         )
-        # if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
-        # if not is_library_installed("aom"):
-        #     build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
+        if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
+            build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
             "libheif",
