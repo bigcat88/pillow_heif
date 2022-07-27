@@ -619,7 +619,7 @@ class HeifFile:
 
             ``quality`` - see :py:attr:`~pillow_heif._options.PyLibHeifOptions.quality`
 
-            ``enc_params`` - list of tuple of name:value to pass to :ref:`x265 <hevc-encoder>` encoder.
+            ``enc_params`` - dictionary with key:value to pass to :ref:`x265 <hevc-encoder>` encoder.
 
             ``exif`` - override primary image's EXIF with specified. Accept ``None`` or ``bytes``.
 
@@ -627,7 +627,8 @@ class HeifFile:
 
             ``primary_index`` - ignore ``info["primary"]`` and set `PrimaryImage` by index.
 
-            ``chroma`` - one of the subsampling values: `444`, `422` or `420`. ``x265`` default is ``420``.
+            ``chroma`` - one of the subsampling values: ``444``, ``422`` or ``420``.
+            ``x265`` encoder default is ``420``. Many software does not supports ``444`` chroma.
 
         :param fp: A filename (string), pathlib.Path object or file object.
 
