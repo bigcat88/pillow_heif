@@ -20,8 +20,6 @@ RUN \
       harfbuzz-dev \
       jpeg-dev \
       lcms2-dev \
-      aom \
-      aom-dev \
       openjpeg-dev \
       nasm \
       py3-numpy \
@@ -40,7 +38,6 @@ RUN \
       cmake \
       lsb-release; \
       lsb_release -r | grep -q "20.04" || apt-get install -y nasm; \
-      lsb_release -r | grep -q "20.04" || apt-get install -y libaom-dev; \
   fi && \
   python3 -m pip install --upgrade pip && \
   python3 -m pip install -v "pillow_heif/.[tests]" && \
