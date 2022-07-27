@@ -619,13 +619,16 @@ class HeifFile:
 
             ``quality`` - see :py:attr:`~pillow_heif._options.PyLibHeifOptions.quality`
 
-            ``enc_params`` - tuple of name:value to pass to :ref:`x265 <hevc-encoder>` encoder.
+            ``enc_params`` - dictionary with key:value to pass to :ref:`x265 <hevc-encoder>` encoder.
 
             ``exif`` - override primary image's EXIF with specified. Accept ``None`` or ``bytes``.
 
             ``xmp`` - override primary image's XMP with specified. Accept ``None`` or ``bytes``.
 
             ``primary_index`` - ignore ``info["primary"]`` and set `PrimaryImage` by index.
+
+            ``chroma`` - one of the subsampling values: ``444``, ``422`` or ``420``.
+            ``x265`` encoder default is ``420``. Many software does not supports ``444`` chroma.
 
         :param fp: A filename (string), pathlib.Path object or file object.
 
@@ -637,7 +640,7 @@ class HeifFile:
         images_to_save = self.__get_images_for_save(self.images, **kwargs)
         if not images_to_save:
             raise ValueError("Cannot write file with no images as HEIF.")
-        primary_index = kwargs.get("primary_index", None)
+        primary_index = kwargs.pop("primary_index", None)
         if primary_index is None:
             primary_index = 0
             for i, img in enumerate(images_to_save):
@@ -646,14 +649,12 @@ class HeifFile:
         elif primary_index == -1 or primary_index >= len(images_to_save):
             primary_index = len(images_to_save) - 1
         heif_ctx_write = LibHeifCtxWrite()
-        heif_ctx_write.set_encoder_parameters(kwargs.get("enc_params", {}), kwargs.get("quality", options().quality))
-        self._save(
-            heif_ctx_write,
-            images_to_save,
-            primary_index,
-            primary_exif=kwargs.get("exif", -1),
-            primary_xmp=kwargs.get("xmp", -1),
-        )
+        enc_params = kwargs.get("enc_params", {})
+        chroma = kwargs.get("chroma", None)
+        if chroma:
+            enc_params["chroma"] = chroma if isinstance(chroma, str) else str(chroma)
+        heif_ctx_write.set_encoder_parameters(enc_params, kwargs.get("quality", options().quality))
+        self._save(heif_ctx_write, images_to_save, primary_index, **kwargs)
         heif_ctx_write.write(fp)
 
     def __repr__(self):
@@ -713,10 +714,10 @@ class HeifFile:
             if i == primary_index:
                 if i:
                     lib.heif_context_set_primary_image(ctx.ctx, new_img_handle)
-                if kwargs["primary_exif"] != -1:
-                    exif = kwargs["primary_exif"]
-                if kwargs["primary_xmp"] != -1:
-                    xmp = kwargs["primary_xmp"]
+                if kwargs.get("exif", -1) != -1:
+                    exif = kwargs["exif"]
+                if kwargs.get("xmp", -1) != -1:
+                    xmp = kwargs["xmp"]
             set_exif(ctx, new_img_handle, exif)
             set_xmp(ctx, new_img_handle, xmp)
             set_metadata(ctx, new_img_handle, img.info)

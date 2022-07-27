@@ -357,3 +357,13 @@ def test_pillow_save_multi_frame():
         assert im.mode == out_im.mode
         assert im.info["primary"] == out_im.info["primary"]
         helpers.compare_hashes([im, out_im], hash_size=8)
+
+
+@pytest.mark.parametrize("chroma, diff_epsilon", ((420, 1.83), (422, 1.32), (444, 0.99)))
+@pytest.mark.parametrize("im", (helpers.gradient_rgb(), helpers.gradient_rgba()))
+def test_chroma_encoding_8bit(chroma, diff_epsilon, im):
+    im_buf = BytesIO()
+    im.save(im_buf, format="HEIF", quality=-1, chroma=chroma)
+    im_out = Image.open(im_buf)
+    im = im.convert(mode=im_out.mode)
+    helpers.assert_image_similar(im, im_out, diff_epsilon)

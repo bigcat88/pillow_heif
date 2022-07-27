@@ -65,7 +65,9 @@ class PyLibHeifOptions:
             has higher priority then this.
 
         Possible values: None, -1, range(0-100). Default=None
-            Set -1 for lossless quality or from 0 to 100, where 0 is lowest and 100 is highest."""
+            Set -1 for lossless quality or from 0 to 100, where 0 is lowest and 100 is highest.
+
+        .. note:: Also for lossless encoding you should specify ``chroma=444`` during save."""
 
         return self._cfg["quality"]
 
