@@ -646,7 +646,7 @@ class HeifFile:
         elif primary_index == -1 or primary_index >= len(images_to_save):
             primary_index = len(images_to_save) - 1
         heif_ctx_write = LibHeifCtxWrite()
-        heif_ctx_write.set_encoder_parameters(kwargs.get("enc_params", []), kwargs.get("quality", options().quality))
+        heif_ctx_write.set_encoder_parameters(kwargs.get("enc_params", {}), kwargs.get("quality", options().quality))
         self._save(
             heif_ctx_write,
             images_to_save,
