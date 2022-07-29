@@ -47,13 +47,14 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           location: C:/temp
+          update: true
           install: >-
             patch
             mingw-w64-x86_64-binutils
 
-      - name: Update package daabase
-        shell: msys2 {0}
-        run: pacman -Syu --noconfirm
+#      - name: Update packages
+#        shell: msys2 {0}
+#        run: pacman -Syu --noconfirm
 
       - name: Build libheif and dependencies
         shell: msys2 {0}
