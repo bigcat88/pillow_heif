@@ -34,7 +34,7 @@ design.max-attributes = 9
 design.max-locals = 16
 basic.good-names = [
     "a", "b", "c", "d", "e", "f", "i", "j", "k", "v",
-    "ex", "_", "fp", "im", "HeifImagePlugin",
+    "ex", "_", "fp", "im", "HeifImagePlugin", "AvifImagePlugin",
 ]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
