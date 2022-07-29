@@ -24,6 +24,8 @@ RUN \
       aom-dev \
       openjpeg-dev \
       nasm \
+      x265 \
+      x265-dev \
       py3-numpy \
       py3-pillow; \
   elif [ -f /usr/bin/apt ]; then \
