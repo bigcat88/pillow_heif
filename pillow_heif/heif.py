@@ -627,8 +627,8 @@ class HeifFile:
 
             ``primary_index`` - ignore ``info["primary"]`` and set `PrimaryImage` by index.
 
-            ``chroma`` - one of the subsampling values: ``444``, ``422`` or ``420``.
-            ``x265`` encoder default is ``420``. Many software does not supports ``444`` chroma.
+            ``chroma`` - custom subsampling value. Possible values: ``444``, ``422`` or ``420`` (``x265`` default)
+            Many software does not supports ``444`` chroma for HEIF.
 
         :param fp: A filename (string), pathlib.Path object or file object.
 
