@@ -47,6 +47,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           location: C:/temp
+          update: true
           install: >-
             patch
             mingw-w64-x86_64-binutils
