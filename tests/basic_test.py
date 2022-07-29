@@ -14,7 +14,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def test_libheif_info():
     info = pillow_heif.libheif_info()
-    assert info["versions"]["libheif"] == "1.12.0"
+    assert info["version"]["libheif"] == "1.12.0"
     assert info["decoders"]["HEVC"]
     if machine().find("armv7") != -1:
         return
@@ -22,7 +22,6 @@ def test_libheif_info():
     assert info["encoders"]["AV1"]
     if sys.maxsize > 2**32:
         assert info["encoders"]["HEVC"]
-        assert pillow_heif.options().hevc_enc
 
 
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)
