@@ -6,18 +6,17 @@ from typing import Any
 
 from PIL import Image, ImageFile
 
+from ._lib_info import have_encoder_for_format
 from ._options import options
-from .constants import HeifErrorCode
+from .constants import HeifCompressionFormat, HeifErrorCode
 from .error import HeifError
 from .heif import HeifFile, is_supported, open_heif
 from .misc import getxmp, set_orientation
 
 
-class HeifImageFile(ImageFile.ImageFile):
-    """Pillow plugin class for HEIF image format."""
+class _LibHeifImageFile(ImageFile.ImageFile):
+    """Base class with all functionality for ``HeifImageFile`` and ``AvifImageFile`` classes."""
 
-    format = "HEIF"
-    format_description = "HEIF container for HEVC and AV1"
     heif_file: Any
     _close_exclusive_fp_after_loading = False
 
@@ -57,8 +56,7 @@ class HeifImageFile(ImageFile.ImageFile):
         return super().load()
 
     def getxmp(self) -> dict:
-        """Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
+        """Returns a dictionary containing the XMP tags. Requires ``defusedxml`` to be installed.
 
         :returns: XMP tags in a dictionary."""
 
@@ -107,26 +105,34 @@ class HeifImageFile(ImageFile.ImageFile):
         self.info["original_orientation"] = set_orientation(self.info)
 
 
-def _save(im, fp, _filename):
+class HeifImageFile(_LibHeifImageFile):
+    """Pillow plugin class type for a HEIF image format."""
+
+    format = "HEIF"
+    format_description = "HEIF container"
+
+
+def _save_heif(im, fp, _filename):
     heif_file = HeifFile().add_from_pillow(im, load_one=True, for_encoding=True)
     heif_file.save(fp, save_all=False, **im.encoderinfo, dont_copy=True)
 
 
-def _save_all(im, fp, _filename):
+def _save_all_heif(im, fp, _filename):
     heif_file = HeifFile().add_from_pillow(im, ignore_primary=False, for_encoding=True)
     heif_file.save(fp, save_all=True, **im.encoderinfo, dont_copy=True)
 
 
 def register_heif_opener(**kwargs) -> None:
-    """Registers Pillow plugin.
+    """Registers a Pillow plugin for HEIF format.
 
     :param kwargs: dictionary with values to set in :py:class:`~pillow_heif._options.PyLibHeifOptions`
     """
 
     options().update(**kwargs)
     Image.register_open(HeifImageFile.format, HeifImageFile, is_supported)
-    Image.register_save(HeifImageFile.format, _save)
-    Image.register_save_all(HeifImageFile.format, _save_all)
+    if have_encoder_for_format(HeifCompressionFormat.HEVC):
+        Image.register_save(HeifImageFile.format, _save_heif)
+        Image.register_save_all(HeifImageFile.format, _save_all_heif)
     extensions = [".heic", ".heics", ".heif", ".heifs", ".hif"]
     Image.register_mime(HeifImageFile.format, "image/heic")
     Image.register_mime(HeifImageFile.format, "image/heic-sequence")
