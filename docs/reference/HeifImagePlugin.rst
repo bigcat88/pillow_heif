@@ -10,6 +10,9 @@ HeifImageFile object
 
 .. autoclass:: pillow_heif.HeifImageFile
     :show-inheritance:
+
+.. autoclass:: pillow_heif.as_opener._LibHeifImageFile
+    :show-inheritance:
     :members:
 
     .. py:attribute:: info
@@ -29,6 +32,7 @@ HeifImageFile object
     .. py:method:: get_format_mimetype
 
         Returns the same as :py:func:`~pillow_heif.get_file_mimetype`
+
 
 Pillow Plugin Manual Registration
 ---------------------------------

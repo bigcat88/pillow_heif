@@ -11,13 +11,13 @@ from PIL import Image, ImageSequence
 
 import pillow_heif
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-pillow_heif.register_heif_opener()
+pytest.importorskip("numpy", reason="NumPy not installed")
 
-if not pillow_heif.options().hevc_enc:
+if not helpers.hevc_enc():
     pytest.skip("No HEVC encoder.", allow_module_level=True)
 
-pytest.importorskip("numpy", reason="NumPy not installed")
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+pillow_heif.register_heif_opener()
 
 
 def test_scale():
@@ -64,20 +64,14 @@ def test_pillow_save_one_all():
     assert len(pillow_heif.open_heif(out_heif)) == 2
 
 
-@mock.patch("pillow_heif._options.CFG_OPTIONS._hevc_enc", False)
 def test_heif_no_encoder():
-    im_heif = pillow_heif.from_pillow(Image.new("L", (64, 64)))
-    out_buffer = BytesIO()
-    with pytest.raises(pillow_heif.HeifError):
-        im_heif.save(out_buffer)
+    with mock.patch("pillow_heif.heif.have_encoder_for_format") as mock_func:
+        mock_func.return_value = False
 
-
-@mock.patch("pillow_heif._options.CFG_OPTIONS._hevc_enc", False)
-def test_pillow_no_encoder():
-    im = Image.new("L", (64, 64))
-    out_buffer = BytesIO()
-    with pytest.raises(pillow_heif.HeifError):
-        im.save(out_buffer, format="HEIF")
+        im_heif = pillow_heif.from_pillow(Image.new("L", (64, 64)))
+        out_buffer = BytesIO()
+        with pytest.raises(pillow_heif.HeifError):
+            im_heif.save(out_buffer)
 
 
 @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))

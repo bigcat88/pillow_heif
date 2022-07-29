@@ -9,9 +9,16 @@ from weakref import ref
 from _pillow_heif_cffi import ffi, lib
 from PIL import Image, ImageOps, ImageSequence
 
+from ._lib_info import have_encoder_for_format
 from ._libheif_ctx import LibHeifCtx, LibHeifCtxWrite
 from ._options import options
-from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifFiletype
+from .constants import (
+    HeifChannel,
+    HeifChroma,
+    HeifColorspace,
+    HeifCompressionFormat,
+    HeifFiletype,
+)
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, set_orientation
 from .private import (
@@ -635,7 +642,8 @@ class HeifFile:
         :returns: None
         :raises: :py:exc:`~pillow_heif.HeifError` or :py:exc:`ValueError`"""
 
-        if not options().hevc_enc:
+        compression = HeifCompressionFormat.HEVC
+        if not have_encoder_for_format(compression):
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
         images_to_save = self.__get_images_for_save(self.images, **kwargs)
         if not images_to_save:
@@ -648,7 +656,7 @@ class HeifFile:
                     primary_index = i
         elif primary_index == -1 or primary_index >= len(images_to_save):
             primary_index = len(images_to_save) - 1
-        heif_ctx_write = LibHeifCtxWrite()
+        heif_ctx_write = LibHeifCtxWrite(compression_format=compression)
         enc_params = kwargs.get("enc_params", {})
         chroma = kwargs.get("chroma", None)
         if chroma:

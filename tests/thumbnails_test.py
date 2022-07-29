@@ -2,13 +2,13 @@ from gc import collect
 from io import BytesIO
 
 import pytest
-from helpers import compare_hashes
+from helpers import compare_hashes, hevc_enc
 from PIL import Image, ImageSequence
 
 import pillow_heif
 
 pillow_heif.register_heif_opener()
-if not pillow_heif.options().hevc_enc:
+if not hevc_enc():
     pytest.skip(reason="Requires HEIF encoder.", allow_module_level=True)
 
 

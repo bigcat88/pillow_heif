@@ -5,6 +5,7 @@ from os import chdir, path
 from pathlib import Path
 from platform import machine
 
+import helpers
 import pytest
 from PIL import Image
 
@@ -23,7 +24,7 @@ def perform_open_save(iterations, image_path, do_save=True):
     for _ in range(iterations):
         image = Image.open(image_path)
         assert getattr(image, "heif_file") is not None
-        if pillow_heif.options().hevc_enc and do_save:
+        if helpers.hevc_enc() and do_save:
             out_buf = BytesIO()
             image.save(out_buf, quality=20, format="HEIF", save_all=True)
 

@@ -1,7 +1,7 @@
 from io import BytesIO
 
 import pytest
-from helpers import create_heif
+from helpers import create_heif, hevc_enc
 from PIL import Image
 
 import pillow_heif
@@ -9,7 +9,7 @@ import pillow_heif
 pillow_heif.register_heif_opener()
 
 
-@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc, reason="Requires HEIF encoder.")
 def test_heif_primary_image():
     heif_buf = create_heif((64, 64), n_images=3, primary_index=1)
     heif_file = pillow_heif.open_heif(heif_buf)
@@ -34,7 +34,7 @@ def test_heif_primary_image():
     assert heif_file_out.primary_index() == 2
 
 
-@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc, reason="Requires HEIF encoder.")
 def test_pillow_primary_image():
     heif_buf = create_heif((64, 64), n_images=3, primary_index=1)
     heif_file = Image.open(heif_buf)
@@ -59,7 +59,7 @@ def test_pillow_primary_image():
     assert heif_file_out.tell() == 2
 
 
-@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc, reason="Requires HEIF encoder.")
 def test_heif_info_changing():
     xmp = b"LeagueOf"
     exif_desc_value = "this is a desc"
@@ -102,7 +102,7 @@ def test_heif_info_changing():
         assert not im_out[i].info["exif"] and not im_out[i].info["xmp"]
 
 
-@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc, reason="Requires HEIF encoder.")
 def test_pillow_info_changing():
     xmp = b"LeagueOf"
     exif_desc_value = "this is a desc"
@@ -150,7 +150,7 @@ def test_pillow_info_changing():
         assert not im_out.info["exif"] and not im_out.info["xmp"]
 
 
-@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc, reason="Requires HEIF encoder.")
 def test_heif_iptc_metadata():
     heif_buf = create_heif((64, 64))
     data = (
@@ -175,7 +175,7 @@ def test_heif_iptc_metadata():
     assert im_out.info["metadata"][0]["data"] == data
 
 
-@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc, reason="Requires HEIF encoder.")
 def test_pillow_iptc_metadata():
     heif_buf = create_heif((64, 64))
     data = (

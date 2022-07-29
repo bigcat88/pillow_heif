@@ -3,7 +3,7 @@ from io import SEEK_END, BytesIO
 from pathlib import Path
 
 import pytest
-from helpers import create_heif
+from helpers import create_heif, hevc_enc
 from PIL import Image, UnidentifiedImageError
 
 from pillow_heif import from_pillow, open_heif, options, register_heif_opener
@@ -37,7 +37,7 @@ def test_strict_cfg_option():
         options().reset()
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+@pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
 def test_thumbnails_option():
     heif_buf = create_heif((128, 128), [64])
     try:
@@ -54,7 +54,7 @@ def test_thumbnails_option():
         options().reset()
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+@pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
 def test_quality_option():
     try:
         image = from_pillow(Image.linear_gradient(mode="L"))

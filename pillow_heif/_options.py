@@ -2,6 +2,7 @@
 Options to change pillow_heif's runtime behaviour.
 """
 from typing import Union
+from warnings import warn
 
 from ._lib_info import have_decoder_for_format, have_encoder_for_format
 from .constants import HeifCompressionFormat
@@ -20,16 +21,19 @@ class PyLibHeifOptions:
     def hevc_enc(self) -> bool:
         """Read only property showing if library was build with h265 HEVC encoder."""
 
+        warn("Started from `0.6.0` version this property will be deprecated.", DeprecationWarning)
         return self._hevc_enc
 
     @property
     def avif(self) -> bool:
         """Enable or disable x264(AVIF) file read support. Default=True(if build include libaom)"""
 
+        warn("Started from `0.6.0` version this property will be deprecated.", DeprecationWarning)
         return self._cfg["avif"]
 
     @avif.setter
     def avif(self, value: bool):
+        warn("Started from `0.6.0` version this property will be deprecated.", DeprecationWarning)
         self._cfg["avif"] = value if self._avif_dec else False
 
     @property

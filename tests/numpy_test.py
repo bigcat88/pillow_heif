@@ -1,5 +1,6 @@
 from io import BytesIO
 
+import helpers
 import pytest
 from packaging.version import parse as parse_version
 from PIL import Image
@@ -9,7 +10,7 @@ import pillow_heif
 np = pytest.importorskip("numpy", reason="NumPy not installed")
 
 pillow_heif.register_heif_opener()
-if not pillow_heif.options().hevc_enc:
+if not helpers.hevc_enc():
     pytest.skip(reason="Requires HEIF encoder.", allow_module_level=True)
 
 # Creating HEIF file in memory with 1 image and 3 thumbnails.
