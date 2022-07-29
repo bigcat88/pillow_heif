@@ -14,23 +14,21 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def test_libheif_info():
     info = pillow_heif.libheif_info()
+    assert info["versions"]["libheif"] == "1.12.0"
     assert info["decoders"]["HEVC"]
     if machine().find("armv7") != -1:
         return
     assert info["decoders"]["AV1"]
+    assert info["encoders"]["AV1"]
     if sys.maxsize > 2**32:
         assert info["encoders"]["HEVC"]
         assert pillow_heif.options().hevc_enc
 
 
-def test_lib_version():
-    assert pillow_heif.libheif_version() == "1.12.0"
-
-
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)
 def test_get_file_mimetype(img_path):
     mimetype = pillow_heif.get_file_mimetype(img_path)
-    assert mimetype in ("image/heic", "image/heif", "image/avif", "image/heic-sequence", "image/heif-sequence")
+    assert mimetype in ("image/heic", "image/heic-sequence", "image/heif", "image/heif-sequence", "image/avif")
     assert mimetype == pillow_heif.open_heif(img_path, False).mimetype
 
 
