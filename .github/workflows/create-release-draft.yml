@@ -53,7 +53,7 @@ jobs:
 
       - name: Update package daabase
         shell: msys2 {0}
-        run: pacman -Syu
+        run: pacman -Syu --noconfirm
 
       - name: Build libheif and dependencies
         shell: msys2 {0}
