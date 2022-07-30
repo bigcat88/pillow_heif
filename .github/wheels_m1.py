@@ -12,7 +12,7 @@ if __name__ == "__main__":
         run(args, check=True)
         print("Start building...")
         modified_env = dict(environ)
-        modified_env["CIBW_SKIP"] = "pp* cp36-* cp37-* cp38-*"
+        modified_env["CIBW_SKIP"] = "pp* cp36-* cp37-*"
         modified_env["CIBW_BUILD"] = "*-macosx_arm64"
         modified_env["CIBW_ARCHS"] = "arm64"
         modified_env["CIBW_PLATFORM"] = "macos"
