@@ -96,7 +96,7 @@ def getxmp(xmp_data: bytes) -> dict:
     """Returns a dictionary containing the XMP tags.
     **Requires defusedxml to be installed.** Implementation taken from ``Pillow``.
 
-    Used in :py:meth:`pillow_heif.HeifImageFile.getxmp`
+    Used in :py:meth:`pillow_heif.as_opener._LibHeifImageFile.getxmp` by Pillow plugins.
 
     :param xmp_data: ``bytes`` containing string in UTF-8 encoding with XMP tags.
 
