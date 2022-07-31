@@ -14,7 +14,7 @@ This release is fully compatible with previous versions if you was not using `AV
 
 ### Changed
 
-- (HeifImagePlugin) By default not accepts `.avif` files, register `AvifImagePlugin` if you need that. If you use `pillow_avif` that do not =)
+- (HeifImagePlugin) By default not accepts `.avif` files, register `AvifImagePlugin` if you need that. If you use `pillow_avif` then do not =)
 - `options().hevc_enc` property was removed.
 - `options().avif` property was removed.
 

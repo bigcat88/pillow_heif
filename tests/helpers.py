@@ -4,7 +4,15 @@ from typing import Union
 
 from PIL import Image, ImageMath, ImageOps
 
-from pillow_heif import HeifFile, HeifImage, HeifThumbnail, add_thumbnails
+from pillow_heif import (
+    HeifCompressionFormat,
+    HeifFile,
+    HeifImage,
+    HeifThumbnail,
+    add_thumbnails,
+    have_decoder_for_format,
+    have_encoder_for_format,
+)
 
 try:
     import numpy as np
@@ -40,7 +48,6 @@ def assert_image_similar(a, b, epsilon=0.0):
         ch_diff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert("L")
         diff += sum(i * num for i, num in enumerate(ch_diff.histogram()))
     ave_diff = diff / (a.size[0] * a.size[1])
-    print(ave_diff)
     assert epsilon >= ave_diff
 
 
@@ -208,3 +215,15 @@ def gradient_pa_bytes(im_format: str) -> bytearray:
     _ = BytesIO()
     gradient_la().save(_, format=im_format)
     return bytearray(_.getbuffer().tobytes())
+
+
+def hevc_enc() -> bool:
+    return have_encoder_for_format(HeifCompressionFormat.HEVC)
+
+
+def aom_dec() -> bool:
+    return have_decoder_for_format(HeifCompressionFormat.AV1)
+
+
+def aom_enc() -> bool:
+    return have_encoder_for_format(HeifCompressionFormat.AV1)

@@ -3,25 +3,13 @@ from io import SEEK_END, BytesIO
 from pathlib import Path
 
 import pytest
-from helpers import create_heif
+from helpers import aom_enc, create_heif, hevc_enc
 from PIL import Image, UnidentifiedImageError
 
 from pillow_heif import from_pillow, open_heif, options, register_heif_opener
 
 register_heif_opener()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-
-@pytest.mark.skipif(not options().avif, reason="missing AV1 codecs.")
-def test_avif_cfg_option():
-    # when `options.avif` is False, pillow_heif must refuse to open `avif` files
-    try:
-        options().avif = False
-        with pytest.raises(UnidentifiedImageError):
-            Image.open(Path("images/heif/L_10.avif"))
-    finally:
-        options().reset()
-    Image.open(Path("images/heif/L_10.avif"))
 
 
 def test_strict_cfg_option():
@@ -37,7 +25,7 @@ def test_strict_cfg_option():
         options().reset()
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
+@pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
 def test_thumbnails_option():
     heif_buf = create_heif((128, 128), [64])
     try:
@@ -54,8 +42,8 @@ def test_thumbnails_option():
         options().reset()
 
 
-@pytest.mark.skipif(not options().hevc_enc, reason="No HEVC encoder.")
-def test_quality_option():
+@pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
+def test_heif_quality_option():
     try:
         image = from_pillow(Image.linear_gradient(mode="L"))
         options().quality = 10
@@ -69,6 +57,26 @@ def test_quality_option():
         # image with quality 30% must have bigger size then 10%
         out_buf_3_q30 = BytesIO()
         image.save(out_buf_3_q30)
+        assert out_buf_1_q10.seek(0, SEEK_END) < out_buf_3_q30.seek(0, SEEK_END)
+    finally:
+        options().reset()
+
+
+@pytest.mark.skipif(not aom_enc(), reason="No AVIF encoder.")
+def test_avif_quality_option():
+    try:
+        image = from_pillow(Image.linear_gradient(mode="L"))
+        options().quality = 10
+        out_buf_1_q10 = BytesIO()
+        image.save(out_buf_1_q10, format="AVIF")
+        options().quality = 30
+        # passing manual `quality` has higher priority then one in `options`
+        out_buf_2_q10 = BytesIO()
+        image.save(out_buf_2_q10, quality=10, format="AVIF")
+        assert out_buf_1_q10.seek(0, SEEK_END) == out_buf_2_q10.seek(0, SEEK_END)
+        # image with quality 30% must have bigger size then 10%
+        out_buf_3_q30 = BytesIO()
+        image.save(out_buf_3_q30, format="AVIF")
         assert out_buf_1_q10.seek(0, SEEK_END) < out_buf_3_q30.seek(0, SEEK_END)
     finally:
         options().reset()

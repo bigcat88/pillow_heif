@@ -5,13 +5,13 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
-from helpers import compare_hashes, gradient_rgb_bytes, gradient_rgba_bytes
+from helpers import compare_hashes, gradient_rgb_bytes, gradient_rgba_bytes, hevc_enc
 from PIL import Image
 
 from pillow_heif import HeifImagePlugin  # noqa
 from pillow_heif import from_bytes, open_heif, options
 
-if not options().hevc_enc:
+if not hevc_enc():
     pytest.skip("No HEVC encoder.", allow_module_level=True)
 
 np = pytest.importorskip("numpy", reason="NumPy not installed")

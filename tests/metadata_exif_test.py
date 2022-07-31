@@ -1,5 +1,6 @@
 from io import BytesIO
 
+import helpers
 import pytest
 from packaging.version import parse as parse_version
 from PIL import Image
@@ -8,12 +9,15 @@ from PIL import features
 
 import pillow_heif
 
+pillow_heif.register_avif_opener()
 pillow_heif.register_heif_opener()
 
 
 @pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
-@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not helpers.aom_enc(), reason="Requires AVIF encoder.")
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
 @pytest.mark.skipif(parse_version(pil_version) < parse_version("9.2.0"), reason="Requires Pillow >= 9.2")
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 @pytest.mark.parametrize(
     "im_format",
     (
@@ -23,7 +27,7 @@ pillow_heif.register_heif_opener()
         "WEBP",
     ),
 )
-def test_exif_from_pillow(im_format):
+def test_exif_from_pillow(im_format, save_format):
     def pil_image_with_exif():
         _exif = Image.Exif()
         _exif[0x010E] = exif_desc_value
@@ -36,7 +40,7 @@ def test_exif_from_pillow(im_format):
     exif = im.getexif()  # noqa
     assert exif[0x010E] == exif_desc_value
     out_im_heif = BytesIO()
-    im.save(out_im_heif, format="HEIF")
+    im.save(out_im_heif, format=save_format)
     im_heif = Image.open(out_im_heif)
     assert im_heif.info["exif"]
     assert isinstance(im_heif.info["exif"], bytes)
@@ -44,7 +48,7 @@ def test_exif_from_pillow(im_format):
     assert exif[0x010E] == exif_desc_value
 
 
-@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
 def test_pillow_exif_add_remove():
     exif_desc_value = "this is a desc"
     exif = Image.Exif()
@@ -79,7 +83,7 @@ def test_pillow_exif_add_remove():
     assert "exif" not in im_heif_no_exif.info or im_heif_no_exif.info["exif"] is None
 
 
-@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
 def test_heif_exif_add_remove():
     exif_desc_value = "this is a desc"
     exif = Image.Exif()
@@ -115,7 +119,7 @@ def test_heif_exif_add_remove():
     assert "exif" not in im_heif_no_exif.info or im_heif_no_exif.info["exif"] is None
 
 
-@pytest.mark.skipif(not pillow_heif.options().hevc_enc, reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
 def test_heif_multi_frame_exif_add_remove():
     exif_desc_value = "this is a desc"
     exif = Image.Exif()

@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from warnings import warn
 
-from pillow_heif import options
+import helpers
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -17,7 +17,7 @@ TRUNCATED_DATASET = [i for i in TRUNCATED_DATASET if not i.name.endswith(".txt")
 MINIMAL_DATASET = [i for i in MINIMAL_DATASET if not i.name.endswith(".txt")]
 FULL_DATASET = [i for i in FULL_DATASET if not i.name.endswith(".txt")]
 
-if not options().avif:
+if not helpers.aom_dec():
     warn("Skipping tests for `AV1` format due to lack of codecs.")
     CORRUPTED_DATASET = [i for i in CORRUPTED_DATASET if not i.name.endswith(".avif")]
     TRUNCATED_DATASET = [i for i in TRUNCATED_DATASET if not i.name.endswith(".avif")]
