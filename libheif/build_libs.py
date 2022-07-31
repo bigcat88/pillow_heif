@@ -184,7 +184,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             run(["cmake"] + cmake_args, check=True)
             _hide_build_process = True
         else:
-            configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
+            configure_args = f"--prefix {INSTALL_DIR_LIBS} --enable-shared".split()
             if name == "libde265":
                 configure_args += "--disable-sherlock265 --disable-dec265".split()
             elif name == "libheif":
