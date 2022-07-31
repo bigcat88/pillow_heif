@@ -21,6 +21,15 @@ pillow_heif.register_avif_opener()
 pillow_heif.register_heif_opener()
 
 
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_save_format(save_format):
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format=save_format, quality=1)
+    mime = pillow_heif.get_file_mimetype(buf.getbuffer().tobytes())
+    assert mime == "image/avif" if save_format == "AVIF" else "image/heic"
+
+
 def test_scale():
     heif_buf = helpers.create_heif()
     im_heif = pillow_heif.open_heif(heif_buf)
