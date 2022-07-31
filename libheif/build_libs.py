@@ -153,6 +153,8 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         else:
             download_extract_to(url, _lib_path)
             chdir(_lib_path)
+        if name == "libde265":
+            run(["./autogen.sh"], check=True)
         print(f"Preconfiguring {name}...", flush=True)
         if name == "aom":
             cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0".split()
@@ -182,10 +184,12 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             run(["cmake"] + cmake_args, check=True)
             _hide_build_process = True
         else:
-            mkdir("build")
-            chdir("build")
-            cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ..".split()
-            run(["cmake"] + cmake_args, check=True)
+            configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
+            if name == "libde265":
+                configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
+            elif name == "libheif":
+                configure_args += "--disable-examples --disable-go --disable-gdk-pixbuf".split()
+            run(["./configure"] + configure_args, check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
             run_print_if_error("make -j4".split())
