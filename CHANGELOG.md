@@ -2,6 +2,26 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0 - 2022-08-xx]
+
+This release is fully compatible with previous versions if you was not using `AVIF` decoding.
+
+### Added
+
+- (Heif) `save` method accepts optional parameter `format`. If `format="AVIF"` output file will be encoded in `h264` format using `AOM`.
+- `AvifImagePlugin` introduced. Usage: `register_avif_opener()` or `import pillow_heif.AvifImagePlugin`
+- After registering `AvifImagePlugin` you can work with `.avif` files the same way you do with `.heic`
+
+### Changed
+
+- (HeifImagePlugin) By default not accepts `.avif` files, register `AvifImagePlugin` if you need that. If you use `pillow_avif` then do not =)
+- `options().hevc_enc` property was removed.
+- `options().avif` property was removed.
+
+### Fixed
+
+- Better compatibility with `pillow_avif` package.
+
 ## [0.5.1 - 2022-07-30]
 
 This release is fully compatible with `0.5.0` version.
