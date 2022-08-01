@@ -18,9 +18,10 @@ def test_libheif_info():
     assert info["decoders"]["HEVC"]
     if machine().find("armv7") != -1:
         return
-    assert info["decoders"]["AV1"]
-    assert info["encoders"]["AV1"]
-    if sys.maxsize > 2**32:
+    if os.getenv("PH_NO_AOM") is None:
+        assert info["decoders"]["AV1"]
+        assert info["encoders"]["AV1"]
+    if sys.maxsize > 2**32 and os.getenv("PH_NO_HEVC") is None:
         assert info["encoders"]["HEVC"]
 
 

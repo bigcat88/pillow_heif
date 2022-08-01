@@ -1,5 +1,5 @@
 import sys
-from os import chdir, environ, getcwd, makedirs, mkdir, path, remove
+from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path, remove
 from platform import machine
 from re import IGNORECASE, MULTILINE, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
@@ -213,14 +213,16 @@ def build_libs_linux() -> str:
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        if sys.maxsize > 2**32:  # Build x265 encoder only on 64-bit systems.
+        build_hevc = sys.maxsize > 2**32 and getenv("PH_NO_HEVC") is None
+        if build_hevc:
             build_lib_linux(
                 "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                 "x265",
                 _is_musllinux,
             )
-        if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
-            build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
+        if not is_library_installed("aom"):
+            if machine().find("armv7") == -1 and getenv("PH_NO_AOM") is None:
+                build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
             "libde265",
