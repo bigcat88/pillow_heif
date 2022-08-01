@@ -187,9 +187,9 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
             if name == "libde265":
                 configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
-                configure_args += ['LDFLAGS="-lstdc++ -lm -lc -lgcc_s"']
             elif name == "libheif":
-                configure_args += "--disable-examples --disable-go --disable-gdk-pixbuf".split()
+                configure_args += "--disable-examples --disable-go".split()
+                configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
             run(["./configure"] + configure_args, check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
@@ -219,13 +219,13 @@ def build_libs_linux() -> str:
                 "x265",
                 _is_musllinux,
             )
+        if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
+            build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
             "libde265",
             _is_musllinux,
         )
-        if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
-            build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
             "libheif",
