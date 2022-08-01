@@ -53,11 +53,6 @@ jobs:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
           key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
 
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
-
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
@@ -116,11 +111,6 @@ jobs:
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
           key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
 
       - name: Run cibuildwheel
         run: cibuildwheel
