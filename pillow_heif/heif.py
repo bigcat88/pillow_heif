@@ -637,12 +637,15 @@ class HeifFile:
             ``chroma`` - custom subsampling value. Possible values: ``444``, ``422`` or ``420`` (``x265`` default)
             Many software does not supports ``444`` chroma for HEIF.
 
+            ``format`` - string with encoder format name. Possible values: ``HEIF`` (default) or ``AVIF``.
+
         :param fp: A filename (string), pathlib.Path object or file object.
 
         :returns: None
         :raises: :py:exc:`~pillow_heif.HeifError` or :py:exc:`ValueError`"""
 
-        compression = HeifCompressionFormat.HEVC
+        compression = kwargs.get("format", "HEIF")
+        compression = HeifCompressionFormat.AV1 if compression == "AVIF" else HeifCompressionFormat.HEVC
         if not have_encoder_for_format(compression):
             raise HeifError(code=HeifErrorCode.ENCODING_ERROR, subcode=5000, message="No encoder found.")
         images_to_save = self.__get_images_for_save(self.images, **kwargs)
@@ -795,7 +798,7 @@ def is_supported(fp) -> bool:
 
     magic = _get_bytes(fp, 16)
     heif_filetype = check_heif(magic)
-    if heif_filetype == HeifFiletype.NO or (not options().avif and magic[8:12] in (b"avif", b"avis")):
+    if heif_filetype == HeifFiletype.NO:
         return False
     if heif_filetype in (HeifFiletype.YES_SUPPORTED, HeifFiletype.MAYBE):
         return True

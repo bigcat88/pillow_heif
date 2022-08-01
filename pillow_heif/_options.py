@@ -2,39 +2,14 @@
 Options to change pillow_heif's runtime behaviour.
 """
 from typing import Union
-from warnings import warn
-
-from ._lib_info import have_decoder_for_format, have_encoder_for_format
-from .constants import HeifCompressionFormat
 
 
 class PyLibHeifOptions:
     """Pillow-Heif runtime properties."""
 
     def __init__(self):
-        self._hevc_enc = have_encoder_for_format(HeifCompressionFormat.HEVC)
-        self._avif_dec = have_decoder_for_format(HeifCompressionFormat.AV1)
         self._cfg = {}
         self.reset()
-
-    @property
-    def hevc_enc(self) -> bool:
-        """Read only property showing if library was build with h265 HEVC encoder."""
-
-        warn("Started from `0.6.0` version this property will be deprecated.", DeprecationWarning)
-        return self._hevc_enc
-
-    @property
-    def avif(self) -> bool:
-        """Enable or disable x264(AVIF) file read support. Default=True(if build include libaom)"""
-
-        warn("Started from `0.6.0` version this property will be deprecated.", DeprecationWarning)
-        return self._cfg["avif"]
-
-    @avif.setter
-    def avif(self, value: bool):
-        warn("Started from `0.6.0` version this property will be deprecated.", DeprecationWarning)
-        self._cfg["avif"] = value if self._avif_dec else False
 
     @property
     def strict(self) -> bool:
@@ -109,14 +84,13 @@ class PyLibHeifOptions:
         """Method for at once update multiply values in config."""
 
         _keys = kwargs.keys()
-        for k in ("avif", "strict", "thumbnails", "quality", "ctx_in_memory", "save_to_12bit"):
+        for k in ("strict", "thumbnails", "quality", "ctx_in_memory", "save_to_12bit"):
             if k in _keys:
                 setattr(self, k, kwargs[k])
 
     def reset(self) -> None:
         """Use this for reset config values to their defaults."""
 
-        self._cfg["avif"] = self._avif_dec
         self._cfg["strict"] = False
         self._cfg["thumbnails"] = True
         self._cfg["quality"] = None

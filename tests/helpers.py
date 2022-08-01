@@ -10,6 +10,7 @@ from pillow_heif import (
     HeifImage,
     HeifThumbnail,
     add_thumbnails,
+    have_decoder_for_format,
     have_encoder_for_format,
 )
 
@@ -218,6 +219,10 @@ def gradient_pa_bytes(im_format: str) -> bytearray:
 
 def hevc_enc() -> bool:
     return have_encoder_for_format(HeifCompressionFormat.HEVC)
+
+
+def aom_dec() -> bool:
+    return have_decoder_for_format(HeifCompressionFormat.AV1)
 
 
 def aom_enc() -> bool:

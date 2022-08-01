@@ -12,12 +12,15 @@ from PIL import features
 import pillow_heif
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+pillow_heif.register_avif_opener()
 pillow_heif.register_heif_opener()
 
 
 @pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
+@pytest.mark.skipif(not helpers.aom_enc(), reason="Requires AVIF encoder.")
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
 @pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 @pytest.mark.parametrize(
     "img_path",
     (
@@ -27,12 +30,12 @@ pillow_heif.register_heif_opener()
         "images/non_heif/xmp.webp",
     ),
 )
-def test_xmp_from_pillow(img_path):
+def test_xmp_from_pillow(img_path, save_format):
     im = Image.open(Path(img_path))
     xmp = im.getxmp() if hasattr(im, "getxmp") else pillow_heif.getxmp(im.info["xmp"])  # noqa
     assert xmp["xmpmeta"]["RDF"]["Description"]["subject"]["Bag"]["li"] == "TestSubject"
     out_im_heif = BytesIO()
-    im.save(out_im_heif, format="HEIF")
+    im.save(out_im_heif, format=save_format)
     im_heif = Image.open(out_im_heif)
     assert im_heif.info["xmp"]
     assert isinstance(im_heif.info["xmp"], bytes)

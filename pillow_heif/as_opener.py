@@ -1,17 +1,17 @@
 """
-Plugin for Pillow library.
+Plugins for Pillow library.
 """
 
 from typing import Any
 
 from PIL import Image, ImageFile
 
-from ._lib_info import have_encoder_for_format
+from ._lib_info import have_decoder_for_format, have_encoder_for_format
 from ._options import options
-from .constants import HeifCompressionFormat, HeifErrorCode
+from .constants import HeifCompressionFormat, HeifErrorCode, HeifFiletype
 from .error import HeifError
-from .heif import HeifFile, is_supported, open_heif
-from .misc import getxmp, set_orientation
+from .heif import HeifFile, check_heif, open_heif
+from .misc import _get_bytes, getxmp, set_orientation
 
 
 class _LibHeifImageFile(ImageFile.ImageFile):
@@ -112,6 +112,16 @@ class HeifImageFile(_LibHeifImageFile):
     format_description = "HEIF container"
 
 
+def _is_supported_heif(fp) -> bool:
+    magic = _get_bytes(fp, 16)
+    heif_filetype = check_heif(magic)
+    if heif_filetype == HeifFiletype.NO or (magic[8:12] in (b"avif", b"avis")):
+        return False
+    if heif_filetype in (HeifFiletype.YES_SUPPORTED, HeifFiletype.MAYBE):
+        return True
+    return not options().strict
+
+
 def _save_heif(im, fp, _filename):
     heif_file = HeifFile().add_from_pillow(im, load_one=True, for_encoding=True)
     heif_file.save(fp, save_all=False, **im.encoderinfo, dont_copy=True)
@@ -129,7 +139,7 @@ def register_heif_opener(**kwargs) -> None:
     """
 
     options().update(**kwargs)
-    Image.register_open(HeifImageFile.format, HeifImageFile, is_supported)
+    Image.register_open(HeifImageFile.format, HeifImageFile, _is_supported_heif)
     if have_encoder_for_format(HeifCompressionFormat.HEVC):
         Image.register_save(HeifImageFile.format, _save_heif)
         Image.register_save_all(HeifImageFile.format, _save_all_heif)
@@ -139,3 +149,48 @@ def register_heif_opener(**kwargs) -> None:
     Image.register_mime(HeifImageFile.format, "image/heif")
     Image.register_mime(HeifImageFile.format, "image/heif-sequence")
     Image.register_extensions(HeifImageFile.format, extensions)
+
+
+class AvifImageFile(_LibHeifImageFile):
+    """Pillow plugin class type for an AVIF image format."""
+
+    format = "AVIF"
+    format_description = "AVIF container"
+
+
+def _is_supported_avif(fp) -> bool:
+    magic = _get_bytes(fp, 16)
+    heif_filetype = check_heif(magic)
+    if heif_filetype == HeifFiletype.NO or (magic[8:12] not in (b"avif", b"avis")):
+        return False
+    if heif_filetype in (HeifFiletype.YES_SUPPORTED, HeifFiletype.MAYBE):
+        return True
+    return not options().strict
+
+
+def _save_avif(im, fp, _filename):
+    heif_file = HeifFile().add_from_pillow(im, load_one=True, for_encoding=True)
+    heif_file.save(fp, save_all=False, **im.encoderinfo, dont_copy=True, format="AVIF")
+
+
+def _save_all_avif(im, fp, _filename):
+    heif_file = HeifFile().add_from_pillow(im, ignore_primary=False, for_encoding=True)
+    heif_file.save(fp, save_all=True, **im.encoderinfo, dont_copy=True, format="AVIF")
+
+
+def register_avif_opener(**kwargs) -> None:
+    """Registers a Pillow plugin for AVIF format.
+
+    :param kwargs: dictionary with values to set in :py:class:`~pillow_heif._options.PyLibHeifOptions`
+    """
+
+    options().update(**kwargs)
+    if have_decoder_for_format(HeifCompressionFormat.AV1):
+        Image.register_open(AvifImageFile.format, AvifImageFile, _is_supported_avif)
+    if have_encoder_for_format(HeifCompressionFormat.AV1):
+        Image.register_save(AvifImageFile.format, _save_avif)
+        Image.register_save_all(AvifImageFile.format, _save_all_avif)
+    extensions = [".avif", ".avifs"]
+    Image.register_mime(AvifImageFile.format, "image/avif")
+    Image.register_mime(AvifImageFile.format, "image/avif-sequence")
+    Image.register_extensions(AvifImageFile.format, extensions)

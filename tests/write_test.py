@@ -13,11 +13,21 @@ import pillow_heif
 
 pytest.importorskip("numpy", reason="NumPy not installed")
 
-if not helpers.hevc_enc():
-    pytest.skip("No HEVC encoder.", allow_module_level=True)
+if not helpers.hevc_enc() or not helpers.aom_enc():
+    pytest.skip("No HEVC or AVIF encoder.", allow_module_level=True)
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+pillow_heif.register_avif_opener()
 pillow_heif.register_heif_opener()
+
+
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_save_format(save_format):
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format=save_format, quality=1)
+    mime = pillow_heif.get_file_mimetype(buf.getbuffer().tobytes())
+    assert mime == "image/avif" if save_format == "AVIF" else "image/heic"
 
 
 def test_scale():
@@ -123,15 +133,17 @@ def test_hif_file():
 @pytest.mark.parametrize(
     "im_path",
     (
-        "images/heif/L_10.heif",
-        "images/heif/L_12.heif",
-        "images/heif/RGB_10.heif",
-        "images/heif/RGB_12.heif",
-        "images/heif/RGBA_10.heif",
-        "images/heif/RGBA_12.heif",
+        "images/heif/L_10",
+        "images/heif/L_12",
+        "images/heif/RGB_10",
+        "images/heif/RGB_12",
+        "images/heif/RGBA_10",
+        "images/heif/RGBA_12",
     ),
 )
-def test_hdr_save(im_path):
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_hdr_save(im_path, save_format):
+    im_path = im_path + (".heif" if save_format == "HEIF" else ".avif")
     heif_file = pillow_heif.open_heif(im_path, convert_hdr_to_8bit=False)
     heif_file_to_add = pillow_heif.HeifFile().add_from_heif(heif_file)
     heif_file.add_from_heif(heif_file_to_add)
@@ -139,7 +151,7 @@ def test_hdr_save(im_path):
     collect()
     helpers.compare_heif_files_fields(heif_file[0], heif_file[1])
     out_buf = BytesIO()
-    heif_file.save(out_buf, quality=-1)
+    heif_file.save(out_buf, quality=-1, format=save_format)
     heif_file_out = pillow_heif.open_heif(out_buf, convert_hdr_to_8bit=False)
     assert len(heif_file_out) == 2
     helpers.compare_heif_files_fields(heif_file[0], heif_file_out[0])
@@ -177,39 +189,43 @@ def test_pillow_quality():
     assert out_heic_q30.seek(0, SEEK_END) < heif_original.seek(0, SEEK_END)
 
 
-def test_P_color_mode():  # noqa
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_P_color_mode(save_format):  # noqa
     im_buffer = BytesIO(helpers.gradient_p_bytes(im_format="TIFF"))
     out_heic = BytesIO()
     im = Image.open(im_buffer)
-    im.save(out_heic, format="HEIF", quality=90)
+    im.save(out_heic, format=save_format, quality=90)
     im_heif = Image.open(out_heic)
     assert im_heif.mode == "RGB"
     helpers.compare_hashes([im_buffer, im_heif], hash_size=8)
 
 
-def test_PA_color_mode():  # noqa
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_PA_color_mode(save_format):  # noqa
     im_buffer = BytesIO(helpers.gradient_pa_bytes(im_format="TIFF"))
     out_heic = BytesIO()
     im = Image.open(im_buffer)
-    im.save(out_heic, format="HEIF", quality=90)
+    im.save(out_heic, format=save_format, quality=90)
     im_heif = Image.open(out_heic)
     assert im_heif.mode == "RGBA"
     helpers.compare_hashes([im_buffer, im_heif], hash_size=8)
 
 
-def test_L_color_mode():  # noqa
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_L_color_mode(save_format):  # noqa
     im = Image.linear_gradient(mode="L")
     out_heif = BytesIO()
-    im.save(out_heif, format="HEIF", quality=-1)
+    im.save(out_heif, format=save_format, quality=-1)
     im_heif = Image.open(out_heif)
     assert im_heif.mode == "RGB"
     helpers.compare_hashes([im, im_heif], hash_size=8)
 
 
-def test_LA_color_mode():  # noqa
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_LA_color_mode(save_format):  # noqa
     im = Image.open(BytesIO(helpers.gradient_la_bytes(im_format="PNG")))
     out_heif = BytesIO()
-    im.save(out_heif, format="HEIF", quality=-1)
+    im.save(out_heif, format=save_format, quality=-1)
     im_heif = Image.open(out_heif)
     assert im_heif.mode == "RGBA"
     helpers.compare_hashes([im, im_heif], hash_size=8)
@@ -226,7 +242,8 @@ def test_1_color_mode():
 
 
 @pytest.mark.parametrize("enc_bits", (10, 12))
-def test_I_color_modes_to_10_12_bit(enc_bits):  # noqa
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_I_color_modes_to_10_12_bit(enc_bits, save_format):  # noqa
     try:
         pillow_heif.options().save_to_12bit = True if enc_bits == 12 else False
         src_pillow = Image.open(Path("images/non_heif/L_16.png"))
@@ -234,7 +251,7 @@ def test_I_color_modes_to_10_12_bit(enc_bits):  # noqa
         for mode in ("I", "I;16", "I;16L"):
             i_mode_img = src_pillow.convert(mode=mode)
             out_heic = BytesIO()
-            i_mode_img.save(out_heic, format="HEIF", quality=-1)
+            i_mode_img.save(out_heic, format=save_format, quality=-1)
             assert pillow_heif.open_heif(out_heic, convert_hdr_to_8bit=False).bit_depth == enc_bits
             heic_pillow = Image.open(out_heic)
             helpers.compare_hashes([src_pillow, heic_pillow], hash_size=8)
@@ -355,9 +372,19 @@ def test_pillow_save_multi_frame():
 
 @pytest.mark.parametrize("chroma, diff_epsilon", ((420, 1.83), (422, 1.32), (444, 0.99)))
 @pytest.mark.parametrize("im", (helpers.gradient_rgb(), helpers.gradient_rgba()))
-def test_chroma_encoding_8bit(chroma, diff_epsilon, im):
+def test_chroma_heif_encoding_8bit(chroma, diff_epsilon, im):
     im_buf = BytesIO()
     im.save(im_buf, format="HEIF", quality=-1, chroma=chroma)
+    im_out = Image.open(im_buf)
+    im = im.convert(mode=im_out.mode)
+    helpers.assert_image_similar(im, im_out, diff_epsilon)
+
+
+@pytest.mark.parametrize("chroma, diff_epsilon", ((420, 1.83), (422, 1.32), (444, 0.99)))
+@pytest.mark.parametrize("im", (helpers.gradient_rgb(), helpers.gradient_rgba()))
+def test_chroma_avif_8bit(chroma, diff_epsilon, im):
+    im_buf = BytesIO()
+    im.save(im_buf, format="AVIF", quality=-1, chroma=chroma)
     im_out = Image.open(im_buf)
     im = im.convert(mode=im_out.mode)
     helpers.assert_image_similar(im, im_out, diff_epsilon)
