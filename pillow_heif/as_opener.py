@@ -56,8 +56,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         return super().load()
 
     def getxmp(self) -> dict:
-        """Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
+        """Returns a dictionary containing the XMP tags. Requires ``defusedxml`` to be installed.
 
         :returns: XMP tags in a dictionary."""
 
@@ -107,7 +106,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
 
 class HeifImageFile(_LibHeifImageFile):
-    """Pillow plugin class type for an AVIF image format."""
+    """Pillow plugin class type for a HEIF image format."""
 
     format = "HEIF"
     format_description = "HEIF container"
