@@ -16,12 +16,11 @@ def test_libheif_info():
     info = pillow_heif.libheif_info()
     assert info["version"]["libheif"] == "1.12.0"
     assert info["decoders"]["HEVC"]
-    if machine().find("armv7") != -1:
+    if machine().find("armv7") != -1 or os.getenv("PH_LIGHT") is not None:
         return
-    if os.getenv("PH_NO_AOM") is None:
-        assert info["decoders"]["AV1"]
-        assert info["encoders"]["AV1"]
-    if sys.maxsize > 2**32 and os.getenv("PH_NO_HEVC") is None:
+    assert info["decoders"]["AV1"]
+    assert info["encoders"]["AV1"]
+    if sys.maxsize > 2**32:
         assert info["encoders"]["HEVC"]
 
 
