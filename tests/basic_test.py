@@ -16,7 +16,7 @@ def test_libheif_info():
     info = pillow_heif.libheif_info()
     assert info["version"]["libheif"] == "1.12.0"
     assert info["decoders"]["HEVC"]
-    if machine().find("armv7") != -1:
+    if machine().find("armv7") != -1 or os.getenv("PH_LIGHT") is not None:
         return
     assert info["decoders"]["AV1"]
     assert info["encoders"]["AV1"]

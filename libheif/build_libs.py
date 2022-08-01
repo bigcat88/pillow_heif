@@ -1,5 +1,5 @@
 import sys
-from os import chdir, environ, getcwd, makedirs, mkdir, path, remove
+from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path, remove
 from platform import machine
 from re import IGNORECASE, MULTILINE, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
@@ -186,9 +186,10 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         else:
             configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
             if name == "libde265":
-                configure_args += "--disable-sherlock265 --disable-dec265".split()
+                configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
             elif name == "libheif":
                 configure_args += "--disable-examples --disable-go".split()
+                configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
             run(["./configure"] + configure_args, check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
@@ -212,19 +213,20 @@ def build_libs_linux() -> str:
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        if sys.maxsize > 2**32:  # Build x265 encoder only on 64-bit systems.
+        if sys.maxsize > 2**32 and getenv("PH_LIGHT") is None:
             build_lib_linux(
                 "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                 "x265",
                 _is_musllinux,
             )
+        if not is_library_installed("aom"):
+            if machine().find("armv7") == -1 and getenv("PH_LIGHT") is None:
+                build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
             "libde265",
             _is_musllinux,
         )
-        if machine().find("armv7") == -1 and not is_library_installed("aom"):  # Are not trying to build aom on armv7.
-            build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         build_lib_linux(
             "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
             "libheif",
