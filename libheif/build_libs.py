@@ -188,13 +188,16 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             run(["cmake"] + cmake_args, check=True)
             _hide_build_process = True
         else:
-            configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
-            if name == "libde265":
-                configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
-            elif name == "libheif":
-                configure_args += "--disable-examples --disable-go".split()
-                configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
-            run(["./configure"] + configure_args, check=True)
+            # configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
+            # if name == "libde265":
+            #     configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
+            # elif name == "libheif":
+            #     configure_args += "--disable-examples --disable-go".split()
+            #     configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
+            # run(["./configure"] + configure_args, check=True)
+            mkdir("build")
+            chdir("build")
+            run(["cmake"] + [".."], check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
             run_print_if_error("make -j4".split())
@@ -217,25 +220,35 @@ def build_libs_linux() -> str:
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        if sys.maxsize > 2**32 and getenv("PH_LIGHT") is None:
+        if sys.maxsize > 2**32 and getenv("PH_LIGHT") is None and not is_library_installed("x265"):
             build_lib_linux(
                 "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                 "x265",
                 _is_musllinux,
             )
+        else:
+            print("x265 already installed.")
         if not is_library_installed("aom"):
             if machine().find("armv7") == -1 and getenv("PH_LIGHT") is None:
                 build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
-        build_lib_linux(
-            "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
-            "libde265",
-            _is_musllinux,
-        )
-        build_lib_linux(
-            "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
-            "libheif",
-            _is_musllinux,
-        )
+        else:
+            print("aom already installed.")
+        if not is_library_installed("libde265"):
+            build_lib_linux(
+                "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
+                "libde265",
+                _is_musllinux,
+            )
+        else:
+            print("libde265 already installed.")
+        if not is_library_installed("libheif"):
+            build_lib_linux(
+                "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
+                "libheif",
+                _is_musllinux,
+            )
+        else:
+            print("libheif already installed.")
         open(_install_flag, "w").close()
     finally:
         chdir(_original_dir)
