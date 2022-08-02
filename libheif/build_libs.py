@@ -149,6 +149,10 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             _build_path = path.join(_lib_path, "build")
             makedirs(_build_path)
             download_extract_to(url, path.join(_lib_path, "aom"), False)
+            if musl:
+                patch_path = path.join(path.dirname(path.abspath(__file__)), "aom-musl/fix-stack-size-e53da0b-2.patch")
+                chdir(path.join(_lib_path, "aom"))
+                run(f"patch -p 1 -i {patch_path}".split(), check=True)
             chdir(_build_path)
         else:
             download_extract_to(url, _lib_path)
@@ -158,7 +162,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         print(f"Preconfiguring {name}...", flush=True)
         if name == "aom":
             cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0".split()
-            cmake_args += "-DENABLE_TESTDATA=0 -DCONFIG_AV1_ENCODER=1".split()
+            cmake_args += "-DENABLE_TESTDATA=0 -DCONFIG_AV1_ENCODER=1 -DCMAKE_BUILD_TYPE=Release".split()
             cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
             cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
             run(["cmake"] + cmake_args, check=True)
@@ -187,10 +191,10 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
             if name == "libde265":
                 configure_args += "--disable-sherlock265 --disable-dec265".split()
-                # configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
+                configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
             elif name == "libheif":
                 configure_args += "--disable-examples --disable-go".split()
-                # configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
+                configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
             run(["./configure"] + configure_args, check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:

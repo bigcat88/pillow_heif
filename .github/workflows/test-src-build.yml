@@ -28,8 +28,9 @@ jobs:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[docs]')"
     strategy:
+      fail-fast: false
       matrix:
-        distro: ["ubuntu:jammy", "alpine:3.14"]
+        distro: ["ubuntu:focal", "ubuntu:jammy", "alpine:3.14"]
         arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
 
     steps:

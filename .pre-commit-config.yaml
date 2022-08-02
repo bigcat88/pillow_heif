@@ -4,9 +4,9 @@ repos:
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
-        exclude: libheif/mingw-w64-libheif/.*
+        exclude: libheif/(mingw-w64-libheif|aom-musl)/.*
     -   id: trailing-whitespace
-        exclude: libheif/mingw-w64-libheif/.*
+        exclude: libheif/(mingw-w64-libheif|aom-musl)/.*
     -   id: check-toml
     -   id: mixed-line-ending
 
