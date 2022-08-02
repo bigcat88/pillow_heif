@@ -11,7 +11,12 @@ from ._lib_info import (
 )
 from ._options import options
 from ._version import __version__
-from .as_opener import HeifImageFile, register_avif_opener, register_heif_opener
+from .as_opener import (
+    AvifImageFile,
+    HeifImageFile,
+    register_avif_opener,
+    register_heif_opener,
+)
 from .constants import heif_filetype_maybe  # DEPRECATED
 from .constants import heif_filetype_no  # DEPRECATED
 from .constants import heif_filetype_yes_supported  # DEPRECATED

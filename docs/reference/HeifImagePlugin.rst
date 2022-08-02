@@ -10,6 +10,12 @@ HeifImageFile object
 
 .. autoclass:: pillow_heif.HeifImageFile
     :show-inheritance:
+
+.. autoclass:: pillow_heif.AvifImageFile
+    :show-inheritance:
+
+.. autoclass:: pillow_heif.as_opener._LibHeifImageFile
+    :show-inheritance:
     :members:
 
     .. py:attribute:: info
@@ -30,10 +36,12 @@ HeifImageFile object
 
         Returns the same as :py:func:`~pillow_heif.get_file_mimetype`
 
+
 Pillow Plugin Manual Registration
 ---------------------------------
 
 .. autofunction:: pillow_heif.register_heif_opener
+.. autofunction:: pillow_heif.register_avif_opener
 
 
 If you do not need HEIF thumbnails functionality, then it is a good idea
@@ -43,14 +51,10 @@ to disable them during plugin registration:
 
     register_heif_opener(thumbnails=False)
 
-If you are using another h264(AVIF) plugin, you free to disable AVIF decoding support:
-
-.. code-block:: python
-
-    register_heif_opener(avif=False)
-
 Remember, then you can pass multiply config values to :py:func:`~pillow_heif.register_heif_opener` at once:
 
 .. code-block:: python
 
-    register_heif_opener(thumbnails=False, avif=False)
+    register_heif_opener(thumbnails=False, quality=-1)
+
+.. note:: :py:func:`~pillow_heif.register_avif_opener` works in the same way.
