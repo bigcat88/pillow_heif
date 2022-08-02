@@ -38,6 +38,10 @@ def test_heif_check_filetype(img_path):
         assert pillow_heif.is_supported(fh)
 
 
+def test_is_supported_fails():
+    assert not pillow_heif.is_supported(Path("images/non_heif/xmp.jpeg"))
+
+
 def test_heif_str():
     str_img_nl_1 = "<HeifImage 64x64 RGB with no image data and 2 thumbnails>"
     str_img_nl_2 = "<HeifImage 64x64 RGB with no image data and 1 thumbnails>"

@@ -161,11 +161,10 @@ class AvifImageFile(_LibHeifImageFile):
 def _is_supported_avif(fp) -> bool:
     magic = _get_bytes(fp, 16)
     heif_filetype = check_heif(magic)
-    if heif_filetype == HeifFiletype.NO or (magic[8:12] not in (b"avif", b"avis")):
-        return False
     if heif_filetype in (HeifFiletype.YES_SUPPORTED, HeifFiletype.MAYBE):
-        return True
-    return not options().strict
+        if magic[8:12] in (b"avif", b"avis"):
+            return True
+    return False
 
 
 def _save_avif(im, fp, _filename):
