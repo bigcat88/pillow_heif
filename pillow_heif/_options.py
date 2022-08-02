@@ -14,7 +14,8 @@ class PyLibHeifOptions:
     @property
     def strict(self) -> bool:
         """Indicates should be or not partially supported files be marked as supported.
-        Affects on return result of :py:func:`~pillow_heif.is_supported` function.
+        Affects on return result of :py:func:`~pillow_heif.is_supported` function
+        and on algorithm of accepting images of ``HeifImagePlugin``.
 
         Default = ``False``"""
 
