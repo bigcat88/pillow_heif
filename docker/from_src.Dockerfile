@@ -37,8 +37,7 @@ RUN \
       git \
       cmake \
       lsb-release \
-      nasm \
-      libaom-dev; \
+      nasm; \
   fi && \
   python3 -m pip install --upgrade pip && \
   python3 -m pip install -v "pillow_heif/.[tests]" && \
