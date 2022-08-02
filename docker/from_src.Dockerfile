@@ -20,8 +20,6 @@ RUN \
       harfbuzz-dev \
       jpeg-dev \
       lcms2-dev \
-      aom \
-      aom-dev \
       openjpeg-dev \
       nasm \
       py3-numpy \
