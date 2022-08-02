@@ -186,10 +186,11 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         else:
             configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
             if name == "libde265":
-                configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
+                configure_args += "--disable-sherlock265 --disable-dec265".split()
+                # configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
             elif name == "libheif":
                 configure_args += "--disable-examples --disable-go".split()
-                configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
+                # configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
             run(["./configure"] + configure_args, check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
