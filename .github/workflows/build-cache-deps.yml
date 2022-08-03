@@ -64,6 +64,7 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
           CIBW_TEST_COMMAND: "python3 -c 'import pillow_heif; print(pillow_heif.libheif_info())'"
+          CIBW_TEST_EXTRAS: ""
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Check builded wheel
