@@ -303,7 +303,7 @@ def test_add_from():
     heif_file1.add_from_heif(heif_file2[1])
     collect()
     out_buf = BytesIO()
-    heif_file1.save(out_buf, quality=100)
+    heif_file1.save(out_buf, quality=-1)
     out_heif = pillow_heif.open_heif(out_buf)
     assert len(out_heif) == 4
     assert len(list(out_heif.thumbnails_all(one_for_image=True))) == 3
