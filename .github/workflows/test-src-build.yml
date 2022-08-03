@@ -38,8 +38,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up qemu
-        run: docker run --rm --privileged --cap-add SYS_NICE multiarch/qemu-user-static --reset -p yes
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
       - name: Build pillow_heif
         run: |
-          docker buildx build --platform ${{ matrix.arch }} --build-arg DISTRO="${{ matrix.distro }}" -f docker/from_src.Dockerfile .
+          docker buildx build --platform ${{ matrix.arch }} --build-arg DISTRO="${{ matrix.distro }}" -f docker/from_src.Dockerfile . 2 > /dev/null
