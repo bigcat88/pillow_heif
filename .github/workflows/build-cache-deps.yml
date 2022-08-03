@@ -10,6 +10,10 @@ on:
     - cron: '59 23 * * 5' # Every Friday at 23:59 (GMT+2)
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   dependencies_linux:
     strategy:
