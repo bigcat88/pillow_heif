@@ -24,6 +24,10 @@ RUN \
       nasm \
       py3-numpy \
       py3-pillow; \
+      cat /etc/os-release | grep 3.15 || apk-add --no-cache aom-dev; \
+      cat /etc/os-release | grep 3.15 || apk-add --no-cache x265; \
+      cat /etc/os-release | grep 3.15 || apk-add --no-cache libde265; \
+      cat /etc/os-release | grep 3.15 || apk-add --no-cache libheif; \
   elif [ -f /usr/bin/apt ]; then \
     apt-get update && \
     apt-get install -y \
@@ -39,6 +43,9 @@ RUN \
       lsb-release; \
       lsb_release -r | grep -q "20.04" || apt-get install -y nasm; \
       lsb_release -r | grep -q "20.04" || apt-get install -y libaom-dev; \
+      lsb_release -r | grep -q "20.04" || apt-get install -y x265; \
+      lsb_release -r | grep -q "20.04" || apt-get install -y libde265; \
+      lsb_release -r | grep -q "20.04" || apt-get install -y libheif; \
   fi && \
   python3 -m pip install --upgrade pip && \
   python3 -m pip install -v "pillow_heif/.[tests]" && \
