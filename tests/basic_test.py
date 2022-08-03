@@ -1,5 +1,6 @@
 import builtins
 import os
+import sys
 from pathlib import Path
 
 import dataset
@@ -14,7 +15,7 @@ def test_libheif_info():
     info = pillow_heif.libheif_info()
     assert info["version"]["libheif"] == "1.12.0"
     assert info["decoders"]["HEVC"]
-    if os.getenv("PH_LIGHT") is not None:
+    if os.getenv("PH_LIGHT", "0") != "0" or sys.maxsize <= 2**32:
         return
     assert info["decoders"]["AV1"]
     assert info["encoders"]["AV1"]

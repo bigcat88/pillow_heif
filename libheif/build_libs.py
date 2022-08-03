@@ -10,7 +10,7 @@ BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
 INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
 
 
-PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT") is not None
+PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT", "0") != "0"
 
 
 def download_file(url: str, out_path: str) -> bool:
@@ -189,7 +189,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         else:
             mkdir("build")
             chdir("build")
-            cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ..".split()
+            cmake_args = [".."]
         run(["cmake"] + cmake_args, check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
