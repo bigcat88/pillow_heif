@@ -40,9 +40,15 @@ Linux
 Debian based
 """"""""""""
 
-| :bash:`sudo apt install -y python3-pip libtool git cmake`
+| :bash:`sudo apt install -y python3-pip libffi-dev libtool git cmake g++`
 | :bash:`sudo -H python3 -m pip install --upgrade pip`
 | :bash:`sudo -H python3 -m pip install --upgrade pillow-heif --no-binary :all:`
+
+For relatively fresh Linuxes like ``Ubuntu 22.04`` you can install:
+
+| :bash:`sudo apt install -y libaom-dev libx265-dev libde265-dev libheif-dev`
+
+and after that build `pillow-heif` in a minute.
 
 Alpine based
 """"""""""""

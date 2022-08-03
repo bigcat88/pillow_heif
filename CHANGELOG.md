@@ -2,7 +2,7 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.6.0 - 2022-0x-xx]
+## [0.6.0 - 2022-08-06]
 
 This release is fully compatible with previous versions if you was not using `AVIF` decoding.
 
@@ -21,6 +21,8 @@ This release is fully compatible with previous versions if you was not using `AV
 ### Fixed
 
 - Better compatibility with `pillow_avif` package.
+- (Linux) Wheels size decreased significantly(almost in `2x`).
+- (Linux) Building from source is a bit simpler.
 
 ## [0.5.1 - 2022-07-30]
 
