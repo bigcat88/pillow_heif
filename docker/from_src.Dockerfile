@@ -48,6 +48,8 @@ RUN \
       lsb_release -r | grep -q "20.04" || apt-get install -y libheif-dev; \
   fi && \
   python3 -m pip install --upgrade pip && \
+  CPU_TYPE=$(uname -m) && \
+  echo $CPU_TYPE && \
   python3 -m pip install -v "pillow_heif/.[tests]" && \
   echo "**** Build Done ****" && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
