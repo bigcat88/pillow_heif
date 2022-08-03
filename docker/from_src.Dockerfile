@@ -24,10 +24,10 @@ RUN \
       nasm \
       py3-numpy \
       py3-pillow; \
-      cat /etc/os-release | grep 3.15 || apk add --no-cache aom-dev; \
-      cat /etc/os-release | grep 3.15 || apk add --no-cache x265; \
-      cat /etc/os-release | grep 3.15 || apk add --no-cache libde265; \
-      cat /etc/os-release | grep 3.15 || apk add --no-cache libheif; \
+      cat /etc/os-release | grep -q "3.14" || apk add --no-cache aom-dev; \
+      cat /etc/os-release | grep -q "3.14" || apk add --no-cache x265-dev; \
+      cat /etc/os-release | grep -q "3.14" || apk add --no-cache libde265-dev; \
+      cat /etc/os-release | grep -q "3.14" || apk add --no-cache libheif-dev; \
   elif [ -f /usr/bin/apt ]; then \
     apt-get update && \
     apt-get install -y \
