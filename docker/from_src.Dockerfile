@@ -22,6 +22,7 @@ RUN \
       lcms2-dev \
       openjpeg-dev \
       nasm \
+      libde265-dev \
       py3-numpy \
       py3-pillow; \
   elif [ -f /usr/bin/apt ]; then \
