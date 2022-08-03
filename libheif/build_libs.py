@@ -1,4 +1,3 @@
-import sys
 from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path, remove
 from platform import machine
 from re import IGNORECASE, MULTILINE, search
@@ -211,25 +210,33 @@ def build_libs_linux() -> str:
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        if sys.maxsize > 2**32 and getenv("PH_LIGHT") is None and not is_library_installed("x265"):
-            build_lib_linux(
-                "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
-                "x265",
-                _is_musllinux,
-            )
+        if not is_library_installed("x265"):
+            if getenv("PH_LIGHT") is None:
+                build_lib_linux(
+                    "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
+                    "x265",
+                    _is_musllinux,
+                )
         else:
             print("x265 already installed.")
         if not is_library_installed("aom"):
-            if machine().find("armv7") == -1 and getenv("PH_LIGHT") is None:
+            if getenv("PH_LIGHT") is None:
                 build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         else:
             print("aom already installed.")
         if not is_library_installed("libde265"):
-            build_lib_linux(
-                "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
-                "libde265",
-                _is_musllinux,
-            )
+            if machine().find("armv7") == -1:
+                build_lib_linux(
+                    "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
+                    "libde265",
+                    _is_musllinux,
+                )
+            else:
+                build_lib_linux_armv7(
+                    "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
+                    "libde265",
+                    _is_musllinux,
+                )
         else:
             print("libde265 already installed.")
         if not is_library_installed("libheif"):
@@ -244,3 +251,27 @@ def build_libs_linux() -> str:
     finally:
         chdir(_original_dir)
     return INSTALL_DIR_LIBS
+
+
+def build_lib_linux_armv7(url: str, name: str, musl: bool = False):
+    _lib_path = path.join(BUILD_DIR_LIBS, name)
+    download_extract_to(url, _lib_path)
+    chdir(_lib_path)
+    if name == "libde265":
+        run(["./autogen.sh"], check=True)
+    print(f"Preconfiguring {name}...", flush=True)
+    configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
+    if name == "libde265":
+        configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
+    elif name == "libheif":
+        configure_args += "--disable-examples --disable-go".split()
+        configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
+    run(["./configure"] + configure_args, check=True)
+    print(f"{name} configured. building...", flush=True)
+    run("make -j4".split(), check=True)
+    print(f"{name} build success.", flush=True)
+    run("make install".split(), check=True)
+    if musl:
+        run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
+    else:
+        run("ldconfig", check=True)
