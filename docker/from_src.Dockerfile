@@ -22,9 +22,9 @@ RUN \
       lcms2-dev \
       openjpeg-dev \
       nasm \
+      aom-dev \
       py3-numpy \
       py3-pillow; \
-      cat /etc/os-release | grep -q "3.14" || apk add --no-cache aom-dev; \
   elif [ -f /usr/bin/apt ]; then \
     apt-get update && \
     apt-get install -y \

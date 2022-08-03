@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: ["ubuntu:focal", "ubuntu:jammy", "alpine:3.14", "alpine:3.15"]
+        distro: ["ubuntu:focal", "ubuntu:jammy", "alpine:3.15"]
         arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
 
     steps:

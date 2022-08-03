@@ -166,7 +166,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args += "-DENABLE_TESTDATA=0 -DCONFIG_AV1_ENCODER=1 -DCMAKE_BUILD_TYPE=Release".split()
             cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
             cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
-            run(["cmake"] + cmake_args, check=True)
             _hide_build_process = True
         elif name == "x265":
             cmake_high_bits = "-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF".split()
@@ -186,12 +185,12 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args += ["-G", "Unix Makefiles"]
             cmake_args += "-DLINKED_10BIT=ON -DLINKED_12BIT=ON -DEXTRA_LINK_FLAGS=-L.".split()
             cmake_args += "-DEXTRA_LIB='x265_main10.a;x265_main12.a'".split()
-            run(["cmake"] + cmake_args, check=True)
             _hide_build_process = True
         else:
             mkdir("build")
             chdir("build")
-            run(["cmake"] + f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ..".split(), check=True)
+            cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ..".split()
+        run(["cmake"] + cmake_args, check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
             run_print_if_error("make -j4".split())
