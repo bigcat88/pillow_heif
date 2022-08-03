@@ -32,7 +32,7 @@ jobs:
       matrix:
 #        distro: ["ubuntu:focal", "ubuntu:jammy", "alpine:3.15"]
         arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
-        distro: ["ubuntu:jammy"]
+        distro: ["ubuntu:focal", "ubuntu:jammy"]
 #        arch: ["linux/amd64"]
 
     steps:
