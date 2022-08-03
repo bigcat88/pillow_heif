@@ -1,3 +1,4 @@
+import sys
 from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path, remove
 from platform import machine
 from re import IGNORECASE, MULTILINE, search
@@ -7,6 +8,9 @@ BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
 BUILD_DIR_TOOLS = path.join(BUILD_DIR_PREFIX, "build-tools")
 BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
 INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
+
+
+PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT") is not None
 
 
 def download_file(url: str, out_path: str) -> bool:
@@ -211,7 +215,7 @@ def build_libs_linux() -> str:
     try:
         build_tools_linux(_is_musllinux)
         if not is_library_installed("x265"):
-            if getenv("PH_LIGHT") is None:
+            if not PH_LIGHT_VERSION:
                 build_lib_linux(
                     "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
                     "x265",
@@ -220,7 +224,7 @@ def build_libs_linux() -> str:
         else:
             print("x265 already installed.")
         if not is_library_installed("aom"):
-            if getenv("PH_LIGHT") is None:
+            if not PH_LIGHT_VERSION:
                 build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         else:
             print("aom already installed.")
@@ -240,11 +244,18 @@ def build_libs_linux() -> str:
         else:
             print("libde265 already installed.")
         if not is_library_installed("libheif"):
-            build_lib_linux(
-                "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
-                "libheif",
-                _is_musllinux,
-            )
+            if machine().find("armv7") == -1:
+                build_lib_linux(
+                    "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
+                    "libheif",
+                    _is_musllinux,
+                )
+            else:
+                build_lib_linux_armv7(
+                    "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
+                    "libheif",
+                    _is_musllinux,
+                )
         else:
             print("libheif already installed.")
         open(_install_flag, "w").close()
