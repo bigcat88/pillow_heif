@@ -142,7 +142,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
     _lib_path = path.join(BUILD_DIR_LIBS, name)
     if path.isdir(_lib_path):
         print(f"Cache found for {name}", flush=True)
-        chdir(path.join(_lib_path, "build")) if name == "aom" else chdir(_lib_path)
+        chdir(path.join(_lib_path, "build")) if name != "x265" else chdir(_lib_path)
     else:
         _hide_build_process = False
         if name == "aom":
@@ -157,8 +157,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         else:
             download_extract_to(url, _lib_path)
             chdir(_lib_path)
-        if name == "libde265":
-            run(["./autogen.sh"], check=True)
         print(f"Preconfiguring {name}...", flush=True)
         if name == "aom":
             cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0".split()
@@ -188,13 +186,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             run(["cmake"] + cmake_args, check=True)
             _hide_build_process = True
         else:
-            # configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
-            # if name == "libde265":
-            #     configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
-            # elif name == "libheif":
-            #     configure_args += "--disable-examples --disable-go".split()
-            #     configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
-            # run(["./configure"] + configure_args, check=True)
             mkdir("build")
             chdir("build")
             run(["cmake"] + [".."], check=True)
