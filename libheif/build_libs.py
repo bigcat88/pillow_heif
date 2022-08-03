@@ -205,10 +205,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
 
 
 def build_libs_linux() -> str:
-    _install_flag = path.join(BUILD_DIR_PREFIX, "was_installed.flag")
-    if path.isfile(_install_flag):
-        print("Tools & Libraries already installed.", flush=True)
-        return INSTALL_DIR_LIBS
     _is_musllinux = is_musllinux()
     _original_dir = getcwd()
     try:
@@ -257,7 +253,6 @@ def build_libs_linux() -> str:
                 )
         else:
             print("libheif already installed.")
-        open(_install_flag, "w").close()
     finally:
         chdir(_original_dir)
     return INSTALL_DIR_LIBS
