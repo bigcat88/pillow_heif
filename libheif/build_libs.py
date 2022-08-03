@@ -191,7 +191,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         else:
             mkdir("build")
             chdir("build")
-            run(["cmake"] + [".."], check=True)
+            run(["cmake"] + f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ..".split(), check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
             run_print_if_error("make -j4".split())
