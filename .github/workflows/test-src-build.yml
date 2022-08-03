@@ -30,8 +30,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: ["ubuntu:focal", "ubuntu:jammy", "alpine:3.15"]
-        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+#        distro: ["ubuntu:focal", "ubuntu:jammy", "alpine:3.15"]
+#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+        distro: ["ubuntu:jammy"]
+        arch: ["linux/amd64"]
 
     steps:
       - uses: actions/checkout@v3
