@@ -36,6 +36,9 @@ RUN \
       libffi-dev \
       libtool \
       git \
+      pkg-config \
+      autoconf \
+      automake \
       cmake \
       lsb-release; \
       lsb_release -r | grep -q "20.04" || apt-get install -y nasm; \
