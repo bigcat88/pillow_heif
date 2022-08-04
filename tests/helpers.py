@@ -1,4 +1,5 @@
 from io import BytesIO
+from os import getenv
 from pathlib import Path
 from typing import Union
 
@@ -218,6 +219,8 @@ def gradient_pa_bytes(im_format: str) -> bytearray:
 
 
 def hevc_enc() -> bool:
+    if getenv("PH_TESTS_NO_HEVC_ENC", "0") != "0":
+        return False
     return have_encoder_for_format(HeifCompressionFormat.HEVC)
 
 
@@ -226,4 +229,6 @@ def aom_dec() -> bool:
 
 
 def aom_enc() -> bool:
+    if getenv("PH_TESTS_NO_AVIF_ENC", "0") != "0":
+        return False
     return have_encoder_for_format(HeifCompressionFormat.AV1)

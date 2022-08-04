@@ -211,7 +211,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
 
 def build_libs_linux() -> str:
     _is_musllinux = is_musllinux()
-    if is_library_installed("heif"):
+    if is_library_installed("heif") or is_library_installed("libheif"):
         print("libheif is already present.")
         return INSTALL_DIR_LIBS
     _original_dir = getcwd()
