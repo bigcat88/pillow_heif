@@ -21,6 +21,7 @@ RUN \
     nasm \
     aom-dev \
     libde265-dev \
+    py3-cffi \
     py3-numpy \
     py3-pillow && \
   python3 -m pip install --upgrade pip && \
