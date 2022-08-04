@@ -194,7 +194,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             if name == "libheif":
                 cmake_args += "-DWITH_EXAMPLES=OFF -DWITH_RAV1E=OFF -DWITH_DAV1D=OFF".split()
             else:
-                cmake_args += "-Wno-sign-compare"
+                cmake_args += "-Wno-sign-compare".split()
         run(["cmake"] + cmake_args, check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
