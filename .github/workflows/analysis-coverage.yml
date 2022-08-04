@@ -51,7 +51,7 @@ jobs:
         run: pylint pillow_heif
 
       - name: Generate coverage report
-        run: coverage run -m pytest && coverage xml && coverage html
+        run: coverage run -m pytest -s && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
