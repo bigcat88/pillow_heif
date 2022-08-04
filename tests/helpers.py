@@ -225,6 +225,8 @@ def hevc_enc() -> bool:
 
 
 def aom_dec() -> bool:
+    if getenv("PH_TESTS_NO_AVIF_DEC", "0") != "0":
+        return False
     return have_decoder_for_format(HeifCompressionFormat.AV1)
 
 
