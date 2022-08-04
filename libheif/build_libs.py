@@ -204,7 +204,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         print(f"{name} build success.", flush=True)
     run("make install".split(), check=True)
     if musl:
-        run(f"ldconfig {INSTALL_DIR_LIBS}/lib {INSTALL_DIR_LIBS}/lib64".split(), check=True)
+        run(f"ldconfig {INSTALL_DIR_LIBS}/lib64 {INSTALL_DIR_LIBS}/lib".split(), check=True)
     else:
         run("ldconfig", check=True)
 
