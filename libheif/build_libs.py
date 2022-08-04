@@ -147,7 +147,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         print(f"Cache found for {name}", flush=True)
         chdir(path.join(_lib_path, "build")) if name != "x265" else chdir(_lib_path)
     else:
-        _hide_build_process = False
+        _hide_build_process = True
         if name == "aom":
             _build_path = path.join(_lib_path, "build")
             makedirs(_build_path)
@@ -166,7 +166,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args += "-DENABLE_TESTDATA=0 -DCONFIG_AV1_ENCODER=1 -DCMAKE_BUILD_TYPE=Release".split()
             cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
             cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
-            _hide_build_process = True
         elif name == "x265":
             cmake_high_bits = "-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF".split()
             cmake_high_bits += "-DENABLE_SHARED=OFF -DENABLE_CLI=OFF".split()
@@ -185,7 +184,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args += ["-G", "Unix Makefiles"]
             cmake_args += "-DLINKED_10BIT=ON -DLINKED_12BIT=ON -DEXTRA_LINK_FLAGS=-L.".split()
             cmake_args += "-DEXTRA_LIB='x265_main10.a;x265_main12.a'".split()
-            _hide_build_process = True
         else:
             mkdir("build")
             chdir("build")
@@ -193,6 +191,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args += "-DCMAKE_BUILD_TYPE=Release -Wno-dev".split()
             if name == "libheif":
                 cmake_args += "-DWITH_EXAMPLES=OFF -DWITH_RAV1E=OFF -DWITH_DAV1D=OFF".split()
+                _hide_build_process = False
         run(["cmake"] + cmake_args, check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
@@ -202,7 +201,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         print(f"{name} build success.", flush=True)
     run("make install".split(), check=True)
     if musl:
-        run(f"ldconfig {INSTALL_DIR_LIBS}/lib64 {INSTALL_DIR_LIBS}/lib".split(), check=True)
+        run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
     else:
         run("ldconfig", check=True)
 
@@ -215,21 +214,21 @@ def build_libs_linux() -> str:
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        if not is_library_installed("x265"):
-            if not PH_LIGHT_VERSION:
-                build_lib_linux(
-                    "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
-                    "x265",
-                    _is_musllinux,
-                )
-        else:
-            print("x265 already installed.")
-        if not is_library_installed("aom"):
-            if not PH_LIGHT_VERSION:
-                build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
-        else:
-            print("aom already installed.")
-        if not is_library_installed("libde265" if _is_musllinux else "de265"):
+        # if not is_library_installed("x265"):
+        #     if not PH_LIGHT_VERSION:
+        #         build_lib_linux(
+        #             "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
+        #             "x265",
+        #             _is_musllinux,
+        #         )
+        # else:
+        #     print("x265 already installed.")
+        # if not is_library_installed("aom"):
+        #     if not PH_LIGHT_VERSION:
+        #         build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
+        # else:
+        #     print("aom already installed.")
+        if not is_library_installed("libde265") or not is_library_installed("de265"):
             if machine().find("armv7") == -1:
                 build_lib_linux(
                     "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
