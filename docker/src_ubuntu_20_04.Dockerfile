@@ -15,7 +15,7 @@ RUN \
     pkg-config \
     autoconf \
     automake \
-    cmake; \
+    cmake \
   && python3 -m pip install --upgrade pip && \
   if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \

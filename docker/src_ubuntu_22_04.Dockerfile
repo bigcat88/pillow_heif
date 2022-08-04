@@ -18,7 +18,7 @@ RUN \
     cmake \
     nasm \
     libaom-dev \
-    libde265-dev; \
+    libde265-dev \
   && python3 -m pip install --upgrade pip && \
   if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \

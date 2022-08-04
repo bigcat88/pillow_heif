@@ -21,7 +21,7 @@ RUN \
     nasm \
     libde265-dev \
     py3-numpy \
-    py3-pillow; \
+    py3-pillow \
   && python3 -m pip install --upgrade pip && \
   if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
