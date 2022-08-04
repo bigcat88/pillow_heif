@@ -3,7 +3,7 @@ FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy
 COPY . /pillow_heif
 
 RUN \
-  apt-get update && apt-get install -y -q \
+  apt-get -qq update && apt-get -y -q install \
     python3-pip \
     libfribidi-dev \
     libharfbuzz-dev \
