@@ -5,6 +5,7 @@ FROM ghcr.io/linuxserver/baseimage-${DISTRO}
 COPY . /pillow_heif
 
 RUN \
+  echo ${DISTRO} && \
   if [ -f /sbin/apk ]; then \
     apk add --no-cache \
       py3-pip \
@@ -22,6 +23,7 @@ RUN \
       lcms2-dev \
       openjpeg-dev \
       nasm \
+      aom-dev \
       libde265-dev \
       py3-numpy \
       py3-pillow; \
