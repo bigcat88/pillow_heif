@@ -228,7 +228,7 @@ def build_libs_linux() -> str:
         #         build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         # else:
         #     print("aom already installed.")
-        if not is_library_installed("libde265") or not is_library_installed("de265"):
+        if not is_library_installed("libde265") and not is_library_installed("de265"):
             if machine().find("armv7") == -1:
                 build_lib_linux(
                     "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
