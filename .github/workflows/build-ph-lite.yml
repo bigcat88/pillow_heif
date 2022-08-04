@@ -1,5 +1,5 @@
 name: Build Light Version
-# This action can build Linux wheels without `aom` and `x265` libraries.
+# This action build Linux wheels without `aom` and `x265` libraries.
 
 on:
   workflow_dispatch:
