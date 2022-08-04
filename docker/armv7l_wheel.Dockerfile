@@ -30,4 +30,5 @@ RUN \
   echo "**** Testing wheel ****" && \
   python3 -m pip install repaired_dist/*.whl && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
+  pytest -s pillow_heif && \
   echo "**** Build Done ****"
