@@ -5,7 +5,7 @@ FROM ghcr.io/linuxserver/baseimage-${DISTRO}
 COPY . /pillow_heif
 
 RUN \
-  echo ${DISTRO} && \
+  echo $(cat /etc/*-release | grep -w VERSION_ID | cut -d= -f2 | tr -d '"') && \
   if [ -f /sbin/apk ]; then \
     apk add --no-cache \
       py3-pip \
