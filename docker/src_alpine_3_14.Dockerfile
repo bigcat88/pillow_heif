@@ -30,6 +30,9 @@ RUN \
   fi && \
   echo "**** Build Done ****" && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
-  PH_TESTS_NO_AVIF_ENC=1 && \
+  if [ `uname -m` != "x86_64" ]; then \
+    export PH_TESTS_NO_AVIF_ENC=1; \
+    export PH_TESTS_NO_HEVC_ENC=1; \
+  fi && \
   pytest -s pillow_heif && \
   echo "**** Test Done ****"
