@@ -3,7 +3,7 @@ FROM ghcr.io/linuxserver/baseimage-ubuntu:focal
 COPY . /pillow_heif
 
 RUN \
-  apt-get update && apt-get install -y \
+  apt-get update && apt-get install -y -q \
     python3-pip \
     libfribidi-dev \
     libharfbuzz-dev \
@@ -15,8 +15,8 @@ RUN \
     pkg-config \
     autoconf \
     automake \
-    cmake \
-  && python3 -m pip install --upgrade pip && \
+    cmake && \
+  python3 -m pip install --upgrade pip && \
   if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \
