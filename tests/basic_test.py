@@ -2,7 +2,6 @@ import builtins
 import os
 import sys
 from pathlib import Path
-from platform import machine
 
 import dataset
 import pytest
@@ -16,12 +15,11 @@ def test_libheif_info():
     info = pillow_heif.libheif_info()
     assert info["version"]["libheif"] == "1.12.0"
     assert info["decoders"]["HEVC"]
-    if machine().find("armv7") != -1 or os.getenv("PH_LIGHT") is not None:
+    if os.getenv("PH_LIGHT", "0") != "0" or sys.maxsize <= 2**32:
         return
     assert info["decoders"]["AV1"]
     assert info["encoders"]["AV1"]
-    if sys.maxsize > 2**32:
-        assert info["encoders"]["HEVC"]
+    assert info["encoders"]["HEVC"]
 
 
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)
