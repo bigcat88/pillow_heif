@@ -20,7 +20,7 @@ RUN \
     patchelf && \
   python3 -m pip install --upgrade pip && \
   echo "**** Install python build dependencies ****" && \
-  python3 -m pip install cffi pytest piexif defusedxml packaging && \
+  python3 -m pip install cffi && \
   echo "**** Start building ****" && \
   cd pillow_heif && \
   python3 setup.py bdist_wheel && \
@@ -30,5 +30,4 @@ RUN \
   echo "**** Testing wheel ****" && \
   python3 -m pip install repaired_dist/*.whl && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
-  pytest -s pillow_heif && \
   echo "**** Build Done ****"
