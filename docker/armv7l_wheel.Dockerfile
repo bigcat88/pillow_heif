@@ -20,7 +20,7 @@ RUN \
     patchelf && \
   python3 -m pip install --upgrade pip && \
   echo "**** Install python build dependencies ****" && \
-  python3 -m pip install cffi && \
+  python3 -m pip install cffi pytest piexif defusedxml packaging && \
   echo "**** Start building ****" && \
   cd pillow_heif && \
   python3 setup.py bdist_wheel && \
