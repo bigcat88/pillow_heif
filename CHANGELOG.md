@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.6.0 - 2022-08-06]
 
-This release is fully compatible with previous versions if you was not using `AVIF` decoding.
+This release is fully compatible with previous versions if you was not using `AVIF` decoding before.
 
 ### Added
 
