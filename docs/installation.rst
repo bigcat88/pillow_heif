@@ -29,34 +29,30 @@ Linux
 
 .. note::
 
-    | For installing external libraries, you should run install with **root** privileges.
+    | For building and installing external libraries, you should run install with **root** privileges.
     | See `build_libs.py <https://github.com/bigcat88/pillow_heif/blob/master/libheif/build_libs.py>`_ for
         additional info what will happen during installing from source...
     | Here is a
         `GH Action <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build.yml>`_
-        and a `Dockerfile <https://github.com/bigcat88/pillow_heif/blob/master/docker/from_src.Dockerfile>`_
-        for test building from source.
+        and in ``docker`` folder there are docker files for ``Ubuntu`` and ``Alpine`` with examples how to build
+        from source.
 
-Debian based
-""""""""""""
+There is many different ways how to build it from source. Main requirements are:
+    * libheif should be version ``1.12``
+    * ``x265`` should support 10 - 12 bit encoding(if you want to save in that bitness)
+    * ``aom`` should be >= ``3.0.0`` version
 
-| :bash:`sudo apt install -y python3-pip libffi-dev libtool git cmake g++`
-| :bash:`sudo -H python3 -m pip install --upgrade pip`
-| :bash:`sudo -H python3 -m pip install --upgrade pillow-heif --no-binary :all:`
-
-For relatively fresh Linuxes like ``Ubuntu 22.04`` you can install:
+``Ubuntu 22.04`` have all that in their repositories, so you can just install ``libehif`` with:
 
 | :bash:`sudo apt install -y libaom-dev libx265-dev libde265-dev libheif-dev`
 
-and after that build `pillow-heif` in a minute.
+and after that compile it from source.
 
-Alpine based
-""""""""""""
+If you have questions about custom build from sources you can ask them in discussions or create an issue.
+And for those who needs only ``HEIF`` decoding, there is a github action file `build-ph-lite` that builds wheels only with
+``libde265`` and ``libheif``.
 
-| :bash:`sudo apk --no-cache add py3-pip python3-dev libtool git gcc m4 perl alpine-sdk cmake`
-| :bash:`sudo apk --no-cache add fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev`
-| :bash:`sudo -H python3 -m pip install --upgrade pip`
-| :bash:`sudo -H python3 -m pip install --upgrade pillow-heif --no-binary :all:`
+Also if you are Guru in ``cmake`` and ``c++`` and find any error, I'll be glad for any pull requests.
 
 macOS
 ^^^^^
