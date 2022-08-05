@@ -13,6 +13,9 @@ RUN \
     libffi-dev \
     libtool \
     git \
+    pkg-config \
+    autoconf \
+    automake \
     cmake \
     patchelf && \
   python3 -m pip install --upgrade pip && \
