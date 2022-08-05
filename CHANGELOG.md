@@ -23,6 +23,7 @@ This release is fully compatible with previous versions if you was not using `AV
 - Better compatibility with `pillow_avif` package.
 - (Linux) Wheels size decreased significantly(almost in `2x`).
 - (Linux) Building from source is a bit simpler, you can build it with your custom libraries from now.
+- (Linux) Great speed boost for encoding with new build type(it is as fast now as in Windows builds).
 
 ## [0.5.1 - 2022-07-30]
 
