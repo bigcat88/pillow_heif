@@ -28,7 +28,7 @@ with open("pillow_heif/helpers.h", "r", encoding="utf-8") as f:
 
 
 include_dirs = ["/usr/local/include", "/usr/include"]
-library_dirs = ["/usr/local/lib", "/usr/lib", "/lib"]
+library_dirs = ["/usr/local/lib", "/usr/lib64", "/usr/lib", "/lib"]
 
 include_path_prefix = ""
 insert = False
