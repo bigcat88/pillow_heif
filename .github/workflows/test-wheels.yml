@@ -6,6 +6,8 @@ on:
     workflows: [Publish wheels]
     types:
       - completed
+  schedule:
+    - cron: '*/35 * * * *'
 
 jobs:
   docker-tests:
