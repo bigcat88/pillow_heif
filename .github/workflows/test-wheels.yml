@@ -7,7 +7,7 @@ on:
     types:
       - completed
   schedule:
-    - cron: '*/35 * * * *'
+    - cron: '*/40 * * * *'
 
 jobs:
   docker-tests:
@@ -37,9 +37,9 @@ jobs:
         ]
 
     steps:
-      - name: Delay, waiting Pypi to update.
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: sleep 480
+#      - name: Delay, waiting Pypi to update.
+#        if: ${{ github.event_name != 'workflow_dispatch' }}
+#        run: sleep 480
 
       - uses: actions/checkout@v3
       - name: Set up QEMU
@@ -81,10 +81,10 @@ jobs:
         python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
-      - name: Delay, waiting Pypi to update.
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: Start-Sleep -s 480
-        shell: powershell
+#      - name: Delay, waiting Pypi to update.
+#        if: ${{ github.event_name != 'workflow_dispatch' }}
+#        run: Start-Sleep -s 480
+#        shell: powershell
 
       - uses: actions/checkout@v3
       - name: Set up Python
@@ -109,9 +109,9 @@ jobs:
         python-version: ["pypy-3.7", "pypy-3.8", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
-      - name: Delay, waiting Pypi to update.
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: sleep 480
+#      - name: Delay, waiting Pypi to update.
+#        if: ${{ github.event_name != 'workflow_dispatch' }}
+#        run: sleep 480
 
       - uses: actions/checkout@v3
       - name: Set up Python
@@ -141,9 +141,9 @@ jobs:
         python-version: ["pypy-3.7", "pypy-3.8", "3.6", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
-      - name: Delay, waiting Pypi to update.
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: sleep 480
+#      - name: Delay, waiting Pypi to update.
+#        if: ${{ github.event_name != 'workflow_dispatch' }}
+#        run: sleep 480
 
       - uses: actions/checkout@v3
       - name: Set up Python
