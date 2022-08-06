@@ -11,7 +11,7 @@ on:
 
 jobs:
   docker-tests:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     name: 🐍 • ${{ matrix.i['os'] }} • ${{ matrix.i['ver'] }} • ${{ matrix.i['arch'] }}
     runs-on: ubuntu-latest
     strategy:
@@ -73,7 +73,7 @@ jobs:
             -f docker/test_wheels.Dockerfile .
 
   windows-wheels:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     name: 🐍 • Windows • 2019 • ${{ matrix.python-version }}
     runs-on: windows-2019
     strategy:
@@ -101,7 +101,7 @@ jobs:
         run: cd .. && python3 -m pytest -rs pillow_heif
 
   macos-wheels:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     name: 🐍 • macOS • 11 • ${{ matrix.python-version }}
     runs-on: macos-11
     strategy:
@@ -133,7 +133,7 @@ jobs:
         run: cd .. && python3 -m pytest -rs pillow_heif
 
   manylinux-wheels:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     name: 🐍 • Ubuntu-Focal • ${{ matrix.python-version }}
     runs-on: ubuntu-20.04
     strategy:
