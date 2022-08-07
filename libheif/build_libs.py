@@ -119,9 +119,9 @@ def build_tools_linux(musl: bool = False):
         build_tool_linux("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.69")
         build_tool_linux("https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.gz", "automake", "1.16.1")
     build_tool_linux("https://github.com/Kitware/CMake/archive/refs/tags/v3.22.3.tar.gz", "cmake", "3.16.1")
-    # build_tool_linux(
-    #     "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz", "nasm", "2.15.05", chmod="774"
-    # )
+    build_tool_linux(
+        "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz", "nasm", "2.15.05", chmod="774"
+    )
 
 
 def is_library_installed(name: str) -> bool:
@@ -165,8 +165,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             else:
                 download_extract_to(url, _lib_path)
                 if name == "libde265":
-                    print("DEBUG1:", _lib_path)
-                    run(f"ls -la {_lib_path}".split(), check=True)
                     chdir(_lib_path)
                     for patch in (
                         "libde265/CVE-2022-1253.patch",
@@ -232,20 +230,20 @@ def build_libs_linux() -> str:
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        # if not is_library_installed("x265"):
-        #     if not PH_LIGHT_VERSION:
-        #         build_lib_linux(
-        #             "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
-        #             "x265",
-        #             _is_musllinux,
-        #         )
-        # else:
-        #     print("x265 already installed.")
-        # if not is_library_installed("aom"):
-        #     if not PH_LIGHT_VERSION:
-        #         build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
-        # else:
-        #     print("aom already installed.")
+        if not is_library_installed("x265"):
+            if not PH_LIGHT_VERSION:
+                build_lib_linux(
+                    "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
+                    "x265",
+                    _is_musllinux,
+                )
+        else:
+            print("x265 already installed.")
+        if not is_library_installed("aom"):
+            if not PH_LIGHT_VERSION:
+                build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
+        else:
+            print("aom already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
             if machine().find("armv7") == -1:
                 build_lib_linux(
