@@ -7,7 +7,7 @@ on:
     types:
       - completed
   schedule:
-    - cron: '*/40 * * * *'
+    - cron: '* */1 * * *'
 
 jobs:
   docker-tests:
