@@ -20,8 +20,7 @@ jobs:
       fail-fast: true
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
-#        cibw_arch: [ "aarch64", "i686", "x86_64" ]
-        cibw_arch: [ "x86_64" ]
+        cibw_arch: [ "aarch64", "i686", "x86_64" ]
     name: ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
     runs-on: ubuntu-20.04
     env:

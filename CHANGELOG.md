@@ -2,7 +2,7 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.6.1 - 2022-xx-xx]
+## [0.6.1 - 2022-08-28]
 
 This release contains only security and bug fixes.
 
