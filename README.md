@@ -20,15 +20,16 @@
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
 
 Features:
- * Decoding of `8`, `10`, `12` bit HEIF and AVIF images.
- * Encoding of `8`, `10`, `12` bit HEIF and AVIF images.
+ * Decoding of `8`, `10`, `12` bit HEIC and AVIF images.
+ * Encoding of `8`, `10`, `12` bit HEIC and AVIF images.
  * `EXIF`, `XMP`, `IPTC` read & write support.
- * Support of multiple images in one file, e.g **HEICs** and **AVIFs** files and `PrimaryImage` attribute.
- * HEIF `native thumbnails` support.
+ * Support of multiple images in one file and a `PrimaryImage` attribute.
+ * HEIF `thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
 
 ## Install
 ```console
+python3 -m pip install -U pip
 python3 -m pip install pillow-heif
 ```
 
@@ -55,7 +56,7 @@ heif_file = pillow_heif.from_bytes(
     size=(cv_img.shape[1], cv_img.shape[0]),
     data=bytes(cv_img)
 )
-heif_file.save("RGBA_10bit.heif", quality=-1)
+heif_file.save("RGBA_10bit.heic", quality=-1)
 ```
 
 ## 8/10/12 bit HEIF to 16 bit PNG using OpenCV
@@ -145,7 +146,7 @@ for img in ImageSequence.Iterator(pil_img):
 
 ## AVIF support
 
-Working with `AVIF` files as the same as  with `HEIF` files. Just use separate function to register it:
+Working with `AVIF` files as the same as  with `HEIC` files. Just use separate function to register it:
 ```python3
 import pillow_heif
 
