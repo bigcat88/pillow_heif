@@ -229,20 +229,20 @@ def build_libs_linux() -> str:
     _original_dir = getcwd()
     try:
         build_tools_linux(_is_musllinux)
-        if not is_library_installed("x265"):
-            if not PH_LIGHT_VERSION:
-                build_lib_linux(
-                    "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
-                    "x265",
-                    _is_musllinux,
-                )
-        else:
-            print("x265 already installed.")
-        if not is_library_installed("aom"):
-            if not PH_LIGHT_VERSION:
-                build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
-        else:
-            print("aom already installed.")
+        # if not is_library_installed("x265"):
+        #     if not PH_LIGHT_VERSION:
+        #         build_lib_linux(
+        #             "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
+        #             "x265",
+        #             _is_musllinux,
+        #         )
+        # else:
+        #     print("x265 already installed.")
+        # if not is_library_installed("aom"):
+        #     if not PH_LIGHT_VERSION:
+        #         build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
+        # else:
+        #     print("aom already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
             if machine().find("armv7") == -1:
                 build_lib_linux(

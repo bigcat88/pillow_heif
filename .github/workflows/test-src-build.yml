@@ -23,37 +23,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  alpine_3_14_build:
-    name: Alpine:3.14-${{ matrix.arch }}
-    runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[docs]')"
-    strategy:
-      matrix:
-        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up qemu
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
-      - name: Build pillow_heif
-        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_alpine_3_14.Dockerfile .
-
-  alpine_3_16_build:
-    name: Alpine:3.16-${{ matrix.arch }}
-    runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[docs]')"
-    strategy:
-      matrix:
-        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up qemu
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
-      - name: Build pillow_heif
-        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_alpine_3_16.Dockerfile .
+#  alpine_3_14_build:
+#    name: Alpine:3.14-${{ matrix.arch }}
+#    runs-on: ubuntu-latest
+#    if: "!contains(github.event.head_commit.message, '[docs]')"
+#    strategy:
+#      matrix:
+#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Set up qemu
+#        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#
+#      - name: Build pillow_heif
+#        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_alpine_3_14.Dockerfile .
+#
+#  alpine_3_16_build:
+#    name: Alpine:3.16-${{ matrix.arch }}
+#    runs-on: ubuntu-latest
+#    if: "!contains(github.event.head_commit.message, '[docs]')"
+#    strategy:
+#      matrix:
+#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Set up qemu
+#        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#
+#      - name: Build pillow_heif
+#        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_alpine_3_16.Dockerfile .
 
   ubuntu_20_04_build:
     name: Ubuntu:Focal-${{ matrix.arch }}
@@ -61,7 +61,8 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[docs]')"
     strategy:
       matrix:
-        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+        arch: ["linux/amd64"]
 
     steps:
       - uses: actions/checkout@v3
@@ -71,18 +72,18 @@ jobs:
       - name: Build pillow_heif
         run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_ubuntu_20_04.Dockerfile .
 
-  ubuntu_22_04_build:
-    name: Ubuntu:Jammy-${{ matrix.arch }}
-    runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[docs]')"
-    strategy:
-      matrix:
-        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up qemu
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
-      - name: Build pillow_heif
-        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_ubuntu_22_04.Dockerfile .
+#  ubuntu_22_04_build:
+#    name: Ubuntu:Jammy-${{ matrix.arch }}
+#    runs-on: ubuntu-latest
+#    if: "!contains(github.event.head_commit.message, '[docs]')"
+#    strategy:
+#      matrix:
+#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Set up qemu
+#        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#
+#      - name: Build pillow_heif
+#        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_ubuntu_22_04.Dockerfile .
