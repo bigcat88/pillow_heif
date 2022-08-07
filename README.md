@@ -20,19 +20,20 @@
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
 
 Features:
- * Decoding of `8`, `10`, `12` bit HEIF and AVIF images.
- * Encoding of `8`, `10`, `12` bit HEIF and AVIF images.
+ * Decoding of `8`, `10`, `12` bit HEIC and AVIF files.
+ * Encoding of `8`, `10`, `12` bit HEIC and AVIF files.
  * `EXIF`, `XMP`, `IPTC` read & write support.
- * Support of multiple images in one file, e.g **HEICs** and **AVIFs** files and `PrimaryImage` attribute.
- * HEIF `native thumbnails` support.
+ * Support of multiple images in one file and a `PrimaryImage` attribute.
+ * HEIF `thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
 
-## Install
+### Install
 ```console
+python3 -m pip install -U pip
 python3 -m pip install pillow-heif
 ```
 
-## Example of use as a Pillow plugin
+### Example of use as a Pillow plugin
 ```python3
 from PIL import Image
 from pillow_heif import register_heif_opener
@@ -44,7 +45,7 @@ im = im.rotate(13)
 im.save(f"rotated_image.heic", quality=90)
 ```
 
-## 16 bit PNG to 10 bit HEIF using OpenCV
+### 16 bit PNG to 10 bit HEIF using OpenCV
 ```python3
 import cv2
 import pillow_heif
@@ -55,10 +56,10 @@ heif_file = pillow_heif.from_bytes(
     size=(cv_img.shape[1], cv_img.shape[0]),
     data=bytes(cv_img)
 )
-heif_file.save("RGBA_10bit.heif", quality=-1)
+heif_file.save("RGBA_10bit.heic", quality=-1)
 ```
 
-## 8/10/12 bit HEIF to 16 bit PNG using OpenCV
+### 8/10/12 bit HEIF to 16 bit PNG using OpenCV
 ```python3
 import numpy as np
 import cv2
@@ -70,7 +71,7 @@ np_array = np.asarray(heif_file)
 cv2.imwrite("rgb16.png", np_array)
 ```
 
-## Accessing decoded image data
+### Accessing decoded image data
 ```python3
 import pillow_heif
 
@@ -83,7 +84,7 @@ if pillow_heif.is_supported("images/rgb10.heif"):
     print("image mode:", heif_file.mode)
 ```
 
-## Get decoded image data as a Numpy array
+### Get decoded image data as a Numpy array
 ```python3
 import numpy as np
 import pillow_heif
@@ -93,7 +94,7 @@ if pillow_heif.is_supported("input.heic"):
     np_array = np.asarray(heif_file)
 ```
 
-## Adding & Removing thumbnails
+### Adding & Removing thumbnails
 ```python3
 import pillow_heif
 
@@ -105,7 +106,7 @@ if pillow_heif.is_supported("input.heic"):
     heif_file.save("output_without_thumbnails.heic")
 ```
 
-## (Pillow)Adding & Removing thumbnails
+### (Pillow)Adding & Removing thumbnails
 ```python3
 from PIL import Image
 import pillow_heif
@@ -119,7 +120,7 @@ im.info["thumbnails"].clear()               # clear list with thumbnails.
 im.save("output_without_thumbnails.heic")
 ```
 
-## Using thumbnails when they are present in a file
+### Using thumbnails when they are present in a file
 ```python3
 import pillow_heif
 
@@ -130,7 +131,7 @@ if pillow_heif.is_supported("input.heic"):
         print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
 ```
 
-## (Pillow)Using thumbnails when they are present in a file
+### (Pillow)Using thumbnails when they are present in a file
 ```python3
 from PIL import Image, ImageSequence
 import pillow_heif
@@ -143,16 +144,16 @@ for img in ImageSequence.Iterator(pil_img):
     print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
 ```
 
-## AVIF support
+### AVIF support
 
-Working with `AVIF` files as the same as  with `HEIF` files. Just use separate function to register it:
+Working with the `AVIF` files as the same as with the `HEIC` files. Just use a separate function to register plugin:
 ```python3
 import pillow_heif
 
 pillow_heif.register_avif_opener()
 ```
 
-## More Information
+### More Information
 
 - [Documentation](https://pillow-heif.readthedocs.io/)
   - [Installation](https://pillow-heif.readthedocs.io/en/latest/installation.html)
@@ -167,7 +168,7 @@ pillow_heif.register_avif_opener()
   - [Issues](https://github.com/bigcat88/pillow_heif/issues)
 - [Changelog](https://github.com/bigcat88/pillow_heif/blob/master/CHANGELOG.md)
 
-## Wheels
+### Wheels
 
 | **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
 |--------------------|:---------------:|:-----------------:|:-----------------:|:----------:|:----------:|
