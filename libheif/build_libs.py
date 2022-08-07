@@ -173,7 +173,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                         "libde265/CVE-2021-36411.patch",
                     ):
                         patch_path = path.join(_script_dir, patch)
-                        run(f"patch -p 1 -i {patch_path}".split(), check=True)
+                        run(f"patch -i {patch_path}".split(), check=True)
             chdir(_build_path)
         print(f"Preconfiguring {name}...", flush=True)
         if name == "aom":
