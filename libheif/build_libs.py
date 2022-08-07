@@ -45,7 +45,7 @@ def download_file(url: str, out_path: str) -> bool:
 
 
 def download_extract_to(url: str, out_path: str, strip: bool = True):
-    makedirs(out_path)
+    makedirs(out_path, exist_ok=True)
     _archive_path = path.join(out_path, "download.tar.gz")
     download_file(url, _archive_path)
     _tar_cmd = f"tar -xf {_archive_path} -C {out_path}"
