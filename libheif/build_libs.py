@@ -165,9 +165,9 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             else:
                 download_extract_to(url, _lib_path)
                 if name == "libde265":
-                    print("DEBUG1:", path.join(_lib_path, "libde265"))
-                    run(f"ls -la {path.join(_lib_path, 'libde265')}".split(), check=True)
-                    chdir(path.join(_lib_path, "libde265"))
+                    print("DEBUG1:", _lib_path)
+                    run(f"ls -la {_lib_path}".split(), check=True)
+                    chdir(_lib_path)
                     for patch in (
                         "libde265/CVE-2022-1253.patch",
                         "libde265/CVE-2021-36408.patch",
