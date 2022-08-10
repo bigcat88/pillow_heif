@@ -2,6 +2,18 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.1 - 2022-08-28]
+
+This release contains only security and bug fixes.
+
+### Added
+
+### Changed
+
+### Fixed
+
+- (Linux, Windows) CVE-2022-1253, CVE-2021-36408, CVE-2021-36410, CVE-2021-35452, CVE-2021-36411 [MSYS2 PR](https://github.com/msys2/MINGW-packages/pull/12513)
+
 ## [0.6.0 - 2022-08-06]
 
 This release is fully compatible with previous versions if you was not using `AVIF` decoding before.
