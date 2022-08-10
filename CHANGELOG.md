@@ -14,8 +14,7 @@ This release contains only security and bug fixes.
 
 ### Fixed
 
-- `libde265` vulnerabilities. Affected all versions and most software in the Internet that uses `libde265`
-- (Linux) - CVE-2022-1253, CVE-2021-36408, CVE-2021-36410, CVE-2021-35452, CVE-2021-36411
+- (Linux, Windows) CVE-2022-1253, CVE-2021-36408, CVE-2021-36410, CVE-2021-35452, CVE-2021-36411 [PR](https://github.com/msys2/MINGW-packages/pull/12513)
 
 ## [0.6.0 - 2022-08-06]
 
