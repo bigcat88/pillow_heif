@@ -71,10 +71,10 @@ jobs:
           CIBW_TEST_EXTRAS: ""
           CIBW_BUILD_VERBOSITY: 1
 
-      - name: Check builded wheel
+      - name: Checking built wheels
         run: twine check wheelhouse/*
 
-      - name: Upload builded wheel
+      - name: Uploading wheel
         uses: actions/upload-artifact@v3
         with:
           name: wheels
