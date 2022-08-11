@@ -1,0 +1,23 @@
+From 11ffeffadd980f9f96019fe180fc1e81827e3790 Mon Sep 17 00:00:00 2001
+From: Dirk Farin <dirk.farin@gmail.com>
+Date: Mon, 4 Apr 2022 20:43:45 +0200
+Subject: [PATCH] fix wrong memcpy size
+
+---
+ libheif/heif_colorconversion.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/libheif/heif_colorconversion.cc b/libheif/heif_colorconversion.cc
+index 2b050684..5a07ebb7 100644
+--- a/libheif/heif_colorconversion.cc
++++ b/libheif/heif_colorconversion.cc
+@@ -526,7 +526,8 @@ Op_YCbCr_to_RGB<Pixel>::convert_colorspace(const std::shared_ptr<const HeifPixel
+     }
+ 
+     if (has_alpha) {
+-      memcpy(&out_a[y * out_a_stride], &in_a[y * in_a_stride], width * 2);
++      int copyWidth = (hdr ? width * 2 : width);
++      memcpy(&out_a[y * out_a_stride], &in_a[y * in_a_stride], copyWidth);
+     }
+   }
+ 
