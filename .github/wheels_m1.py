@@ -4,6 +4,7 @@ from subprocess import run
 from sys import executable, stderr
 from traceback import format_exc
 
+# From project folder run: `python3 .github/wheels_m1.py`
 if __name__ == "__main__":
     try:
         print("Installing cibuildwheel...")
@@ -17,8 +18,6 @@ if __name__ == "__main__":
         modified_env["CIBW_ARCHS"] = "arm64"
         modified_env["CIBW_PLATFORM"] = "macos"
         modified_env["CIBW_ENVIRONMENT"] = "MACOSX_DEPLOYMENT_TARGET=12.0"
-        # Temporary workaround, will look at this after war ends.
-        modified_env["CIBW_BEFORE_ALL"] = "HOMEBREW_PREFIX=$(brew --prefix) && REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib"
         args = [executable]
         args += "-m cibuildwheel --platform macos --output-dir wheelhouse".split()
         run(args, env=modified_env, check=True)
