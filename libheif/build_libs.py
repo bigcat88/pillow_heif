@@ -178,9 +178,9 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                 elif name == "libheif":
                     chdir(_lib_path)
                     for patch in (
-                        "linux-libheif/010-fix-loading-alpha-image.patch",
-                        "linux-libheif/011-fix-loading-alpha-image.patch",
-                        "linux-libheif/020-fix-wrong-copy-size.patch",
+                        "libheif/010-fix-loading-alpha-image.patch",
+                        "libheif/011-fix-loading-alpha-image.patch",
+                        "libheif/020-fix-wrong-copy-size.patch",
                     ):
                         patch_path = path.join(_script_dir, patch)
                         run(f"patch -p 1 -i {patch_path}".split(), check=True)
