@@ -45,7 +45,7 @@ def download_file(url: str, out_path: str) -> bool:
 
 
 def download_extract_to(url: str, out_path: str, strip: bool = True):
-    makedirs(out_path)
+    makedirs(out_path, exist_ok=True)
     _archive_path = path.join(out_path, "download.tar.gz")
     download_file(url, _archive_path)
     _tar_cmd = f"tar -xf {_archive_path} -C {out_path}"
@@ -149,18 +149,33 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         chdir(path.join(_lib_path, "build")) if name != "x265" else chdir(_lib_path)
     else:
         _hide_build_process = True
-        if name == "aom":
-            _build_path = path.join(_lib_path, "build")
-            makedirs(_build_path)
-            download_extract_to(url, path.join(_lib_path, "aom"), False)
-            if musl:
-                patch_path = path.join(path.dirname(path.abspath(__file__)), "aom-musl/fix-stack-size-e53da0b-2.patch")
-                chdir(path.join(_lib_path, "aom"))
-                run(f"patch -p 1 -i {patch_path}".split(), check=True)
-            chdir(_build_path)
-        else:
+        _script_dir = path.dirname(path.abspath(__file__))
+        if name == "x265":
             download_extract_to(url, _lib_path)
             chdir(_lib_path)
+        else:
+            _build_path = path.join(_lib_path, "build")
+            makedirs(_build_path)
+            if name == "aom":
+                download_extract_to(url, path.join(_lib_path, "aom"), False)
+                if musl:
+                    patch_path = path.join(_script_dir, "aom-musl/fix-stack-size-e53da0b-2.patch")
+                    chdir(path.join(_lib_path, "aom"))
+                    run(f"patch -p 1 -i {patch_path}".split(), check=True)
+            else:
+                download_extract_to(url, _lib_path)
+                if name == "libde265":
+                    chdir(_lib_path)
+                    for patch in (
+                        "libde265/CVE-2022-1253.patch",
+                        "libde265/CVE-2021-36408.patch",
+                        "libde265/CVE-2021-36410.patch",
+                        "libde265/CVE-2021-35452.patch",
+                        "libde265/CVE-2021-36411.patch",
+                    ):
+                        patch_path = path.join(_script_dir, patch)
+                        run(f"patch -p 1 -i {patch_path}".split(), check=True)
+            chdir(_build_path)
         print(f"Preconfiguring {name}...", flush=True)
         if name == "aom":
             cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0".split()
@@ -186,8 +201,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args += "-DLINKED_10BIT=ON -DLINKED_12BIT=ON -DEXTRA_LINK_FLAGS=-L.".split()
             cmake_args += "-DEXTRA_LIB='x265_main10.a;x265_main12.a'".split()
         else:
-            mkdir("build")
-            chdir("build")
             cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ..".split()
             cmake_args += ["-DCMAKE_BUILD_TYPE=Release"]
             if name == "libheif":
