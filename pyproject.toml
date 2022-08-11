@@ -67,7 +67,8 @@ test-command = "pytest -rs {project}"
 
 [tool.cibuildwheel.macos]
 before-all = [
-    "brew install x265 libjpeg libde265 libheif little-cms2",
+    "brew install libjpeg little-cms2",
+    "brew install --formula {project}/libheif/libheif.rb",
     "HOMEBREW_PREFIX=$(brew --prefix)",
     "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib",
 ]
