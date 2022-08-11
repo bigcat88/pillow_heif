@@ -34,6 +34,12 @@ class Libheif < Formula
     sha256 "75ac6e6ca7cecf9bedeb23d21bc60cbc17bf5dcae1c82d39bf388f8d30c6f916"
   end
 
+  # AOM: Fix do not pad minimum to 16x16 pixels
+  patch do
+    url "https://github.com/strukturag/libheif/commit/ec1dc464dc08517ecef7b675043886ec727eadb2.patch"
+    sha256 "0d2a3727e494cb328f5b786d4bb116d167026a86a709219768ab47ed4d2c73c8"
+  end
+
   # Fix wrong copy size
   patch do
     url "https://github.com/strukturag/libheif/commit/11ffeffadd980f9f96019fe180fc1e81827e3790.patch"
