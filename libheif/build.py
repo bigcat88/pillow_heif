@@ -7,7 +7,7 @@ from warnings import warn
 
 from cffi import FFI
 
-from libheif import build_libs
+from linux.build_libs import linux_build_libs
 
 ffi = FFI()
 with open("libheif/heif.h", "r", encoding="utf-8") as f:
@@ -46,7 +46,7 @@ elif platform.lower() == "win32":
         include_path_prefix = "C:\\msys64\\mingw64"
         warn(f"VCPKG_PREFIX environment variable is not set. Assuming `VCPKG_PREFIX={include_path_prefix}`")
 else:
-    include_path_prefix = build_libs.build_libs_linux()
+    include_path_prefix = linux_build_libs()
 
 # Need to include "lib" directory to find "heif" library.
 include_path_prefix_lib = path.join(include_path_prefix, "lib")

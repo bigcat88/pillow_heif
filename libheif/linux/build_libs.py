@@ -1,11 +1,11 @@
 import sys
-from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path, remove
+from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path
 from platform import machine
-from re import IGNORECASE, MULTILINE, search
-from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
+from subprocess import PIPE, STDOUT, run
+
+from build_tools import build_tools, download_extract_to
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
-BUILD_DIR_TOOLS = path.join(BUILD_DIR_PREFIX, "build-tools")
 BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
 INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
 
@@ -13,115 +13,11 @@ INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT", "0") != "0"
 
 
-def download_file(url: str, out_path: str) -> bool:
-    n_download_clients = 2
-    for _ in range(2):
-        try:
-            run(
-                ["wget", "-q", "--no-check-certificate", url, "-O", out_path],
-                timeout=90,
-                stderr=DEVNULL,
-                stdout=DEVNULL,
-                check=True,
-            )
-            return True
-        except (CalledProcessError, TimeoutExpired):
-            break
-        except FileNotFoundError:
-            n_download_clients -= 1
-            break
-    for _ in range(2):
-        try:
-            run(["curl", "-L", url, "-o", out_path], timeout=90, stderr=DEVNULL, stdout=DEVNULL, check=True)
-            return True
-        except (CalledProcessError, TimeoutExpired):
-            break
-        except FileNotFoundError:
-            n_download_clients -= 1
-            break
-    if not n_download_clients:
-        raise EnvironmentError("Both curl and wget cannot be found.")
-    return False
-
-
-def download_extract_to(url: str, out_path: str, strip: bool = True):
-    makedirs(out_path, exist_ok=True)
-    _archive_path = path.join(out_path, "download.tar.gz")
-    download_file(url, _archive_path)
-    _tar_cmd = f"tar -xf {_archive_path} -C {out_path}"
-    if strip:
-        _tar_cmd += " --strip-components 1"
-    run(_tar_cmd.split(), check=True)
-    remove(_archive_path)
-
-
-def tool_check_version(name: str, min_version: str) -> bool:
-    try:
-        _ = run([name, "--version"], stdout=PIPE, stderr=DEVNULL, check=True)
-    except (CalledProcessError, FileNotFoundError):
-        return False
-    if name == "nasm":
-        _regexp = r"version\s*(\d+(\.\d+){2})"
-    elif name == "autoconf":
-        _regexp = r"(\d+(\.\d+){1})$"
-    else:
-        _regexp = r"(\d+(\.\d+){2})$"
-    m_groups = search(_regexp, _.stdout.decode("utf-8"), flags=MULTILINE + IGNORECASE)
-    if m_groups is None:
-        return False
-    current_version = tuple(map(int, str(m_groups.groups()[0]).split(".")))
-    min_version = tuple(map(int, min_version.split(".")))
-    if current_version >= min_version:
-        print(f"Tool {name} with version {str(m_groups.groups()[0])} satisfy requirements.", flush=True)
-        return True
-    return False
-
-
 def is_musllinux() -> bool:
     _ = run("ldd --version".split(), stdout=PIPE, stderr=STDOUT, check=False)
     if _.stdout and _.stdout.decode("utf-8").find("musl") != -1:
         return True
     return False
-
-
-def build_tool_linux(url: str, name: str, min_version: str, configure_args: list = None, chmod=None):
-    if min_version:
-        if tool_check_version(name, min_version):
-            return
-    if configure_args is None:
-        configure_args = []
-    _tool_path = path.join(BUILD_DIR_TOOLS, name)
-    if path.isdir(_tool_path):
-        print(f"Cache found for {name}", flush=True)
-        chdir(_tool_path)
-    else:
-        download_extract_to(url, _tool_path)
-        chdir(_tool_path)
-        if name == "cmake":
-            run("./bootstrap -- -DCMAKE_USE_OPENSSL=OFF".split(), check=True)
-        else:
-            run(["./configure"] + configure_args, check=True)
-        run("make".split(), check=True)
-    run("make install".split(), check=True)
-    run(f"{name} --version".split(), check=True)
-    if chmod:
-        run(f"chmod -R {chmod} {_tool_path}".split(), check=True)
-
-
-def build_tools_linux(musl: bool = False):
-    if machine().find("armv7") != -1:
-        build_tool_linux(
-            "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz",
-            "pkg-config",
-            "0.29.1" if not musl else "",
-            configure_args=["--with-internal-glib"],
-        )
-        build_tool_linux("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.69")
-        build_tool_linux("https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.gz", "automake", "1.16.1")
-    build_tool_linux("https://github.com/Kitware/CMake/archive/refs/tags/v3.22.3.tar.gz", "cmake", "3.16.1")
-    build_tool_linux(
-        "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz", "nasm", "2.15.05", chmod="774"
-    )
 
 
 def is_library_installed(name: str) -> bool:
@@ -232,14 +128,38 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         run("ldconfig", check=True)
 
 
-def build_libs_linux() -> str:
+def build_lib_linux_armv7(url: str, name: str, musl: bool = False):
+    _lib_path = path.join(BUILD_DIR_LIBS, name)
+    download_extract_to(url, _lib_path)
+    chdir(_lib_path)
+    if name == "libde265":
+        run(["./autogen.sh"], check=True)
+    print(f"Preconfiguring {name}...", flush=True)
+    configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
+    if name == "libde265":
+        configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
+    elif name == "libheif":
+        configure_args += "--disable-examples --disable-go".split()
+        configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
+    run(["./configure"] + configure_args, check=True)
+    print(f"{name} configured. building...", flush=True)
+    run("make -j4".split(), check=True)
+    print(f"{name} build success.", flush=True)
+    run("make install".split(), check=True)
+    if musl:
+        run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
+    else:
+        run("ldconfig", check=True)
+
+
+def linux_build_libs() -> str:
     _is_musllinux = is_musllinux()
     if is_library_installed("heif") or is_library_installed("libheif"):
         print("libheif is already present.")
         return INSTALL_DIR_LIBS
     _original_dir = getcwd()
     try:
-        build_tools_linux(_is_musllinux)
+        build_tools(_is_musllinux)
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:
                 build_lib_linux(
@@ -284,27 +204,3 @@ def build_libs_linux() -> str:
     finally:
         chdir(_original_dir)
     return INSTALL_DIR_LIBS
-
-
-def build_lib_linux_armv7(url: str, name: str, musl: bool = False):
-    _lib_path = path.join(BUILD_DIR_LIBS, name)
-    download_extract_to(url, _lib_path)
-    chdir(_lib_path)
-    if name == "libde265":
-        run(["./autogen.sh"], check=True)
-    print(f"Preconfiguring {name}...", flush=True)
-    configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
-    if name == "libde265":
-        configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
-    elif name == "libheif":
-        configure_args += "--disable-examples --disable-go".split()
-        configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
-    run(["./configure"] + configure_args, check=True)
-    print(f"{name} configured. building...", flush=True)
-    run("make -j4".split(), check=True)
-    print(f"{name} build success.", flush=True)
-    run("make install".split(), check=True)
-    if musl:
-        run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
-    else:
-        run("ldconfig", check=True)
