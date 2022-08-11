@@ -14,7 +14,9 @@ This release contains only security and bug fixes.
 
 ### Fixed
 
-- (Linux, Windows) CVE-2022-1253, CVE-2021-36408, CVE-2021-36410, CVE-2021-35452, CVE-2021-36411 [PR](https://github.com/msys2/MINGW-packages/pull/12513)
+- (Linux, Windows) libde265: CVE-2022-1253, CVE-2021-36408, CVE-2021-36410, CVE-2021-35452, CVE-2021-36411 [MSYS2 PR](https://github.com/msys2/MINGW-packages/pull/12513)
+- libheif: wrong memcpy size: [commit](https://github.com/strukturag/libheif/commit/11ffeffadd980f9f96019fe180fc1e81827e3790)
+- libheif: rare situation with alpha channel: [libheif_issue](https://github.com/strukturag/libheif/issues/495)
 
 ## [0.6.0 - 2022-08-06]
 
