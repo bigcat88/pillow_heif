@@ -180,6 +180,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                     for patch in (
                         "libheif/010-fix-loading-alpha-image.patch",
                         "libheif/011-fix-loading-alpha-image.patch",
+                        "libheif/012-fix-do-not-pad-16x16-AOM.patch",
                         "libheif/020-fix-wrong-copy-size.patch",
                     ):
                         patch_path = path.join(_script_dir, patch)
