@@ -1,10 +1,10 @@
-name: Build cache for dependencies
+name: Build Linux dependencies
 
 on:
   push:
     branches: [master]
     paths:
-      - 'libheif/*.py'
+      - 'libheif/linux/**'
       - 'libheif/heif.h'
   schedule:
     - cron: '59 23 * * 5' # Every Friday at 23:59 (GMT+2)
@@ -53,12 +53,12 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux/build_tools.py') }}
 
       - uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.*') }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux/**') }}
 
       - name: Start test build
         run: cibuildwheel
