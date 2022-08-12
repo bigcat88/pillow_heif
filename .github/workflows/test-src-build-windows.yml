@@ -49,7 +49,7 @@ jobs:
             makepkg-mingw --syncdeps --noconfirm -f
             pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst --noconfirm
 
-      - name: Installing pillow-heif
+      - name: Installing Pillow-Heif
         run: python3 -m pip -v install ".[dev]"
 
       - name: Perform tests
