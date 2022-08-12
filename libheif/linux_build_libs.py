@@ -46,6 +46,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
     else:
         _hide_build_process = True
         _script_dir = path.dirname(path.abspath(__file__))
+        _linux_dir = path.join(_script_dir, "linux")
         if name == "x265":
             linux_build_tools.download_extract_to(url, _lib_path)
             chdir(_lib_path)
@@ -55,7 +56,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             if name == "aom":
                 linux_build_tools.download_extract_to(url, path.join(_lib_path, "aom"), False)
                 if musl:
-                    patch_path = path.join(_script_dir, "aom-musl/fix-stack-size-e53da0b-2.patch")
+                    patch_path = path.join(_linux_dir, "aom-musl/fix-stack-size-e53da0b-2.patch")
                     chdir(path.join(_lib_path, "aom"))
                     run(f"patch -p 1 -i {patch_path}".split(), check=True)
             else:
@@ -69,7 +70,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                         "libde265/CVE-2021-35452.patch",
                         "libde265/CVE-2021-36411.patch",
                     ):
-                        patch_path = path.join(_script_dir, patch)
+                        patch_path = path.join(_linux_dir, patch)
                         run(f"patch -p 1 -i {patch_path}".split(), check=True)
                 elif name == "libheif":
                     chdir(_lib_path)
@@ -79,7 +80,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                         "libheif/012-fix-do-not-pad-16x16-AOM.patch",
                         "libheif/020-fix-wrong-copy-size.patch",
                     ):
-                        patch_path = path.join(_script_dir, patch)
+                        patch_path = path.join(_linux_dir, patch)
                         run(f"patch -p 1 -i {patch_path}".split(), check=True)
             chdir(_build_path)
         print(f"Preconfiguring {name}...", flush=True)
