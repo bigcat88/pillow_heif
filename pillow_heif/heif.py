@@ -49,6 +49,7 @@ class HeifImageBase:
     mode: str
     """A string which defines the type and depth of a pixel in the image:
     `Pillow Modes <https://pillow.readthedocs.io/en/stable/handbook/concepts.html#modes>`_
+
     For currently supported modes by Pillow-Heif see :ref:`image-modes`."""
 
     def __init__(self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict], handle, for_encoding=False):

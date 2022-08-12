@@ -73,14 +73,14 @@ or from within the uncompressed source directory::
 Windows
 ^^^^^^^
 
-`GA Action to test building from source <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-windows.yml>`_.
+`GA Action to test building from source <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-windows.yml>`_
 
 .. note::
     | On Windows installation is a bit tricky...
     | First install `msys2 <https://www.msys2.org/>`_, if it is not installed.
-    | By default, build script assumes that **msys2** builds libs in :bash:`C:\msys64\mingw64`
+    | By default, build script assumes that **msys2** builds libs in :bash:`C:/msys64/mingw64`
     | You can set **MSYS2_PREFIX** environment variable to your custom path, e.g.:
-    | :bash:`setx MSYS2_PREFIX "D:\msys64\mingw64"`
+    | :bash:`setx MSYS2_PREFIX "D:/msys64/mingw64"`
 
 Using **msys2** terminal change working directory and install `libheif`::
 
