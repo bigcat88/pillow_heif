@@ -7,7 +7,7 @@ from warnings import warn
 
 from cffi import FFI
 
-from linux.build_libs import linux_build_libs
+from .linux.build_libs import linux_build_libs
 
 ffi = FFI()
 with open("libheif/heif.h", "r", encoding="utf-8") as f:
