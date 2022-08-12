@@ -1,4 +1,4 @@
-name: Build from source
+name: Build from source(Linux)
 
 on:
   workflow_dispatch:
@@ -6,19 +6,21 @@ on:
     branches: [master]
     types: [opened, reopened, edited]
     paths:
-      - 'libheif/*.*'
       - 'libheif/linux/**'
+      - 'libheif/linux_*.py'
+      - 'libheif/build.py'
+      - 'libheif/heif.h'
       - 'setup.*'
       - 'pyproject.toml'
-      - 'tests/**'
   push:
     branches: [master]
     paths:
-      - 'libheif/*.*'
       - 'libheif/linux/**'
+      - 'libheif/linux_*.py'
+      - 'libheif/build.py'
+      - 'libheif/heif.h'
       - 'setup.*'
       - 'pyproject.toml'
-      - 'tests/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

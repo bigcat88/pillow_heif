@@ -1,0 +1,56 @@
+name: Build from source(Windows)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, edited]
+    paths:
+      - 'libheif/windows/**'
+      - 'libheif/build.py'
+      - 'libheif/heif.h'
+      - 'setup.*'
+      - 'pyproject.toml'
+  push:
+    branches: [master]
+    paths:
+      - 'libheif/windows/**'
+      - 'libheif/build.py'
+      - 'libheif/heif.h'
+      - 'setup.*'
+      - 'pyproject.toml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows_2019:
+    name: Windows:2019-x86_64
+    runs-on: windows-2019
+    env:
+      VCPKG_PREFIX: "C:/temp/msys64/mingw64"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          location: C:/temp
+          update: true
+          install: >-
+            patch
+            mingw-w64-x86_64-binutils
+
+      - name: Build libheif and dependencies
+        shell: msys2 {0}
+        run: |
+            cd libheif/windows/mingw-w64-libheif
+            makepkg-mingw --syncdeps --noconfirm -f
+            pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst --noconfirm
+
+      - name: Installing pillow-heif
+        run: python3 -m pip -v install ".[dev]"
+
+      - name: Perform tests
+        run: python3 -m pytest -s
