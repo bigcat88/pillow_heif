@@ -29,7 +29,7 @@ jobs:
     name: Windows:2019-x86_64
     runs-on: windows-2019
     env:
-      VCPKG_PREFIX: "C:/temp/msys64/mingw64"
+      MSYS2_PREFIX: "C:/temp/msys64/mingw64"
 
     steps:
       - uses: actions/checkout@v3
@@ -55,13 +55,13 @@ jobs:
       - name: Copy DLLs from MSYS2
         run: |
           $site_packages=(python -c 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])')
-          cp ${{ env.VCPKG_PREFIX }}/bin/libheif.dll $site_packages/
-          cp ${{ env.VCPKG_PREFIX }}/bin/libde265-0.dll $site_packages/
-          cp ${{ env.VCPKG_PREFIX }}/bin/libx265.dll $site_packages/
-          cp ${{ env.VCPKG_PREFIX }}/bin/libaom.dll $site_packages/
-          cp ${{ env.VCPKG_PREFIX }}/bin/libwinpthread-1.dll $site_packages/
-          cp ${{ env.VCPKG_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
-          cp ${{ env.VCPKG_PREFIX }}/bin/libstdc++-6.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libheif.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libx265.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libaom.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
 
       - name: Perform tests
         run: python -m pytest -s

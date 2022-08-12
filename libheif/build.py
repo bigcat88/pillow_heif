@@ -41,10 +41,10 @@ if sys.platform.lower() == "darwin":
     if not include_path_prefix:
         include_path_prefix = "/opt/local"
 elif sys.platform.lower() == "win32":
-    include_path_prefix = getenv("VCPKG_PREFIX")
+    include_path_prefix = getenv("MSYS2_PREFIX")
     if include_path_prefix is None:
         include_path_prefix = "C:\\msys64\\mingw64"
-        warn(f"VCPKG_PREFIX environment variable is not set. Assuming `VCPKG_PREFIX={include_path_prefix}`")
+        warn(f"MSYS2_PREFIX environment variable is not set. Assuming `MSYS2_PREFIX={include_path_prefix}`")
 else:
     include_path_prefix = linux_build_libs.build_libs()
 
