@@ -3,7 +3,7 @@ from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path
 from platform import machine
 from subprocess import PIPE, STDOUT, run
 
-from build_tools import build_tools, download_extract_to
+from linux_build_tools import build_tools, download_extract_to
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
 BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")

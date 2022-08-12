@@ -1,13 +1,12 @@
+import sys
 from os import getenv, path
 from pathlib import Path
 from shutil import copy
 from subprocess import DEVNULL, PIPE, run
-from sys import platform
 from warnings import warn
 
 from cffi import FFI
-
-from .linux.build_libs import linux_build_libs
+from linux_build_libs import linux_build_libs
 
 ffi = FFI()
 with open("libheif/heif.h", "r", encoding="utf-8") as f:
@@ -32,7 +31,7 @@ library_dirs = ["/usr/local/lib", "/usr/lib64", "/usr/lib", "/lib"]
 
 include_path_prefix = ""
 insert = False
-if platform.lower() == "darwin":
+if sys.platform.lower() == "darwin":
     include_path_prefix = getenv("HOMEBREW_PREFIX")
     if not include_path_prefix:
         _result = run(["brew", "--prefix"], stderr=DEVNULL, stdout=PIPE, check=False)
@@ -40,7 +39,7 @@ if platform.lower() == "darwin":
             include_path_prefix = _result.stdout.decode("utf-8").rstrip("\n")
     if not include_path_prefix:
         include_path_prefix = "/opt/local"
-elif platform.lower() == "win32":
+elif sys.platform.lower() == "win32":
     include_path_prefix = getenv("VCPKG_PREFIX")
     if include_path_prefix is None:
         include_path_prefix = "C:\\msys64\\mingw64"
@@ -54,7 +53,7 @@ if include_path_prefix_lib not in library_dirs:
     library_dirs.append(include_path_prefix_lib)
 
 # MSYS2: rename "libheif.dll.a" to "libheif.lib"
-if platform.lower() == "win32":
+if sys.platform.lower() == "win32":
     lib_export_file = Path(path.join(include_path_prefix_lib, "libheif.dll.a"))
     if lib_export_file.is_file():
         copy(lib_export_file, path.join(include_path_prefix_lib, "libheif.lib"))
@@ -72,8 +71,8 @@ ffi.set_source(
     """,
     include_dirs=include_dirs,
     library_dirs=library_dirs,
-    libraries=["libheif"] if platform.lower() == "win32" else ["heif"],
-    extra_compile_args=["/d2FH4-"] if platform.lower() == "win32" else [],
+    libraries=["libheif"] if sys.platform.lower() == "win32" else ["heif"],
+    extra_compile_args=["/d2FH4-"] if sys.platform.lower() == "win32" else [],
 )
 
 if __name__ == "__main__":

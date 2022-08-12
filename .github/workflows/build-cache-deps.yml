@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - 'libheif/linux/**'
+      - 'libheif/linux_*.py'
       - 'libheif/heif.h'
   schedule:
     - cron: '59 23 * * 5' # Every Friday at 23:59 (GMT+2)
