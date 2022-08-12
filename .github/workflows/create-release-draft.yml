@@ -36,7 +36,7 @@ jobs:
     name: Wheels • windows • x86_64
     runs-on: windows-2019
     env:
-      VCPKG_PREFIX: "C:/temp/msys64/mingw64"
+      MSYS2_PREFIX: "C:/temp/msys64/mingw64"
 
     steps:
       - uses: actions/checkout@v3
@@ -60,14 +60,14 @@ jobs:
             pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst --noconfirm
 
       - name: Remove DLL trailing data
-        run: ${{ env.VCPKG_PREFIX }}/bin/strip -s ${{ env.VCPKG_PREFIX }}/bin/*.dll
+        run: ${{ env.MSYS2_PREFIX }}/bin/strip -s ${{ env.MSYS2_PREFIX }}/bin/*.dll
 
       - name: Run cibuildwheel
         run: cibuildwheel
         env:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.VCPKG_PREFIX }}/bin"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.MSYS2_PREFIX }}/bin"
 
       - name: Check built wheels
         run: twine check wheelhouse/*
