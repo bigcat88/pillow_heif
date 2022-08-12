@@ -27,8 +27,6 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
-      KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-      KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
 
     steps:
@@ -63,6 +61,9 @@ jobs:
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
           key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
+        env:
+          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
+          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
 
       - name: Start test build
         run: cibuildwheel
