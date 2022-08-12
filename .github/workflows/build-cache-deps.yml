@@ -6,6 +6,7 @@ on:
     paths:
       - 'libheif/linux/**'
       - 'libheif/linux_*.py'
+      - 'libheif/build.py'
       - 'libheif/heif.h'
   schedule:
     - cron: '59 23 * * 5' # Every Friday at 23:59 (GMT+2)
@@ -26,6 +27,8 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+      KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
+      KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
 
     steps:
@@ -54,12 +57,12 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux/build_tools.py') }}
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
 
       - uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux/**') }}
+          key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
 
       - name: Start test build
         run: cibuildwheel
