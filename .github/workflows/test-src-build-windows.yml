@@ -43,7 +43,7 @@ jobs:
             mingw-w64-x86_64-binutils
 
       - name: Add MSYS2 to Path
-        run: setx /M path "%path%;%VCPKG_PREFIX%/bin"
+        run: Add-Content $env:GITHUB_PATH "C:\temp\msys64\mingw64\bin"
 
       - name: Build libheif and dependencies
         shell: msys2 {0}
