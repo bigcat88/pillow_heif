@@ -92,6 +92,7 @@ jobs:
         env:
           CIBW_BUILD: "*-macosx_x86_64"
           CIBW_SKIP: "cp36-* pp39-*"
+          CIBW_TEST_SKIP: "cp311-*"
 
       - name: Check built wheels
         run: twine check wheelhouse/*
