@@ -8,9 +8,6 @@ HeifImage object
     :inherited-members:
     :members:
 
-    .. autoattribute:: size
-    .. autoattribute:: mode
-
     .. py:attribute:: info["exif"]
         :type: bytes
 

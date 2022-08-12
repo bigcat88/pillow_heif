@@ -10,6 +10,3 @@ HeifThumbnail object
     :show-inheritance:
     :inherited-members:
     :members:
-
-    .. autoattribute:: size
-    .. autoattribute:: mode

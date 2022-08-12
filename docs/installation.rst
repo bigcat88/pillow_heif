@@ -91,9 +91,9 @@ Using **msys2** terminal change working directory and install `libheif`::
 .. note::
     This is needed, so we dont want to `dav1d` or `rav1e` to be installed as the dependencies.
 
-Now install Pillow-Heif with something like this::
+Now inside Pillow-Heif directory install it with pip from source::
 
-    python -m pip install --upgrade pillow-heif --no-binary :all:
+    python -m pip install .
 
 | After that copy **libheif.dll**, **libaom.dll**, **libde265-0.dll**, **libx265.dll**,
     **libgcc_s_seh-1.dll**, **libstdc++-6.dll** and **libwinpthread-1.dll** from
