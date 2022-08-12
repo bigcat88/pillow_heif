@@ -50,9 +50,9 @@ jobs:
             pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst --noconfirm
 
       - name: Installing Pillow-Heif
-        run: python3 -m pip -v install ".[dev]"
+        run: python -m pip -v install ".[dev]"
 
       - name: Perform tests
         run: |
-          export PATH=$PATH:C/temp/msys64/mingw64/bin
-          python3 -m pytest -s
+          $Env:PATH += ";C:/temp/msys64/mingw64/bin"
+          python -m pytest -s
