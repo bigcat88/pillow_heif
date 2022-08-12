@@ -45,14 +45,23 @@ jobs:
       - name: Build libheif and dependencies
         shell: msys2 {0}
         run: |
-            cd libheif/windows/mingw-w64-libheif
-            makepkg-mingw --syncdeps --noconfirm -f
-            pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst --noconfirm
+          cd libheif/windows/mingw-w64-libheif
+          makepkg-mingw --syncdeps --noconfirm -f
+          pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst --noconfirm
 
       - name: Installing Pillow-Heif
         run: python -m pip -v install ".[dev]"
 
-      - name: Perform tests
+      - name: Copy DLLs from MSYS2
         run: |
-          $Env:PATH += ";C:/temp/msys64/mingw64/bin"
-          python -m pytest -s
+          $site_packages=(python -c 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])')
+          cp C:/temp/msys64/mingw64/bin/libheif.dll $site_packages/
+          cp C:/temp/msys64/mingw64/bin/libde265-0.dll $site_packages/
+          cp C:/temp/msys64/mingw64/bin/libx265.dll $site_packages/
+          cp C:/temp/msys64/mingw64/bin/libaom.dll $site_packages/
+          cp C:/temp/msys64/mingw64/bin/libwinpthread-1.dll $site_packages/
+          cp C:/temp/msys64/mingw64/bin/libgcc_s_seh-1.dll $site_packages/
+          cp C:/temp/msys64/mingw64/bin/libstdc++-6.dll $site_packages/
+
+      - name: Perform tests
+        run: python -m pytest -s
