@@ -38,9 +38,7 @@ jobs:
           brew install --formula ./libheif/macos/libheif.rb
 
       - name: Installing Pillow-Heif
-        run: |
-          ls -la
-          python3 -m pip -v install ".[dev]"
+        run: python3 -m pip -v install ".[dev]"
 
       - name: Perform tests
         run: python3 -m pytest -s
