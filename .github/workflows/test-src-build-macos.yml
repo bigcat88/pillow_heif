@@ -1,0 +1,44 @@
+name: Build from source(macOS)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, edited]
+    paths:
+      - 'libheif/macos/**'
+      - 'libheif/build.py'
+      - 'libheif/heif.h'
+      - 'setup.*'
+      - 'pyproject.toml'
+  push:
+    branches: [master]
+    paths:
+      - 'libheif/macos/**'
+      - 'libheif/build.py'
+      - 'libheif/heif.h'
+      - 'setup.*'
+      - 'pyproject.toml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos_11:
+    name: macOS:11-x86_64
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install brew
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew install --formula ./libheif/macos/libheif.rb
+
+      - name: Installing Pillow-Heif
+        run: python3 -m pip -v install ".[dev]"
+
+      - name: Perform tests
+        run: python3 -m pytest -s
