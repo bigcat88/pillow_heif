@@ -3,7 +3,7 @@ from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path
 from platform import machine
 from subprocess import PIPE, STDOUT, run
 
-from linux_build_tools import build_tools, download_extract_to
+from libheif import linux_build_tools
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
 BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
@@ -47,19 +47,19 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         _hide_build_process = True
         _script_dir = path.dirname(path.abspath(__file__))
         if name == "x265":
-            download_extract_to(url, _lib_path)
+            linux_build_tools.download_extract_to(url, _lib_path)
             chdir(_lib_path)
         else:
             _build_path = path.join(_lib_path, "build")
             makedirs(_build_path)
             if name == "aom":
-                download_extract_to(url, path.join(_lib_path, "aom"), False)
+                linux_build_tools.download_extract_to(url, path.join(_lib_path, "aom"), False)
                 if musl:
                     patch_path = path.join(_script_dir, "aom-musl/fix-stack-size-e53da0b-2.patch")
                     chdir(path.join(_lib_path, "aom"))
                     run(f"patch -p 1 -i {patch_path}".split(), check=True)
             else:
-                download_extract_to(url, _lib_path)
+                linux_build_tools.download_extract_to(url, _lib_path)
                 if name == "libde265":
                     chdir(_lib_path)
                     for patch in (
@@ -130,7 +130,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
 
 def build_lib_linux_armv7(url: str, name: str, musl: bool = False):
     _lib_path = path.join(BUILD_DIR_LIBS, name)
-    download_extract_to(url, _lib_path)
+    linux_build_tools.download_extract_to(url, _lib_path)
     chdir(_lib_path)
     if name == "libde265":
         run(["./autogen.sh"], check=True)
@@ -159,7 +159,7 @@ def build_libs() -> str:
         return INSTALL_DIR_LIBS
     _original_dir = getcwd()
     try:
-        build_tools(_is_musllinux)
+        linux_build_tools.build_tools(_is_musllinux)
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:
                 build_lib_linux(
