@@ -152,7 +152,7 @@ def build_lib_linux_armv7(url: str, name: str, musl: bool = False):
         run("ldconfig", check=True)
 
 
-def linux_build_libs() -> str:
+def build_libs() -> str:
     _is_musllinux = is_musllinux()
     if is_library_installed("heif") or is_library_installed("libheif"):
         print("libheif is already present.")
