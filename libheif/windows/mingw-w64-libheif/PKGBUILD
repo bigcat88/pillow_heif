@@ -78,6 +78,8 @@ build() {
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       "${extra_config[@]}" \
       -DBUILD_SHARED_LIBS=ON \
+      -DWITH_RAV1E=OFF \
+      -DWITH_DAV1D=OFF \
       -DX265_CFLAGS="-DX265_API_IMPORTS" \
       ../${_realname}-${pkgver}
 
