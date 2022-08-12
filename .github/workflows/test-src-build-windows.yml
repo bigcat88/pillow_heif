@@ -43,7 +43,11 @@ jobs:
             mingw-w64-x86_64-binutils
 
       - name: Add MSYS2 to Path
-        run: Add-Content $env:GITHUB_PATH "C:\temp\msys64\mingw64\bin"
+        shell: bash
+        run: |
+          echo $GITHUB_PATH
+          echo "C:\temp\msys64\mingw64\bin" >> $GITHUB_PATH
+          echo $GITHUB_PATH
 
       - name: Build libheif and dependencies
         shell: msys2 {0}
