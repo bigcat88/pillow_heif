@@ -6,52 +6,59 @@ on:
     types: [opened, reopened, edited]
     paths:
       - 'pillow_heif/*.py'
-      - 'libheif/*.py'
+      - 'tests/**'
       - 'setup.*'
       - 'pyproject.toml'
-      - 'tests/**'
   push:
     branches: [master]
     paths:
       - 'pillow_heif/*.py'
-      - 'libheif/*.py'
+      - 'tests/**'
       - 'setup.*'
       - 'pyproject.toml'
-      - 'tests/**'
   workflow_dispatch:
 
 jobs:
-  build-analysis:
-    runs-on: ubuntu-latest
-    name: Analysis & Coverage
+  analysis:
+    runs-on: ubuntu-22.04
+    name: Analysis
     if: "!contains(github.event.head_commit.message, '[docs]')"
-    env:
-      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
-      KEY_HEAD: analysis-coverage
 
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/cache@v3
+      - uses: actions/setup-python@v4
         with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
+          python-version: '3.10'
 
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
-        env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
+      - name: Prepare system
+        run: sudo apt -y install libheif-dev
 
       - name: Install from source
-        run: |
-          sudo -H python3 -m pip install --upgrade pip
-          sudo -H python3 -m pip -v install ".[dev]"
+        run: python -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
         run: pylint pillow_heif
+
+  coverage-linux:
+    needs: [analysis]
+    runs-on: ubuntu-22.04
+    name: Coverage(Linux)
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Prepare system
+        run: |
+          sudo apt -y install libheif-dev
+          python -m pip install pytest coverage numpy pillow==8.3.0
+
+      - name: Install from source
+        run: python -m pip -v install .
 
       - name: Generate coverage report
         run: coverage run -m pytest -s && coverage xml && coverage html
@@ -59,7 +66,7 @@ jobs:
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: coverage
+          name: coverage_linux
           path: ./htmlcov
           if-no-files-found: error
 
@@ -70,5 +77,41 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+  coverage-macos:
+    needs: [analysis]
+    runs-on: macos-12
+    name: Coverage(macOS)
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Prepare system
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew install libheif
+
+      - name: Install from source
+        run: |
+          python3 -m pip install opencv-python coverage
+          python3 -m pip -v install ".[tests]"
+
+      - name: Generate coverage report
+        run: coverage run -m pytest -s && coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_macos
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
