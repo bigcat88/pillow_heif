@@ -30,7 +30,7 @@ jobs:
       - name: Install from source
         run: |
           sudo apt -y install libheif-dev
-          python3 -m pip -v install ".[dev]"
+          sudo -H python3 -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
         run: pylint pillow_heif
