@@ -27,10 +27,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Prepare system
+        run: sudo apt -y install libheif-dev
+
       - name: Install from source
-        run: |
-          sudo apt -y install libheif-dev
-          sudo -H python3 -m pip -v install ".[dev]"
+        run: python -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
         run: pylint pillow_heif
