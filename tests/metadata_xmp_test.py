@@ -33,6 +33,7 @@ pillow_heif.register_heif_opener()
 def test_xmp_from_pillow(img_path, save_format):
     im = Image.open(Path(img_path))
     xmp = im.getxmp() if hasattr(im, "getxmp") else pillow_heif.getxmp(im.info["xmp"])  # noqa
+    pytest.importorskip("defusedxml", reason="requires `defusedxml`")
     assert xmp["xmpmeta"]["RDF"]["Description"]["subject"]["Bag"]["li"] == "TestSubject"
     out_im_heif = BytesIO()
     im.save(out_im_heif, format=save_format)

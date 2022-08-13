@@ -15,8 +15,8 @@ from _pillow_heif_cffi import ffi, lib
 
 try:
     from defusedxml import ElementTree
-except ImportError:  # pragma: no cover
-    ElementTree = None  # pragma: no cover
+except ImportError:
+    ElementTree = None
 
 
 def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
