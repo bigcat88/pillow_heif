@@ -30,10 +30,10 @@ Linux
 .. note::
 
     | For installing external libraries, you should run install with **root** privileges.
-    | See `build_libs.py <https://github.com/bigcat88/pillow_heif/blob/master/libheif/build_libs.py>`_ for
+    | See `build_libs.py <https://github.com/bigcat88/pillow_heif/blob/master/libheif/linux_build_libs.py>`_ for
         additional info what will happen during installing from source...
     | Here is a
-        `GH Action <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build.yml>`_
+        `GH Action <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-linux.yml>`_
         and in ``docker`` folder there are docker files for ``Ubuntu`` and ``Alpine`` with examples how to build
         from source.
 
@@ -57,6 +57,8 @@ Also if you are Guru in ``cmake`` and ``c++`` and find any error, I'll be glad f
 macOS
 ^^^^^
 
+`GA Action to test build on macOS from source <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-macos.yml>`_
+
 First install `Homebrew <https://brew.sh>`_, if it is not installed and run::
 
     brew install x265 libjpeg libde265 libheif
@@ -73,7 +75,7 @@ or from within the uncompressed source directory::
 Windows
 ^^^^^^^
 
-`GA Action to test building from source <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-windows.yml>`_
+`GA Action to test build on Windows from source <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-windows.yml>`_
 
 .. note::
     | On Windows installation is a bit tricky...
