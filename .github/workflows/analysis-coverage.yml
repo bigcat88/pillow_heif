@@ -96,7 +96,7 @@ jobs:
 
       - name: Install from source
         run: |
-          python3 -m pip install opencv-python
+          python3 -m pip install opencv-python coverage
           python3 -m pip -v install ".[tests]"
 
       - name: Generate coverage report
