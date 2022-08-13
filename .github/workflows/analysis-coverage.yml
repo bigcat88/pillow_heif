@@ -55,7 +55,7 @@ jobs:
       - name: Prepare system
         run: |
           sudo apt -y install libheif-dev
-          python -m pip install pytest coverage pillow==8.3.0
+          python -m pip install pytest coverage numpy pillow==8.3.0
 
       - name: Install from source
         run: python -m pip -v install .
