@@ -81,7 +81,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                         "libheif/013-fix-enable-lossless-AOM.patch",
                         "libheif/014-expose-aom-decoder-errors.patch",
                         "libheif/015-aom-all-intra.patch",
-                        "libheif/020-fix-wrong-copy-size.patch",
+                        "libheif/030-fix-wrong-copy-size.patch",
                     ):
                         patch_path = path.join(_linux_dir, patch)
                         run(f"patch -p 1 -i {patch_path}".split(), check=True)
