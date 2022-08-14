@@ -40,6 +40,12 @@ class Libheif < Formula
     sha256 "0d2a3727e494cb328f5b786d4bb116d167026a86a709219768ab47ed4d2c73c8"
   end
 
+  # AOM: enable lossless
+  patch do
+    url "https://github.com/strukturag/libheif/commit/b2612dd9c63f8835cf2047960b8cacd464a325a4.patch"
+    sha256 "d9747b6191ea142df649166de7cfa4ddb4012530802906c5e0626aed20705325"
+  end
+
   # Fix wrong copy size
   patch do
     url "https://github.com/strukturag/libheif/commit/11ffeffadd980f9f96019fe180fc1e81827e3790.patch"
