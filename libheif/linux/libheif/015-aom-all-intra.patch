@@ -1,0 +1,33 @@
+From de0c159a60c2c50931321f06e36a3b6640c5c807 Mon Sep 17 00:00:00 2001
+From: Lovell Fuller <github@lovell.info>
+Date: Fri, 7 May 2021 21:43:51 +0100
+Subject: [PATCH] aom encoder: improve performance by ~2x using new 'all intra'
+ mode
+
+Available from aom v3.1.0, this usage mode is considered the
+default setting for still images.
+
+It uses a single pass and removes all keyframe logic, resulting
+in significantly fewer memory allocations and halves CPU time.
+
+libavif has already adopted this as the default.
+---
+ libheif/heif_encoder_aom.cc | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/libheif/heif_encoder_aom.cc b/libheif/heif_encoder_aom.cc
+index 65a72e29..460764b6 100644
+--- a/libheif/heif_encoder_aom.cc
++++ b/libheif/heif_encoder_aom.cc
+@@ -691,7 +691,10 @@ struct heif_error aom_encode_image(void* encoder_raw, const struct heif_image* i
+ 
+ 
+   unsigned int aomUsage = 0;
+-#if defined(AOM_USAGE_REALTIME)
++#if defined(AOM_USAGE_ALL_INTRA)
++  // aom 3.1.0
++  aomUsage = (encoder->realtime_mode ? AOM_USAGE_REALTIME : AOM_USAGE_ALL_INTRA);
++#elif defined(AOM_USAGE_REALTIME)
+   // aom 2.0
+   aomUsage = (encoder->realtime_mode ? AOM_USAGE_REALTIME : AOM_USAGE_GOOD_QUALITY);
+ #endif

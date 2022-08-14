@@ -2,19 +2,22 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.6.1 - 2022-08-28]
+## [0.6.1 - 2022-08-21]
 
-This release contains only security and bug fixes.
+This release contains security and bug fixes.
 
 ### Added
 
 ### Changed
+
+- Speed boost for AVIF encoding(+50%). [commit](https://github.com/strukturag/libheif/commit/4ec2ac35e2cd79e8594092f6e36b5eace19cefdf)
 
 ### Fixed
 
 - (Linux, Windows) libde265: CVE-2022-1253, CVE-2021-36408, CVE-2021-36410, CVE-2021-35452, CVE-2021-36411 [MSYS2 PR](https://github.com/msys2/MINGW-packages/pull/12513)
 - libheif: wrong memcpy size: [commit](https://github.com/strukturag/libheif/commit/11ffeffadd980f9f96019fe180fc1e81827e3790)
 - libheif: rare situation with alpha channel: [libheif issue](https://github.com/strukturag/libheif/issues/495)
+- libheif: do not pad to 16x16 pixels for AVIF: [commit](https://github.com/strukturag/libheif/commit/ec1dc464dc08517ecef7b675043886ec727eadb2)
 
 ## [0.6.0 - 2022-08-06]
 
