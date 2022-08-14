@@ -33,6 +33,7 @@ source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_r
         "010-fix-loading-alpha-image.patch"::"https://github.com/strukturag/libheif/commit/4795ba10abd233024d0536096182133fa06d9c3b.patch"
         "011-fix-loading-alpha-image.patch"::"https://github.com/strukturag/libheif/commit/c32f15512323960097b99c204535ec53d11fb355.patch"
         "012-fix-do-not-pad-16x16-AOM.patch"::"https://github.com/strukturag/libheif/commit/ec1dc464dc08517ecef7b675043886ec727eadb2.patch"
+        "013-fix-enable-lossless-AOM.patch"::"https://github.com/strukturag/libheif/commit/b2612dd9c63f8835cf2047960b8cacd464a325a4.patch"
         "020-fix-wrong-copy-size.patch"::"https://github.com/strukturag/libheif/commit/11ffeffadd980f9f96019fe180fc1e81827e3790.patch")
 sha256sums=('e1ac2abb354fdc8ccdca71363ebad7503ad731c84022cf460837f0839e171718'
             'd6bb42bdd884592d1edd3eb69ebc927de4fc329fbc05fab921b0aee23b68b124'
@@ -44,6 +45,7 @@ sha256sums=('e1ac2abb354fdc8ccdca71363ebad7503ad731c84022cf460837f0839e171718'
             '74b6ab5c85307944a292c8044bd8dee4645d413775f8c669b44b63a0cfe81436'
             '75ac6e6ca7cecf9bedeb23d21bc60cbc17bf5dcae1c82d39bf388f8d30c6f916'
             '0d2a3727e494cb328f5b786d4bb116d167026a86a709219768ab47ed4d2c73c8'
+            'd9747b6191ea142df649166de7cfa4ddb4012530802906c5e0626aed20705325'
             '1a5ea2b0afe73b233daa7a693a9891c0096565f6d72a65a135b05c88e839395a')
 
 prepare() {
@@ -57,6 +59,7 @@ prepare() {
   patch -Np1 -i "${srcdir}/010-fix-loading-alpha-image.patch"
   patch -Np1 -i "${srcdir}/011-fix-loading-alpha-image.patch"
   patch -Np1 -i "${srcdir}/012-fix-do-not-pad-16x16-AOM.patch"
+  patch -Np1 -i "${srcdir}/013-fix-enable-lossless-AOM.patch"
   patch -Np1 -i "${srcdir}/020-fix-wrong-copy-size.patch"
 }
 
