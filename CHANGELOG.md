@@ -2,15 +2,15 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.6.1 - 2022-08-28]
+## [0.6.1 - 2022-08-21]
 
-This release contains only security and bug fixes.
+This release contains security and bug fixes.
 
 ### Added
 
 ### Changed
 
-- `options().ctx_in_memory` marked as deprecated and will be removed in future as no needed.
+- Speed boost for AVIF encoding(+50%). [commit](https://github.com/strukturag/libheif/commit/4ec2ac35e2cd79e8594092f6e36b5eace19cefdf)
 
 ### Fixed
 

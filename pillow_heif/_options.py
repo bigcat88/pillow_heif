@@ -2,7 +2,6 @@
 Options to change pillow_heif's runtime behaviour.
 """
 from typing import Union
-from warnings import warn
 
 
 class PyLibHeifOptions:
@@ -70,7 +69,6 @@ class PyLibHeifOptions:
 
     @ctx_in_memory.setter
     def ctx_in_memory(self, value):
-        warn("ctx_in_memory property was deprecated and will be remove in future versions.", DeprecationWarning)
         self._cfg["ctx_in_memory"] = value
 
     @property
