@@ -79,8 +79,13 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                         "libheif/011-fix-loading-alpha-image.patch",
                         "libheif/012-fix-do-not-pad-16x16-AOM.patch",
                         "libheif/013-fix-enable-lossless-AOM.patch",
-                        "libheif/014-expose-aom-decoder-errors.patch",
-                        "libheif/015-aom-all-intra.patch",
+                        "libheif/014-fix-RGB-to-YCbCr-chroma.patch",
+                        "libheif/015-fix-RRGGBB-to-YCbCr-chroma.patch",
+                        "libheif/016-fix-RGB-to-YCbCr-chroma-2.patch",
+                        "libheif/017-fix-aom-signal-chroma-position.patch",
+                        "libheif/018-expose-aom-decoder-errors.patch",
+                        "libheif/019-aom-all-intra.patch",
+                        "libheif/020-fix-scaling-of-images.patch",
                         "libheif/030-fix-wrong-copy-size.patch",
                     ):
                         patch_path = path.join(_linux_dir, patch)
