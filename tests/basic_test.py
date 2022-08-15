@@ -10,6 +10,8 @@ import pillow_heif
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+print(pillow_heif.libheif_info())
+
 
 def test_libheif_info():
     info = pillow_heif.libheif_info()
