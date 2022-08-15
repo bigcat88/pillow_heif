@@ -91,8 +91,8 @@ class Libheif < Formula
 
   # (021) Fix overflow of clap box dimensions(1)
   patch do
-    url "https://github.com/strukturag/libheif/commit/4193d80e87133b308205d30d234436592fc70c49.patch"
-    sha256 "d890b50fbdf849ac82ebb017e697a5ba45f0772ea0bb5f8bbce1a97189fde018"
+    url "https://github.com/strukturag/libheif/commit/4193d80e87133b308205d30d234436592fc70c49.diff"
+    sha256 "dcb87aa66ea09848e007ce8fed65848b9028b1c7456634d62da690f9c5867195"
   end
 
   # (022) Fix clap box in supported range(2)
@@ -105,6 +105,42 @@ class Libheif < Formula
   patch do
     url "https://github.com/strukturag/libheif/commit/2c4cb5712724b5617019dc749b91b0acd0f9ad7c.patch"
     sha256 "a6fde7081abe1fd5d3b9bc4e850cdbb16790d2105971111c86657696bad39438"
+  end
+
+  # (024) Fix AVIF left shift undefined behaviour
+  patch do
+    url "https://github.com/strukturag/libheif/commit/82070385eca01f64c587e02c0a75d60386d308c3.patch"
+    sha256 "64d51a24cb26af69fbca98c8394cd1682b0d16eb9a50412635a20ee153e3372b"
+  end
+
+  # (025) Fix bitstream potential overflow
+  patch do
+    url "https://github.com/strukturag/libheif/commit/67410c3ce2c8a210d42d02c790c3ac1f9791605a.patch"
+    sha256 "368a8965118647a8e7ca6e9b454cac94b72f3b26711bfd3d371e274b59b94007"
+  end
+
+  # (026) Fix encoder when no SPS returned(1)
+  patch do
+    url "https://github.com/strukturag/libheif/commit/2611d39704bdb6bb37429e39660d9dedbdfff35a.patch"
+    sha256 "7cbca7d0f8f6743d0997a3b5102a1397eb967261e96c8946ad70e195d93cc24f"
+  end
+
+  # (027) Fix checking result of `read`
+  patch do
+    url "https://github.com/strukturag/libheif/commit/5a20339c29831cd2f72903a1ca2ff88e458dc1c2.patch"
+    sha256 "a07fc8974cf1f0634c158c72ac6c3263457c6d91a0e66143607c9ee2fcb72feb"
+  end
+
+  # (028) Fix encoder when no SPS returned(2)
+  patch do
+    url "https://github.com/strukturag/libheif/commit/98b867ea575ecce7039458b71f2c320742489e30.patch"
+    sha256 "1e063aef2a871526e99247615d439bc7055034e443d5537d6702db09a470a9f9"
+  end
+
+  # (029) NCLX: avoid division by zero
+  patch do
+    url "https://github.com/strukturag/libheif/commit/9497e10168660138fd10a738179039c0e7d7ba6c.patch"
+    sha256 "97fc5e57727d9ea47aa7dbdf2635afd40122ca1a0f9d44be228d3d14efd7c610"
   end
 
   # (030) Fix wrong copy size
