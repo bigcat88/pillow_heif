@@ -1,0 +1,82 @@
+From e625a702ec7d46ce042922547d76045294af71d6 Mon Sep 17 00:00:00 2001
+From: Lovell Fuller <github@lovell.info>
+Date: Thu, 13 May 2021 09:37:26 +0100
+Subject: [PATCH] Detect and prevent negative overflow of clap box dimensions
+ in the 32-bit unsigned to signed conversion, which can cause a divide-by-zero
+ floating point exception when rounded.
+
+Also adds an example found via fuzz testing.
+---
+ fuzzing/corpus/clap-overflow-divide-zero.heic | Bin 0 -> 4914 bytes
+ libheif/box.cc                                |   4 ++++
+ 2 files changed, 4 insertions(+)
+ create mode 100644 fuzzing/corpus/clap-overflow-divide-zero.heic
+
+diff --git a/fuzzing/corpus/clap-overflow-divide-zero.heic b/fuzzing/corpus/clap-overflow-divide-zero.heic
+new file mode 100644
+index 0000000000000000000000000000000000000000..416aff0987dbd024f1cb8f1c5aa0219c923859a4
+GIT binary patch
+literal 4914
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/libheif/box.cc b/libheif/box.cc
+index 2420d5a4..0de1f589 100644
+--- a/libheif/box.cc
++++ b/libheif/box.cc
+@@ -2306,6 +2306,10 @@ Error Box_clap::parse(BitstreamRange& range)
+   int32_t horizontal_offset_den = range.read32();
+   int32_t vertical_offset_num = range.read32();
+   int32_t vertical_offset_den = range.read32();
++  if (clean_aperture_width_num < 0 || clean_aperture_width_den < 0 ||
++      clean_aperture_height_num < 0 || clean_aperture_height_den < 0) {
++    return Error(heif_error_Invalid_input, heif_suberror_Invalid_image_size);
++  }
+   m_clean_aperture_width = Fraction(clean_aperture_width_num,
+                                     clean_aperture_width_den);
+   m_clean_aperture_height = Fraction(clean_aperture_height_num,

@@ -41,6 +41,9 @@ source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_r
         "018-expose-aom-decoder-errors.patch"::"https://github.com/strukturag/libheif/commit/13c3d59be814a34ceb2ae12da1b6eab3cd85cf72.patch"
         "019-aom-all-intra.patch"::"https://github.com/strukturag/libheif/commit/4ec2ac35e2cd79e8594092f6e36b5eace19cefdf.patch"
         "020-fix-scaling-of-images.patch"::"https://github.com/strukturag/libheif/commit/0cd461e18b99d018f9adef731eec928781078afb.patch"
+        "021-fix-clap-box-dimensions-1.patch"::"https://github.com/strukturag/libheif/commit/4193d80e87133b308205d30d234436592fc70c49.patch"
+        "022-fix-clap-box-dimensions-2.patch"::"https://github.com/strukturag/libheif/commit/ca2473d9eca36697aa531f42209567cc663ceaee.patch"
+        "023-fix-clap-box-dimensions-3.patch"::"https://github.com/strukturag/libheif/commit/2c4cb5712724b5617019dc749b91b0acd0f9ad7c.patch"
         "030-fix-wrong-copy-size.patch"::"https://github.com/strukturag/libheif/commit/11ffeffadd980f9f96019fe180fc1e81827e3790.patch")
 sha256sums=('e1ac2abb354fdc8ccdca71363ebad7503ad731c84022cf460837f0839e171718'
             'd6bb42bdd884592d1edd3eb69ebc927de4fc329fbc05fab921b0aee23b68b124'
@@ -60,6 +63,9 @@ sha256sums=('e1ac2abb354fdc8ccdca71363ebad7503ad731c84022cf460837f0839e171718'
             '9dd1c14838b71b9e593649d36f979c0fea6a85692f591021e06285ec9c392d50'
             '98b1074874c5697254f74444a64dd00cfb15ecf5544d873c5c1f2c5cb11b602b'
             '81f2c5de8cbd80297208cfd54e95e6f7765c896365ef531ff8f38aaa4f4f6679'
+            'd890b50fbdf849ac82ebb017e697a5ba45f0772ea0bb5f8bbce1a97189fde018'
+            'e6f107c77c8b8ffc00e12d37a11a29642b5db2aadd552fa7d7033c4368c689f2'
+            'a6fde7081abe1fd5d3b9bc4e850cdbb16790d2105971111c86657696bad39438'
             '1a5ea2b0afe73b233daa7a693a9891c0096565f6d72a65a135b05c88e839395a')
 
 prepare() {
@@ -79,8 +85,11 @@ prepare() {
   patch -Np1 -i "${srcdir}/016-fix-RGB-to-YCbCr-chroma-2.patch"
   patch -Np1 -i "${srcdir}/017-fix-aom-signal-chroma-position.patch"
   patch -Np1 -i "${srcdir}/018-expose-aom-decoder-errors.patch"
-  patch -Np1 -i "${srcdir}/019-aom-all-intra.patch"
+  patch -Np1 -i "${srcdir}/019-aom-all-intra.patch"sss
   patch -Np1 -i "${srcdir}/020-fix-scaling-of-images.patch"
+  patch -Np1 -i "${srcdir}/021-fix-clap-box-dimensions-1.patch"
+  patch -Np1 -i "${srcdir}/022-fix-clap-box-dimensions-2.patch"
+  patch -Np1 -i "${srcdir}/023-fix-clap-box-dimensions-3.patch"
   patch -Np1 -i "${srcdir}/030-fix-wrong-copy-size.patch"
 }
 

@@ -89,6 +89,24 @@ class Libheif < Formula
     sha256 "81f2c5de8cbd80297208cfd54e95e6f7765c896365ef531ff8f38aaa4f4f6679"
   end
 
+  # (021) Fix overflow of clap box dimensions(1)
+  patch do
+    url "https://github.com/strukturag/libheif/commit/4193d80e87133b308205d30d234436592fc70c49.patch"
+    sha256 "d890b50fbdf849ac82ebb017e697a5ba45f0772ea0bb5f8bbce1a97189fde018"
+  end
+
+  # (022) Fix clap box in supported range(2)
+  patch do
+    url "https://github.com/strukturag/libheif/commit/ca2473d9eca36697aa531f42209567cc663ceaee.patch"
+    sha256 "e6f107c77c8b8ffc00e12d37a11a29642b5db2aadd552fa7d7033c4368c689f2"
+  end
+
+  # (023) Clap box sizes to unsigned(3)
+  patch do
+    url "https://github.com/strukturag/libheif/commit/2c4cb5712724b5617019dc749b91b0acd0f9ad7c.patch"
+    sha256 "a6fde7081abe1fd5d3b9bc4e850cdbb16790d2105971111c86657696bad39438"
+  end
+
   # (030) Fix wrong copy size
   patch do
     url "https://github.com/strukturag/libheif/commit/11ffeffadd980f9f96019fe180fc1e81827e3790.patch"
