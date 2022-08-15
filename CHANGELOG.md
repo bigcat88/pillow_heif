@@ -19,6 +19,7 @@ This release contains security and bug fixes.
 - libheif: rare situation with alpha channel: [libheif issue](https://github.com/strukturag/libheif/issues/495)
 - libheif: do not pad to 16x16 pixels for AVIF: [commit](https://github.com/strukturag/libheif/commit/ec1dc464dc08517ecef7b675043886ec727eadb2)
 - libheif: scaling of images in some cases:  [commit](https://github.com/strukturag/libheif/commit/0cd461e18b99d018f9adef731eec928781078afb)
+- libheif: with chroma=`420`(which is a default mode) encoded images are closer to the originals with arrived patches. [libheif issue](https://github.com/strukturag/libheif/issues/521)
 
 ## [0.6.0 - 2022-08-06]
 
