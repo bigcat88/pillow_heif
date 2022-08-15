@@ -97,7 +97,7 @@ prepare() {
   patch -Np1 -i "${srcdir}/016-fix-RGB-to-YCbCr-chroma-2.patch"
   patch -Np1 -i "${srcdir}/017-fix-aom-signal-chroma-position.patch"
   patch -Np1 -i "${srcdir}/018-expose-aom-decoder-errors.patch"
-  patch -Np1 -i "${srcdir}/019-aom-all-intra.patch"sss
+  patch -Np1 -i "${srcdir}/019-aom-all-intra.patch"
   patch -Np1 -i "${srcdir}/020-fix-scaling-of-images.patch"
   patch -Np1 -i "${srcdir}/021-fix-clap-box-dimensions-1.diff"
   patch -Np1 -i "${srcdir}/022-fix-clap-box-dimensions-2.patch"

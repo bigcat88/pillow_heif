@@ -15,12 +15,9 @@ This release contains security and bug fixes.
 ### Fixed
 
 - (Linux, Windows) libde265: CVE-2022-1253, CVE-2021-36408, CVE-2021-36410, CVE-2021-35452, CVE-2021-36411 [MSYS2 PR](https://github.com/msys2/MINGW-packages/pull/12513)
-- libheif: wrong memcpy size: [commit](https://github.com/strukturag/libheif/commit/11ffeffadd980f9f96019fe180fc1e81827e3790)
-- libheif: rare situation with alpha channel: [libheif issue](https://github.com/strukturag/libheif/issues/495)
-- libheif: do not pad to 16x16 pixels for AVIF: [commit](https://github.com/strukturag/libheif/commit/ec1dc464dc08517ecef7b675043886ec727eadb2)
-- libheif: scaling of images in some cases:  [commit](https://github.com/strukturag/libheif/commit/0cd461e18b99d018f9adef731eec928781078afb)
 - libheif: with chroma=`420`(which is a default mode) encoded images are closer to the originals with arrived patches. [libheif issue](https://github.com/strukturag/libheif/issues/521)
-- libheif: floating pointing exception with invalid image size headers. [libheif issue](https://github.com/strukturag/libheif/pull/504)
+- libheif: scaling of images in some cases:  [commit](https://github.com/strukturag/libheif/commit/0cd461e18b99d018f9adef731eec928781078afb)
+- Total `21` patches with fixes from official libheif repo has arrived.
 
 ## [0.6.0 - 2022-08-06]
 
