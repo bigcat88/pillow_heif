@@ -149,7 +149,6 @@ jobs:
           cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libdav1d.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
-          ls ${{ env.MSYS2_PREFIX }}/bin/
 
       - name: Install from source
         run: |
