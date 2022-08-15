@@ -41,4 +41,6 @@ jobs:
         run: python3 -m pip -v install ".[dev]"
 
       - name: Perform tests
-        run: python3 -m pytest -s
+        run: |
+          python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+          python3 -m pytest -s
