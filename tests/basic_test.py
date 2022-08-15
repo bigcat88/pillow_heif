@@ -10,11 +10,10 @@ import pillow_heif
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-print(pillow_heif.libheif_info())
-
 
 def test_libheif_info():
     info = pillow_heif.libheif_info()
+    print(info)
     assert info["version"]["libheif"] == "1.12.0"
     assert info["decoders"]["HEVC"]
     if os.getenv("PH_LIGHT", "0") != "0" or sys.maxsize <= 2**32:
