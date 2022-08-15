@@ -35,7 +35,7 @@ jobs:
         run: sudo apt -y install libheif-dev
 
       - name: Install from source
-        run: python -m pip -v install ".[dev]"
+        run: python3 -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
         run: pylint pillow_heif
@@ -50,7 +50,7 @@ jobs:
 #
 #      - uses: actions/setup-python@v4
 #        with:
-#          python-version: '3.10'
+#          python-version: '3.8'
 #
 #      - name: Prepare system
 #        run: |
@@ -58,7 +58,7 @@ jobs:
 #          python3 -m pip install pytest coverage numpy pillow==8.3.0
 #
 #      - name: Install from source
-#        run: python -m pip -v install .
+#        run: python3 -m pip -v install .
 #
 #      - name: Generate coverage report
 #        run: coverage run -m pytest -s && coverage xml && coverage html
@@ -136,6 +136,17 @@ jobs:
           update: true
           install: >-
             mingw-w64-x86_64-libheif
+
+      - name: Copy DLLs from MSYS2
+        run: |
+          $site_packages=(python -c 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])')
+          cp ${{ env.MSYS2_PREFIX }}/bin/libheif.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libx265.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libaom.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
 
       - name: Install from source
         run: |
