@@ -138,6 +138,7 @@ jobs:
 
       - name: Copy DLLs from MSYS2
         run: |
+          python -c 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])'
           $site_packages=(python -c 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])')
           cp ${{ env.MSYS2_PREFIX }}/bin/libheif.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll $site_packages/
