@@ -148,8 +148,8 @@ jobs:
           cp ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libdav1d.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
           ls ${{ env.MSYS2_PREFIX }}/bin/
-#          cp ${{ env.MSYS2_PREFIX }}/bin/librav1e.dll $site_packages/
 
       - name: Install from source
         run: |
