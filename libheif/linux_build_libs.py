@@ -86,9 +86,15 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                         "libheif/018-expose-aom-decoder-errors.patch",
                         "libheif/019-aom-all-intra.patch",
                         "libheif/020-fix-scaling-of-images.patch",
-                        "libheif/021-fix-clap-box-dimensions-1.patch",
+                        "libheif/021-fix-clap-box-dimensions-1.diff",
                         "libheif/022-fix-clap-box-dimensions-2.patch",
                         "libheif/023-fix-clap-box-dimensions-3.patch",
+                        "libheif/024-fix-avif-left-shift-ub.patch",
+                        "libheif/025-fix-bitstream-potential-overflow.patch",
+                        "libheif/026-fix-encoder-no-SPS-returned-1.patch",
+                        "libheif/027-fix-check-results-of-read.patch",
+                        "libheif/028-fix-encoder-no-SPS-returned-2.patch",
+                        "libheif/029-fix-nclx-avoid-division-by-zero.patch",
                         "libheif/030-fix-wrong-copy-size.patch",
                     ):
                         patch_path = path.join(_linux_dir, patch)
