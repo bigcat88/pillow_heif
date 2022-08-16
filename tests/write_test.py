@@ -151,13 +151,13 @@ def test_hdr_save(im_path, save_format):
     collect()
     helpers.compare_heif_files_fields(heif_file[0], heif_file[1])
     out_buf = BytesIO()
-    heif_file.save(out_buf, quality=-1, format=save_format)
+    heif_file.save(out_buf, quality=-1, format=save_format, chroma=444)
     heif_file_out = pillow_heif.open_heif(out_buf, convert_hdr_to_8bit=False)
     assert len(heif_file_out) == 2
     helpers.compare_heif_files_fields(heif_file[0], heif_file_out[0])
     helpers.compare_heif_files_fields(heif_file[1], heif_file_out[1])
     helpers.compare_heif_files_fields(heif_file_out[0], heif_file_out[1])
-    helpers.compare_hashes([im_path, out_buf], hash_size=8)
+    helpers.compare_hashes([im_path, out_buf], hash_size=32)
 
 
 def test_encoder_parameters():
