@@ -82,4 +82,4 @@ test-command = "pytest -rs {project}"
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"
 test-extras = "tests"
-test-command = "pytest -s {project}"
+test-command = "pytest -rs {project}"
