@@ -32,7 +32,7 @@ def libheif_info() -> dict:
         decoders[format_id.name] = have_decoder_for_format(format_id)
         encoders[format_id.name] = have_encoder_for_format(format_id)
 
-    _version = {"libheif": libheif_version()}
+    _version = {"libheif": libheif_version(), "x265": "", "aom": ""}
     p_enc_desc = ffi.new("struct heif_encoder_descriptor**")
     if lib.heif_context_get_encoder_descriptors(ffi.NULL, HeifCompressionFormat.HEVC, ffi.NULL, p_enc_desc, 1):
         p_enc_name = lib.heif_encoder_descriptor_get_name(p_enc_desc[0])
