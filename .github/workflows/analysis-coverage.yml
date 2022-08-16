@@ -58,9 +58,10 @@ jobs:
           python3 -m pip install pytest coverage numpy pillow==8.3.0
 
       - name: Install from source
-        run: |
-          python3 -m pip -v install .
-          python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+        run: python3 -m pip -v install .
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
         run: coverage run -m pytest -s && coverage xml && coverage html
@@ -100,7 +101,9 @@ jobs:
         run: |
           python3 -m pip install opencv-python coverage
           python3 -m pip -v install ".[tests]"
-          python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
         run: coverage run -m pytest -s && coverage xml && coverage html
@@ -159,7 +162,9 @@ jobs:
         run: |
           python -m pip install opencv-python coverage pillow==8.1.0
           python -m pip -v install ".[tests]"
-          python -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: LibHeif info
+        run: python -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
         run: coverage run -m pytest -s && coverage xml && coverage html
