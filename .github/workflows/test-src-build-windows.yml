@@ -63,7 +63,8 @@ jobs:
           cp ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
 
+      - name: LibHeif info
+        run: python -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
       - name: Perform tests
-        run: |
-          python -c "import pillow_heif; print(pillow_heif.libheif_info())"
-          python -m pytest -s
+        run: python -m pytest -rs
