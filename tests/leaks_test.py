@@ -14,8 +14,6 @@ import pillow_heif
 pytest.importorskip("pympler", reason="`pympler` not installed")
 pytest.importorskip("numpy", reason="`numpy` not installed")
 
-print(pillow_heif.libheif_info())
-
 chdir(path.join(path.dirname(path.dirname(path.abspath(__file__))), "tests"))
 pillow_heif.register_heif_opener()
 

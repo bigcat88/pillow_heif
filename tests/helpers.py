@@ -13,6 +13,7 @@ from pillow_heif import (
     add_thumbnails,
     have_decoder_for_format,
     have_encoder_for_format,
+    libheif_info,
 )
 
 try:
@@ -227,10 +228,14 @@ def hevc_enc() -> bool:
 def aom_dec() -> bool:
     if getenv("PH_TESTS_NO_AVIF_DEC", "0") != "0":
         return False
+    if libheif_info()["version"]["aom"] == "Rav1e encoder":
+        return False
     return have_decoder_for_format(HeifCompressionFormat.AV1)
 
 
 def aom_enc() -> bool:
     if getenv("PH_TESTS_NO_AVIF_ENC", "0") != "0":
+        return False
+    if libheif_info()["version"]["aom"] == "Rav1e encoder":
         return False
     return have_encoder_for_format(HeifCompressionFormat.AV1)
