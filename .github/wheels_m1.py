@@ -7,6 +7,8 @@ from traceback import format_exc
 # From project folder run: `python3 .github/wheels_m1.py`
 if __name__ == "__main__":
     try:
+        run("brew uninstall libheif".split(), check=False)
+        run("brew install --formula ./libheif/macos/libheif.rb".split(), check=True)
         print("Installing cibuildwheel...")
         args = [executable]
         args += "-m pip install -U cibuildwheel".split()
