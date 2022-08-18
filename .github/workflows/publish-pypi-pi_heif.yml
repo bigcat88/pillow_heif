@@ -210,6 +210,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Put pi-heif files
+        run: cp -r -v ./pi-heif/* .
+
       - name: Install requirements
         run: |
           python3 -m pip install --upgrade pip
@@ -225,7 +229,7 @@ jobs:
 
       - name: Build sdist
         run: |
-          python3 -m pip install pytest piexif coverage pillow defusedxml
+          python3 -m pip install pytest piexif pillow defusedxml
           python3 -m build --sdist --outdir wheelhouse
 
       - name: Install and check sdist
