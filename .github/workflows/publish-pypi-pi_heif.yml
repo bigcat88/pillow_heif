@@ -1,5 +1,5 @@
-name: Build Light Version
-# This action build Linux wheels without `aom` and `x265` libraries.
+name: Build and Publish Light Version
+# This action build Wheels without `aom` and `x265` libraries.
 
 on:
   workflow_dispatch:
@@ -24,6 +24,12 @@ jobs:
         uses: docker/setup-qemu-action@v2
         with:
           platforms: arm64
+
+      - name: Put pi-heif files
+        run: |
+          cp ./pi-heif/LICENSES_bundled.txt ./
+          cp ./pi-heif/README.md ./
+          cp ./pi-heif/setup.cfg ./
 
       - name: Install cibuildwheel & twine
         run: python3 -m pip install cibuildwheel twine
@@ -123,3 +129,22 @@ jobs:
 
       - name: Fix cache permissions
         run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+
+#  draft_release:
+#    needs: [wheels_linux_cpython, wheels_linux_pypy]
+#    runs-on: ubuntu-20.04
+#    name: Build and create release
+#
+#    steps:
+#      - name: Collect sdist and wheels
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: wheels
+#          path: wheelhouse
+#
+#      - name: Publish wheels to PyPI
+#        run: |
+#            python3 -m pip install twine
+#            ls -la wheelhouse/
+#            twine upload --repository testpypi --skip-existing wheelhouse/*.whl
+#            twine upload --repository testpypi wheelhouse/*tar.gz
