@@ -7,7 +7,7 @@ on:
     types:
       - completed
   schedule:
-    - cron: '0 */3 * * *'
+    - cron: '0 */6 * * *'
 
 jobs:
   docker-tests:
@@ -34,7 +34,7 @@ jobs:
           { "os": "alpine", "ver": "3.15", "arch": "amd64" },
 #          { "os": "alpine", "ver": "3.15", "arch": "arm64" },
           { "os": "alpine", "ver": "3.16", "arch": "amd64" },
-#          { "os": "alpine", "ver": "3.16", "arch": "arm64" },
+          { "os": "alpine", "ver": "3.16", "arch": "arm64" },
         ]
 
     steps:
