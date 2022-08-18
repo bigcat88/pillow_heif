@@ -27,7 +27,7 @@ jobs:
           platforms: arm64
 
       - name: Put pi-heif files
-        run: cp -r ./pi-heif/ ./
+        run: cp -r ./pi-heif/ .
 
       - name: Install cibuildwheel & twine
         run: python3 -m pip install cibuildwheel twine
