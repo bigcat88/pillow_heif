@@ -15,6 +15,7 @@ def test_libheif_info():
     info = pillow_heif.libheif_info()
     assert info["version"]["libheif"] == "1.12.0"
     assert info["decoders"]["HEVC"]
+    print(pillow_heif.__name__)
     if os.getenv("PH_LIGHT", "0") != "0" or sys.maxsize <= 2**32:
         return
     assert info["decoders"]["AV1"]
