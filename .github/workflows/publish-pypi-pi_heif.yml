@@ -97,6 +97,12 @@ jobs:
         with:
           platforms: arm64
 
+      - name: Put pi-heif files
+        run: |
+          cp ./pi-heif/LICENSES_bundled.txt ./
+          cp ./pi-heif/README.md ./
+          cp ./pi-heif/setup.cfg ./
+
       - name: Install cibuildwheel & twine
         run: python3 -m pip install cibuildwheel twine
 

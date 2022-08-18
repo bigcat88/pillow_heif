@@ -7,6 +7,8 @@
 
 This is a light version of [Pillow-Heif](https://github.com/bigcat88/pillow_heif) with more permissive license for wheels.
 
+This version includes only `HEIF` decoder.
+
 Usage and all codebase are the same, refer to [pillow-heif docs](https://readthedocs.org/projects/pillow-heif/badge/?version=latest)
 
 ### Install
@@ -24,6 +26,28 @@ register_heif_opener()
 
 im = Image.open("images/input.heic")  # do whatever need with a Pillow image
 im.show()
+```
+
+### 8/10/12 bit HEIF to 16 bit PNG using OpenCV
+```python3
+import numpy as np
+import cv2
+import pillow_heif
+
+heif_file = pillow_heif.open_heif("images/rgb12.heif", convert_hdr_to_8bit=False)
+heif_file.convert_to("BGRA;16" if heif_file.has_alpha else "BGR;16")
+np_array = np.asarray(heif_file)
+cv2.imwrite("rgb16.png", np_array)
+```
+
+### Get decoded image data as a Numpy array
+```python3
+import numpy as np
+import pillow_heif
+
+if pillow_heif.is_supported("input.heic"):
+    heif_file = pillow_heif.open_heif("input.heic")
+    np_array = np.asarray(heif_file)
 ```
 
 ### Wheels
