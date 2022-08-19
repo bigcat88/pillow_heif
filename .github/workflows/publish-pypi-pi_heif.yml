@@ -241,11 +241,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
       - name: Put pi-heif files
         run: cp -r -v ./pi-heif/* .
 
       - name: Install requirements
-        run: python3 -m pip install --upgrade pip check-manifest twine
+        run: python3 -m pip install check-manifest twine wheel
 
       - name: Run check-manifest
         run: python3 -m check_manifest
@@ -257,12 +261,12 @@ jobs:
 
       - name: Build sdist
         run: |
-          python3 -m pip install pytest piexif pillow defusedxml
+          python3 -m pip install pytest piexif pillow numpy pympler defusedxml
           python3 -m build --sdist --outdir wheelhouse
 
       - name: Install and check sdist
         run: |
-          python3 -m pip install -v wheelhouse/*.tar.gz
+          python3 -m pip install --user wheelhouse/*.tar.gz
           python3 -m twine check wheelhouse/*
 
       - name: LibHeif info
