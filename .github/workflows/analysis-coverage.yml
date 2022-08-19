@@ -205,7 +205,7 @@ jobs:
       - name: Prepare system
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew uninstall --force libheif
+          brew uninstall --force --ignore-dependencies libheif
           brew install --formula ./libheif/macos/libheif.rb
 
       - name: Install from source
