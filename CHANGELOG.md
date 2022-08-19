@@ -13,6 +13,7 @@ This release is fully compatible with previous versions.
 ### Changed
 
 - License for project itself changed to `Apache 2.0`
+- 32 bit wheels from now only available for `pi-heif`
 
 ### Fixed
 

@@ -64,3 +64,5 @@ if pillow_heif.is_supported("input.heic"):
 | PyPy 3.8 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
+
+For `ARMv7`(`armv7l`) there is a `pi_heif-x.x.x-cp38-abi3-manylinux_2_31_armv7l.whl` wheel on `pypi` for Debian11+ systems.
