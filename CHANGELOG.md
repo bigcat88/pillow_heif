@@ -2,6 +2,20 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0 - 2022-09-21]
+
+### Added
+
+- Added `pi-heif` [wheels](https://url), which is a `pillow-heif` light version without HEIF encoder and AVIF support with more permissive license for binary wheels.
+
+### Changed
+
+- License for project itself changed to `Apache 2.0`
+
+### Fixed
+
+- libheif: possible stack overflow. [commit](https://github.com/strukturag/libheif/commit/00de4ee137545f0fcf64aa848ea230a1b608566c)
+
 ## [0.6.1 - 2022-08-21]
 
 This release contains security and bug fixes.

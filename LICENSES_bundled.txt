@@ -1,6 +1,6 @@
-License for "pillow-heif" wheels is: GPLv2 , due to underlying libraries licences.
+License for "pillow-heif" binary wheels: GPLv2, due to base library licenses.
 
-The pillow-heif wheels bundle several libraries that are compatible licensed. Here they are listed.
+Binary wheels combine several license-compatible libraries. Here they are listed.
 
 Name: libheif
 License: LGPLv3
