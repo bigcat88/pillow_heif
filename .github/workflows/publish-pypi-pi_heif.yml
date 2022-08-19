@@ -245,9 +245,7 @@ jobs:
         run: cp -r -v ./pi-heif/* .
 
       - name: Install requirements
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install --user check-manifest twine setuptools<=63.0
+        run: python3 -m pip install --upgrade pip check-manifest twine
 
       - name: Run check-manifest
         run: python3 -m check_manifest
@@ -264,7 +262,7 @@ jobs:
 
       - name: Install and check sdist
         run: |
-          python3 -m pip install -v --user wheelhouse/*.tar.gz
+          python3 -m pip install -v wheelhouse/*.tar.gz
           python3 -m twine check wheelhouse/*
 
       - name: Test sdist
