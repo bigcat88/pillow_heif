@@ -1,5 +1,5 @@
 name: Create Release
-#Note: Wheels for Apple M1 builds locally and uploaded manually for now.
+#Note: Wheels for the Apple M1 are assembled locally and manually uploaded.
 
 on:
   workflow_dispatch:
@@ -245,10 +245,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
       - name: Install requirements
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install --user check-manifest twine
+        run: python3 -m pip install check-manifest twine wheel
 
       - name: Run check-manifest
         run: python3 -m check_manifest
@@ -260,7 +263,7 @@ jobs:
 
       - name: Build sdist
         run: |
-          python3 -m pip install pytest piexif coverage pillow numpy pympler defusedxml
+          python3 -m pip install pytest piexif pillow numpy pympler defusedxml
           python3 -m build --sdist --outdir wheelhouse
 
       - name: Install and check sdist
@@ -268,15 +271,11 @@ jobs:
           python3 -m pip install --user wheelhouse/*.tar.gz
           python3 -m twine check wheelhouse/*
 
-      - name: Generate coverage report
-        run: coverage run -m pytest && coverage xml
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
-      - name: Upload report to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
+      - name: Test sdist
+        run: python3 -m pytest -rs
 
       - name: Upload sdist
         uses: actions/upload-artifact@v3
