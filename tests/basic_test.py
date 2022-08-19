@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import dataset
+import helpers
 import pytest
 
 import pillow_heif
@@ -14,8 +15,12 @@ def test_libheif_info():
     info = pillow_heif.libheif_info()
     assert info["version"]["libheif"] == "1.12.0"
     assert info["decoders"]["HEVC"]
-    assert info["decoders"]["AV1"] == info["encoders"]["AV1"]
-    assert info["decoders"]["AV1"] == info["encoders"]["HEVC"]
+
+
+@pytest.mark.skipif(helpers.aom_enc() and helpers.aom_dec(), reason="Only when AOM missing.")
+def test_pillow_register_avif_plugin():
+    with pytest.warns(UserWarning):
+        pillow_heif.register_avif_opener()
 
 
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)
@@ -59,3 +64,19 @@ def test_heif_str():
     assert str(heif_file.thumbnails[0]) == f"{str_thumb_nl} Original:{str_img_l_1}"
     heif_file.thumbnails[0].load()  # Should not change anything, thumbnails are cloned without data.
     assert str(heif_file.thumbnails[0]) == f"{str_thumb_nl} Original:{str_img_l_1}"
+
+
+@pytest.mark.skipif(not helpers.RELEASE_FULL_FLAG, reason="Only when building full release")
+def test_full_build():
+    info = pillow_heif.libheif_info()
+    assert info["decoders"]["AV1"]
+    assert info["encoders"]["AV1"]
+    assert info["encoders"]["HEVC"]
+
+
+@pytest.mark.skipif(not helpers.RELEASE_LIGHT_FLAG, reason="Only when building light release")
+def test_light_build():
+    info = pillow_heif.libheif_info()
+    assert not info["decoders"]["AV1"]
+    assert not info["encoders"]["AV1"]
+    assert not info["encoders"]["HEVC"]
