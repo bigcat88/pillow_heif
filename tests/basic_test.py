@@ -18,6 +18,7 @@ def test_libheif_info():
 
 
 @pytest.mark.skipif(helpers.aom_enc() and helpers.aom_dec(), reason="Only when AOM missing.")
+@pytest.mark.skipif(pillow_heif.libheif_info()["version"]["aom"] == "Rav1e encoder", reason="Rav1e not supported")
 def test_pillow_register_avif_plugin():
     with pytest.warns(UserWarning):
         pillow_heif.register_avif_opener()
