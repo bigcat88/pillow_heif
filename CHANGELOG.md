@@ -8,7 +8,7 @@ This release is fully compatible with previous versions.
 
 ### Added
 
-- Added `pi-heif` [wheels](https://url), which is a `pillow-heif` light version with only HEIF decoding support and with more permissive license for binary wheels.
+- Added `pi-heif` [wheels](https://pypi.org/project/pi-heif), which is a `pillow-heif` light version with only HEIF decoding support and with more permissive license for binary wheels.
 
 ### Changed
 

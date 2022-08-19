@@ -5,7 +5,7 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
-This is a light version of [Pillow-Heif](https://github.com/bigcat88/pillow_heif) with more permissive license for wheels.
+This is a light version of [Pillow-Heif](https://github.com/bigcat88/pillow_heif) with more permissive license for binary wheels.
 
 This version includes only `HEIF` decoder and does not support `save` operations.
 
@@ -65,4 +65,4 @@ if pillow_heif.is_supported("input.heic"):
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
-For `ARMv7`(`armv7l`) there is a `pi_heif-x.x.x-cp38-abi3-manylinux_2_31_armv7l.whl` wheel on `pypi` for Debian11+ systems.
+For `ARMv7`(`armv7l`) there is a `pi_heif-x.x.x-cp38-abi3-manylinux_2_31_armv7l.whl` wheel on `pypi` for Debian11+ based systems.

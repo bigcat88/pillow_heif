@@ -27,7 +27,7 @@ Features:
  * HEIF `thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
 
-Note: If you only need HEIF image decoding, you can try the light version of this project.: [pi-heif](https://url)
+Note: If you only need HEIF image decoding, you can try the light version of this project: [pi-heif](https://pypi.org/project/pi-heif)
 
 ### Install
 ```console
@@ -185,4 +185,4 @@ pillow_heif.register_avif_opener()
 
 &ast; **x86_64**, **aarch64** wheels.
 
-32 bit wheels and ARMv7 wheels are published only for: [pi-heif](https://url)
+32 bit and ARMv7 binary wheels are published only for: [pi-heif](https://pypi.org/project/pi-heif)
