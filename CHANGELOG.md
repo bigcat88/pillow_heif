@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [0.7.0 - 2022-09-21]
 
+This release is fully compatible with previous versions.
+
 ### Added
 
-- Added `pi-heif` [wheels](https://url), which is a `pillow-heif` light version without HEIF encoder and AVIF support with more permissive license for binary wheels.
+- Added `pi-heif` [wheels](https://url), which is a `pillow-heif` light version with only HEIF decoding support and with more permissive license for binary wheels.
 
 ### Changed
 

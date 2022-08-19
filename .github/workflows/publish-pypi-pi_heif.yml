@@ -281,21 +281,21 @@ jobs:
           name: wheels
           path: wheelhouse/*.tar.gz
 
-#  draft_release:
-#    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
-#    runs-on: ubuntu-20.04
-#    name: Build and create release
-#
-#    steps:
-#      - name: Collect sdist and wheels
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse
-#
-#      - name: Publish wheels to PyPI
-#        run: |
-#            python3 -m pip install twine
-#            ls -la wheelhouse/
-#            twine upload --repository testpypi --skip-existing wheelhouse/*.whl
-#            twine upload --repository testpypi wheelhouse/*tar.gz
+  draft_release:
+    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
+    runs-on: ubuntu-20.04
+    name: Build and create release
+
+    steps:
+      - name: Collect sdist and wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse
+
+      - name: Publish wheels to PyPI
+        run: |
+            python3 -m pip install twine
+            ls -la wheelhouse/
+            twine upload --repository testpypi --skip-existing wheelhouse/*.whl
+            twine upload --repository testpypi wheelhouse/*tar.gz
