@@ -1,4 +1,4 @@
-name: Build and Publish Light Version
+name: Build & Publish Light Version
 # This action build Wheels without `aom` and `x265` libraries.
 
 on:
@@ -234,7 +234,7 @@ jobs:
 
       - name: Install and check sdist
         run: |
-          python3 -m pip install --user wheelhouse/*.tar.gz
+          python3 -m pip install -v --user wheelhouse/*.tar.gz
           python3 -m twine check wheelhouse/*
 
       - name: Test sdist
@@ -246,8 +246,39 @@ jobs:
           name: wheels
           path: wheelhouse/*.tar.gz
 
+  wheels_armv7l:
+    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Put pi-heif files
+        run: cp -r -v ./pi-heif/* .
+
+      - name: Set up QEMU
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - name: Build pi_heif
+        run: |
+          mkdir dock_out
+          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
+          ls -la ./dock_out/pillow_heif/repaired_dist
+
+      - name: Checking built wheels
+        run: |
+          python3 -m pip install twine
+          twine check ./dock_out/pillow_heif/repaired_dist/*
+
+      - name: Uploading wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./dock_out/pillow_heif/repaired_dist/*.whl
+          if-no-files-found: error
+
 #  draft_release:
-#    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist]
+#    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
 #    runs-on: ubuntu-20.04
 #    name: Build and create release
 #
