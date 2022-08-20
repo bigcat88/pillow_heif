@@ -258,6 +258,7 @@ jobs:
 
       - name: Build libheif
         run: |
+          sudo -H python3 -m pip install cffi
           sudo -H python3 ./libheif/build.py
 
       - name: Run check-manifest
