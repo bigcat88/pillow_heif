@@ -250,7 +250,9 @@ jobs:
         run: sudo apt -y install cmake nasm libde265-dev
 
       - name: Install requirements
-        run: python3 -m pip install check-manifest twine wheel
+        run: |
+          sudo -H python3 -m pip install check-manifest wheel
+          python3 -m pip install twine
 
 #      - name: Build libheif
 #        run: |
