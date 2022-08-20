@@ -256,8 +256,12 @@ jobs:
       - name: Install requirements
         run: python3 -m pip install check-manifest twine wheel
 
+      - name: Build libheif
+        run: |
+          sudo -H python3 ./libheif/build.py
+
       - name: Run check-manifest
-        run: sudo -H python3 -m check_manifest
+        run: python3 -m check_manifest
 
       - name: Build sdist
         run: |
