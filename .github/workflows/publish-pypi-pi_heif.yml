@@ -251,13 +251,8 @@ jobs:
 
       - name: Install requirements
         run: |
-          sudo -H python3 -m pip install check-manifest wheel
+          sudo -H python3 -m pip install -U check-manifest wheel cffi
           python3 -m pip install twine pytest piexif pillow numpy pympler defusedxml
-
-#      - name: Build libheif
-#        run: |
-#          sudo -H python3 -m pip install cffi
-#          sudo -H python3 libheif/build.py
 
       - name: Run check-manifest
         run: sudo -H python3 -m check_manifest
