@@ -252,7 +252,7 @@ jobs:
       - name: Install requirements
         run: |
           sudo -H python3 -m pip install check-manifest wheel
-          python3 -m pip install twine
+          python3 -m pip install twine pytest piexif pillow numpy pympler defusedxml
 
 #      - name: Build libheif
 #        run: |
@@ -263,9 +263,7 @@ jobs:
         run: sudo -H python3 -m check_manifest
 
       - name: Build sdist
-        run: |
-          python3 -m pip install pytest piexif pillow numpy pympler defusedxml
-          python3 -m build --sdist --outdir wheelhouse
+        run: sudo -H python3 -m build --sdist --outdir wheelhouse
 
       - name: Install and check sdist
         run: |
