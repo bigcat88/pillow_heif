@@ -11,6 +11,8 @@ This version includes only `HEIF` decoder and does not support `save` operations
 
 Usage and all codebase are the same, refer to [pillow-heif docs](https://pillow-heif.readthedocs.io/)
 
+Note: As the import name is the same as for `pillow-heif` you should not install both versions in the same environment.
+
 ### Install
 ```console
 python3 -m pip install -U pip
