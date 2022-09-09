@@ -2,6 +2,19 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0 - 2022-09-11]
+
+This release is fully compatible with previous versions.
+
+### Added
+
+### Changed
+
+- `libheif` updated to version `1.13.0`
+- License for project itself changed to `Apache 2.0`
+
+### Fixed
+
 ## [0.6.1 - 2022-08-21]
 
 This release contains security and bug fixes.
