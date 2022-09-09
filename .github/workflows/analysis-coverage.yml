@@ -40,199 +40,199 @@ jobs:
       - name: Pylint Analysis
         run: python3 -m pylint pillow_heif
 
-#  coverage-linux:
-#    needs: [analysis]
-#    runs-on: ubuntu-22.04
-#    name: Coverage(Linux)
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.8'
-#
-#      - name: Prepare system
-#        run: |
-#          sudo apt -y install libheif-dev
-#          python3 -m pip install pytest coverage numpy pillow==8.3.0
-#
-#      - name: Install from source
-#        run: python3 -m pip -v install .
-#
-#      - name: LibHeif info
-#        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
-#
-#      - name: Generate coverage report
-#        run: |
-#          export PH_FULL_ACTION=1
-#          export EXP_PH_LIBHEIF_VERSION="1.12.0"
-#          coverage run -m pytest -s && coverage xml && coverage html
-#
-#      - name: HTML coverage to artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: coverage_linux
-#          path: ./htmlcov
-#          if-no-files-found: error
-#
-#      - name: Upload report to Codecov
-#        uses: codecov/codecov-action@v3
-#        with:
-#          file: ./coverage.xml
-#          fail_ci_if_error: true
-#          verbose: true
-#
-#  coverage-macos:
-#    needs: [analysis]
-#    runs-on: macos-12
-#    name: Coverage(macOS)
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.10'
-#
-#      - name: Prepare system
-#        run: |
-#          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-#          brew install libheif
-#
-#      - name: Install from source
-#        run: |
-#          python3 -m pip install opencv-python coverage
-#          python3 -m pip -v install ".[tests]"
-#
-#      - name: LibHeif info
-#        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
-#
-#      - name: Generate coverage report
-#        run: |
-#          export PH_FULL_ACTION=1
-#          coverage run -m pytest -s && coverage xml && coverage html
-#
-#      - name: HTML coverage to artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: coverage_macos
-#          path: ./htmlcov
-#          if-no-files-found: error
-#
-#      - name: Upload report to Codecov
-#        uses: codecov/codecov-action@v3
-#        with:
-#          file: ./coverage.xml
-#          fail_ci_if_error: true
-#          verbose: true
-#
-#  coverage-windows:
-#    needs: [analysis]
-#    runs-on: windows-2022
-#    name: Coverage(Windows)
-#    env:
-#      MSYS2_PREFIX: "C:/temp/msys64/mingw64"
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.9'
-#
-#      - uses: msys2/setup-msys2@v2
-#        with:
-#          location: C:/temp
-#          install: >-
-#            mingw-w64-x86_64-libheif
-#
-##     In release or building from source we do not build `dav1d` or `rav1e` libraries.
-##     Here we just test working with original package from MSYS.
-#      - name: Copy DLLs from MSYS2
-#        run: |
-#          python -c 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])'
-#          $site_packages=(python -c 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])')
-#          cp ${{ env.MSYS2_PREFIX }}/bin/libheif.dll $site_packages/
-#          cp ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll $site_packages/
-#          cp ${{ env.MSYS2_PREFIX }}/bin/libx265.dll $site_packages/
-#          cp ${{ env.MSYS2_PREFIX }}/bin/libaom.dll $site_packages/
-#          cp ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll $site_packages/
-#          cp ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
-#          cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
-#          cp ${{ env.MSYS2_PREFIX }}/bin/libdav1d.dll $site_packages/
-#          cp ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
-#
-#      - name: Install from source
-#        run: |
-#          python -m pip install opencv-python coverage pillow==8.1.0
-#          python -m pip -v install ".[tests]"
-#
-#      - name: LibHeif info
-#        run: python -c "import pillow_heif; print(pillow_heif.libheif_info())"
-#
-#      - name: Generate coverage report
-#        run: coverage run -m pytest -s && coverage xml && coverage html
-#
-#      - name: HTML coverage to artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: coverage_windows
-#          path: ./htmlcov
-#          if-no-files-found: error
-#
-#      - name: Upload report to Codecov
-#        uses: codecov/codecov-action@v3
-#        with:
-#          file: ./coverage.xml
-#          fail_ci_if_error: true
-#          verbose: true
-#
-#  coverage-pi-heif:
-#    needs: [analysis]
-#    runs-on: macos-12
-#    name: Coverage Light(macOS)
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - name: Put pi-heif files
-#        run: cp -r -v ./pi-heif/* .
-#
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.9'
-#
-#      - name: Prepare system
-#        run: |
-#          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-#          brew uninstall --force --ignore-dependencies imagemagick
-#          brew uninstall --force --ignore-dependencies libheif x265 aom
-#          brew install --formula ./libheif/macos/libheif.rb
-#
-#      - name: Install from source
-#        run: |
-#          python3 -m pip install opencv-python coverage
-#          python3 -m pip -v install ".[tests]"
-#
-#      - name: LibHeif info
-#        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
-#
-#      - name: Generate coverage report
-#        run: |
-#          export PH_LIGHT_ACTION=1
-#          coverage run -m pytest -s && coverage xml && coverage html
-#
-#      - name: HTML coverage to artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: coverage_light_macos
-#          path: ./htmlcov
-#          if-no-files-found: error
-#
-#      - name: Upload report to Codecov
-#        uses: codecov/codecov-action@v3
-#        with:
-#          file: ./coverage.xml
-#          fail_ci_if_error: true
-#          verbose: true
+  coverage-linux:
+    needs: [analysis]
+    runs-on: ubuntu-22.04
+    name: Coverage(Linux)
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      - name: Prepare system
+        run: |
+          sudo apt -y install libheif-dev
+          python3 -m pip install pytest coverage numpy pillow==8.3.0
+
+      - name: Install from source
+        run: python3 -m pip -v install .
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Generate coverage report
+        run: |
+          export PH_FULL_ACTION=1
+          export EXP_PH_LIBHEIF_VERSION="1.12.0"
+          coverage run -m pytest -s && coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_linux
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
+
+  coverage-macos:
+    needs: [analysis]
+    runs-on: macos-12
+    name: Coverage(macOS)
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Prepare system
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew install libheif
+
+      - name: Install from source
+        run: |
+          python3 -m pip install opencv-python coverage
+          python3 -m pip -v install ".[tests]"
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Generate coverage report
+        run: |
+          export PH_FULL_ACTION=1
+          coverage run -m pytest -s && coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_macos
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
+
+  coverage-windows:
+    needs: [analysis]
+    runs-on: windows-2022
+    name: Coverage(Windows)
+    env:
+      MSYS2_PREFIX: "C:/temp/msys64/mingw64"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          location: C:/temp
+          install: >-
+            mingw-w64-x86_64-libheif
+
+#     In release or building from source we do not build `dav1d` or `rav1e` libraries.
+#     Here we just test working with original package from MSYS.
+      - name: Copy DLLs from MSYS2
+        run: |
+          python -c 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])'
+          $site_packages=(python -c 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])')
+          cp ${{ env.MSYS2_PREFIX }}/bin/libheif.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libx265.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libaom.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libdav1d.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
+
+      - name: Install from source
+        run: |
+          python -m pip install opencv-python coverage pillow==8.1.0
+          python -m pip -v install ".[tests]"
+
+      - name: LibHeif info
+        run: python -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Generate coverage report
+        run: coverage run -m pytest -s && coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_windows
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
+
+  coverage-pi-heif:
+    needs: [analysis]
+    runs-on: macos-12
+    name: Coverage Light(macOS)
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Put pi-heif files
+        run: cp -r -v ./pi-heif/* .
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Prepare system
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew uninstall --force --ignore-dependencies imagemagick
+          brew uninstall --force --ignore-dependencies libheif x265 aom
+          brew install --formula ./libheif/macos/libheif.rb
+
+      - name: Install from source
+        run: |
+          python3 -m pip install opencv-python coverage
+          python3 -m pip -v install ".[tests]"
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Generate coverage report
+        run: |
+          export PH_LIGHT_ACTION=1
+          coverage run -m pytest -s && coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_light_macos
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
