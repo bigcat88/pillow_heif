@@ -171,13 +171,13 @@ enum heif_suberror_code
 
   heif_suberror_No_av1C_box = 131,
 
-//  heif_suberror_Wrong_tile_image_pixel_depth = 132,
-//
-//  heif_suberror_Unknown_NCLX_color_primaries = 133,
-//
-//  heif_suberror_Unknown_NCLX_transfer_characteristics = 134,
-//
-//  heif_suberror_Unknown_NCLX_matrix_coefficients = 135,
+  heif_suberror_Wrong_tile_image_pixel_depth = 132,
+
+  heif_suberror_Unknown_NCLX_color_primaries = 133,
+
+  heif_suberror_Unknown_NCLX_transfer_characteristics = 134,
+
+  heif_suberror_Unknown_NCLX_matrix_coefficients = 135,
 
 
   // --- Memory_allocation_error ---
@@ -844,7 +844,7 @@ struct heif_decoding_options
 
   // When enabled, an error is returned for invalid input. Otherwise, it will try its best and
   // add decoding warnings to the decoded heif_image. Default is non-strict.
-//  uint8_t strict_decoding;
+  uint8_t strict_decoding;
 };
 
 

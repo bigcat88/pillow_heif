@@ -57,32 +57,11 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             ):
                 patch_path = path.join(_linux_dir, patch)
                 run(f"patch -p 1 -i {patch_path}".split(), check=True)
-        elif name == "libheif":
-            for patch in (
-                "libheif/010-fix-loading-alpha-image.patch",
-                "libheif/011-fix-loading-alpha-image.patch",
-                "libheif/012-fix-do-not-pad-16x16-AOM.patch",
-                "libheif/013-fix-enable-lossless-AOM.patch",
-                "libheif/014-fix-RGB-to-YCbCr-chroma.patch",
-                "libheif/015-fix-RRGGBB-to-YCbCr-chroma.patch",
-                "libheif/016-fix-RGB-to-YCbCr-chroma-2.patch",
-                "libheif/017-fix-aom-signal-chroma-position.patch",
-                "libheif/018-expose-aom-decoder-errors.patch",
-                "libheif/019-aom-all-intra.patch",
-                "libheif/020-fix-scaling-of-images.patch",
-                "libheif/021-fix-clap-box-dimensions-1.diff",
-                "libheif/022-fix-clap-box-dimensions-2.patch",
-                "libheif/023-fix-clap-box-dimensions-3.patch",
-                "libheif/024-fix-avif-left-shift-ub.patch",
-                "libheif/025-fix-bitstream-potential-overflow.patch",
-                "libheif/026-fix-encoder-no-SPS-returned-1.patch",
-                "libheif/027-fix-check-results-of-read.patch",
-                "libheif/028-fix-encoder-no-SPS-returned-2.patch",
-                "libheif/029-fix-nclx-avoid-division-by-zero.patch",
-                "libheif/030-fix-wrong-copy-size.patch",
-            ):
-                patch_path = path.join(_linux_dir, patch)
-                run(f"patch -p 1 -i {patch_path}".split(), check=True)
+        # elif name == "libheif":
+        #     chdir(_lib_path)
+        #     for patch in ():
+        #         patch_path = path.join(_linux_dir, patch)
+        #         run(f"patch -p 1 -i {patch_path}".split(), check=True)
         chdir(_build_path)
         print(f"Preconfiguring {name}...", flush=True)
         cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ..".split()
@@ -161,7 +140,7 @@ def build_libs() -> str:
             )
         else:
             build_lib_linux_armv7(
-                "https://github.com/strukturag/libheif/releases/download/v1.12.0/libheif-1.12.0.tar.gz",
+                "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
                 "libheif",
                 _is_musllinux,
             )
