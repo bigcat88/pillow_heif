@@ -38,7 +38,7 @@ jobs:
         run: python3 -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
-        run: pylint pillow_heif
+        run: python3 -m pylint pillow_heif
 
   coverage-linux:
     needs: [analysis]
