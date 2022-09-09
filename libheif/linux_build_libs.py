@@ -1,4 +1,5 @@
-from os import chdir, environ, getcwd, makedirs, mkdir, path
+import sys
+from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path
 from subprocess import PIPE, STDOUT, run
 
 from libheif import linux_build_tools
@@ -6,6 +7,9 @@ from libheif import linux_build_tools
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
 BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
 INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
+
+
+PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 
 
 def is_musllinux() -> bool:
@@ -128,30 +132,70 @@ def build_libs() -> str:
     try:
         linux_build_tools.build_tools(_is_musllinux)
         if not is_library_installed("x265"):
-            build_lib_linux(
-                "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
-                "x265",
-                _is_musllinux,
-            )
+            if not PH_LIGHT_VERSION:
+                build_lib_linux(
+                    "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
+                    "x265",
+                    _is_musllinux,
+                )
         else:
             print("x265 already installed.")
         if not is_library_installed("aom"):
-            build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
+            if not PH_LIGHT_VERSION:
+                build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
         else:
             print("aom already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
-            build_lib_linux(
-                "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
-                "libde265",
+            if PH_LIGHT_VERSION:
+                build_lib_linux_32bit(
+                    "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
+                    "libde265",
+                    _is_musllinux,
+                )
+            else:
+                build_lib_linux(
+                    "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
+                    "libde265",
+                    _is_musllinux,
+                )
+        else:
+            print("libde265 already installed.")
+        if PH_LIGHT_VERSION:
+            build_lib_linux_32bit(
+                "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
+                "libheif",
                 _is_musllinux,
             )
         else:
-            print("libde265 already installed.")
-        build_lib_linux(
-            "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
-            "libheif",
-            _is_musllinux,
-        )
+            build_lib_linux(
+                "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
+                "libheif",
+                _is_musllinux,
+            )
     finally:
         chdir(_original_dir)
     return INSTALL_DIR_LIBS
+
+
+def build_lib_linux_32bit(url: str, name: str, musl: bool = False):
+    _lib_path = path.join(BUILD_DIR_LIBS, name)
+    linux_build_tools.download_extract_to(url, _lib_path)
+    chdir(_lib_path)
+    if name == "libde265":
+        run(["./autogen.sh"], check=True)
+    print(f"Preconfiguring {name}...", flush=True)
+    configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
+    if name == "libde265":
+        configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
+    elif name == "libheif":
+        configure_args += "--disable-examples --disable-go".split()
+        configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
+    run(["./configure"] + configure_args, check=True)
+    print(f"{name} configured. building...", flush=True)
+    run("make -j4".split(), check=True)
+    print(f"{name} build success.", flush=True)
+    run("make install".split(), check=True)
+    if musl:
+        run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
+    else:
+        run("ldconfig", check=True)
