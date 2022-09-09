@@ -20,7 +20,7 @@ on:
 
 jobs:
   analysis:
-    runs-on: macos-12
+    runs-on: ubuntu-22.04
     name: Analysis
     if: "!contains(github.event.head_commit.message, '[docs]')"
 
@@ -32,14 +32,10 @@ jobs:
           python-version: '3.7'
 
       - name: Prepare system
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install libheif
+        run: sudo apt -y install libheif-dev
 
       - name: Install from source
-        run: |
-          python3 -m pip install pylint
-          python3 -m pip -v install "."
+        run: python3 -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
         run: python3 -m pylint pillow_heif
