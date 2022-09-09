@@ -35,7 +35,10 @@ jobs:
         run: sudo apt -y install libheif-dev
 
       - name: Install from source
-        run: python3 -m pip -v install ".[dev]"
+        run: python3 -m pip -v -v install ".[dev]"
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Pylint Analysis
         run: python3 -m pylint pillow_heif
