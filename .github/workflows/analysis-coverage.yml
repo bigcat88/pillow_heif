@@ -69,6 +69,7 @@ jobs:
       - name: Generate coverage report
         run: |
           export PH_FULL_ACTION=1
+          export EXP_PH_LIBHEIF_VERSION="1.13.0"
           coverage run -m pytest -s && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
