@@ -19,3 +19,4 @@ prune docs
 prune docker
 
 recursive-exclude **/__pycache__ *
+recursive-exclude pi-heif *

@@ -1,0 +1,15 @@
+License for "pi-heif" binary wheels: LGPLv3, due to base library licenses.
+
+Binary wheels combine several license-compatible libraries. Here they are listed.
+
+Name: libheif
+License: LGPLv3
+Files: heif.dll or libheif.[dylib|so]
+  For details, see https://github.com/strukturag/libheif/blob/v1.13.0/COPYING
+  Source code: https://github.com/strukturag/libheif/tree/v1.13.0
+
+Name: libde265
+License: LGPLv3
+Files: libde265.[dylib|so|dll]
+  For details, see https://github.com/strukturag/libde265/blob/v1.0.8/COPYING
+  Source code: https://github.com/strukturag/libde265
