@@ -1,5 +1,6 @@
 import sys
 from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path
+from platform import machine
 from subprocess import PIPE, STDOUT, run
 
 from libheif import linux_build_tools
@@ -146,28 +147,28 @@ def build_libs() -> str:
         else:
             print("aom already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
-            if PH_LIGHT_VERSION:
-                build_lib_linux_32bit(
+            if machine().find("armv7") == -1:
+                build_lib_linux(
                     "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
                     "libde265",
                     _is_musllinux,
                 )
             else:
-                build_lib_linux(
+                build_lib_linux_armv7(
                     "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
                     "libde265",
                     _is_musllinux,
                 )
         else:
             print("libde265 already installed.")
-        if PH_LIGHT_VERSION:
-            build_lib_linux_32bit(
+        if machine().find("armv7") == -1:
+            build_lib_linux(
                 "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
                 "libheif",
                 _is_musllinux,
             )
         else:
-            build_lib_linux(
+            build_lib_linux_armv7(
                 "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
                 "libheif",
                 _is_musllinux,
@@ -177,7 +178,7 @@ def build_libs() -> str:
     return INSTALL_DIR_LIBS
 
 
-def build_lib_linux_32bit(url: str, name: str, musl: bool = False):
+def build_lib_linux_armv7(url: str, name: str, musl: bool = False):
     _lib_path = path.join(BUILD_DIR_LIBS, name)
     linux_build_tools.download_extract_to(url, _lib_path)
     chdir(_lib_path)

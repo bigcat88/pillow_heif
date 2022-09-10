@@ -290,7 +290,7 @@ jobs:
 
   draft_release:
     needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
-    name: Build and create release
+    name: Publish release
     runs-on: ubuntu-20.04
     env:
       TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
