@@ -133,6 +133,7 @@ jobs:
     name: Coverage(Windows)
     env:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
+      PH_FULL_ACTION: 1
 
     steps:
       - uses: actions/checkout@v3
