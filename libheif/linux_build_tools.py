@@ -1,5 +1,4 @@
 from os import chdir, environ, makedirs, path, remove
-from platform import machine
 from re import IGNORECASE, MULTILINE, search
 from subprocess import DEVNULL, PIPE, CalledProcessError, TimeoutExpired, run
 
@@ -95,8 +94,8 @@ def tool_check_version(name: str, min_version: str) -> bool:
     return False
 
 
-def build_tools(musl: bool = False):
-    if machine().find("armv7") != -1:
+def build_tools(musl: bool, light_version: bool):
+    if light_version:
         build_tool(
             "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz",
             "pkg-config",

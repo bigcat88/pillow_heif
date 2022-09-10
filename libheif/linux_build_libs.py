@@ -130,7 +130,7 @@ def build_libs() -> str:
         return INSTALL_DIR_LIBS
     _original_dir = getcwd()
     try:
-        linux_build_tools.build_tools(_is_musllinux)
+        linux_build_tools.build_tools(_is_musllinux, PH_LIGHT_VERSION)
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:
                 build_lib_linux(
