@@ -38,7 +38,7 @@ Linux
         from source.
 
 There is many different ways how to build it from source. Main requirements are:
-    * libheif should be version ``1.12``
+    * libheif should be version ``1.12`` or ``1.13``
     * ``x265`` should support 10 - 12 bit encoding(if you want to save in that bitness)
     * ``aom`` should be >= ``3.0.0`` version
 
@@ -49,8 +49,8 @@ There is many different ways how to build it from source. Main requirements are:
 and after that compile it from source.
 
 If you have questions about custom build from sources you can ask them in discussions or create an issue.
-And for those who needs only ``HEIF`` decoding, there is a github action file `build-ph-lite` that builds wheels only with
-``libde265`` and ``libheif``.
+And for those who needs only ``HEIF`` decoding, there is a github action file `publish-pypi-pi_heif.yml` that
+builds wheels only with ``libde265`` and ``libheif``.
 
 Also if you are Guru in ``cmake`` and ``c++`` and find any error, I'll be glad for any pull requests.
 
@@ -88,7 +88,7 @@ Using **msys2** terminal change working directory and install `libheif`::
 
     cd .../pillow_heif/libheif/windows/mingw-w64-libheif
     makepkg-mingw --syncdeps
-    pacman -U mingw-w64-x86_64-libheif-1.12.0-9-any.pkg.tar.zst
+    pacman -U mingw-w64-x86_64-libheif-1.13.0-2-any.pkg.tar.zst
 
 .. note::
     This is needed, so we dont want to `dav1d` or `rav1e` to be installed as the dependencies.
