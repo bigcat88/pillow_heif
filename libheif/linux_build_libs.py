@@ -124,6 +124,30 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         run("ldconfig", check=True)
 
 
+def build_lib_linux_armv7(url: str, name: str, musl: bool = False):
+    _lib_path = path.join(BUILD_DIR_LIBS, name)
+    linux_build_tools.download_extract_to(url, _lib_path)
+    chdir(_lib_path)
+    if name == "libde265":
+        run(["./autogen.sh"], check=True)
+    print(f"Preconfiguring {name}...", flush=True)
+    configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
+    if name == "libde265":
+        configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
+    elif name == "libheif":
+        configure_args += "--disable-examples --disable-go".split()
+        configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
+    run(["./configure"] + configure_args, check=True)
+    print(f"{name} configured. building...", flush=True)
+    run("make -j4".split(), check=True)
+    print(f"{name} build success.", flush=True)
+    run("make install".split(), check=True)
+    if musl:
+        run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
+    else:
+        run("ldconfig", check=True)
+
+
 def build_libs() -> str:
     _is_musllinux = is_musllinux()
     if is_library_installed("heif") or is_library_installed("libheif"):
@@ -131,7 +155,7 @@ def build_libs() -> str:
         return INSTALL_DIR_LIBS
     _original_dir = getcwd()
     try:
-        linux_build_tools.build_tools(_is_musllinux, PH_LIGHT_VERSION)
+        linux_build_tools.build_tools(_is_musllinux, machine().find("armv7") != -1)
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:
                 build_lib_linux(
@@ -176,27 +200,3 @@ def build_libs() -> str:
     finally:
         chdir(_original_dir)
     return INSTALL_DIR_LIBS
-
-
-def build_lib_linux_armv7(url: str, name: str, musl: bool = False):
-    _lib_path = path.join(BUILD_DIR_LIBS, name)
-    linux_build_tools.download_extract_to(url, _lib_path)
-    chdir(_lib_path)
-    if name == "libde265":
-        run(["./autogen.sh"], check=True)
-    print(f"Preconfiguring {name}...", flush=True)
-    configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
-    if name == "libde265":
-        configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
-    elif name == "libheif":
-        configure_args += "--disable-examples --disable-go".split()
-        configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
-    run(["./configure"] + configure_args, check=True)
-    print(f"{name} configured. building...", flush=True)
-    run("make -j4".split(), check=True)
-    print(f"{name} build success.", flush=True)
-    run("make install".split(), check=True)
-    if musl:
-        run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
-    else:
-        run("ldconfig", check=True)
