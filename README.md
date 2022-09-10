@@ -27,8 +27,6 @@ Features:
  * HEIF `thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
 
-Note: If you only need HEIF image decoding, you can try the light version of this project: [pi-heif](https://pypi.org/project/pi-heif)
-
 ### Install
 ```console
 python3 -m pip install -U pip
@@ -183,6 +181,7 @@ pillow_heif.register_avif_opener()
 | PyPy 3.7 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 | PyPy 3.8 v7.3      |        ✅        |        N/A        |        N/A        |    N/A     |     ✅      |
 
-&ast; **x86_64**, **aarch64** wheels.
+&ast; **i686**, **x86_64**, **aarch64** wheels.
 
-32 bit and ARMv7 binary wheels are published only for: [pi-heif](https://pypi.org/project/pi-heif)
+For `armv7l` there is a `pillow_heif-x.x.x-cp38-abi3-manylinux_2_31_armv7l.whl` wheel on `pypi` for Debian11+ systems.
+It supports only decoding and builds without `x265` encoder.
