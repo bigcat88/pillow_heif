@@ -3,6 +3,7 @@ Plugins for Pillow library.
 """
 
 from typing import Any
+from warnings import warn
 
 from PIL import Image, ImageFile
 
@@ -183,6 +184,11 @@ def register_avif_opener(**kwargs) -> None:
     :param kwargs: dictionary with values to set in :py:class:`~pillow_heif._options.PyLibHeifOptions`
     """
 
+    if not have_decoder_for_format(HeifCompressionFormat.AV1) and not have_encoder_for_format(
+        HeifCompressionFormat.AV1
+    ):
+        warn("This version of `pillow-heif` was built without AVIF support.")
+        return
     options().update(**kwargs)
     if have_decoder_for_format(HeifCompressionFormat.AV1):
         Image.register_open(AvifImageFile.format, AvifImageFile, _is_supported_avif)
