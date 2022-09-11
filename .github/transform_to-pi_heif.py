@@ -10,6 +10,8 @@ if __name__ == "__main__":
     files_list = [
         "libheif/build.py",
         "setup.py",
+        "docker/armv7l_wheel.Dockerfile",
+        "MANIFEST.in",
     ]
     for dir_name in ("pillow_heif", "tests"):
         for x in os.listdir(dir_name):
