@@ -9,7 +9,7 @@ This is a light version of [Pillow-Heif](https://github.com/bigcat88/pillow_heif
 
 This version includes only `HEIF` decoder and does not support `save` operations.
 
-Only import name is different, all codebase and usage are the same, refer to [pillow-heif docs](https://pillow-heif.readthedocs.io/)
+Only `import name is different`, all codebase and usage are the same, refer to [pillow-heif docs](https://pillow-heif.readthedocs.io/)
 
 ### Install
 ```console
