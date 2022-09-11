@@ -42,7 +42,7 @@ def get_xmp_with_orientation(orientation: int, style=1) -> str:
     return xmp_1 if style == 1 else xmp_2
 
 
-@pytest.mark.skipif(not hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 @pytest.mark.parametrize("orientation", (1, 2, 3, 4, 5, 6, 7, 8))
 @pytest.mark.parametrize("im_format", ("JPEG", "PNG"))
@@ -87,7 +87,7 @@ def test_png_xmp_orientation(orientation):
             assert_image_similar(im, im_heif)
 
 
-@pytest.mark.skipif(not hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("orientation", (1, 2, 3, 4, 5, 6, 7, 8))
 def test_heif_exif_orientation(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
@@ -107,7 +107,7 @@ def test_heif_exif_orientation(orientation):
     assert_image_similar(im, im_heif)
 
 
-@pytest.mark.skipif(not hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("orientation", (1, 2, 3, 4, 5, 6, 7, 8))
 def test_heif_xmp_orientation(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
@@ -124,7 +124,7 @@ def test_heif_xmp_orientation(orientation):
     assert_image_similar(im, im_heif)
 
 
-@pytest.mark.skipif(not hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("orientation", (1, 2))
 def test_heif_xmp_orientation_exiftool(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
@@ -141,7 +141,7 @@ def test_heif_xmp_orientation_exiftool(orientation):
     assert_image_similar(im, im_heif)
 
 
-@pytest.mark.skipif(not hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("orientation", (1, 2))
 def test_heif_xmp_orientation_with_exif_eq_1(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
@@ -160,7 +160,7 @@ def test_heif_xmp_orientation_with_exif_eq_1(orientation):
     assert_image_similar(im, im_heif)
 
 
-@pytest.mark.skipif(not hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 @pytest.mark.parametrize("orientation", (1, 2))
 @pytest.mark.parametrize("im_format", ("JPEG", "PNG"))
