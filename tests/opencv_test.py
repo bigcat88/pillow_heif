@@ -11,15 +11,13 @@ from PIL import Image
 from pillow_heif import HeifImagePlugin  # noqa
 from pillow_heif import from_bytes, open_heif, options
 
-if not hevc_enc():
-    pytest.skip("No HEVC encoder.", allow_module_level=True)
-
 np = pytest.importorskip("numpy", reason="NumPy not installed")
 cv2 = pytest.importorskip("cv2", reason="OpenCV not installed")
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("enc_bits", (10, 12))
 def test_save_bgr_16bit_to_10_12_bit(enc_bits):
     try:
@@ -39,6 +37,7 @@ def test_save_bgr_16bit_to_10_12_bit(enc_bits):
         options().reset()
 
 
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("enc_bits", (10, 12))
 def test_save_bgra_16bit_to_10_12_bit(enc_bits):
     try:
@@ -58,6 +57,7 @@ def test_save_bgra_16bit_to_10_12_bit(enc_bits):
         options().reset()
 
 
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 def test_save_bgr_8bit_color_mode():
     rgb8_buf = gradient_rgb_bytes("PNG")
     cv_img = cv2.imdecode(np.asarray(rgb8_buf), cv2.IMREAD_UNCHANGED)
@@ -71,6 +71,7 @@ def test_save_bgr_8bit_color_mode():
     compare_hashes([png_pillow, heif_pillow], hash_size=8)
 
 
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 def test_save_bgra_8bit_color_mode():
     rgba8_buf = gradient_rgba_bytes("PNG")
     cv_img = cv2.imdecode(np.asarray(rgba8_buf), cv2.IMREAD_UNCHANGED)
