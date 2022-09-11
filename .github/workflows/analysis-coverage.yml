@@ -192,7 +192,7 @@ jobs:
   coverage-pi-heif:
     needs: [analysis]
     runs-on: macos-12
-    name: Coverage Light(macOS)
+    name: Pi-Heif Coverage(macOS)
 
     steps:
       - uses: actions/checkout@v3
@@ -241,7 +241,7 @@ jobs:
   test-pi-heif:
     needs: [analysis]
     runs-on: macos-12
-    name: Test Pi-Heif(macOS)
+    name: Pi-Heif Test(macOS)
 
     steps:
       - uses: actions/checkout@v3
