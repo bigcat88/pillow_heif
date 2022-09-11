@@ -6,22 +6,6 @@ DEV_NAME_ADD = ""  # This is only for debugging purposes of this script.
 
 
 if __name__ == "__main__":
-    # # change `_pillow_heif_cffi` to `_pi_heif_cffi`
-    # files_list = [
-    #     "libheif/build.py",
-    # ]
-    # for x in os.listdir("pillow_heif"):
-    #     if x.endswith(".py"):
-    #         files_list += [os.path.join("pillow_heif", x)]
-    #
-    # for file_name in files_list:
-    #     with open(file_name, "r") as file:
-    #         data = file.read()
-    #         modified_data = data.replace("_pillow_heif_cffi", "_pi_heif_cffi")
-    #     if modified_data != data:
-    #         with open(file_name + DEV_NAME_ADD, "w") as file:
-    #             file.write(modified_data)
-
     # change `pillow_heif` to `pi_heif`
     files_list = [
         "libheif/build.py",
