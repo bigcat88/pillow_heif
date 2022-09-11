@@ -2,6 +2,7 @@
 Options to change pillow_heif's runtime behaviour.
 """
 from typing import Union
+from warnings import warn
 
 
 class PyLibHeifOptions:
@@ -61,7 +62,7 @@ class PyLibHeifOptions:
 
         As Python is much slower than ``C++``, we read a file to memory and let ``libheif`` manage reads.
         You can look at source of class ``LibHeifCtx`` in ``_libheif_ctx.py`` file.
-        This will be the default behaviour, until maybe someday written on ``C`` reader module will appear.
+        Deprecated, will be removed in ``0.8.0`` version.
 
         Default = ``True``"""
 
@@ -69,6 +70,11 @@ class PyLibHeifOptions:
 
     @ctx_in_memory.setter
     def ctx_in_memory(self, value):
+        warn(
+            "`ctx_in_memory` is marked as deprecated and will be removed in a future."
+            " There is no particular reason to read the file partially, as tests show",
+            DeprecationWarning,
+        )
         self._cfg["ctx_in_memory"] = value
 
     @property
