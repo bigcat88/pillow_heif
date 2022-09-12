@@ -5,246 +5,246 @@ on:
   workflow_dispatch:
 
 jobs:
-#  wheels_windows:
-#    name: Wheels • windows • x86_64
-#    runs-on: windows-2019
-#    env:
-#      MSYS2_PREFIX: "C:/temp/msys64/mingw64"
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - name: Put pi-heif files
-#        run: |
-#          cp -r -v -force ./pi-heif/* .
-#          python3 .github/transform_to-pi_heif.py
-#
-#      - name: Python preparing
-#        run: python3 -m pip install cibuildwheel twine
-#
-#      - uses: msys2/setup-msys2@v2
-#        with:
-#          location: C:/temp
-#          update: true
-#          install: >-
-#            patch
-#            mingw-w64-x86_64-binutils
-#
-#      - name: Build libheif and dependencies
-#        shell: msys2 {0}
-#        run: |
-#            cd libheif/windows/mingw-w64-libheif
-#            makepkg-mingw --syncdeps --noconfirm -f
-#            pacman -U mingw-w64-x86_64-libheif-1.13.0-2-any.pkg.tar.zst --noconfirm
-#
-#      - name: Remove DLL trailing data
-#        run: ${{ env.MSYS2_PREFIX }}/bin/strip -s ${{ env.MSYS2_PREFIX }}/bin/*.dll
-#
-#      - name: Run cibuildwheel
-#        run: cibuildwheel
-#        env:
-#          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
-#          CIBW_ARCHS_WINDOWS: "AMD64"
-#          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.MSYS2_PREFIX }}/bin"
-#          CIBW_ENVIRONMENT_WINDOWS: PH_LIGHT_ACTION=1
-#
-#      - name: Check built wheels
-#        run: twine check wheelhouse/*
-#
-#      - name: Upload built wheels
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
-#
-#  wheels_macos:
-#    name: Wheels • macosx • x86_64
-#    runs-on: macos-11
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - name: Put pi-heif files
-#        run: |
-#          cp -r -v ./pi-heif/* .
-#          python3 .github/transform_to-pi_heif.py
-#
-#      - name: Run cibuildwheel
-#        run: |
-#          python3 -m pip install cibuildwheel twine
-#          cibuildwheel
-#        env:
-#          CIBW_BUILD: "*-macosx_x86_64"
-#          CIBW_SKIP: "cp36-* pp39-*"
-#          CIBW_TEST_SKIP: "cp311-*"
-#          CIBW_ENVIRONMENT_MACOS: PH_LIGHT_ACTION=1
-#
-#      - name: Check built wheels
-#        run: twine check wheelhouse/*
-#
-#      - name: Upload built wheels
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
-#
-#  wheels_linux_cpython:
-#    strategy:
-#      fail-fast: true
-#      matrix:
-#        cibw_buildlinux: [ manylinux, musllinux ]
-#        cibw_arch: [ "aarch64", "i686", "x86_64" ]
-#    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
-#    runs-on: ubuntu-20.04
-#    env:
-#      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
-#      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - name: Put pi-heif files
-#        run: |
-#          cp -r -v ./pi-heif/* .
-#          python3 .github/transform_to-pi_heif.py
-#
-#      - name: Set up QEMU
-#        if: matrix.cibw_arch == 'aarch64'
-#        uses: docker/setup-qemu-action@v2
-#        with:
-#          platforms: arm64
-#
-#      - name: Install cibuildwheel & twine
-#        run: python3 -m pip install cibuildwheel twine
-#
-#      - name: manylinux preparations
-#        if: matrix.cibw_buildlinux == 'manylinux'
-#        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-#        env:
-#          OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
-#
-#      - name: musllinux preparations
-#        if: matrix.cibw_buildlinux == 'musllinux'
-#        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
-#        env:
-#          OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
-#
-#      - uses: actions/cache@v3
-#        with:
-#          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
-#
-#      - name: Run cibuildwheel
-#        run: cibuildwheel
-#        env:
-#          CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
-#          CIBW_ARCHS: ${{ matrix.cibw_arch }}
-#          CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
-#          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_LIGHT_ACTION=1
-#
-#      - name: Checking built wheels
-#        run: twine check wheelhouse/*
-#
-#      - name: Uploading wheels
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
-#
-#      - name: Fix cache permissions
-#        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
-#
-#  wheels_linux_pypy:
-#    strategy:
-#      fail-fast: true
-#      matrix:
-#        cibw_buildlinux: [ manylinux ]
-#        cibw_arch: [ "aarch64", "i686", "x86_64" ]
-#        cibw_build: [ "pp37", "pp38" ]
-#    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
-#    runs-on: ubuntu-20.04
-#    env:
-#      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
-#      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - name: Put pi-heif files
-#        run: |
-#          cp -r -v ./pi-heif/* .
-#          python3 .github/transform_to-pi_heif.py
-#
-#      - name: Set up QEMU
-#        if: matrix.cibw_arch == 'aarch64'
-#        uses: docker/setup-qemu-action@v2
-#        with:
-#          platforms: arm64
-#
-#      - name: Install cibuildwheel & twine
-#        run: python3 -m pip install cibuildwheel twine
-#
-#      - uses: actions/cache@v3
-#        with:
-#          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-#          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
-#
-#      - name: Run cibuildwheel
-#        run: cibuildwheel
-#        env:
-#          CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
-#          CIBW_ARCHS: ${{ matrix.cibw_arch }}
-#          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
-#          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_LIGHT_ACTION=1
-#
-#      - name: Checking built wheels
-#        run: twine check wheelhouse/*
-#
-#      - name: Upload wheels
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.whl
-#          if-no-files-found: error
-#
-#      - name: Fix cache permissions
-#        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+  wheels_windows:
+    name: Wheels • windows • x86_64
+    runs-on: windows-2019
+    env:
+      MSYS2_PREFIX: "C:/temp/msys64/mingw64"
 
-#  wheels_armv7l:
-#    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
-#    runs-on: ubuntu-20.04
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - name: Put pi-heif files
-#        run: |
-#          cp -r -v ./pi-heif/* .
-#          python3 .github/transform_to-pi_heif.py
-#
-#      - name: Set up QEMU
-#        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-#
-#      - name: Build pi_heif
-#        run: |
-#          mkdir dock_out
-#          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
-#          ls -la ./dock_out/pi_heif/repaired_dist
-#
-#      - name: Checking built wheels
-#        run: |
-#          python3 -m pip install twine
-#          twine check ./dock_out/pi_heif/repaired_dist/*
-#
-#      - name: Uploading wheels
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: wheels
-#          path: ./dock_out/pi_heif/repaired_dist/*.whl
-#          if-no-files-found: error
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Put pi-heif files
+        run: |
+          cp -r -v -force ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - name: Python preparing
+        run: python3 -m pip install cibuildwheel twine
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          location: C:/temp
+          update: true
+          install: >-
+            patch
+            mingw-w64-x86_64-binutils
+
+      - name: Build libheif and dependencies
+        shell: msys2 {0}
+        run: |
+            cd libheif/windows/mingw-w64-libheif
+            makepkg-mingw --syncdeps --noconfirm -f
+            pacman -U mingw-w64-x86_64-libheif-1.13.0-2-any.pkg.tar.zst --noconfirm
+
+      - name: Remove DLL trailing data
+        run: ${{ env.MSYS2_PREFIX }}/bin/strip -s ${{ env.MSYS2_PREFIX }}/bin/*.dll
+
+      - name: Run cibuildwheel
+        run: cibuildwheel
+        env:
+          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
+          CIBW_ARCHS_WINDOWS: "AMD64"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.MSYS2_PREFIX }}/bin"
+          CIBW_ENVIRONMENT_WINDOWS: PH_LIGHT_ACTION=1
+
+      - name: Check built wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  wheels_macos:
+    name: Wheels • macosx • x86_64
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Put pi-heif files
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - name: Run cibuildwheel
+        run: |
+          python3 -m pip install cibuildwheel twine
+          cibuildwheel
+        env:
+          CIBW_BUILD: "*-macosx_x86_64"
+          CIBW_SKIP: "cp36-* pp39-*"
+          CIBW_TEST_SKIP: "cp311-*"
+          CIBW_ENVIRONMENT_MACOS: PH_LIGHT_ACTION=1
+
+      - name: Check built wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  wheels_linux_cpython:
+    strategy:
+      fail-fast: true
+      matrix:
+        cibw_buildlinux: [ manylinux, musllinux ]
+        cibw_arch: [ "aarch64", "i686", "x86_64" ]
+    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
+    runs-on: ubuntu-20.04
+    env:
+      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
+      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Put pi-heif files
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'aarch64'
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
+
+      - name: Install cibuildwheel & twine
+        run: python3 -m pip install cibuildwheel twine
+
+      - name: manylinux preparations
+        if: matrix.cibw_buildlinux == 'manylinux'
+        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
+        env:
+          OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
+
+      - name: musllinux preparations
+        if: matrix.cibw_buildlinux == 'musllinux'
+        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
+        env:
+          OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
+
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
+
+      - name: Run cibuildwheel
+        run: cibuildwheel
+        env:
+          CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
+          CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
+          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_LIGHT_ACTION=1
+
+      - name: Checking built wheels
+        run: twine check wheelhouse/*
+
+      - name: Uploading wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+
+  wheels_linux_pypy:
+    strategy:
+      fail-fast: true
+      matrix:
+        cibw_buildlinux: [ manylinux ]
+        cibw_arch: [ "aarch64", "i686", "x86_64" ]
+        cibw_build: [ "pp37", "pp38" ]
+    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
+    runs-on: ubuntu-20.04
+    env:
+      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
+      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Put pi-heif files
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'aarch64'
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
+
+      - name: Install cibuildwheel & twine
+        run: python3 -m pip install cibuildwheel twine
+
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
+          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/*.py') }}
+
+      - name: Run cibuildwheel
+        run: cibuildwheel
+        env:
+          CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
+          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
+          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_LIGHT_ACTION=1
+
+      - name: Checking built wheels
+        run: twine check wheelhouse/*
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+
+  wheels_armv7l:
+    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Put pi-heif files
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - name: Set up QEMU
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - name: Build pi_heif
+        run: |
+          mkdir dock_out
+          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
+          ls -la ./dock_out/pi_heif/repaired_dist
+
+      - name: Checking built wheels
+        run: |
+          python3 -m pip install twine
+          twine check ./dock_out/pi_heif/repaired_dist/*
+
+      - name: Uploading wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./dock_out/pi_heif/repaired_dist/*.whl
+          if-no-files-found: error
 
   sdist:
     name: Source distribution
@@ -296,24 +296,24 @@ jobs:
           name: wheels
           path: wheelhouse/*.tar.gz
 
-#  draft_release:
-#    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
-#    name: Publish release
-#    runs-on: ubuntu-20.04
-#    env:
-#      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-#      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-#
-#    steps:
-#      - name: Collect sdist and wheels
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse
-#
-#      - name: Publish wheels to PyPI
-#        run: |
-#            python3 -m pip install twine
-#            ls -la wheelhouse/
-#            twine upload --repository testpypi --skip-existing wheelhouse/*.whl
-#            twine upload --repository testpypi wheelhouse/*tar.gz
+  draft_release:
+    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
+    name: Publish release
+    runs-on: ubuntu-20.04
+    env:
+      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+
+    steps:
+      - name: Collect sdist and wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse
+
+      - name: Publish wheels to PyPI
+        run: |
+            python3 -m pip install twine
+            ls -la wheelhouse/
+            twine upload --repository testpypi --skip-existing wheelhouse/*.whl
+            twine upload --repository testpypi wheelhouse/*tar.gz
