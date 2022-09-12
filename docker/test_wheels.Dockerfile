@@ -5,6 +5,8 @@ ARG PREPARE_CMD
 RUN $PREPARE_CMD
 ARG INSTALL_CMD
 RUN $INSTALL_CMD
+ARG BUILD_TYPE
+RUN $BUILD_TYPE
 
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --prefer-binary pillow
@@ -13,7 +15,4 @@ RUN python3 -m pip install --no-deps --only-binary=:all: pillow_heif
 
 COPY . /pillow_heif
 
-RUN export PH_FULL_ACTION=1 && \
-    python3 -m pytest -rs -v pillow_heif/. && \
-    echo "**** Test Done ****" && \
-    python3 -m pip show pillow_heif
+RUN python3 -m pytest -rs -v pillow_heif/. && echo "**** Test Done ****" && python3 -m pip show pillow_heif
