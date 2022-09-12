@@ -270,10 +270,7 @@ jobs:
           brew install --formula ./libheif/macos/libheif.rb
 
       - name: Install requirements
-        run: python3 -m pip install check-manifest twine wheel
-
-      - name: Run check-manifest
-        run: python3 -m check_manifest
+        run: python3 -m pip install twine wheel
 
       - name: Build sdist
         run: |
