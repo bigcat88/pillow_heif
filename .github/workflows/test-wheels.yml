@@ -7,7 +7,7 @@ on:
     types:
       - completed
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 */4 * * *'
 
 jobs:
   docker-tests:
@@ -79,6 +79,8 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10"]
+    env:
+      PH_FULL_ACTION: 1
 
     steps:
 #      - name: Delay, waiting Pypi to update.
@@ -130,7 +132,9 @@ jobs:
         run: python3 -m pip install opencv-python
 
       - name: Test wheel
-        run: cd .. && python3 -m pytest -rs pillow_heif
+        run: |
+          export PH_FULL_ACTION=1
+          cd .. && python3 -m pytest -rs pillow_heif
 
   manylinux-wheels:
 #    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
@@ -162,4 +166,6 @@ jobs:
         run: python3 -m pip install opencv-python
 
       - name: Test wheel
-        run: cd .. && python3 -m pytest -rs pillow_heif
+        run: |
+          export PH_FULL_ACTION=1
+          cd .. && python3 -m pytest -rs pillow_heif
