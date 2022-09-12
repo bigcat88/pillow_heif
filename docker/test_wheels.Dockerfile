@@ -5,8 +5,8 @@ ARG PREPARE_CMD
 RUN $PREPARE_CMD
 ARG INSTALL_CMD
 RUN $INSTALL_CMD
-ARG BUILD_TYPE
-RUN $BUILD_TYPE
+ARG TEST_TYPE
+RUN $TEST_TYPE
 
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --prefer-binary pillow
