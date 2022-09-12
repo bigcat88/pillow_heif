@@ -68,6 +68,7 @@ jobs:
             --build-arg BASE_IMAGE="${{ matrix.i['os'] }}:${{ matrix.i['ver'] }}" \
             --build-arg PREPARE_CMD="${{ env.PREPARE_CMD }}" \
             --build-arg INSTALL_CMD="${{ env.INSTALL_CMD }}" \
+            --build-arg TEST_TYPE="export PH_FULL_ACTION=1" \
             -f docker/test_wheels.Dockerfile .
 
   windows-wheels:
@@ -77,6 +78,8 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10"]
+    env:
+      PH_FULL_ACTION: 1
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -128,7 +131,9 @@ jobs:
         run: python3 -m pip install opencv-python
 
       - name: Test wheel
-        run: cd .. && python3 -m pytest -rs pillow_heif
+        run: |
+          export PH_FULL_ACTION=1
+          cd .. && python3 -m pytest -rs pillow_heif
 
   manylinux-wheels:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
@@ -160,4 +165,6 @@ jobs:
         run: python3 -m pip install opencv-python
 
       - name: Test wheel
-        run: cd .. && python3 -m pytest -rs pillow_heif
+        run: |
+          export PH_FULL_ACTION=1
+          cd .. && python3 -m pytest -rs pillow_heif
