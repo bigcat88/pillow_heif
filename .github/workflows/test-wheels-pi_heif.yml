@@ -1,4 +1,4 @@
-name: Wheels(Pi-Heif) test
+name: Wheels test(Pi-Heif)
 
 on:
   workflow_dispatch:
@@ -134,7 +134,7 @@ jobs:
         run: |
           python3 .github/transform_to-pi_heif.py
           export PH_LIGHT_ACTION=1
-          cd .. && python3 -m pytest -rs pi_heif
+          cd .. && python3 -m pytest -rs pillow_heif
 
 #  manylinux-wheels:
 ##    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}

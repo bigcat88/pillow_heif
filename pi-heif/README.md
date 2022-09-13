@@ -7,9 +7,11 @@
 
 This is a light version of [Pillow-Heif](https://github.com/bigcat88/pillow_heif) with more permissive license for binary wheels.
 
-This version includes only `HEIF` decoder and does not support `save` operations.
+It includes only `HEIF` decoder and does not support `save` operations.
 
-Only `import name is different`, all codebase and usage are the same, refer to [pillow-heif docs](https://pillow-heif.readthedocs.io/)
+All codebase are the same, refer to [pillow-heif docs](https://pillow-heif.readthedocs.io/).
+
+The only difference is the name of the imported project.
 
 ### Install
 ```console
