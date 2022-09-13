@@ -8,14 +8,14 @@ on:
       - completed
 
 jobs:
-#  docker-tests:
-##    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-#    name: 🐍 • ${{ matrix.i['os'] }} • ${{ matrix.i['ver'] }} • ${{ matrix.i['arch'] }}
-#    runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        i: [
-#          { "os": "amazonlinux", "ver": "latest", "arch": "amd64" },
+  docker-tests:
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    name: 🐍 • ${{ matrix.i['os'] }} • ${{ matrix.i['ver'] }} • ${{ matrix.i['arch'] }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        i: [
+          { "os": "amazonlinux", "ver": "latest", "arch": "amd64" },
 #          { "os": "amazonlinux", "ver": "latest", "arch": "arm64" },
 #          { "os": "oraclelinux", "ver": "8", "arch": "amd64" },
 #          { "os": "oraclelinux", "ver": "8", "arch": "arm64" },
@@ -32,74 +32,77 @@ jobs:
 #          { "os": "alpine", "ver": "3.15", "arch": "arm64" },
 #          { "os": "alpine", "ver": "3.16", "arch": "amd64" },
 #          { "os": "alpine", "ver": "3.16", "arch": "arm64" },
-#        ]
-#
-#    steps:
-##      - name: Delay, waiting Pypi to update.
-##        if: ${{ github.event_name != 'workflow_dispatch' }}
-##        run: sleep 480
-#
-#      - uses: actions/checkout@v3
-#      - name: Set up QEMU
-#        if: matrix.i['arch'] == 'arm64'
-#        uses: docker/setup-qemu-action@v2
-#        with:
-#          platforms: arm64
-#
-#      - name: Preparing debian
-#        if: matrix.i['os'] == 'debian' || matrix.i['os'] == 'ubuntu'
-#        run: |
-#          echo PREPARE_CMD="apt update" >> $GITHUB_ENV
-#          echo INSTALL_CMD="apt install -y python3-minimal python3-distutils python3-pip" >> $GITHUB_ENV
-#
-#      - name: Preparing musli
-#        if: matrix.i['os'] == 'alpine'
-#        run: echo INSTALL_CMD="apk add --no-cache python3 py3-pip py3-cffi py3-pillow py3-numpy" >> $GITHUB_ENV
-#
-#      - name: Preparing centos
-#        if: matrix.i['os'] != 'debian' && matrix.i['os'] != 'ubuntu' && matrix.i['os'] != 'alpine'
-#        run: |
-#          echo PREPARE_CMD="yum makecache" >> $GITHUB_ENV
-#          echo INSTALL_CMD="yum install -y python3 python3-pip" >> $GITHUB_ENV
-#
-#      - name: Build image & Run tests
-#        run: |
-#          docker buildx build --platform ${{ matrix.i.arch }} \
-#            --build-arg BASE_IMAGE="${{ matrix.i['os'] }}:${{ matrix.i['ver'] }}" \
-#            --build-arg PREPARE_CMD="${{ env.PREPARE_CMD }}" \
-#            --build-arg INSTALL_CMD="${{ env.INSTALL_CMD }}" \
-#            --build-arg TEST_TYPE="export PH_LIGHT_ACTION=1" \
-#            -f docker/test_wheels.Dockerfile .
-#
-#  windows-wheels:
-##    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-#    name: 🐍 • Windows • 2019 • ${{ matrix.python-version }}
-#    runs-on: windows-2019
-#    strategy:
-#      matrix:
-#        python-version: ["3.7", "3.8", "3.9", "3.10"]
-#    env:
-#      PH_LIGHT_ACTION: 1
-#
-#    steps:
-##      - name: Delay, waiting Pypi to update.
-##        if: ${{ github.event_name != 'workflow_dispatch' }}
-##        run: Start-Sleep -s 480
-##        shell: powershell
-#
-#      - uses: actions/checkout@v3
-#      - name: Set up Python
-#        uses: actions/setup-python@v4
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#
-#      - name: Preparations
-#        run: |
-#          python3 -m pip install pytest piexif pillow cffi numpy pympler defusedxml opencv-python
-#          python3 -m pip install --only-binary=:all: pillow_heif
-#
-#      - name: Test wheel
-#        run: cd .. && python3 -m pytest -rs pillow_heif
+        ]
+
+    steps:
+#      - name: Delay, waiting Pypi to update.
+#        if: ${{ github.event_name != 'workflow_dispatch' }}
+#        run: sleep 480
+
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        if: matrix.i['arch'] == 'arm64'
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
+
+      - name: Preparing debian
+        if: matrix.i['os'] == 'debian' || matrix.i['os'] == 'ubuntu'
+        run: |
+          echo PREPARE_CMD="apt update" >> $GITHUB_ENV
+          echo INSTALL_CMD="apt install -y python3-minimal python3-distutils python3-pip" >> $GITHUB_ENV
+
+      - name: Preparing musli
+        if: matrix.i['os'] == 'alpine'
+        run: echo INSTALL_CMD="apk add --no-cache python3 py3-pip py3-cffi py3-pillow py3-numpy" >> $GITHUB_ENV
+
+      - name: Preparing centos
+        if: matrix.i['os'] != 'debian' && matrix.i['os'] != 'ubuntu' && matrix.i['os'] != 'alpine'
+        run: |
+          echo PREPARE_CMD="yum makecache" >> $GITHUB_ENV
+          echo INSTALL_CMD="yum install -y python3 python3-pip" >> $GITHUB_ENV
+
+      - name: Build image & Run tests
+        run: |
+          python3 .github/transform_to-pi_heif.py
+          docker buildx build --platform ${{ matrix.i.arch }} \
+            --build-arg BASE_IMAGE="${{ matrix.i['os'] }}:${{ matrix.i['ver'] }}" \
+            --build-arg PREPARE_CMD="${{ env.PREPARE_CMD }}" \
+            --build-arg INSTALL_CMD="${{ env.INSTALL_CMD }}" \
+            --build-arg TEST_TYPE="export PH_LIGHT_ACTION=1" \
+            -f docker/test_wheels.Dockerfile .
+
+  windows-wheels:
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    name: 🐍 • Windows • 2019 • ${{ matrix.python-version }}
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
+    env:
+      PH_LIGHT_ACTION: 1
+
+    steps:
+#      - name: Delay, waiting Pypi to update.
+#        if: ${{ github.event_name != 'workflow_dispatch' }}
+#        run: Start-Sleep -s 480
+#        shell: powershell
+
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Preparations
+        run: |
+          python3 -m pip install pytest piexif pillow cffi numpy pympler defusedxml opencv-python
+          python3 -m pip install --only-binary=:all: pi_heif
+
+      - name: Test wheel
+        run: |
+          python3 .github/transform_to-pi_heif.py
+          cd .. && python3 -m pytest -rs pillow_heif
 
   macos-wheels:
 #    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}

@@ -11,6 +11,7 @@ if __name__ == "__main__":
         "libheif/build.py",
         "setup.py",
         "docker/armv7l_wheel.Dockerfile",
+        "docker/test_wheels.Dockerfile",
         "MANIFEST.in",
     ]
     for dir_name in ("pillow_heif", "tests"):
