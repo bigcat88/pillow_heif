@@ -97,7 +97,7 @@ jobs:
       - name: Preparations
         run: |
           python3 -m pip install pytest piexif pillow cffi numpy pympler defusedxml opencv-python
-          python3 -m pip install --only-binary=:all: pi_heif
+          python3 -m pip install -i https://test.pypi.org/simple/ --only-binary=:all: pi-heif
 
       - name: Test wheel
         run: |
