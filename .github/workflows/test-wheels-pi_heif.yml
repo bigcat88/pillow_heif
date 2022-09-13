@@ -136,37 +136,37 @@ jobs:
           export PH_LIGHT_ACTION=1
           cd .. && python3 -m pytest -rs pillow_heif
 
-#  manylinux-wheels:
-##    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-#    name: 🐍 • Ubuntu-Focal • ${{ matrix.python-version }}
-#    runs-on: ubuntu-20.04
-#    strategy:
-#      matrix:
-#        python-version: ["pypy-3.7", "pypy-3.8", "3.6", "3.7", "3.8", "3.9", "3.10"]
-#
-#    steps:
-##      - name: Delay, waiting Pypi to update.
-##        if: ${{ github.event_name != 'workflow_dispatch' }}
-##        run: sleep 480
-#
-#      - uses: actions/checkout@v3
-#      - name: Set up Python
-#        uses: actions/setup-python@v4
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#
-#      - name: Preparations
-#        run: |
-#          sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
-#          python3 -m pip install pytest piexif cffi pillow numpy pympler defusedxml
-#          python3 -m pip install -i https://test.pypi.org/simple/ --only-binary=:all: pi-heif
-#
-#      - name: Install OpenCV for CPython
-#        if: startsWith(matrix.python-version, '3.')
-#        run: python3 -m pip install opencv-python
-#
-#      - name: Test wheel
-#        run: |
-#          python3 .github/transform_to-pi_heif.py
-#          export PH_LIGHT_ACTION=1
-#          cd .. && python3 -m pytest -rs pi_heif
+  manylinux-wheels:
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    name: 🐍 • Ubuntu-Focal • ${{ matrix.python-version }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: ["pypy-3.7", "pypy-3.8", "3.6", "3.7", "3.8", "3.9", "3.10"]
+
+    steps:
+#      - name: Delay, waiting Pypi to update.
+#        if: ${{ github.event_name != 'workflow_dispatch' }}
+#        run: sleep 480
+
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Preparations
+        run: |
+          sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
+          python3 -m pip install pytest piexif cffi pillow numpy pympler defusedxml
+          python3 -m pip install -i https://test.pypi.org/simple/ --only-binary=:all: pi-heif
+
+      - name: Install OpenCV for CPython
+        if: startsWith(matrix.python-version, '3.')
+        run: python3 -m pip install opencv-python
+
+      - name: Test wheel
+        run: |
+          python3 .github/transform_to-pi_heif.py
+          export PH_LIGHT_ACTION=1
+          cd .. && python3 -m pytest -rs pillow_heif
