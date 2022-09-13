@@ -9,7 +9,7 @@ RUN $INSTALL_CMD
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --prefer-binary pillow
 RUN python3 -m pip install pytest piexif cffi numpy pympler defusedxml
-RUN python3 -m pip install -i https://test.pypi.org/simple/ --no-deps --only-binary=:all: pillow_heif
+RUN python3 -m pip install --no-deps --only-binary=:all: pillow_heif
 
 COPY . /pillow_heif
 
