@@ -1,4 +1,4 @@
-name: Build & Publish Light Version
+name: Build & Publish Pi-Heif
 # This action build `pi-heif` which is `pillow-heif` but without `aom` and `x265` libraries.
 
 on:
