@@ -173,3 +173,73 @@ jobs:
           python3 .github/transform_to-pi_heif.py
           export PH_LIGHT_ACTION=1
           cd .. && python3 -m pytest -rs pillow_heif
+
+  macos-projects-together:
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    name: 🐍 • macOS • Together • ${{ matrix.python-version }}
+    runs-on: macos-12
+    strategy:
+      matrix:
+        python-version: ["pypy-3.8", "3.8"]
+
+    steps:
+#      - name: Delay, waiting Pypi to update.
+#        if: ${{ github.event_name != 'workflow_dispatch' }}
+#        run: sleep 480
+
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Preparations
+        run: |
+          brew install libjpeg little-cms2
+          python3 -m pip install pytest piexif cffi pillow numpy pympler defusedxml
+          python3 -m pip install -i https://test.pypi.org/simple/ --only-binary=:all: pillow-heif
+          python3 -m pip install -i https://test.pypi.org/simple/ --only-binary=:all: pi-heif
+
+      - name: Test wheels
+        run: |
+          export PH_FULL_ACTION=1
+          cd .. && python3 -m pytest -rs pillow_heif
+          export PH_FULL_ACTION=0 && cd pillow_heif
+          python3 .github/transform_to-pi_heif.py
+          export PH_LIGHT_ACTION=1
+          cd .. && python3 -m pytest -rs pillow_heif
+
+  linux-projects-together:
+#    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    name: 🐍 • Linux • Together • ${{ matrix.python-version }}
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: ["pypy-3.8", "3.10"]
+
+    steps:
+#      - name: Delay, waiting Pypi to update.
+#        if: ${{ github.event_name != 'workflow_dispatch' }}
+#        run: sleep 480
+
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Preparations
+        run: |
+          sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
+          python3 -m pip install pytest piexif cffi pillow numpy pympler defusedxml
+          python3 -m pip install -i https://test.pypi.org/simple/ --only-binary=:all: pillow-heif
+          python3 -m pip install -i https://test.pypi.org/simple/ --only-binary=:all: pi-heif
+
+      - name: Test wheels
+        run: |
+          export PH_FULL_ACTION=1
+          cd .. && python3 -m pytest -rs pillow_heif
+          export PH_FULL_ACTION=0 && cd pillow_heif
+          python3 .github/transform_to-pi_heif.py
+          export PH_LIGHT_ACTION=1
+          cd .. && python3 -m pytest -rs pillow_heif
