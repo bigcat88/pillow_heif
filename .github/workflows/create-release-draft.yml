@@ -452,7 +452,7 @@ jobs:
           path: wheelhouse
 
       - name: Create release draft
-        uses: ncipollo/release-action@v1.10.0
+        uses: ncipollo/release-action@v1.11.1
         with:
           name: ${{ steps.get_release_info.outputs.version }}
           tag: ${{ steps.get_release_info.outputs.tag }}
