@@ -3,7 +3,7 @@ name: Wheels test(Pi-Heif)
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: [Build & Publish Light Version]
+    workflows: [Build & Publish(Pi-Heif)]
     types:
       - completed
 
