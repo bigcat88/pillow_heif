@@ -3,7 +3,7 @@ name: Wheels test
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: [Publish wheels]
+    workflows: [Build & Publish]
     types:
       - completed
   schedule:

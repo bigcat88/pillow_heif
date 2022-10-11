@@ -1,5 +1,6 @@
 name: Build & Publish(Pi-Heif)
 # This action build `pi-heif` which is `pillow-heif` but without `aom` and `x265` libraries.
+#Note: Wheels for the Apple M1 are assembled locally and manually uploaded.
 
 on:
   workflow_dispatch:
@@ -296,7 +297,7 @@ jobs:
           name: wheels
           path: wheelhouse/*.tar.gz
 
-  draft_release:
+  publish_release:
     needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
     name: Publish release
     runs-on: ubuntu-20.04
