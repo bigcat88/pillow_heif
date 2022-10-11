@@ -1,5 +1,4 @@
-name: Build Light Version
-#name: Build & Publish Light Version
+name: Build & Publish(Pi-Heif)
 # This action build `pi-heif` which is `pillow-heif` but without `aom` and `x265` libraries.
 
 on:
@@ -16,7 +15,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Put pi-heif files
-        run: cp -r -v -force ./pi-heif/* .
+        run: |
+          cp -r -v -force ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
 
       - name: Python preparing
         run: python3 -m pip install cibuildwheel twine
@@ -65,7 +66,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Put pi-heif files
-        run: cp -r -v ./pi-heif/* .
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
 
       - name: Run cibuildwheel
         run: |
@@ -103,7 +106,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Put pi-heif files
-        run: cp -r -v ./pi-heif/* .
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
 
       - name: Set up QEMU
         if: matrix.cibw_arch == 'aarch64'
@@ -169,7 +174,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Put pi-heif files
-        run: cp -r -v ./pi-heif/* .
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
 
       - name: Set up QEMU
         if: matrix.cibw_arch == 'aarch64'
@@ -214,7 +221,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Put pi-heif files
-        run: cp -r -v ./pi-heif/* .
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
 
       - name: Set up QEMU
         run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
@@ -223,18 +232,18 @@ jobs:
         run: |
           mkdir dock_out
           docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
-          ls -la ./dock_out/pillow_heif/repaired_dist
+          ls -la ./dock_out/pi_heif/repaired_dist
 
       - name: Checking built wheels
         run: |
           python3 -m pip install twine
-          twine check ./dock_out/pillow_heif/repaired_dist/*
+          twine check ./dock_out/pi_heif/repaired_dist/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
           name: wheels
-          path: ./dock_out/pillow_heif/repaired_dist/*.whl
+          path: ./dock_out/pi_heif/repaired_dist/*.whl
           if-no-files-found: error
 
   sdist:
@@ -245,7 +254,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Put pi-heif files
-        run: cp -r -v ./pi-heif/* .
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
 
       - uses: actions/setup-python@v4
         with:
@@ -259,10 +270,7 @@ jobs:
           brew install --formula ./libheif/macos/libheif.rb
 
       - name: Install requirements
-        run: python3 -m pip install check-manifest twine wheel
-
-      - name: Run check-manifest
-        run: python3 -m check_manifest
+        run: python3 -m pip install twine wheel build
 
       - name: Build sdist
         run: |
@@ -275,7 +283,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: LibHeif info
-        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+        run: python3 -c "import pi_heif; print(pi_heif.libheif_info())"
 
       - name: Test sdist
         run: |
@@ -288,7 +296,7 @@ jobs:
           name: wheels
           path: wheelhouse/*.tar.gz
 
-  draft_release:
+  publish_release:
     needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
     name: Publish release
     runs-on: ubuntu-20.04

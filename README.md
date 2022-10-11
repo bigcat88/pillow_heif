@@ -27,6 +27,8 @@ Features:
  * HEIF `thumbnails` support.
  * Adding all this features to Pillow in one line of code as a plugin.
 
+Note: Here is a light version [pi-heif](https://pypi.org/project/pi-heif/) of this project without encoding capabilities.
+
 ### Install
 ```console
 python3 -m pip install -U pip

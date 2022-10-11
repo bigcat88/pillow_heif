@@ -5,17 +5,13 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 
-
-# UNDER DEVELOPMENT
-
-
 This is a light version of [Pillow-Heif](https://github.com/bigcat88/pillow_heif) with more permissive license for binary wheels.
 
-This version includes only `HEIF` decoder and does not support `save` operations.
+It includes only `HEIF` decoder and does not support `save` operations.
 
-Usage and all codebase are the same, refer to [pillow-heif docs](https://pillow-heif.readthedocs.io/)
+All codebase are the same, refer to [pillow-heif docs](https://pillow-heif.readthedocs.io/).
 
-Note: As the import name is the same as for `pillow-heif` you should not install both versions in the same environment.
+The only difference is the name of the imported project.
 
 ### Install
 ```console
@@ -26,7 +22,7 @@ python3 -m pip install pi-heif
 ### Example of use as a Pillow plugin
 ```python3
 from PIL import Image
-from pillow_heif import register_heif_opener
+from pi_heif import register_heif_opener
 
 register_heif_opener()
 
@@ -38,9 +34,9 @@ im.show()
 ```python3
 import numpy as np
 import cv2
-import pillow_heif
+import pi_heif
 
-heif_file = pillow_heif.open_heif("images/rgb12.heif", convert_hdr_to_8bit=False)
+heif_file = pi_heif.open_heif("images/rgb12.heif", convert_hdr_to_8bit=False)
 heif_file.convert_to("BGRA;16" if heif_file.has_alpha else "BGR;16")
 np_array = np.asarray(heif_file)
 cv2.imwrite("rgb16.png", np_array)
@@ -49,10 +45,10 @@ cv2.imwrite("rgb16.png", np_array)
 ### Get decoded image data as a Numpy array
 ```python3
 import numpy as np
-import pillow_heif
+import pi_heif
 
-if pillow_heif.is_supported("input.heic"):
-    heif_file = pillow_heif.open_heif("input.heic")
+if pi_heif.is_supported("input.heic"):
+    heif_file = pi_heif.open_heif("input.heic")
     np_array = np.asarray(heif_file)
 ```
 
