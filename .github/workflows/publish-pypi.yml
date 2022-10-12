@@ -433,8 +433,7 @@ jobs:
         id: get_release_info
         run: |
           RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
-          echo "::set-output name=version::v${RELEASE_VERSION}"
-          echo "::set-output name=tag::v${RELEASE_VERSION}"
+          echo RELEASE_TAG="v$RELEASE_VERSION" >> $GITHUB_ENV
           CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
           CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
           if [ "$CHANGELOG" == "" ]; then
@@ -454,8 +453,8 @@ jobs:
       - name: Create release draft
         uses: ncipollo/release-action@v1.11.1
         with:
-          name: ${{ steps.get_release_info.outputs.version }}
-          tag: ${{ steps.get_release_info.outputs.tag }}
+          name: ${{ env.RELEASE_TAG }}
+          tag: ${{ env.RELEASE_TAG }}
           commit: ${{ github.ref }}
           draft: false
           body: ${{ env.CHANGELOG }}
@@ -472,26 +471,15 @@ jobs:
       TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Get release info
-      id: get_release_info
-      run: |
-        RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
-        echo "::set-output name=tag::v${RELEASE_VERSION}"
+      - name: Collect sdist and wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse
 
-    - name: Download Release Assets
-      id: download_release_assets
-      uses: i3h/download-release-asset@v1
-      with:
-        owner: ${{github.repository_owner}}
-        repo: ${{ github.event.repository.name }}
-        tag: ${{ steps.get_release_info.outputs.tag }}
-        file: '/.*pillow_heif.*/'
-        path: wheelhouse/
-
-    - name: Publish wheels to PyPI
-      run: |
-          python3 -m pip install twine
-          ls -la wheelhouse/
-          twine upload --repository testpypi --skip-existing wheelhouse/*.whl
-          twine upload --repository testpypi wheelhouse/*tar.gz
+      - name: Publish wheels to PyPI
+        run: |
+            python3 -m pip install twine
+            ls -la wheelhouse/
+            twine upload --skip-existing wheelhouse/*.whl
+            twine upload wheelhouse/*tar.gz
