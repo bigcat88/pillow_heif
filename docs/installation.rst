@@ -19,7 +19,7 @@ Wheels are present for all systems supported by `cibuildwheel <https://cibuildwh
 Building From Source
 --------------------
 
-    All **pillow-heif's** **PyPi** packages are build on GitHub Actions, so you can take a look at `it <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/create-release-draft.yml>`_.
+    All **pillow-heif's** **PyPi** packages are build on GitHub Actions, so you can take a look at `it <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/publish-pypi.yml>`_.
 
 .. role:: bash(code)
    :language: bash
@@ -49,8 +49,6 @@ There is many different ways how to build it from source. Main requirements are:
 and after that compile it from source.
 
 If you have questions about custom build from sources you can ask them in discussions or create an issue.
-And for those who needs only ``HEIF`` decoding, there is a github action file `publish-pypi-pi_heif.yml` that
-builds wheels only with ``libde265`` and ``libheif``.
 
 Also if you are Guru in ``cmake`` and ``c++`` and find any error, I'll be glad for any pull requests.
 
