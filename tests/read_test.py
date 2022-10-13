@@ -341,6 +341,7 @@ def test_heif_etc():
     assert len(heif_file.data) == len(heif_file[1].data)
     assert heif_file.stride == heif_file[1].stride
     assert heif_file.has_alpha == heif_file[1].has_alpha
+    assert heif_file.premultiplied_alpha == heif_file[1].premultiplied_alpha
     assert heif_file.bit_depth == heif_file[1].bit_depth
     assert heif_file.original_bit_depth == heif_file[1].original_bit_depth
 
