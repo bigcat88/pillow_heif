@@ -61,7 +61,12 @@ class HeifImageBase:
                 lib.heif_image_handle_get_width(self._handle),
                 lib.heif_image_handle_get_height(self._handle),
             )
-            self.mode = "RGBA" if bool(lib.heif_image_handle_has_alpha_channel(self._handle)) else "RGB"
+            self.mode = "RGB"
+            if bool(lib.heif_image_handle_has_alpha_channel(self._handle)):
+                if bool(lib.heif_image_handle_is_premultiplied_alpha(self._handle)):
+                    self.mode += "a"
+                else:
+                    self.mode += "A"
             bit_depth = 8 if heif_ctx.to_8bit else lib.heif_image_handle_get_luma_bits_per_pixel(self._handle)
             if bit_depth > 8:
                 self.mode += f";{bit_depth}"
@@ -105,7 +110,15 @@ class HeifImageBase:
 
         :returns: "True" or "False" """
 
-        return self.mode.find("A") != -1
+        return self.mode.split(sep=";")[0][-1] in ("A", "a")
+
+    @property
+    def premultiplied_alpha(self):
+        """``True`` for images with ``premultiplied alpha`` channel, ``False`` otherwise.
+
+        :returns: "True" or "False" """
+
+        return self.mode.split(sep=";")[0][-1] == "a"
 
     @property
     def heif_img(self):
@@ -133,14 +146,21 @@ class HeifImageBase:
         return self._img_data.get("stride", None)
 
     def convert_to(self, mode: str) -> None:
-        """Decode and convert in place image to the specified mode.
+        """Decode and convert the image in place to the specified mode.
 
         :param mode: for list of supported conversions, see: :ref:`convert_to`
 
         :exception KeyError: If conversion between modes is not supported."""
 
+        if self.mode == mode:
+            return
+        if self.mode.upper() == mode.upper():
+            self.mode = mode
+            if self.has_alpha:
+                lib.heif_image_set_premultiplied_alpha(self.heif_img, self.premultiplied_alpha)
+            return
         current_stride = self.stride
-        current_data = bytes(self.data)  # copying `data` to bytes so it will not be GC collected.
+        current_data = bytes(self.data)  # copying `data` to bytes, so it will not be GC collected.
         self.unload()
         _img = self._create_image(current_data, current_stride, mode)
         self._img_to_img_data_dict(_img)
@@ -241,10 +261,12 @@ class HeifImageBase:
         dest_stride = p_dest_stride[0]
         src_data = ffi.from_buffer(src_data)
         if new_mode and new_mode != self.mode:
-            MODE_CONVERT[self.mode][new_mode](src_data, src_stride, dest_data, dest_stride, height)
+            MODE_CONVERT[self.mode.upper()][new_mode.upper()](src_data, src_stride, dest_data, dest_stride, height)
             self.mode = new_mode
         else:
             lib.copy_image_data(src_data, src_stride, dest_data, dest_stride, height)
+        if self.premultiplied_alpha:
+            lib.heif_image_set_premultiplied_alpha(new_img, 1)
         return new_img
 
     def _get_pure_data(self):
@@ -460,6 +482,15 @@ class HeifFile:
         :exception IndexError: If there is no images."""
 
         return self.images[self.primary_index()].has_alpha
+
+    @property
+    def premultiplied_alpha(self):
+        """Points to :py:attr:`~pillow_heif.HeifImage.premultiplied_alpha` property of the
+        primary :py:class:`~pillow_heif.HeifImage` in the container.
+
+        :exception IndexError: If there is no images."""
+
+        return self.images[self.primary_index()].premultiplied_alpha
 
     @property
     def info(self):

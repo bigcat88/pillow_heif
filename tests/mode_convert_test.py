@@ -3,7 +3,14 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
-from helpers import compare_hashes, gradient_rgb, gradient_rgba, hevc_enc
+from helpers import (
+    compare_hashes,
+    create_heif,
+    gradient_rgb,
+    gradient_rgba,
+    gradient_rgba_bytes,
+    hevc_enc,
+)
 
 from pillow_heif import from_pillow, open_heif, options, register_heif_opener
 
@@ -25,6 +32,15 @@ def test_primary_convert_to():
     im_heif = from_pillow(im)
     im_heif[0].convert_to("RGB;16")
     assert im_heif.mode == "RGB;16"
+
+
+def test_convert_to_same_mode():
+    im_heif = open_heif(create_heif())
+    assert im_heif.mode == "RGB"
+    im_heif.convert_to(im_heif.mode)
+    assert im_heif.mode == "RGB"
+    # Image should not be loaded, when target mode equal to current.
+    assert not getattr(im_heif[0], "_img_data")
 
 
 @pytest.mark.parametrize("enc_bits", (10, 12))
@@ -99,3 +115,28 @@ def test_rgba_hdr_to_16bit_color_mode(img, mode, bit):
     assert heif_file.bit_depth == 10
     assert heif_file.has_alpha
     compare_hashes([Path(img), out_heic], hash_size=8, max_difference=1)
+
+
+@pytest.mark.parametrize(
+    "img, mode",
+    (
+        (gradient_rgba_bytes("HEIF"), "RGBa"),
+        ("images/heif/RGBA_10.heif", "RGBa;10"),
+        ("images/heif/RGBA_12.heif", "RGBa;12"),
+    ),
+)
+def test_premultiplied_alpha(img, mode):
+    heif_file = open_heif(img, convert_hdr_to_8bit=False)
+    assert heif_file.has_alpha
+    assert not heif_file.premultiplied_alpha
+    heif_file.convert_to(mode)
+    assert heif_file.has_alpha
+    assert heif_file.premultiplied_alpha
+    out_heic = BytesIO()
+    heif_file.save(out_heic, quality=-1)
+    out_heif_file = open_heif(out_heic, convert_hdr_to_8bit=False)
+    assert out_heif_file.has_alpha
+    assert out_heif_file.premultiplied_alpha
+    out_heif_file.convert_to(mode.upper())
+    assert out_heif_file.has_alpha
+    assert not out_heif_file.premultiplied_alpha

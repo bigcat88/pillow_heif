@@ -29,7 +29,7 @@ Linux
 
 .. note::
 
-    | For installing external libraries, you should run install with **root** privileges.
+    | For installing external libraries(if they are not present in system), you should run install with **root** privileges.
     | See `build_libs.py <https://github.com/bigcat88/pillow_heif/blob/master/libheif/linux_build_libs.py>`_ for
         additional info what will happen during installing from source...
     | Here is a

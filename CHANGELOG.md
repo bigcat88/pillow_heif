@@ -2,6 +2,18 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.1 - 2022-10-25]
+
+### Added
+
+- Support for images with `premultiplied` alpha channel.
+
+### Changed
+
+### Fixed
+
+- (Heif) `convert_to` should do nothing if the target `mode` is already the current image mode.
+
 ## [0.7.0 - 2022-09-11]
 
 This release is fully compatible with previous versions.
