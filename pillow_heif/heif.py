@@ -133,14 +133,16 @@ class HeifImageBase:
         return self._img_data.get("stride", None)
 
     def convert_to(self, mode: str) -> None:
-        """Decode and convert in place image to the specified mode.
+        """Decode and convert the image in place to the specified mode.
 
         :param mode: for list of supported conversions, see: :ref:`convert_to`
 
         :exception KeyError: If conversion between modes is not supported."""
 
+        if self.mode == mode:
+            return
         current_stride = self.stride
-        current_data = bytes(self.data)  # copying `data` to bytes so it will not be GC collected.
+        current_data = bytes(self.data)  # copying `data` to bytes, so it will not be GC collected.
         self.unload()
         _img = self._create_image(current_data, current_stride, mode)
         self._img_to_img_data_dict(_img)

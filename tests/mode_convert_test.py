@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
-from helpers import compare_hashes, gradient_rgb, gradient_rgba, hevc_enc
+from helpers import compare_hashes, create_heif, gradient_rgb, gradient_rgba, hevc_enc
 
 from pillow_heif import from_pillow, open_heif, options, register_heif_opener
 
@@ -25,6 +25,15 @@ def test_primary_convert_to():
     im_heif = from_pillow(im)
     im_heif[0].convert_to("RGB;16")
     assert im_heif.mode == "RGB;16"
+
+
+def test_convert_to_same_mode():
+    im_heif = open_heif(create_heif())
+    assert im_heif.mode == "RGB"
+    im_heif.convert_to(im_heif.mode)
+    assert im_heif.mode == "RGB"
+    # Image should not be loaded, when target mode equal to current.
+    assert not getattr(im_heif[0], "_img_data")
 
 
 @pytest.mark.parametrize("enc_bits", (10, 12))
