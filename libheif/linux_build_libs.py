@@ -167,7 +167,7 @@ def build_libs() -> str:
             print("x265 already installed.")
         if not is_library_installed("aom"):
             if not PH_LIGHT_VERSION:
-                build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.4.0.tar.gz", "aom", _is_musllinux)
+                build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.5.0.tar.gz", "aom", _is_musllinux)
         else:
             print("aom already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
