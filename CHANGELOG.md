@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- `libaom` updated from `3.4.0` to `3.5.0` version. [changelog](https://aomedia.googlesource.com/aom/+/refs/tags/v3.5.0)
+
 ### Fixed
 
 - (Heif) `convert_to` should do nothing if the target `mode` is already the current image mode.
