@@ -18,7 +18,7 @@ class Libheif < Formula
   # (001) AOM: remove extend_padding_to_size
   patch do
     url "https://github.com/strukturag/libheif/commit/a01baccaf40bafcabddba47846f5e914ca0724f6.patch"
-    sha256 "0f910768a2e031b2171c477bcfb9e82d03d970abcd1bbd6dc0ec3ce06fa2ec2c"
+    sha256 "5ca3b5023891c11a235ef46ae25266c15507387432570544c0ca81d63095d774"
   end
 
   def install
