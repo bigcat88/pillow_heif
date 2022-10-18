@@ -6,11 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Support for images with a "premultiplied" alpha channel (Pillow does not fully support these).
+- Support for images with a `premultiplied alpha` channel (Pillow does not fully support these).
 
 ### Changed
 
 - `libaom` updated from `3.4.0` to `3.5.0` version. [changelog](https://aomedia.googlesource.com/aom/+/refs/tags/v3.5.0)
+- The `get_file_mimetype` function has been reworked and is now written in python.
 
 ### Fixed
 
