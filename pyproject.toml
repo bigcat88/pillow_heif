@@ -32,6 +32,7 @@ master.py-version = "3.7"
 master.unsafe-load-any-extension = "yes"
 design.max-attributes = 9
 design.max-locals = 16
+design.max-returns = 8
 basic.good-names = [
     "a", "b", "c", "d", "e", "f", "i", "j", "k", "v",
     "ex", "_", "fp", "im", "HeifImagePlugin", "AvifImagePlugin",

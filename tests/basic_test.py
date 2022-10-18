@@ -27,8 +27,34 @@ def test_pillow_register_avif_plugin():
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)
 def test_get_file_mimetype(img_path):
     mimetype = pillow_heif.get_file_mimetype(img_path)
-    assert mimetype in ("image/heic", "image/heic-sequence", "image/heif", "image/heif-sequence", "image/avif")
+    assert mimetype in (
+        "image/heic",
+        "image/heif",
+        "image/heif-sequence",
+        "image/avif",
+    )
     assert mimetype == pillow_heif.open_heif(img_path, False).mimetype
+
+
+def test_get_file_mimetype_not_supported():
+    # "ftypavis" - currently `libheif` does not support this mimetype.
+    _ = b"\x00\x00\x00\x20\x66\x74\x79\x70\x61\x76\x69\x73"
+    assert pillow_heif.get_file_mimetype(_) == "image/avif-sequence"
+    # "ftyphevc" - if anyone has a sample with this mimetype, please send me :)
+    _ = b"\x00\x00\x00\x20\x66\x74\x79\x70\x68\x65\x76\x78"
+    assert pillow_heif.get_file_mimetype(_) == "image/heic-sequence"
+
+
+@pytest.mark.parametrize(
+    "img",
+    (
+        b"",
+        b"\x00\x00\x00\x24\x66\x74\x79\x70",
+        b"\x00\x00\x00\x24\x66\x74\x79\x70\x68\x65\x69\x5A",
+    ),
+)
+def test_get_file_mimetype_invalid(img):
+    assert pillow_heif.get_file_mimetype(img) == ""
 
 
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)

@@ -11,8 +11,6 @@ from struct import pack, unpack
 from typing import Union
 from warnings import warn
 
-from _pillow_heif_cffi import ffi, lib
-
 try:
     from defusedxml import ElementTree
 except ImportError:
@@ -66,17 +64,31 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
 
 
 def get_file_mimetype(fp) -> str:
-    """Wrapper around `libheif.get_file_mimetype`
+    """Gets the MIME type of the HEIF object.`
 
     :param fp: A filename (string), pathlib.Path object, file object or bytes.
-       The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
-       and be opened in binary mode.
-    :returns: "image/heic", "image/heif", "image/heic-sequence",
-        "image/heif-sequence", "image/avif" or "image/avif-sequence"
+        The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
+        and be opened in binary mode.
+    :returns: "image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence",
+        "image/avif", "image/avif-sequence" or "".
     """
 
-    __data = _get_bytes(fp, 50)
-    return ffi.string(lib.heif_get_file_mime_type(__data, len(__data))).decode("utf-8")
+    __data = _get_bytes(fp, 12)
+    if len(__data) == 12:
+        heif_brand = __data[8:]
+        if heif_brand == b"avif":
+            return "image/avif"
+        if heif_brand == b"avis":
+            return "image/avif-sequence"
+        if heif_brand in (b"heic", b"heix", b"heim", b"heis"):
+            return "image/heic"
+        if heif_brand in (b"hevc", b"hevx", b"hevm", b"hevs"):
+            return "image/heic-sequence"
+        if heif_brand == b"mif1":
+            return "image/heif"
+        if heif_brand == b"msf1":
+            return "image/heif-sequence"
+    return ""
 
 
 def _get_bytes(fp, length=None) -> bytes:
