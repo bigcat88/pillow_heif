@@ -382,7 +382,7 @@ def test_chroma_heif_encoding_8bit(chroma, diff_epsilon, im):
 
 @pytest.mark.parametrize("chroma, diff_epsilon", ((420, 1.83), (422, 1.32), (444, 0.99)))
 @pytest.mark.parametrize("im", (helpers.gradient_rgb(), helpers.gradient_rgba()))
-def test_chroma_avif_8bit(chroma, diff_epsilon, im):
+def test_chroma_avif_encoding_8bit(chroma, diff_epsilon, im):
     im_buf = BytesIO()
     im.save(im_buf, format="AVIF", quality=-1, chroma=chroma)
     im_out = Image.open(im_buf)

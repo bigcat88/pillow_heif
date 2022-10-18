@@ -1,28 +1,14 @@
 import os
 from io import SEEK_END, BytesIO
-from pathlib import Path
 
 import pytest
 from helpers import aom_enc, create_heif, hevc_enc
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 
 from pillow_heif import from_pillow, open_heif, options, register_heif_opener
 
 register_heif_opener()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-
-def test_strict_cfg_option():
-    # libheif don't fully support burst images, so with strict=True pillow_heif should refuse them
-    image_path = Path("images/heif_other/nokia/bird_burst.heic")
-    try:
-        options().update(strict=True)
-        with pytest.raises(UnidentifiedImageError):
-            Image.open(image_path)
-        options().update(strict=False)
-        assert getattr(Image.open(image_path), "n_frames") == 4
-    finally:
-        options().reset()
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")

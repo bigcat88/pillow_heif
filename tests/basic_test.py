@@ -64,8 +64,18 @@ def test_heif_check_filetype(img_path):
         assert pillow_heif.is_supported(fh)
 
 
-def test_is_supported_fails():
-    assert not pillow_heif.is_supported(Path("images/non_heif/xmp.jpeg"))
+@pytest.mark.parametrize(
+    "img",
+    (
+        b"",
+        b"\x00\x00\x00\x24",
+        b"\x00\x00\x00\x24\x66\x74\x79\x70",
+        b"\x00\x00\x00\x24\x66\x74\x79\x70\x68\x65\x69\x5A",
+        Path("images/non_heif/xmp.jpeg"),
+    ),
+)
+def test_is_supported_fails(img):
+    assert not pillow_heif.is_supported(img)
 
 
 def test_heif_str():

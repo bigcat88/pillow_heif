@@ -18,13 +18,19 @@ class PyLibHeifOptions:
         Affects on return result of :py:func:`~pillow_heif.is_supported` function
         and on algorithm of accepting images of ``HeifImagePlugin``.
 
-        Default = ``False``"""
+        Default = ``False``
 
-        return self._cfg["strict"]
+        ``DEPRECATED``, will be removed in ``0.8.0``"""
+
+        return self._cfg["strict"]  # pragma: no cover
 
     @strict.setter
     def strict(self, value: bool):
-        self._cfg["strict"] = value
+        warn(
+            "`strict` option is marked as deprecated and will be removed in a future.",
+            DeprecationWarning,
+        )
+        self._cfg["strict"] = value  # pragma: no cover
 
     @property
     def thumbnails(self) -> bool:
@@ -64,7 +70,9 @@ class PyLibHeifOptions:
         You can look at source of class ``LibHeifCtx`` in ``_libheif_ctx.py`` file.
         Deprecated, will be removed in ``0.8.0`` version.
 
-        Default = ``True``"""
+        Default = ``True``
+
+        ``DEPRECATED``, will be removed in ``0.8.0``"""
 
         return self._cfg["ctx_in_memory"]
 

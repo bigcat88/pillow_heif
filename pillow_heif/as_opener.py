@@ -9,9 +9,9 @@ from PIL import Image, ImageFile
 
 from ._lib_info import have_decoder_for_format, have_encoder_for_format
 from ._options import options
-from .constants import HeifCompressionFormat, HeifErrorCode, HeifFiletype
+from .constants import HeifCompressionFormat, HeifErrorCode
 from .error import HeifError
-from .heif import HeifFile, check_heif, open_heif
+from .heif import HeifFile, open_heif
 from .misc import _get_bytes, getxmp, set_orientation
 
 
@@ -114,13 +114,23 @@ class HeifImageFile(_LibHeifImageFile):
 
 
 def _is_supported_heif(fp) -> bool:
-    magic = _get_bytes(fp, 16)
-    heif_filetype = check_heif(magic)
-    if heif_filetype == HeifFiletype.NO or (magic[8:12] in (b"avif", b"avis")):
+    magic = _get_bytes(fp, 12)
+    if magic[4:8] != b"ftyp":
         return False
-    if heif_filetype in (HeifFiletype.YES_SUPPORTED, HeifFiletype.MAYBE):
+    if magic[8:12] in (
+        b"heic",
+        b"heix",
+        b"heim",
+        b"heis",
+        b"hevc",
+        b"hevx",
+        b"hevm",
+        b"hevs",
+        b"mif1",
+        b"msf1",
+    ):
         return True
-    return not options().strict
+    return False
 
 
 def _save_heif(im, fp, _filename):
@@ -160,11 +170,14 @@ class AvifImageFile(_LibHeifImageFile):
 
 
 def _is_supported_avif(fp) -> bool:
-    magic = _get_bytes(fp, 16)
-    heif_filetype = check_heif(magic)
-    if heif_filetype in (HeifFiletype.YES_SUPPORTED, HeifFiletype.MAYBE):
-        if magic[8:12] in (b"avif", b"avis"):
-            return True
+    magic = _get_bytes(fp, 12)
+    if magic[4:8] != b"ftyp":
+        return False
+    if magic[8:12] in (
+        b"avif",
+        b"avis",
+    ):
+        return True
     return False
 
 
