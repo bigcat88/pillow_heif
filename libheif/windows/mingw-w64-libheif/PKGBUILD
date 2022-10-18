@@ -28,9 +28,9 @@ source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_r
         "002-cmake-enable-gdk-pixbuf.patch"::"https://patch-diff.githubusercontent.com/raw/strukturag/libheif/pull/647.diff"
         "003-aom-remove-extend_padding_to_size.patch"::"https://github.com/strukturag/libheif/commit/a01baccaf40bafcabddba47846f5e914ca0724f6.patch")
 sha256sums=('c20ae01bace39e89298f6352f1ff4a54b415b33b9743902da798e8a1e51d7ca1'
-            '9f9a1ee8161643c44cc7813cdd4d8721ab3e67b5262cf4a29988307fd667f4ae'
-            '9aea63f92de2d71a0d021baf2d31df39f9633b16d715c11572cf54e64bb4a52d'
-            '0f910768a2e031b2171c477bcfb9e82d03d970abcd1bbd6dc0ec3ce06fa2ec2c')
+            '80d6acd6b2035572c1547673cf73a2c6a83cd42c0a475a1258551a2983b06d9f'
+            '649e6d2635ee1c86a064ee35e9dc81713883ef7275aec439c3200488075260b9'
+            '5ca3b5023891c11a235ef46ae25266c15507387432570544c0ca81d63095d774')
 
 prepare() {
   cd "${srcdir}/${_realname}-${pkgver}"
