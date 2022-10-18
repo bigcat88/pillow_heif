@@ -78,15 +78,15 @@ def get_file_mimetype(fp) -> str:
         heif_brand = __data[8:]
         if heif_brand == b"avif":
             return "image/avif"
-        elif heif_brand == b"avis":
+        if heif_brand == b"avis":
             return "image/avif-sequence"
-        elif heif_brand in (b"heic", b"heix", b"heim", b"heis"):
+        if heif_brand in (b"heic", b"heix", b"heim", b"heis"):
             return "image/heic"
-        elif heif_brand in (b"hevc", b"hevx", b"hevm", b"hevs"):
+        if heif_brand in (b"hevc", b"hevx", b"hevm", b"hevs"):
             return "image/heic-sequence"
-        elif heif_brand == b"mif1":
+        if heif_brand == b"mif1":
             return "image/heif"
-        elif heif_brand == b"msf1":
+        if heif_brand == b"msf1":
             return "image/heif-sequence"
     return ""
 
