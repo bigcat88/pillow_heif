@@ -73,9 +73,8 @@ def get_file_mimetype(fp) -> str:
         "image/avif", "image/avif-sequence" or "".
     """
 
-    __data = _get_bytes(fp, 12)
-    if len(__data) == 12:
-        heif_brand = __data[8:]
+    heif_brand = _get_bytes(fp, 12)[8:]
+    if heif_brand:
         if heif_brand == b"avif":
             return "image/avif"
         if heif_brand == b"avis":

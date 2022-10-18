@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 - `libaom` updated from `3.4.0` to `3.5.0` version. [changelog](https://aomedia.googlesource.com/aom/+/refs/tags/v3.5.0)
 - The `get_file_mimetype` function has been reworked and is now written in python.
+- `options().strict` option marked as deprecated and will be removed in `0.8.0`.
 
 ### Fixed
 

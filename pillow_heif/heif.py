@@ -666,8 +666,7 @@ class HeifFile:
 
             ``primary_index`` - ignore ``info["primary"]`` and set `PrimaryImage` by index.
 
-            ``chroma`` - custom subsampling value. Possible values: ``444``, ``422`` or ``420`` (``x265`` default)
-            Many software does not supports ``444`` chroma for HEIF.
+            ``chroma`` - custom subsampling value. Possible values: ``444``, ``422`` or ``420`` (``x265`` default).
 
             ``format`` - string with encoder format name. Possible values: ``HEIF`` (default) or ``AVIF``.
 
@@ -819,8 +818,6 @@ def is_supported(fp) -> bool:
     """Checks if the given `fp` object contains a supported file type,
     by calling :py:func:`~pillow_heif.check_heif` function.
 
-    Look at :py:attr:`~pillow_heif._options.PyLibHeifOptions.strict` property for additional info.
-
     :param fp: A filename (string), pathlib.Path object or a file object.
         The file object must implement ``file.read``,
         ``file.seek``, and ``file.tell`` methods,
@@ -832,9 +829,7 @@ def is_supported(fp) -> bool:
     heif_filetype = check_heif(magic)
     if heif_filetype == HeifFiletype.NO:
         return False
-    if heif_filetype in (HeifFiletype.YES_SUPPORTED, HeifFiletype.MAYBE):
-        return True
-    return not options().strict
+    return True
 
 
 def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
