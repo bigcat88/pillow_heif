@@ -175,7 +175,7 @@ def _is_supported_avif(fp) -> bool:
         return False
     if magic[8:12] in (
         b"avif",
-        b"avis",
+        # b"avis",
     ):
         return True
     return False
@@ -208,7 +208,8 @@ def register_avif_opener(**kwargs) -> None:
     if have_encoder_for_format(HeifCompressionFormat.AV1):
         Image.register_save(AvifImageFile.format, _save_avif)
         Image.register_save_all(AvifImageFile.format, _save_all_avif)
-    extensions = [".avif", ".avifs"]
+    # extensions = [".avif", ".avifs"]
+    extensions = [".avif"]
     Image.register_mime(AvifImageFile.format, "image/avif")
-    Image.register_mime(AvifImageFile.format, "image/avif-sequence")
+    # Image.register_mime(AvifImageFile.format, "image/avif-sequence")
     Image.register_extensions(AvifImageFile.format, extensions)
