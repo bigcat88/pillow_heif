@@ -20,7 +20,7 @@ from .constants import (
     HeifFiletype,
 )
 from .error import HeifError, HeifErrorCode, check_libheif_error
-from .misc import _get_bytes, set_orientation
+from .misc import _get_bytes, get_file_mimetype, set_orientation
 from .private import (
     FFI_DRY_ALLOC,
     MODE_CONVERT,
@@ -810,26 +810,24 @@ def check_heif(fp):
 
     :returns: Value from :py:class:`~pillow_heif.HeifFiletype` enumeration."""
 
+    warn("Function `check_heif` is deprecated, use `is_supported` instead.", DeprecationWarning)
     magic = _get_bytes(fp, 16)
     return HeifFiletype.NO if len(magic) < 12 else lib.heif_check_filetype(magic, len(magic))
 
 
 def is_supported(fp) -> bool:
-    """Checks if the given `fp` object contains a supported file type,
-    by calling :py:func:`~pillow_heif.check_heif` function.
+    """Checks if the given `fp` object contains a supported file type.
 
     :param fp: A filename (string), pathlib.Path object or a file object.
-        The file object must implement ``file.read``,
-        ``file.seek``, and ``file.tell`` methods,
+        The file object must implement ``file.read``, ``file.seek``, and ``file.tell`` methods,
         and be opened in binary mode.
 
     :returns: A boolean indicating if object can be opened."""
 
-    magic = _get_bytes(fp, 16)
-    heif_filetype = check_heif(magic)
-    if heif_filetype == HeifFiletype.NO:
+    __data = _get_bytes(fp, 12)
+    if __data[4:8] != b"ftyp":
         return False
-    return True
+    return get_file_mimetype(__data) != ""
 
 
 def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
@@ -899,7 +897,7 @@ def from_bytes(mode: str, size: tuple, data, **kwargs) -> HeifFile:
 
 
 def check(fp):
-    warn("Function `check` is deprecated, use `check_heif` instead.", DeprecationWarning)
+    warn("Function `check` is deprecated, use `is_supported` instead.", DeprecationWarning)
     return check_heif(fp)  # pragma: no cover
 
 
