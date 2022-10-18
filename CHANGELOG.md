@@ -11,14 +11,15 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - `libaom` updated from `3.4.0` to `3.5.0` version. [changelog](https://aomedia.googlesource.com/aom/+/refs/tags/v3.5.0)
-- The `get_file_mimetype` function has been reworked and is now written in python.
-- The `is_supported` function has been reworked and is now written in python.
+- (Heif) The `get_file_mimetype` function has been reworked and is now written in python.
+- (Heif) The `is_supported` function has been reworked and is now written in python.
 - `options().strict` option marked as deprecated and will be removed in `0.8.0`.
-- `check_heif`function marked as deprecated.
+- (Heif) `check_heif`function marked as deprecated.
 
 ### Fixed
 
 - (Heif) `convert_to` should do nothing if the target `mode` is already the current image mode.
+- (AvifImagePlugin) do not register or accept `.avifs` files, libheif does not support them.
 
 ## [0.7.0 - 2022-09-11]
 
