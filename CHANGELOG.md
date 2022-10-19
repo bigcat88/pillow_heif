@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Support for images with a `premultiplied alpha` channel (Pillow does not fully support these).
+- (Heif) `premultiplied_alpha` read-write property.
 
 ### Changed
 
