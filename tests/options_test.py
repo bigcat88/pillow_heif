@@ -11,6 +11,15 @@ register_heif_opener()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
+def test_options_update():
+    try:
+        options().update(quality=33, thumbnails=False)
+        assert not options().thumbnails
+        assert options().quality == 33
+    finally:
+        options().reset()
+
+
 @pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
 def test_thumbnails_option():
     heif_buf = create_heif((128, 128), [64])
