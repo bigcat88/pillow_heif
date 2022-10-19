@@ -129,7 +129,6 @@ class HeifImageBase:
             self.mode = old_mode[0][:-1] + alpha_mode
             if len(old_mode) > 1:
                 self.mode += f";{old_mode[1]}"
-            # print("1")
 
     @property
     def heif_img(self):
