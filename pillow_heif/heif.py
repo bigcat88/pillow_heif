@@ -120,6 +120,16 @@ class HeifImageBase:
 
         return self.mode.split(sep=";")[0][-1] == "a"
 
+    @premultiplied_alpha.setter
+    def premultiplied_alpha(self, value: bool):
+        if self.has_alpha:
+            lib.heif_image_set_premultiplied_alpha(self.heif_img, int(value))
+            alpha_mode = "a" if bool(lib.heif_image_is_premultiplied_alpha(self.heif_img)) else "A"
+            old_mode = self.mode.split(sep=";")
+            self.mode = old_mode[0][:-1] + alpha_mode
+            if len(old_mode) > 1:
+                self.mode += f";{old_mode[1]}"
+
     @property
     def heif_img(self):
         self._load_if_not()
@@ -153,11 +163,6 @@ class HeifImageBase:
         :exception KeyError: If conversion between modes is not supported."""
 
         if self.mode == mode:
-            return
-        if self.mode.upper() == mode.upper():
-            self.mode = mode
-            if self.has_alpha:
-                lib.heif_image_set_premultiplied_alpha(self.heif_img, self.premultiplied_alpha)
             return
         current_stride = self.stride
         current_data = bytes(self.data)  # copying `data` to bytes, so it will not be GC collected.
@@ -261,7 +266,7 @@ class HeifImageBase:
         dest_stride = p_dest_stride[0]
         src_data = ffi.from_buffer(src_data)
         if new_mode and new_mode != self.mode:
-            MODE_CONVERT[self.mode.upper()][new_mode.upper()](src_data, src_stride, dest_data, dest_stride, height)
+            MODE_CONVERT[self.mode][new_mode](src_data, src_stride, dest_data, dest_stride, height)
             self.mode = new_mode
         else:
             lib.copy_image_data(src_data, src_stride, dest_data, dest_stride, height)
@@ -491,6 +496,10 @@ class HeifFile:
         :exception IndexError: If there is no images."""
 
         return self.images[self.primary_index()].premultiplied_alpha
+
+    @premultiplied_alpha.setter
+    def premultiplied_alpha(self, value: bool):
+        self.images[self.primary_index()].premultiplied_alpha = value
 
     @property
     def info(self):

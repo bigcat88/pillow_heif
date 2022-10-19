@@ -41,6 +41,36 @@ def test_scale():
     helpers.compare_hashes([heif_buf, out_buffer])
 
 
+@pytest.mark.parametrize(
+    "img",
+    (
+        helpers.gradient_rgba_bytes("HEIF"),
+        "images/heif/RGBA_10.heif",
+        "images/heif/RGBA_12.heif",
+    ),
+)
+def test_premultiplied_alpha(img):
+    heif_file = pillow_heif.open_heif(img, convert_hdr_to_8bit=False)
+    assert heif_file.has_alpha
+    assert not heif_file.premultiplied_alpha
+    heif_file.premultiplied_alpha = True
+    assert heif_file.has_alpha
+    assert heif_file.premultiplied_alpha
+    out_heic = BytesIO()
+    heif_file.save(out_heic, quality=-1)
+    out_heif_file = pillow_heif.open_heif(out_heic, convert_hdr_to_8bit=False)
+    assert out_heif_file.has_alpha
+    assert out_heif_file.premultiplied_alpha
+    out_heif_file.premultiplied_alpha = False
+    assert out_heif_file.has_alpha
+    assert not out_heif_file.premultiplied_alpha
+    out_heic.seek(0)
+    out_heif_file.save(out_heic, quality=-1)
+    out_heif_file = pillow_heif.open_heif(out_heic, convert_hdr_to_8bit=False)
+    assert out_heif_file.has_alpha
+    assert not out_heif_file.premultiplied_alpha
+
+
 def test_outputs():
     heif_file = pillow_heif.open_heif(helpers.create_heif((31, 64)))
     output = BytesIO()
@@ -382,7 +412,7 @@ def test_chroma_heif_encoding_8bit(chroma, diff_epsilon, im):
 
 @pytest.mark.parametrize("chroma, diff_epsilon", ((420, 1.83), (422, 1.32), (444, 0.99)))
 @pytest.mark.parametrize("im", (helpers.gradient_rgb(), helpers.gradient_rgba()))
-def test_chroma_avif_8bit(chroma, diff_epsilon, im):
+def test_chroma_avif_encoding_8bit(chroma, diff_epsilon, im):
     im_buf = BytesIO()
     im.save(im_buf, format="AVIF", quality=-1, chroma=chroma)
     im_out = Image.open(im_buf)
