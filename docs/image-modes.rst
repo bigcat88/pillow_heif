@@ -68,13 +68,5 @@ For ``HeifImage`` some of these modes can be converted to each other using :py:m
     * ``BGR``  -->  ``RGB``
     * ``RGBA``  -->  ``BGRA``, ``RGBA;16`` or ``BGRA;16``
     * ``RGB``  -->  ``BGR``, ``RGB;16`` or ``BGR;16``
-    * ``BGRA;16`` <--> ``BGRa;16``
-    * ``BGRA;12`` <--> ``BGRa;12``
-    * ``BGRA;10`` <--> ``BGRa;10``
-    * ``BGRA`` <--> ``BGRa``
-    * ``RGBA;16`` <--> ``RGBa;16``
-    * ``RGBA;12`` <--> ``RGBa;12``
-    * ``RGBA;10`` <--> ``RGBa;10``
-    * ``RGBA`` <--> ``RGBa``
 
 .. note:: HEIF standard does not support 16 bit images, see :ref:`saving-16bit`
