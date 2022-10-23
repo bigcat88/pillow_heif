@@ -2,12 +2,13 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.7.1 - 2022-10-25]
+## [0.7.1 - 2022-10-28]
 
 ### Added
 
 - Support for images with a `premultiplied alpha` channel (Pillow does not fully support these).
 - (Heif) `premultiplied_alpha` read-write property.
+- (Heif) `to_pillow` method to `HeifFile` class.
 
 ### Changed
 
