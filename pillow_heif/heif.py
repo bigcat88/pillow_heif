@@ -558,6 +558,13 @@ class HeifFile:
 
         self.images[self.primary_index()].convert_to(mode)
 
+    def to_pillow(self) -> Image.Image:
+        """Helper method to create :py:class:`PIL.Image.Image.`
+
+        :returns: :py:class:`PIL.Image.Image` class created from primary image."""
+
+        return self.images[self.primary_index()].to_pillow()
+
     def scale(self, width: int, height: int) -> None:
         """Scale primary image in the container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
 

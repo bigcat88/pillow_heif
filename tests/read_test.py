@@ -203,6 +203,11 @@ def test_to_from_pillow(image_path):
     helpers.compare_heif_files_fields(heif_file, heif_from_pillow, ignore=["original_bit_depth"])
 
 
+def test_heif_file_to_pillow():
+    heif_file = pillow_heif.open_heif(Path("images/heif/zPug_3.heic"))
+    helpers.assert_image_equal(heif_file.to_pillow(), heif_file[1].to_pillow())
+
+
 @pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
 def test_heif_read_images(image_path):
     def test_read_image(convert_hdr_to_8bit: bool) -> bool:
