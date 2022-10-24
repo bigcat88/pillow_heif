@@ -51,6 +51,8 @@ When saving image from `Pillow` to `HEIF` format, next modes will be converted a
 Mode conversion
 ---------------
 
+.. note:: HEIF standard does not support 16 bit images, see :ref:`saving-16bit`
+
 For ``HeifImage`` some of these modes can be converted to each other using :py:meth:`~pillow_heif.HeifImage.convert_to` method:
 
     * ``BGRA;16``  -->  ``RGBA;10`` or ``RGBA;12``
@@ -69,4 +71,5 @@ For ``HeifImage`` some of these modes can be converted to each other using :py:m
     * ``RGBA``  -->  ``BGRA``, ``RGBA;16`` or ``BGRA;16``
     * ``RGB``  -->  ``BGR``, ``RGB;16`` or ``BGR;16``
 
-.. note:: HEIF standard does not support 16 bit images, see :ref:`saving-16bit`
+Modes with premultiplied Alpha:
+    * ``RGBa`` --> ``RGB``, ``BGR``, ``RGBa;16`` or ``BGRa;16``

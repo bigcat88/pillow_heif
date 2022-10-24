@@ -132,3 +132,20 @@ def test_rgba_premultiplied_to_rgb():
         "f3e3e3f3d423f40413f40413f3f403f3f403f3e3f3f3e3f3f3d3e3f3d423f40423f3f413f3f41"
         "3f3e403f3e403f3d3f3f3d3f3f3c433f3f423f3f423f3e413f3e413f3d403f3d403f3c3f3f3c"
     )
+
+
+def test_rgba_premultiplied_to_bgr():
+    im_heif = from_pillow(helpers.gradient_rgba().crop((124, 124, 132, 132)))
+    im_heif.premultiplied_alpha = True
+    assert im_heif.mode == "RGBa"
+    im_heif.convert_to("BGR")
+    assert im_heif.mode == "BGR"
+    im_heif.convert_to("RGB")
+    assert (
+        im_heif.to_pillow().tobytes().hex()
+        == "3f3f433f3f423e3f423e3f413d3f413d3f403c3f403c3f3f403f423f3f423f3f413e3f413e3f4"
+        "03d3f403d3f3f3c3f3f403f42403f413f3f413f3f403e3f403e3f3f3d3f3f3d3f3e413f41403f"
+        "41403f403f3f403f3f3f3e3f3f3e3f3e3d3f3e413f41413f40403f40403f3f3f3f3f3f3f3e3e3"
+        "f3e3e3f3d423f40413f40413f3f403f3f403f3e3f3f3e3f3f3d3e3f3d423f40423f3f413f3f41"
+        "3f3e403f3e403f3d3f3f3d3f3f3c433f3f423f3f423f3e413f3e413f3d403f3d403f3c3f3f3c"
+    )

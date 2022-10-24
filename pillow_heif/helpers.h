@@ -51,3 +51,5 @@ void convert_bgra_rgba(const uint8_t *in, int in_stride, uint8_t *out, int out_s
 void convert_bgr_rgb(const uint8_t *in, int in_stride, uint8_t *out, int out_stride, int n_rows);
 
 void convert_rgba_premultiplied_to_rgb(const uint8_t *in, int in_stride, uint8_t *out, int out_stride, int n_rows);
+
+void convert_rgba_premultiplied_to_bgr(const uint8_t *in, int in_stride, uint8_t *out, int out_stride, int n_rows);
