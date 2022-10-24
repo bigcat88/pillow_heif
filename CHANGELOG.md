@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 - Support for images with a `premultiplied alpha` channel (Pillow does not fully support these).
 - (Heif) `premultiplied_alpha` read-write property.
 - (Heif) `to_pillow` method to `HeifFile` class.
+- (Heif) `RGBA;16` -> `RGBA` conversion.
+- (Heif) `RGBa` -> `RGB` conversion.
 
 ### Changed
 
