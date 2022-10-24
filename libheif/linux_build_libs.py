@@ -155,7 +155,7 @@ def build_libs() -> str:
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:
                 build_lib_linux(
-                    "https://bitbucket.org/multicoreware/x265_git/get/master.tar.gz",
+                    "https://bitbucket.org/multicoreware/x265_git/get/0b75c44c10e605fe9e9ebed58f04a46271131827.tar.gz",
                     "x265",
                     _is_musllinux,
                 )
