@@ -503,6 +503,25 @@ void convert_rgba_premultiplied_to_rgb(const uint8_t *in, int in_stride, uint8_t
     }
 }
 
+void convert_rgba_premultiplied_to_bgr(const uint8_t *in, int in_stride, uint8_t *out, int out_stride, int n_rows)
+{
+    const uint32_t* in_row = (uint32_t*)in;
+    uint8_t* out_row = out;
+    in_stride = in_stride / 4;
+    int stride_elements = out_stride / 3 > in_stride ? in_stride : out_stride / 3;
+    for (int i = 0; i < n_rows; i++) {
+        for (int i2 = 0; i2 < stride_elements; i2++) {
+            uint32_t p = in_row[i2];
+            uint8_t a =  (p >> 24) & 0xFF;
+            out_row[i2 * 3 + 0] = (((p >> 16) & 0xFF) * a) / 255;
+            out_row[i2 * 3 + 1] = (((p >> 8) & 0xFF) * a) / 255;
+            out_row[i2 * 3 + 2] = (((p >> 0) & 0xFF) * a) / 255;
+        }
+        in_row += in_stride;
+        out_row += out_stride;
+    }
+}
+
 #ifdef __cplusplus
     }
 #endif
