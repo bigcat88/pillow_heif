@@ -40,8 +40,15 @@ MODE_CONVERT = {
     "BGRA;16": {"RGBA;10": lib.convert_bgra16_to_rgba10, "RGBA;12": lib.convert_bgra16_to_rgba12},
     "BGRa;16": {"RGBa;10": lib.convert_bgra16_to_rgba10, "RGBa;12": lib.convert_bgra16_to_rgba12},
     "BGR;16": {"RGB;10": lib.convert_bgr16_to_rgb10, "RGB;12": lib.convert_bgr16_to_rgb12},
-    "RGBA;16": {"RGBA;10": lib.convert_rgba16_to_rgba10, "RGBA;12": lib.convert_rgba16_to_rgba12},
-    "RGBa;16": {"RGBa;10": lib.convert_rgba16_to_rgba10, "RGBa;12": lib.convert_rgba16_to_rgba12},
+    "RGBA;16": {
+        "RGBA;10": lib.convert_rgba16_to_rgba10,
+        "RGBA;12": lib.convert_rgba16_to_rgba12,
+        "RGBA": lib.convert_rgba16_to_rgba,
+    },
+    "RGBa;16": {
+        "RGBa;10": lib.convert_rgba16_to_rgba10,
+        "RGBa;12": lib.convert_rgba16_to_rgba12,
+    },
     "RGB;16": {"RGB;10": lib.convert_rgb16_to_rgb10, "RGB;12": lib.convert_rgb16_to_rgb12},
     "L;16": {"L;10": lib.convert_i16_to_i10, "L;12": lib.convert_i16_to_i12},
     "I;16": {"L;10": lib.convert_i16_to_i10, "L;12": lib.convert_i16_to_i12},
@@ -64,6 +71,7 @@ MODE_CONVERT = {
         "BGRa": lib.convert_bgra_rgba,
         "RGBa;16": lib.convert_rgba_to_rgba16,
         "BGRa;16": lib.convert_rgba_to_bgra16,
+        "RGB": lib.convert_rgba_premultiplied_to_rgb,
     },
     "RGB": {"BGR": lib.convert_bgr_rgb, "RGB;16": lib.convert_rgb_to_rgb16, "BGR;16": lib.convert_rgb_to_bgr16},
 }
