@@ -55,7 +55,7 @@ For ``HeifImage`` some of these modes can be converted to each other using :py:m
 
     * ``BGRA;16``  -->  ``RGBA;10`` or ``RGBA;12``
     * ``BGR;16``  -->  ``RGB;10`` or ``RGB;12``
-    * ``RGBA;16``  -->  ``RGBA;10`` or ``RGBA;12``
+    * ``RGBA;16``  -->  ``RGBA;10``, ``RGBA;12`` or ``RGBA``
     * ``RGB;16``  -->  ``RGB;10`` or ``RGB;12``
     * ``L;16``  -->  ``L;10`` or ``L;12``
     * ``I;16``  -->  ``L;10`` or ``L;12``
