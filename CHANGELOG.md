@@ -9,10 +9,13 @@ All notable changes to this project will be documented in this file.
 - Support for images with a `premultiplied alpha` channel (Pillow does not fully support these).
 - (Heif) `premultiplied_alpha` read-write property.
 - (Heif) `to_pillow` method to `HeifFile` class.
+- (Heif) `RGBA;16` -> `RGBA` conversion.
+- (Heif) `RGBa` -> `RGB` conversion.
 
 ### Changed
 
 - `libaom` updated from `3.4.0` to `3.5.0` version. [changelog](https://aomedia.googlesource.com/aom/+/refs/tags/v3.5.0)
+- `libde265` updated from `1.0.8` to `1.0.9`.
 - (Heif) The `get_file_mimetype` function has been reworked and is now written in python.
 - (Heif) The `is_supported` function has been reworked and is now written in python.
 - `options().strict` option marked as deprecated and will be removed in `0.8.0`.
