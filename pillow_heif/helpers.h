@@ -20,6 +20,8 @@ void convert_rgb16_to_rgb12(const uint8_t *in, int in_stride, uint8_t *out, int 
 
 void convert_rgba16_to_rgba12(const uint8_t *in, int in_stride, uint8_t *out, int out_stride, int n_rows);
 
+void convert_rgba16_to_rgba(const uint8_t *in, int in_stride, uint8_t *out, int out_stride, int n_rows);
+
 void convert_rgba12_to_rgba16(const uint8_t *in, int in_stride, uint8_t *out, int out_stride, int n_rows);
 
 void convert_rgba12_to_bgra16(const uint8_t *in, int in_stride, uint8_t *out, int out_stride, int n_rows);

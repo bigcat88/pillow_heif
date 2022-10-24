@@ -40,7 +40,11 @@ MODE_CONVERT = {
     "BGRA;16": {"RGBA;10": lib.convert_bgra16_to_rgba10, "RGBA;12": lib.convert_bgra16_to_rgba12},
     "BGRa;16": {"RGBa;10": lib.convert_bgra16_to_rgba10, "RGBa;12": lib.convert_bgra16_to_rgba12},
     "BGR;16": {"RGB;10": lib.convert_bgr16_to_rgb10, "RGB;12": lib.convert_bgr16_to_rgb12},
-    "RGBA;16": {"RGBA;10": lib.convert_rgba16_to_rgba10, "RGBA;12": lib.convert_rgba16_to_rgba12},
+    "RGBA;16": {
+        "RGBA;10": lib.convert_rgba16_to_rgba10,
+        "RGBA;12": lib.convert_rgba16_to_rgba12,
+        "RGBA": lib.convert_rgba16_to_rgba,
+    },
     "RGBa;16": {"RGBa;10": lib.convert_rgba16_to_rgba10, "RGBa;12": lib.convert_rgba16_to_rgba12},
     "RGB;16": {"RGB;10": lib.convert_rgb16_to_rgb10, "RGB;12": lib.convert_rgb16_to_rgb12},
     "L;16": {"L;10": lib.convert_i16_to_i10, "L;12": lib.convert_i16_to_i12},
