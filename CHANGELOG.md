@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - `libaom` updated from `3.4.0` to `3.5.0` version. [changelog](https://aomedia.googlesource.com/aom/+/refs/tags/v3.5.0)
+- `libde265` updated from `1.0.8` to `1.0.9`.
 - (Heif) The `get_file_mimetype` function has been reworked and is now written in python.
 - (Heif) The `is_supported` function has been reworked and is now written in python.
 - `options().strict` option marked as deprecated and will be removed in `0.8.0`.

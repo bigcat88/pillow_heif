@@ -63,15 +63,11 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                 linux_build_tools.download_extract_to(url, _lib_path)
                 if name == "libde265":
                     chdir(_lib_path)
-                    for patch in (
-                        "libde265/CVE-2022-1253.patch",
-                        "libde265/CVE-2021-36408.patch",
-                        "libde265/CVE-2021-36410.patch",
-                        "libde265/CVE-2021-35452.patch",
-                        "libde265/CVE-2021-36411.patch",
-                    ):
-                        patch_path = path.join(_linux_dir, patch)
-                        run(f"patch -p 1 -i {patch_path}".split(), check=True)
+                    # for patch in (
+                    #     "libde265/CVE-2022-1253.patch",
+                    # ):
+                    #     patch_path = path.join(_linux_dir, patch)
+                    #     run(f"patch -p 1 -i {patch_path}".split(), check=True)
                 elif name == "libheif":
                     chdir(_lib_path)
                     for patch in ("libheif/001-aom-remove-extend_padding_to_size.patch",):
@@ -173,13 +169,13 @@ def build_libs() -> str:
         if not is_library_installed("libde265") and not is_library_installed("de265"):
             if machine().find("armv7") == -1:
                 build_lib_linux(
-                    "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
+                    "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz",
                     "libde265",
                     _is_musllinux,
                 )
             else:
                 build_lib_linux_armv7(
-                    "https://github.com/strukturag/libde265/releases/download/v1.0.8/libde265-1.0.8.tar.gz",
+                    "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz",
                     "libde265",
                     _is_musllinux,
                 )
