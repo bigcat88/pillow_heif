@@ -11,4 +11,5 @@ python:
   install:
     - method: pip
       path: .
-      requirements: docs/rtd_docs_requirements.txt
+      extra_requirements:
+        -docs
