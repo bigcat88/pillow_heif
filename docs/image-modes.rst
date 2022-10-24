@@ -72,4 +72,9 @@ For ``HeifImage`` some of these modes can be converted to each other using :py:m
     * ``RGB``  -->  ``BGR``, ``RGB;16`` or ``BGR;16``
 
 Modes with premultiplied Alpha:
+    * ``BGRa;16``  -->  ``RGBa;10`` or ``RGBa;12``
+    * ``RGBa;16``  -->  ``RGBa;10``, ``RGBa;12`` or ``RGBa``
+    * ``RGBa;12``  -->  ``RGBa;16`` or ``BGRa;16``
+    * ``RGBa;10``  -->  ``RGBa;16`` or ``BGRa;16``
+    * ``BGRa``  -->  ``RGBa``
     * ``RGBa`` --> ``RGB``, ``BGR``, ``RGBa;16`` or ``BGRa;16``
