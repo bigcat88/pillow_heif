@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 
 - (Heif) `convert_to` should do nothing if the target `mode` is already the current image mode.
 - (AvifImagePlugin) do not register or accept `.avifs` files, libheif does not support them.
+- Images in `CMYK` mode will be converted for `RGBA` mode during saving instead of throwing `KeyError` exception.
 
 ## [0.7.0 - 2022-09-11]
 
