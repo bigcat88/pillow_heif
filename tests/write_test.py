@@ -264,10 +264,21 @@ def test_LA_color_mode(save_format):  # noqa
 def test_1_color_mode():
     im = Image.linear_gradient(mode="L")
     im = im.convert(mode="1")
+    assert im.mode == "1"
     out_heif = BytesIO()
     im.save(out_heif, format="HEIF", quality=-1)
     im_heif = Image.open(out_heif)
     assert im_heif.mode == "RGB"
+    helpers.compare_hashes([im, im_heif], hash_size=8)
+
+
+def test_CMYK_color_mode():  # noqa
+    im = helpers.gradient_rgba().convert("CMYK")
+    assert im.mode == "CMYK"
+    out_heif = BytesIO()
+    im.save(out_heif, format="HEIF", quality=-1)
+    im_heif = Image.open(out_heif)
+    assert im_heif.mode == "RGBA"
     helpers.compare_hashes([im, im_heif], hash_size=8)
 
 

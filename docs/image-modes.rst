@@ -45,6 +45,7 @@ When saving image from `Pillow` to `HEIF` format, next modes will be converted a
     * ``P`` will be converted to ``RGB``
     * ``I`` will be converted to ``I;16L``
     * ``1`` will be converted to ``L``
+    * ``CMYK`` will be converted to ``RGBA``
 
 .. _convert_to:
 
