@@ -1,0 +1,14 @@
+name: Nightly build(source)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 */2 * *'
+
+jobs:
+  src-build-linux:
+    uses: ./.github/workflows/test-src-build-linux.yml
+  src-build-macos:
+    uses: ./.github/workflows/test-src-build-macos.yml
+  src-build-windows:
+    uses: ./.github/workflows/test-src-build-windows.yml

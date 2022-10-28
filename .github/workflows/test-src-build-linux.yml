@@ -2,6 +2,7 @@ name: Build from source(Linux)
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     branches: [master]
     types: [opened, reopened, edited]
@@ -23,7 +24,7 @@ on:
       - 'pyproject.toml'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: src_linux-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
