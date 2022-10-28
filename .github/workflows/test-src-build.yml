@@ -1,4 +1,4 @@
-name: Build from source
+name: Nightly source build
 
 on:
   workflow_dispatch:

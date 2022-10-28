@@ -23,9 +23,9 @@ on:
       - 'setup.*'
       - 'pyproject.toml'
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+#concurrency:
+#  group: ${{ github.workflow }}-${{ github.ref }}
+#  cancel-in-progress: true
 
 jobs:
   alpine_3_14_build:
