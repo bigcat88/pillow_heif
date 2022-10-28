@@ -1,4 +1,4 @@
-name: Publish wheels(from GH Release)
+name: Publish(from GH Release)
 
 on:
   workflow_dispatch:
@@ -10,6 +10,7 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    name: Copy from GH to PyPi
     steps:
     - uses: actions/checkout@v3
     - name: Get release info
