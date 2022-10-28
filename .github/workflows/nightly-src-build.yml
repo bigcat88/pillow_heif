@@ -1,9 +1,9 @@
-name: Nightly source build
+name: Nightly build(source)
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */24 * * *'
+    - cron: '0 0 * * *'
 
 jobs:
   src-build-linux:

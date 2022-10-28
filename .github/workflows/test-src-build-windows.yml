@@ -21,9 +21,9 @@ on:
       - 'setup.*'
       - 'pyproject.toml'
 
-#concurrency:
-#  group: ${{ github.workflow }}-${{ github.ref }}
-#  cancel-in-progress: true
+concurrency:
+  group: src_windows-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   windows_2019:
