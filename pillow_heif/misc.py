@@ -34,25 +34,28 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
 
     original_orientation = None
     if info.get("exif", None):
-        tif_tag = info["exif"]
-        if tif_tag.startswith(b"Exif\x00\x00"):
-            tif_tag = tif_tag[6:]
-        endian_mark = "<" if tif_tag[0:2] == b"\x49\x49" else ">"
-        pointer = unpack(endian_mark + "L", tif_tag[4:8])[0]
-        tag_count = unpack(endian_mark + "H", tif_tag[pointer : pointer + 2])[0]
-        offset = pointer + 2
-        for tag_n in range(tag_count):
-            pointer = offset + 12 * tag_n
-            if unpack(endian_mark + "H", tif_tag[pointer : pointer + 2])[0] != 274:
-                continue
-            value = tif_tag[pointer + 8 : pointer + 12]
-            _original_orientation = unpack(endian_mark + "H", value[0:2])[0]
-            if _original_orientation != 1:
-                original_orientation = _original_orientation
-                p_value = 6 + pointer + 8
-                new_orientation = pack(endian_mark + "H", orientation)
-                info["exif"] = info["exif"][:p_value] + new_orientation + info["exif"][p_value + 2 :]
-                break
+        try:
+            tif_tag = info["exif"]
+            if tif_tag.startswith(b"Exif\x00\x00"):
+                tif_tag = tif_tag[6:]
+            endian_mark = "<" if tif_tag[0:2] == b"\x49\x49" else ">"
+            pointer = unpack(endian_mark + "L", tif_tag[4:8])[0]
+            tag_count = unpack(endian_mark + "H", tif_tag[pointer : pointer + 2])[0]
+            offset = pointer + 2
+            for tag_n in range(tag_count):
+                pointer = offset + 12 * tag_n
+                if unpack(endian_mark + "H", tif_tag[pointer : pointer + 2])[0] != 274:
+                    continue
+                value = tif_tag[pointer + 8 : pointer + 12]
+                _original_orientation = unpack(endian_mark + "H", value[0:2])[0]
+                if _original_orientation != 1:
+                    original_orientation = _original_orientation
+                    p_value = 6 + pointer + 8
+                    new_orientation = pack(endian_mark + "H", orientation)
+                    info["exif"] = info["exif"][:p_value] + new_orientation + info["exif"][p_value + 2 :]
+                    break
+        except Exception:  # noqa # pylint: disable=broad-except)
+            pass
     if info.get("xmp", None):
         xmp_data = info["xmp"].decode("utf-8")
         match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_data)
