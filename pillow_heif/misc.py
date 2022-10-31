@@ -54,7 +54,7 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
                     new_orientation = pack(endian_mark + "H", orientation)
                     info["exif"] = info["exif"][:p_value] + new_orientation + info["exif"][p_value + 2 :]
                     break
-        except Exception:  # noqa # pylint: disable=broad-except)
+        except Exception:  # noqa # pylint: disable=broad-except
             pass
     if info.get("xmp", None):
         xmp_data = info["xmp"].decode("utf-8")
