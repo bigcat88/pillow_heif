@@ -155,10 +155,7 @@ def register_heif_opener(**kwargs) -> None:
         Image.register_save(HeifImageFile.format, _save_heif)
         Image.register_save_all(HeifImageFile.format, _save_all_heif)
     extensions = [".heic", ".heics", ".heif", ".heifs", ".hif"]
-    Image.register_mime(HeifImageFile.format, "image/heic")
-    Image.register_mime(HeifImageFile.format, "image/heic-sequence")
     Image.register_mime(HeifImageFile.format, "image/heif")
-    Image.register_mime(HeifImageFile.format, "image/heif-sequence")
     Image.register_extensions(HeifImageFile.format, extensions)
 
 
@@ -211,5 +208,4 @@ def register_avif_opener(**kwargs) -> None:
     # extensions = [".avif", ".avifs"]
     extensions = [".avif"]
     Image.register_mime(AvifImageFile.format, "image/avif")
-    # Image.register_mime(AvifImageFile.format, "image/avif-sequence")
     Image.register_extensions(AvifImageFile.format, extensions)
