@@ -25,7 +25,7 @@ RUN \
   cd pillow_heif && \
   python3 setup.py bdist_wheel && \
   echo "**** Repairing wheel ****" && \
-  python3 -m pip install auditwheel && \
+  python3 -m pip install auditwheel<=5.1.2 && \
   auditwheel repair -w repaired_dist/ dist/*.whl --plat manylinux_2_31_armv7l && \
   echo "**** Testing wheel ****" && \
   python3 -m pip install repaired_dist/*.whl && \

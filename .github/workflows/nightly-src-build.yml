@@ -3,7 +3,7 @@ name: Nightly build(source)
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 */2 * *'
 
 jobs:
   src-build-linux:
