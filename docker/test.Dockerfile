@@ -16,6 +16,7 @@ RUN \
     wget \
     cmake && \
   python3 -m pip install --upgrade pip && \
+  python3 -m pip debug --verbose && \
   echo "**** Installing patchelf ****" && \
   git clone https://github.com/NixOS/patchelf.git && \
   cd patchelf && \
