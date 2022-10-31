@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-debian:buster
+FROM debian:buster-slim
 
 COPY . /pillow_heif
 
