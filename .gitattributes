@@ -12,6 +12,7 @@
 *.tiff binary
 *.jpeg binary
 *.jpg binary
+*.bin binary
 
 # Files to exclude from GitHub Languages statistics
 *.h linguist-vendored=true
