@@ -18,7 +18,11 @@ RUN \
     automake \
     cmake && \
   python3 -m pip install --upgrade pip && \
-  python3 -m pip install patchelf && \
+  echo "**** Installing patchelf ****" && \
+  git clone https://github.com/NixOS/patchelf.git && \
+  cd patchelf && \
+  ./bootstrap.sh && ./configure && make && make check && sudo make install && \
+  cd .. && \
   echo "**** Install python build dependencies ****" && \
   python3 -m pip install cffi pytest && \
   echo "**** Start building ****" && \
