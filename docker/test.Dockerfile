@@ -28,7 +28,7 @@ RUN \
   python3 setup.py bdist_wheel && \
   echo "**** Repairing wheel ****" && \
   python3 -m pip install auditwheel && \
-  auditwheel repair -v -v -w repaired_dist/ dist/*.whl && \
+  auditwheel -v -v repair-w repaired_dist/ dist/*.whl && \
   echo "**** Testing wheel ****" && \
   python3 -m pip install repaired_dist/*.whl && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
