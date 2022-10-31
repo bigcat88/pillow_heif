@@ -40,11 +40,16 @@ def test_exif_from_pillow(im_format, save_format):
     exif = im.getexif()  # noqa
     assert exif[0x010E] == exif_desc_value
     out_im_heif = BytesIO()
-    im.save(out_im_heif, format=save_format)
+    im.save(out_im_heif, format=save_format)  # saving to HEIF(AVIF)
     im_heif = Image.open(out_im_heif)
     assert im_heif.info["exif"]
     assert isinstance(im_heif.info["exif"], bytes)
     exif = im_heif.getexif()  # noqa
+    assert exif[0x010E] == exif_desc_value
+    out_im = BytesIO()
+    im_heif.save(out_im, format=im_format, exif=im_heif.getexif())  # saving back to original format
+    im = Image.open(out_im)
+    exif = im.getexif()  # noqa
     assert exif[0x010E] == exif_desc_value
 
 
@@ -159,3 +164,14 @@ def test_heif_multi_frame_exif_add_remove():
     im_heif_no_exif = pillow_heif.open_heif(out_heif_no_exif)
     assert "exif" not in im_heif_no_exif[0].info or im_heif_no_exif[0].info["exif"] is None
     assert "exif" not in im_heif_no_exif[1].info or im_heif_no_exif[1].info["exif"] is None
+
+
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
+def test_corrupted_exif():
+    exif_data = b"This_is_not_valid_EXIF_data"
+    out_im = BytesIO()
+    helpers.gradient_rgb().save(out_im, format="HEIF", exif=exif_data)
+    im = Image.open(out_im)
+    with pytest.raises(SyntaxError):
+        im.getexif()
+    assert im.info["exif"] == exif_data
