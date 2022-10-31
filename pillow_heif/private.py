@@ -159,7 +159,7 @@ def retrieve_exif(metadata: list):
     for i, md_block in enumerate(metadata):
         if md_block["type"] == "Exif":
             _purge.append(i)
-            if not _result and md_block["data"] and md_block["data"][0:4] == b"Exif":
+            if not _result and md_block["data"]:
                 _result = md_block["data"]
     for i in reversed(_purge):
         del metadata[i]

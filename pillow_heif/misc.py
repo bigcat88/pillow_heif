@@ -34,7 +34,9 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
 
     original_orientation = None
     if info.get("exif", None):
-        tif_tag = info["exif"][6:]
+        tif_tag = info["exif"]
+        if tif_tag.startswith(b"Exif\x00\x00"):
+            tif_tag = tif_tag[6:]
         endian_mark = "<" if tif_tag[0:2] == b"\x49\x49" else ">"
         pointer = unpack(endian_mark + "L", tif_tag[4:8])[0]
         tag_count = unpack(endian_mark + "H", tif_tag[pointer : pointer + 2])[0]
