@@ -2,6 +2,18 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.2 - 2022-10-31]
+
+### Added
+
+### Changed
+
+### Fixed
+
+- (HeifImagePlugin) register proper `mimetype` for `HEIF` format. #47
+- (HeifImagePlugin) decode image even when `EXIF` data is corrupted. #48
+- (HeifImagePlugin) correct processing of `EXIF` that do not start with `b'EXIF'` (Pillow `9.3.0`). #46
+
 ## [0.7.1 - 2022-10-28]
 
 ### Added
