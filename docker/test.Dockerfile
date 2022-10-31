@@ -13,7 +13,7 @@ RUN \
     libffi-dev \
     libtool \
     git \
-    curl \
+    wget \
     cmake && \
   python3 -m pip install --upgrade pip && \
   echo "**** Installing patchelf ****" && \
