@@ -14,7 +14,7 @@ class WheelsABI3(bdist_wheel):
             elif plat.startswith("win"):
                 python = "cp37"
             elif plat == "linux_armv7l":
-                python = "cp38"
+                python = "cp37"
         return python, abi, plat
 
 
