@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-ubuntu:focal
+FROM debian:buster-slim
 
 COPY . /pillow_heif
 
@@ -13,9 +13,7 @@ RUN \
     libffi-dev \
     libtool \
     git \
-    pkg-config \
-    autoconf \
-    automake \
+    wget \
     cmake && \
   python3 -m pip install --upgrade pip && \
   echo "**** Installing patchelf ****" && \
@@ -30,7 +28,7 @@ RUN \
   python3 setup.py bdist_wheel && \
   echo "**** Repairing wheel ****" && \
   python3 -m pip install auditwheel && \
-  auditwheel repair -w repaired_dist/ dist/*.whl --plat manylinux_2_31_armv7l && \
+  auditwheel repair -w repaired_dist/ dist/*.whl --plat manylinux_2_28_armv7l && \
   echo "**** Testing wheel ****" && \
   python3 -m pip install repaired_dist/*.whl && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
