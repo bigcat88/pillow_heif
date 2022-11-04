@@ -18,8 +18,8 @@ class Libheif < Formula
   depends_on "x265"
 
   patch do
-    url "https://github.com/strukturag/libheif/commit/a01baccaf40bafcabddba47846f5e914ca0724f6.patch"
-    sha256 "5ca3b5023891c11a235ef46ae25266c15507387432570544c0ca81d63095d774"
+    url "https://github.com/strukturag/libheif/commit/a01baccaf40bafcabddba47846f5e914ca0724f6.diff"
+    sha256 "06753422381f648cc6a2b432c63ee3d2e11878e455c3406f7042dac91f8c6105"
   end
 
   def install
