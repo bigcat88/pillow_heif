@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  wheel_armv7l:
-    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
+  wheels_manylinux_armv7l:
+    name: Wheels • Debian 10+ • ARMv7l • CPython3.7+
     runs-on: ubuntu-20.04
 
     steps:
@@ -17,7 +17,10 @@ jobs:
       - name: Build pillow_heif
         run: |
           mkdir dock_out
-          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
+          docker buildx build \
+              --output type=local,dest=./dock_out \
+              --platform "linux/arm/v7" \
+              -f docker/manylinux_armv7l_wheel.Dockerfile .
           ls -la ./dock_out/pillow_heif/repaired_dist
 
       - name: Checking built wheels
@@ -423,7 +426,9 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   create_release:
-    needs: [sdist, wheels_linux_cpython, wheels_linux_pypy, wheels_macos, wheels_windows, wheel_armv7l, wheels_linux_pypy_32bit, wheels_linux_cpython_32bit]
+    needs: [sdist, wheels_macos, wheels_windows, wheels_linux_cpython,
+            wheels_linux_pypy, wheels_linux_pypy_32bit, wheels_linux_cpython_32bit,
+            wheels_manylinux_armv7l]
     runs-on: ubuntu-20.04
     name: Create GitHub release
 

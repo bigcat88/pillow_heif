@@ -214,8 +214,8 @@ jobs:
       - name: Fix cache permissions
         run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
 
-  wheels_armv7l:
-    name: Wheels • Debian 11+ • ARMv7l • CPython3.8+
+  wheels_manylinux_armv7l:
+    name: Wheels • Debian 10+ • ARMv7l • CPython3.7+
     runs-on: ubuntu-20.04
 
     steps:
@@ -232,7 +232,10 @@ jobs:
       - name: Build pi_heif
         run: |
           mkdir dock_out
-          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
+          docker buildx build \
+              --output type=local,dest=./dock_out \
+              --platform "linux/arm/v7" \
+              -f docker/manylinux_armv7l_wheel.Dockerfile .
           ls -la ./dock_out/pi_heif/repaired_dist
 
       - name: Checking built wheels
@@ -298,7 +301,8 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   publish_release:
-    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
+    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist,
+            wheels_manylinux_armv7l]
     name: Publish release
     runs-on: ubuntu-20.04
     env:

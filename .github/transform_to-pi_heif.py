@@ -11,7 +11,7 @@ if __name__ == "__main__":
     files_list = [
         "libheif/build.py",
         "setup.py",
-        "docker/armv7l_wheel.Dockerfile",
+        "docker/manylinux_armv7l_wheel.Dockerfile",
         "docker/test_wheels.Dockerfile",
         "MANIFEST.in",
     ]
