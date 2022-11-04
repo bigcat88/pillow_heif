@@ -158,9 +158,6 @@ jobs:
         with:
           platforms: arm64
 
-      - name: Install cibuildwheel & twine
-        run: python3 -m pip install cibuildwheel twine
-
       - name: manylinux preparations
         if: matrix.cibw_buildlinux == 'manylinux'
         run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
@@ -191,7 +188,9 @@ jobs:
           KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
 
       - name: Run cibuildwheel
-        run: cibuildwheel
+        run: |
+          python3 -m pip install cibuildwheel twine
+          python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
@@ -231,9 +230,6 @@ jobs:
         with:
           platforms: arm64
 
-      - name: Install cibuildwheel & twine
-        run: python3 -m pip install cibuildwheel twine
-
       - name: manylinux preparations
         if: matrix.cibw_buildlinux == 'manylinux'
         run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
@@ -264,7 +260,9 @@ jobs:
           KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
 
       - name: Run cibuildwheel
-        run: cibuildwheel
+        run: |
+          python3 -m pip install cibuildwheel twine
+          python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
@@ -305,9 +303,6 @@ jobs:
         with:
           platforms: arm64
 
-      - name: Install cibuildwheel & twine
-        run: python3 -m pip install cibuildwheel twine
-
       - name: Only minimal testing on aarch64
         if: matrix.cibw_arch == 'aarch64'
         run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
@@ -326,7 +321,9 @@ jobs:
           KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
 
       - name: Run cibuildwheel
-        run: cibuildwheel
+        run: |
+          python3 -m pip install cibuildwheel twine
+          python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
@@ -367,9 +364,6 @@ jobs:
         with:
           platforms: arm64
 
-      - name: Install cibuildwheel & twine
-        run: python3 -m pip install cibuildwheel twine
-
       - name: Only minimal testing on aarch64
         if: matrix.cibw_arch == 'aarch64'
         run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
@@ -388,7 +382,9 @@ jobs:
           KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
 
       - name: Run cibuildwheel
-        run: cibuildwheel
+        run: |
+          python3 -m pip install cibuildwheel twine
+          python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}

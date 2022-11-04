@@ -28,7 +28,7 @@ source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_r
 sha256sums=('c20ae01bace39e89298f6352f1ff4a54b415b33b9743902da798e8a1e51d7ca1'
             '9f9a1ee8161643c44cc7813cdd4d8721ab3e67b5262cf4a29988307fd667f4ae'
             '9aea63f92de2d71a0d021baf2d31df39f9633b16d715c11572cf54e64bb4a52d'
-            '5ca3b5023891c11a235ef46ae25266c15507387432570544c0ca81d63095d774')
+            '0f910768a2e031b2171c477bcfb9e82d03d970abcd1bbd6dc0ec3ce06fa2ec2c')
 
 prepare() {
   cd "${srcdir}/${_realname}-${pkgver}"
