@@ -5,7 +5,7 @@ on:
 
 jobs:
   wheel_armv7l:
-    name: Wheels • Debian 10+ • ARMv7l • CPython3.8+
+    name: Wheels • Debian 10+ • ARMv7l • CPython3.7+
     runs-on: ubuntu-20.04
 
     steps:
@@ -16,7 +16,7 @@ jobs:
       - name: Build pillow_heif
         run: |
           mkdir dock_out
-          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/armv7l_wheel.Dockerfile .
+          docker buildx build --output type=local,dest=./dock_out --platform "linux/arm/v7" -f docker/manylinux_armv7l_wheel.Dockerfile .
           ls -la ./dock_out/pillow_heif/repaired_dist
 
       - name: Checking built wheels

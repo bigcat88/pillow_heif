@@ -24,7 +24,7 @@ pillow_heif.register_heif_opener()
         "PNG",
         "JPEG",
         "TIFF",
-        # "WEBP",
+        "WEBP",
     ),
 )
 def test_exif_from_pillow(im_format, save_format):
@@ -166,12 +166,12 @@ def test_heif_multi_frame_exif_add_remove():
     assert "exif" not in im_heif_no_exif[1].info or im_heif_no_exif[1].info["exif"] is None
 
 
-# @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
-# def test_corrupted_exif():
-#     exif_data = b"This_is_not_valid_EXIF_data"
-#     out_im = BytesIO()
-#     helpers.gradient_rgb().save(out_im, format="HEIF", exif=exif_data)
-#     im = Image.open(out_im)
-#     with pytest.raises(SyntaxError):
-#         im.getexif()
-#     assert im.info["exif"] == exif_data
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
+def test_corrupted_exif():
+    exif_data = b"This_is_not_valid_EXIF_data"
+    out_im = BytesIO()
+    helpers.gradient_rgb().save(out_im, format="HEIF", exif=exif_data)
+    im = Image.open(out_im)
+    with pytest.raises(SyntaxError):
+        im.getexif()
+    assert im.info["exif"] == exif_data
