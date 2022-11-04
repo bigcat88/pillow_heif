@@ -13,6 +13,11 @@ RUN \
     perl \
     alpine-sdk \
     cmake \
+    fribidi-dev \
+    harfbuzz-dev \
+    jpeg-dev \
+    lcms2-dev \
+    openjpeg-dev \
     nasm \
     aom-dev \
     libde265-dev \
