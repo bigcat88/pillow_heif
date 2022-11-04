@@ -31,7 +31,7 @@ jobs:
           { "os": "debian", "ver": "10", "arch": "arm/v7" },
 #          { "os": "debian", "ver": "11", "arch": "amd64" },
 #          { "os": "debian", "ver": "11", "arch": "arm64" },
-#          { "os": "debian", "ver": "11", "arch": "arm/v7" },
+          { "os": "debian", "ver": "11", "arch": "arm/v7" },
 #          { "os": "alpine", "ver": "3.14", "arch": "amd64" },
 #          { "os": "alpine", "ver": "3.14", "arch": "arm64" },
           { "os": "alpine", "ver": "3.14", "arch": "arm/v7" },
@@ -51,13 +51,21 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
+      - name: Test type is Full
+        if: matrix.i['arch'] != 'arm/v7'
+        run: echo TEST_TYPE="export PH_FULL_ACTION=1" >> $GITHUB_ENV
+
+      - name: Test type is Light
+        if: matrix.i['arch'] == 'arm/v7'
+        run: echo TEST_TYPE="export PH_LIGHT_ACTION=1" >> $GITHUB_ENV
+
       - name: Preparing debian
         if: matrix.i['os'] == 'debian' || matrix.i['os'] == 'ubuntu'
         run: |
           echo PREPARE_CMD="apt update" >> $GITHUB_ENV
           echo INSTALL_CMD="apt install -y \
             python3-minimal python3-distutils python3-pip python3-dev \
-            zlib1g-dev libjpeg8-dev liblcms2-dev libwebp-dev libfribidi-dev libfribidi-dev" >> $GITHUB_ENV
+            zlib1g-dev libjpeg62-turbo-dev liblcms2-dev libwebp-dev libfribidi-dev libfribidi-dev" >> $GITHUB_ENV
 
       - name: Preparing musli
         if: matrix.i['os'] == 'alpine'
@@ -76,7 +84,7 @@ jobs:
             --build-arg BASE_IMAGE="${{ matrix.i['os'] }}:${{ matrix.i['ver'] }}" \
             --build-arg PREPARE_CMD="${{ env.PREPARE_CMD }}" \
             --build-arg INSTALL_CMD="${{ env.INSTALL_CMD }}" \
-            --build-arg TEST_TYPE="export PH_FULL_ACTION=1" \
+            --build-arg TEST_TYPE="${{ env.TEST_TYPE }}" \
             --build-arg EX_ARG="-i https://test.pypi.org/simple/" \
             -f docker/test_wheels.Dockerfile .
 
