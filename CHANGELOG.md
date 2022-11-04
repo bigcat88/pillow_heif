@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Armv7: wheels for Alpine 3.14+ with `musllinux_1_2_armv7l` tag.
+
 ### Changed
 
 ### Fixed
