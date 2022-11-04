@@ -1,35 +1,37 @@
-FROM debian:buster-slim
+FROM alpine:3.14
 
 COPY . /pillow_heif
 
 RUN \
-  apt-get update && \
-  apt-get install -y \
-    python3-pip \
-    libfribidi-dev \
-    libharfbuzz-dev \
-    libjpeg-dev \
-    liblcms2-dev \
-    libffi-dev \
+  apk add --no-cache \
+    py3-pip \
+    python3-dev \
     libtool \
     git \
-    wget \
-    cmake && \
+    gcc \
+    m4 \
+    perl \
+    alpine-sdk \
+    autoconf \
+    automake \
+    cmake \
+    nasm \
+    py3-numpy \
+    py3-pillow && \
   python3 -m pip install --upgrade pip && \
-  python3 -m pip debug --verbose && \
   echo "**** Installing patchelf ****" && \
   git clone https://github.com/NixOS/patchelf.git && \
   cd patchelf && \
   ./bootstrap.sh && ./configure && make && make check && make install && \
   cd .. && \
   echo "**** Install python build dependencies ****" && \
-  python3 -m pip install cffi pytest && \
+  python3 -m pip install cffi pytest wheel && \
   echo "**** Start building ****" && \
   cd pillow_heif && \
   python3 setup.py bdist_wheel && \
   echo "**** Repairing wheel ****" && \
   python3 -m pip install auditwheel && \
-  auditwheel -v -v repair -w repaired_dist/ dist/*.whl --plat manylinux_2_28_armv7l && \
+  auditwheel repair -w repaired_dist/ dist/*.whl && \
   echo "**** Testing wheel ****" && \
   python3 -m pip install repaired_dist/*.whl && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
