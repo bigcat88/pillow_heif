@@ -26,7 +26,7 @@ jobs:
       - name: Checking built wheels
         run: |
           python3 -m pip install twine
-          twine check ./dock_out/pillow_heif/repaired_dist/*
+          python3 -m twine check ./dock_out/pillow_heif/repaired_dist/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
@@ -56,7 +56,7 @@ jobs:
       - name: Checking built wheels
         run: |
           python3 -m pip install twine
-          twine check ./dock_out/pillow_heif/repaired_dist/*
+          python3 -m twine check ./dock_out/pillow_heif/repaired_dist/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
@@ -103,7 +103,7 @@ jobs:
           CIBW_ENVIRONMENT_WINDOWS: PH_FULL_ACTION=1
 
       - name: Check built wheels
-        run: twine check wheelhouse/*
+        run: python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
         uses: actions/upload-artifact@v3
@@ -129,7 +129,7 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: PH_FULL_ACTION=1
 
       - name: Check built wheels
-        run: twine check wheelhouse/*
+        run: python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
         uses: actions/upload-artifact@v3
@@ -198,7 +198,7 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_FULL_ACTION=1
 
       - name: Checking built wheels
-        run: twine check wheelhouse/*
+        run: python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
@@ -270,7 +270,7 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_LIGHT_ACTION=1
 
       - name: Checking built wheels
-        run: twine check wheelhouse/*
+        run: python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
@@ -331,7 +331,7 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_FULL_ACTION=1
 
       - name: Checking built wheels
-        run: twine check wheelhouse/*
+        run: python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
@@ -392,7 +392,7 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_LIGHT_ACTION=1
 
       - name: Checking built wheels
-        run: twine check wheelhouse/*
+        run: python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
@@ -511,5 +511,5 @@ jobs:
         run: |
             python3 -m pip install twine
             ls -la wheelhouse/
-            twine upload --repository testpypi --skip-existing wheelhouse/*.whl
-            twine upload --repository testpypi wheelhouse/*tar.gz
+            python3 -m twine upload --repository testpypi --skip-existing wheelhouse/*.whl
+            python3 -m twine upload --repository testpypi wheelhouse/*tar.gz
