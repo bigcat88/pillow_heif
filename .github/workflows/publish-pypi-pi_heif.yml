@@ -250,6 +250,42 @@ jobs:
           path: ./dock_out/pi_heif/repaired_dist/*.whl
           if-no-files-found: error
 
+  wheels_musllinux_armv7l:
+    name: Wheels • Alpine 3.14+ • ARMv7l • CPython3.7+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Put pi-heif files
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - name: Set up QEMU
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - name: Build pi_heif
+        run: |
+          mkdir dock_out
+          docker buildx build \
+              --output type=local,dest=./dock_out \
+              --platform "linux/arm/v7" \
+              -f docker/musllinux_armv7l_wheel.Dockerfile .
+          ls -la ./dock_out/pi_heif/repaired_dist
+
+      - name: Checking built wheels
+        run: |
+          python3 -m pip install twine
+          twine check ./dock_out/pi_heif/repaired_dist/*
+
+      - name: Uploading wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./dock_out/pi_heif/repaired_dist/*.whl
+          if-no-files-found: error
+
   sdist:
     name: Source distribution
     runs-on: macos-12
@@ -302,7 +338,7 @@ jobs:
 
   publish_release:
     needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist,
-            wheels_manylinux_armv7l]
+            wheels_manylinux_armv7l, wheels_musllinux_armv7l]
     name: Publish release
     runs-on: ubuntu-20.04
     env:

@@ -35,6 +35,36 @@ jobs:
           path: ./dock_out/pillow_heif/repaired_dist/*.whl
           if-no-files-found: error
 
+  wheels_musllinux_armv7l:
+    name: Wheels • Alpine 3.14+ • ARMv7l • CPython3.7+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - name: Build pillow_heif
+        run: |
+          mkdir dock_out
+          docker buildx build \
+              --output type=local,dest=./dock_out \
+              --platform "linux/arm/v7" \
+              -f docker/musllinux_armv7l_wheel.Dockerfile .
+          ls -la ./dock_out/pillow_heif/repaired_dist
+
+      - name: Checking built wheels
+        run: |
+          python3 -m pip install twine
+          twine check ./dock_out/pillow_heif/repaired_dist/*
+
+      - name: Uploading wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./dock_out/pillow_heif/repaired_dist/*.whl
+          if-no-files-found: error
+
   wheels_windows:
     name: Wheels • windows • x86_64
     runs-on: windows-2019
@@ -428,7 +458,7 @@ jobs:
   create_release:
     needs: [sdist, wheels_macos, wheels_windows, wheels_linux_cpython,
             wheels_linux_pypy, wheels_linux_pypy_32bit, wheels_linux_cpython_32bit,
-            wheels_manylinux_armv7l]
+            wheels_manylinux_armv7l, wheels_musllinux_armv7l]
     runs-on: ubuntu-20.04
     name: Create GitHub release
 
