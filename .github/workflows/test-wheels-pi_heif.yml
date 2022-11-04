@@ -50,7 +50,7 @@ jobs:
         if: matrix.i['arch'] == 'arm64'
         uses: docker/setup-qemu-action@v2
         with:
-          platforms: arm64
+          platforms: arm64, arm/v7
 
       - name: Preparing debian
         if: matrix.i['os'] == 'debian' || matrix.i['os'] == 'ubuntu'
