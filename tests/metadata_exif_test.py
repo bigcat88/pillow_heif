@@ -24,7 +24,7 @@ pillow_heif.register_heif_opener()
         "PNG",
         "JPEG",
         "TIFF",
-        "WEBP",
+        # "WEBP",
     ),
 )
 def test_exif_from_pillow(im_format, save_format):
