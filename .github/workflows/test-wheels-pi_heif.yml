@@ -68,7 +68,8 @@ jobs:
       - name: Build image & Run tests
         run: |
           python3 .github/transform_to-pi_heif.py
-          docker buildx build --platform ${{ matrix.i.arch }} \
+          docker buildx build \
+            --platform linux/${{ matrix.i.arch }} \
             --build-arg BASE_IMAGE="${{ matrix.i['os'] }}:${{ matrix.i['ver'] }}" \
             --build-arg PREPARE_CMD="${{ env.PREPARE_CMD }}" \
             --build-arg INSTALL_CMD="${{ env.INSTALL_CMD }}" \

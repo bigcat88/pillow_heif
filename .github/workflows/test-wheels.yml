@@ -18,28 +18,28 @@ jobs:
       fail-fast: false
       matrix:
         i: [
-          { "os": "amazonlinux", "ver": "latest", "arch": "amd64" },
-          { "os": "amazonlinux", "ver": "latest", "arch": "arm64" },
-          { "os": "oraclelinux", "ver": "8", "arch": "amd64" },
-          { "os": "oraclelinux", "ver": "8", "arch": "arm64" },
-          { "os": "fedora", "ver": "35", "arch": "amd64" },
-          { "os": "fedora", "ver": "37", "arch": "amd64" },
-          { "os": "centos", "ver": "7", "arch": "amd64" },
-          { "os": "centos", "ver": "7", "arch": "arm64" },
-          { "os": "debian", "ver": "10", "arch": "amd64" },
-          { "os": "debian", "ver": "10", "arch": "arm64" },
+#          { "os": "amazonlinux", "ver": "latest", "arch": "amd64" },
+#          { "os": "amazonlinux", "ver": "latest", "arch": "arm64" },
+#          { "os": "oraclelinux", "ver": "8", "arch": "amd64" },
+#          { "os": "oraclelinux", "ver": "8", "arch": "arm64" },
+#          { "os": "fedora", "ver": "35", "arch": "amd64" },
+#          { "os": "fedora", "ver": "37", "arch": "amd64" },
+#          { "os": "centos", "ver": "7", "arch": "amd64" },
+#          { "os": "centos", "ver": "7", "arch": "arm64" },
+#          { "os": "debian", "ver": "10", "arch": "amd64" },
+#          { "os": "debian", "ver": "10", "arch": "arm64" },
           { "os": "debian", "ver": "10", "arch": "arm/v7" },
-          { "os": "debian", "ver": "11", "arch": "amd64" },
-          { "os": "debian", "ver": "11", "arch": "arm64" },
-          { "os": "debian", "ver": "11", "arch": "arm/v7" },
-          { "os": "alpine", "ver": "3.14", "arch": "amd64" },
-          { "os": "alpine", "ver": "3.14", "arch": "arm64" },
+#          { "os": "debian", "ver": "11", "arch": "amd64" },
+#          { "os": "debian", "ver": "11", "arch": "arm64" },
+#          { "os": "debian", "ver": "11", "arch": "arm/v7" },
+#          { "os": "alpine", "ver": "3.14", "arch": "amd64" },
+#          { "os": "alpine", "ver": "3.14", "arch": "arm64" },
           { "os": "alpine", "ver": "3.14", "arch": "arm/v7" },
-          { "os": "alpine", "ver": "3.15", "arch": "amd64" },
-          { "os": "alpine", "ver": "3.15", "arch": "arm64" },
-          { "os": "alpine", "ver": "3.16", "arch": "amd64" },
-          { "os": "alpine", "ver": "3.16", "arch": "arm64" },
-          { "os": "alpine", "ver": "3.16", "arch": "arm/v7" },
+#          { "os": "alpine", "ver": "3.15", "arch": "amd64" },
+#          { "os": "alpine", "ver": "3.15", "arch": "arm64" },
+#          { "os": "alpine", "ver": "3.16", "arch": "amd64" },
+#          { "os": "alpine", "ver": "3.16", "arch": "arm64" },
+#          { "os": "alpine", "ver": "3.16", "arch": "arm/v7" },
         ]
 
     steps:
@@ -69,7 +69,8 @@ jobs:
 
       - name: Build image & Run tests
         run: |
-          docker buildx build --platform ${{ matrix.i.arch }} \
+          docker buildx build \
+            --platform linux/${{ matrix.i.arch }} \
             --build-arg BASE_IMAGE="${{ matrix.i['os'] }}:${{ matrix.i['ver'] }}" \
             --build-arg PREPARE_CMD="${{ env.PREPARE_CMD }}" \
             --build-arg INSTALL_CMD="${{ env.INSTALL_CMD }}" \
