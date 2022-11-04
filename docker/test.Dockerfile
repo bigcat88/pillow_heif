@@ -15,6 +15,11 @@ RUN \
     autoconf \
     automake \
     cmake \
+    fribidi-dev \
+    harfbuzz-dev \
+    jpeg-dev \
+    lcms2-dev \
+    openjpeg-dev \
     nasm \
     py3-numpy \
     py3-pillow && \
