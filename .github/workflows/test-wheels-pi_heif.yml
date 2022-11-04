@@ -52,7 +52,9 @@ jobs:
         if: matrix.i['os'] == 'debian' || matrix.i['os'] == 'ubuntu'
         run: |
           echo PREPARE_CMD="apt update" >> $GITHUB_ENV
-          echo INSTALL_CMD="apt install -y python3-minimal python3-distutils python3-pip" >> $GITHUB_ENV
+          echo INSTALL_CMD="apt install -y \
+            python3-minimal python3-distutils python3-pip python3-dev \
+            zlib1g-dev libjpeg62-turbo-dev liblcms2-dev libwebp-dev libfribidi-dev libharfbuzz-dev" >> $GITHUB_ENV
 
       - name: Preparing musli
         if: matrix.i['os'] == 'alpine'
