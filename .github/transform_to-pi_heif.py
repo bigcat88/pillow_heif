@@ -12,6 +12,7 @@ if __name__ == "__main__":
         "libheif/build.py",
         "setup.py",
         "docker/manylinux_armv7l_wheel.Dockerfile",
+        "docker/musllinux_armv7l_wheel.Dockerfile",
         "docker/test_wheels.Dockerfile",
         "MANIFEST.in",
     ]
