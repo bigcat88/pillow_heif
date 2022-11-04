@@ -129,7 +129,9 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: PH_FULL_ACTION=1
 
       - name: Check built wheels
-        run: python3 -m pip install twine && python3 -m twine check wheelhouse/*
+        run: |
+          python3 -m pip install twine
+          python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
         uses: actions/upload-artifact@v3
