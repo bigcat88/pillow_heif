@@ -13,6 +13,7 @@ jobs:
     name: 🐍 • ${{ matrix.i['os'] }} • ${{ matrix.i['ver'] }} • ${{ matrix.i['arch'] }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         i: [
           { "os": "amazonlinux", "ver": "latest", "arch": "amd64" },
