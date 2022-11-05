@@ -13,7 +13,6 @@ RUN \
     libffi-dev \
     libtool \
     git \
-    wget \
     autoconf \
     automake \
     cmake && \

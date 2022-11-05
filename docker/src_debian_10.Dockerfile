@@ -1,9 +1,10 @@
-FROM ghcr.io/linuxserver/baseimage-ubuntu:focal
+FROM debian:buster-slim
 
 COPY . /pillow_heif
 
 RUN \
-  apt-get -qq update && apt-get -y -q install \
+  apt-get -qq update && \
+  apt-get -y -q install \
     python3-pip \
     libfribidi-dev \
     libharfbuzz-dev \

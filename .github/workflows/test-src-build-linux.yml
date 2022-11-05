@@ -60,8 +60,8 @@ jobs:
       - name: Build pillow_heif
         run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_alpine_3_16.Dockerfile .
 
-  ubuntu_20_04_build:
-    name: Ubuntu:Focal-${{ matrix.arch }}
+  debian_10_build:
+    name: Debian:Buster-${{ matrix.arch }}
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[docs]')"
     strategy:
@@ -74,7 +74,7 @@ jobs:
         run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
       - name: Build pillow_heif
-        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_ubuntu_20_04.Dockerfile .
+        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_debian_10.Dockerfile .
 
   ubuntu_22_04_build:
     name: Ubuntu:Jammy-${{ matrix.arch }}
