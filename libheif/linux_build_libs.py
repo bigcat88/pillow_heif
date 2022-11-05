@@ -1,6 +1,5 @@
 import sys
 from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path
-from platform import machine
 from subprocess import PIPE, STDOUT, run
 
 from libheif import linux_build_tools
@@ -127,7 +126,7 @@ def build_libs() -> str:
         return INSTALL_DIR_LIBS
     _original_dir = getcwd()
     try:
-        linux_build_tools.build_tools(_is_musllinux, machine().find("armv7") != -1)
+        linux_build_tools.build_tools(_is_musllinux)
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:
                 build_lib_linux(

@@ -18,6 +18,8 @@ RUN \
     jpeg-dev \
     lcms2-dev \
     openjpeg-dev \
+    autoconf \
+    automake \
     nasm \
     libde265-dev \
     py3-numpy \

@@ -94,8 +94,7 @@ def tool_check_version(name: str, min_version: str) -> bool:
     return False
 
 
-def build_tools(musl: bool, armv7: bool):
-    # if armv7:
+def build_tools(musl: bool):
     build_tool(
         "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz",
         "pkg-config",
