@@ -12,7 +12,6 @@ RUN \
     libffi-dev \
     libtool \
     git \
-    pkg-config \
     autoconf \
     automake \
     cmake && \
