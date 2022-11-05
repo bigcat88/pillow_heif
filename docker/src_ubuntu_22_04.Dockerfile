@@ -12,6 +12,7 @@ RUN \
     libffi-dev \
     libtool \
     git \
+    pkg-config \
     cmake \
     nasm \
     libaom-dev \
