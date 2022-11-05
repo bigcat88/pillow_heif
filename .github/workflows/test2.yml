@@ -5,7 +5,7 @@ on:
 
 jobs:
   wheel_armv7l:
-    name: Wheels • Debian 10+ • ARMv7l • CPython3.7+
+    name: Wheels • Alpine 3.14+ • ARMv7l • CPython3.7+
     runs-on: ubuntu-20.04
 
     steps:
