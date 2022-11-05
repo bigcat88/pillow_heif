@@ -14,6 +14,8 @@ RUN \
     libtool \
     git \
     wget \
+    autoconf \
+    automake \
     cmake && \
   python3 -m pip install --upgrade pip && \
   echo "**** Installing patchelf ****" && \
