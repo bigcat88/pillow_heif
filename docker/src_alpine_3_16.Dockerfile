@@ -18,6 +18,8 @@ RUN \
     jpeg-dev \
     lcms2-dev \
     openjpeg-dev \
+    autoconf \
+    automake \
     nasm \
     aom-dev \
     libde265-dev \
