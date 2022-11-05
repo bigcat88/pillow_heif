@@ -13,8 +13,6 @@ RUN \
     libtool \
     git \
     pkg-config \
-    autoconf \
-    automake \
     cmake && \
   python3 -m pip install --upgrade pip && \
   if [ `getconf LONG_BIT` = 64 ]; then \
