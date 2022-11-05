@@ -167,18 +167,18 @@ def build_libs() -> str:
         else:
             print("aom already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
-            if machine().find("armv7") == -1:
-                build_lib_linux(
-                    "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz",
-                    "libde265",
-                    _is_musllinux,
-                )
-            else:
-                build_lib_linux_armv7(
-                    "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz",
-                    "libde265",
-                    _is_musllinux,
-                )
+            # if machine().find("armv7") == -1:
+            build_lib_linux(
+                "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz",
+                "libde265",
+                _is_musllinux,
+            )
+            # else:
+            #     build_lib_linux_armv7(
+            #         "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz",
+            #         "libde265",
+            #         _is_musllinux,
+            #     )
         else:
             print("libde265 already installed.")
         build_lib_linux(
