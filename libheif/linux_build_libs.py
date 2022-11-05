@@ -120,30 +120,6 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         run("ldconfig", check=True)
 
 
-def build_lib_linux_armv7(url: str, name: str, musl: bool = False):
-    _lib_path = path.join(BUILD_DIR_LIBS, name)
-    linux_build_tools.download_extract_to(url, _lib_path)
-    chdir(_lib_path)
-    if name == "libde265":
-        run(["./autogen.sh"], check=True)
-    print(f"Preconfiguring {name}...", flush=True)
-    configure_args = f"--prefix {INSTALL_DIR_LIBS}".split()
-    if name == "libde265":
-        configure_args += "--disable-sherlock265 --disable-dec265 --disable-dependency-tracking".split()
-    elif name == "libheif":
-        configure_args += "--disable-examples --disable-go".split()
-        configure_args += "--disable-gdk-pixbuf --disable-visibility".split()
-    run(["./configure"] + configure_args, check=True)
-    print(f"{name} configured. building...", flush=True)
-    run("make -j4".split(), check=True)
-    print(f"{name} build success.", flush=True)
-    run("make install".split(), check=True)
-    if musl:
-        run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
-    else:
-        run("ldconfig", check=True)
-
-
 def build_libs() -> str:
     _is_musllinux = is_musllinux()
     if is_library_installed("heif") or is_library_installed("libheif"):
@@ -167,18 +143,11 @@ def build_libs() -> str:
         else:
             print("aom already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
-            # if machine().find("armv7") == -1:
             build_lib_linux(
                 "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz",
                 "libde265",
                 _is_musllinux,
             )
-            # else:
-            #     build_lib_linux_armv7(
-            #         "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz",
-            #         "libde265",
-            #         _is_musllinux,
-            #     )
         else:
             print("libde265 already installed.")
         build_lib_linux(
