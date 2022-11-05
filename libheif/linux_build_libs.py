@@ -181,18 +181,23 @@ def build_libs() -> str:
                 )
         else:
             print("libde265 already installed.")
-        if machine().find("armv7") == -1:
-            build_lib_linux(
-                "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
-                "libheif",
-                _is_musllinux,
-            )
-        else:
-            build_lib_linux_armv7(
-                "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
-                "libheif",
-                _is_musllinux,
-            )
+        build_lib_linux(
+            "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
+            "libheif",
+            _is_musllinux,
+        )
+        # if machine().find("armv7") == -1:
+        #     build_lib_linux(
+        #         "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
+        #         "libheif",
+        #         _is_musllinux,
+        #     )
+        # else:
+        #     build_lib_linux_armv7(
+        #         "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
+        #         "libheif",
+        #         _is_musllinux,
+        #     )
     finally:
         chdir(_original_dir)
     return INSTALL_DIR_LIBS
