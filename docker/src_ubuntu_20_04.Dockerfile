@@ -12,7 +12,6 @@ RUN \
     libffi-dev \
     libtool \
     git \
-    pkg-config \
     cmake && \
   python3 -m pip install --upgrade pip && \
   if [ `getconf LONG_BIT` = 64 ]; then \
