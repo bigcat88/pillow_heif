@@ -12,6 +12,8 @@ RUN \
     m4 \
     perl \
     alpine-sdk \
+    autoconf \
+    automake \
     cmake \
     fribidi-dev \
     harfbuzz-dev \
