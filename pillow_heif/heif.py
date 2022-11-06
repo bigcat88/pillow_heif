@@ -365,7 +365,7 @@ class HeifImage(HeifImageBase):
         )
 
     def scale(self, width: int, height: int):
-        """Rescale image by a specific width and height given in parameters.
+        """Rescales image by a specific width and height given in parameters.
 
         .. note:: Image will be scaled in place. Images converted to some specific modes not always can be scaled.
 
@@ -566,7 +566,7 @@ class HeifFile:
         return self.images[self.primary_index()].to_pillow()
 
     def scale(self, width: int, height: int) -> None:
-        """Scale primary image in the container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
+        """Scales primary image in the container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
 
         self.images[self.primary_index()].scale(width, height)
 
@@ -906,19 +906,3 @@ def from_bytes(mode: str, size: tuple, data, **kwargs) -> HeifFile:
     _ = HeifFile()
     _.add_frombytes(mode, size, data, **kwargs)
     return _
-
-
-# --------------------------------------------------------------------
-# DEPRECATED FUNCTIONS.
-# pylint: disable=unused-argument
-# pylint: disable=redefined-builtin
-
-
-def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # noqa
-    warn("Function `open` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
-    return open_heif(fp, convert_hdr_to_8bit=convert_hdr_to_8bit)  # pragma: no cover
-
-
-def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # noqa
-    warn("Function `read` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
-    return open_heif(fp, convert_hdr_to_8bit=convert_hdr_to_8bit)  # pragma: no cover

@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 
 - Deprecated `options().ctx_in_memory` was removed(default behaviour do not change).
 - Deprecated `options().strict` was removed(default behaviour do not change).
-- Deprecated `check` function was removed.
+- Deprecated `check`, `open`, `read` functions was removed.
 - Ability to pass `enc_params` for save as `List[Tuple[str, str]]` was removed, now it accepts only `Dict`.
 
 ### Fixed

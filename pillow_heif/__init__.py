@@ -27,8 +27,6 @@ from .constants import (
     HeifFiletype,
 )
 from .error import HeifError
-
-# pylint: disable=redefined-builtin
 from .heif import (
     HeifFile,
     HeifImage,
@@ -37,9 +35,7 @@ from .heif import (
     from_bytes,
     from_pillow,
     is_supported,
-    open,
     open_heif,
-    read,
     read_heif,
 )
 from .misc import get_file_mimetype, getxmp, set_orientation
