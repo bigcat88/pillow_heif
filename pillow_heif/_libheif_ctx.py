@@ -87,7 +87,7 @@ class LibHeifCtxWrite:
             return builtins.open(fp, "wb")
         if hasattr(fp, "write"):
             return fp
-        raise TypeError("`fp` must be a path to file or and object with `write` method.")
+        raise TypeError("`fp` must be a path to file or an object with `write` method.")
 
 
 @ffi.def_extern()

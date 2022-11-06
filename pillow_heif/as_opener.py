@@ -81,7 +81,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
     @property
     def n_frames(self) -> int:
-        """Return the number of available frames.
+        """Returns the number of available frames.
 
         :returns: Frame number, starting with 0."""
 
@@ -89,7 +89,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
     @property
     def is_animated(self) -> bool:
-        """Return ``True`` if this image has more then one frame, or ``False`` otherwise."""
+        """Returns ``True`` if this image contains more than one frame, or ``False`` otherwise."""
 
         return self.n_frames > 1
 

@@ -52,7 +52,7 @@ class PyLibHeifOptions:
         self._cfg["save_to_12bit"] = value
 
     def update(self, **kwargs) -> None:
-        """Method for at once update multiply values in config."""
+        """Method to update multiple values in configuration at the same time."""
 
         _keys = kwargs.keys()
         for k in ("thumbnails", "quality", "save_to_12bit"):
@@ -60,7 +60,7 @@ class PyLibHeifOptions:
                 setattr(self, k, kwargs[k])
 
     def reset(self) -> None:
-        """Use this for reset config values to their defaults."""
+        """Method for restoring default configuration values."""
 
         self._cfg["thumbnails"] = True
         self._cfg["quality"] = None
