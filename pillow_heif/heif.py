@@ -364,6 +364,26 @@ class HeifImage(HeifImageBase):
             f"with {_bytes} image data and {len(self.thumbnails)} thumbnails>"
         )
 
+    def scale(self, width: int, height: int):
+        """Rescales image by a specific width and height given in parameters.
+
+        .. note:: Image will be scaled in place. Images converted to some specific modes not always can be scaled.
+
+        :param width: new image width.
+        :param height: new image height."""
+
+        warn("Function `scale` is deprecated, consider to use `PIL.Image.resize()` instead.", DeprecationWarning)
+        self._load_if_not()
+        p_scaled_img = ffi.new("struct heif_image **")
+        check_libheif_error(lib.heif_image_scale_image(self.heif_img, p_scaled_img, width, height, ffi.NULL))
+        scaled_heif_img = ffi.gc(p_scaled_img[0], lib.heif_image_release)
+        self.size = (
+            lib.heif_image_get_primary_width(scaled_heif_img),
+            lib.heif_image_get_primary_height(scaled_heif_img),
+        )
+        self._img_to_img_data_dict(scaled_heif_img)
+        return self
+
     def copy_thumbnails(self, thumbnails: List[HeifThumbnail]):
         """Private. For use only in ``add_from_pillow`` and ``add_from_heif``."""
 
@@ -545,6 +565,12 @@ class HeifFile:
         :returns: :py:class:`PIL.Image.Image` class created from the primary image."""
 
         return self.images[self.primary_index()].to_pillow()
+
+    def scale(self, width: int, height: int) -> None:
+        """Scales primary image in the container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
+
+        warn("Method `scale` is deprecated, consider to use `PIL.Image.resize()` instead.", DeprecationWarning)
+        self.images[self.primary_index()].scale(width, height)
 
     def add_from_pillow(self, pil_image: Image.Image, load_one=False, ignore_primary=True, **kwargs):
         """Add image(s) to the container.
@@ -882,19 +908,3 @@ def from_bytes(mode: str, size: tuple, data, **kwargs) -> HeifFile:
     _ = HeifFile()
     _.add_frombytes(mode, size, data, **kwargs)
     return _
-
-
-# --------------------------------------------------------------------
-# DEPRECATED FUNCTIONS.
-# pylint: disable=unused-argument
-# pylint: disable=redefined-builtin
-
-
-def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # noqa
-    warn("Function `open` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
-    return open_heif(fp, convert_hdr_to_8bit=convert_hdr_to_8bit)  # pragma: no cover
-
-
-def read(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # noqa
-    warn("Function `read` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
-    return open_heif(fp, convert_hdr_to_8bit=convert_hdr_to_8bit)  # pragma: no cover
