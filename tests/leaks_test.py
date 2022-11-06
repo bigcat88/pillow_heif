@@ -32,11 +32,9 @@ def perform_open_save(iterations, image_path):
 
 @pytest.mark.skipif(sys.executable.lower().find("pypy") != -1, reason="Disabled on PyPy.")
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
-@pytest.mark.parametrize("ctx_in_memory", (False, True))
-def test_open_save_objects_leaks(ctx_in_memory):
+def test_open_save_objects_leaks():
     from pympler import summary, tracker
 
-    pillow_heif.options().ctx_in_memory = ctx_in_memory
     image_path = Path("images/heif/zPug_3.heic")
     perform_open_save(1, image_path)
     gc.collect()

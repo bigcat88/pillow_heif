@@ -15,11 +15,7 @@ with open("libheif/heif.h", "r", encoding="utf-8") as f:
 
 ffi.cdef(
     """
-    extern "Python" int64_t callback_tell(void*);
-    extern "Python" int callback_seek(int64_t, void*);
-    extern "Python" int callback_read(void*, size_t, void*);
     extern "Python" struct heif_error callback_write(struct heif_context*, const void*, size_t, void*);
-    extern "Python" enum heif_reader_grow_status callback_wait_for_file_size(int64_t, void*);
 """
 )
 

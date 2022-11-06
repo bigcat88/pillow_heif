@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Deprecated `options().ctx_in_memory` was removed(default behaviour do not changed).
+
 ### Fixed
 
 - Armv7: wheels supports Debian 10(was only Debian 11+\Ubuntu 20.04+ previously) with `manylinux_2_28_armv7l` tag.

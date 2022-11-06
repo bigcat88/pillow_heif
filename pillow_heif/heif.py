@@ -420,7 +420,7 @@ class HeifFile:
         if heif_ctx is None:
             heif_ctx = HeifCtxAsDict("", (0, 0), None)
         self.images: List[HeifImage] = []
-        self.mimetype = heif_ctx.get_mimetype() if isinstance(heif_ctx, LibHeifCtx) else ""
+        self.mimetype = heif_ctx.mimetype if isinstance(heif_ctx, LibHeifCtx) else ""
         if img_ids:
             for img_id in img_ids:
                 self.images.append(HeifImage(heif_ctx, img_id, img_id == main_id))
