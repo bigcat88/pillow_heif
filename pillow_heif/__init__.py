@@ -17,10 +17,6 @@ from .as_opener import (
     register_avif_opener,
     register_heif_opener,
 )
-from .constants import heif_filetype_maybe  # DEPRECATED
-from .constants import heif_filetype_no  # DEPRECATED
-from .constants import heif_filetype_yes_supported  # DEPRECATED
-from .constants import heif_filetype_yes_unsupported  # DEPRECATED
 from .constants import (
     HeifChannel,
     HeifChroma,
@@ -37,7 +33,6 @@ from .heif import (
     HeifFile,
     HeifImage,
     HeifThumbnail,
-    check,
     check_heif,
     from_bytes,
     from_pillow,

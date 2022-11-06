@@ -914,11 +914,6 @@ def from_bytes(mode: str, size: tuple, data, **kwargs) -> HeifFile:
 # pylint: disable=redefined-builtin
 
 
-def check(fp):
-    warn("Function `check` is deprecated, use `is_supported` instead.", DeprecationWarning)
-    return check_heif(fp)  # pragma: no cover
-
-
 def open(fp, *, apply_transformations=True, convert_hdr_to_8bit=True):  # noqa
     warn("Function `open` is deprecated and will be removed, use `open_heif` instead.", DeprecationWarning)
     return open_heif(fp, convert_hdr_to_8bit=convert_hdr_to_8bit)  # pragma: no cover

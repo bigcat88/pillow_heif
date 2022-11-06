@@ -13,6 +13,8 @@ This release is fully compatible with `0.5.0`+ versions.
 ### Changed
 
 - Deprecated `options().ctx_in_memory` was removed(default behaviour do not change).
+- Deprecated `options().strict` was removed(default behaviour do not change).
+- Deprecated `check` function was removed.
 
 ### Fixed
 
