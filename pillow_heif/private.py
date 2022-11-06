@@ -1,5 +1,5 @@
 """
-Undocumented private functions for other code to look better.
+Undocumented private functions to make other code look better.
 """
 
 from math import ceil

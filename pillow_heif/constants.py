@@ -1,5 +1,5 @@
 """
-Enums from libheif that can be used.
+Enums from LibHeif that can be used.
 """
 
 from enum import IntEnum
@@ -101,7 +101,7 @@ class HeifFiletype(IntEnum):
 
 
 class HeifErrorCode(IntEnum):
-    """Possible libheif error codes in :py:class:`~pillow_heif.HeifError`"""
+    """Possible LibHeif error codes in :py:class:`~pillow_heif.HeifError`"""
 
     OK = 0
     """Everything ok, no error occurred."""
@@ -128,7 +128,7 @@ class HeifErrorCode(IntEnum):
 
 
 class HeifCompressionFormat(IntEnum):
-    """Possible HEIF compression formats."""
+    """Possible LibHeif compression formats."""
 
     UNDEFINED = 0
     """The compression format is not defined."""

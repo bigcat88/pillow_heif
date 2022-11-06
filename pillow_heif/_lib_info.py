@@ -23,7 +23,7 @@ def have_encoder_for_format(format_id: HeifCompressionFormat) -> bool:
 
 
 def libheif_info() -> dict:
-    """Returns dictionary with avalaible decoders & encoders and libheif version.
+    """Returns dictionary with available decoders & encoders and libheif version.
     Keys are `versions`, `decoders`, `encoders`."""
 
     decoders = {}

@@ -11,7 +11,7 @@ class HeifError(ValueError):
     """
     Raised in :py:meth:`pillow_heif.open_heif` if an image cannot be opened or corrupted.
 
-    Also can be raised during image decoding or during saving.
+    Also, can be raised during image decoding or during saving.
     """
 
     def __init__(self, *, code, subcode, message):

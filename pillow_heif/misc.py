@@ -69,7 +69,7 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
 
 
 def get_file_mimetype(fp) -> str:
-    """Gets the MIME type of the HEIF object.`
+    """Gets the MIME type of the HEIF(or AVIF) object.`
 
     :param fp: A filename (string), pathlib.Path object, file object or bytes.
         The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
