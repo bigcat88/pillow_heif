@@ -156,7 +156,7 @@ class HeifImageBase:
         return self._img_data.get("stride", None)
 
     def convert_to(self, mode: str) -> None:
-        """Decode and convert the image in place to the specified mode.
+        """Decodes and convert the image in place to the specified mode.
 
         :param mode: for list of supported conversions, see: :ref:`convert_to`
 
@@ -412,7 +412,7 @@ class HeifFile:
     * :py:func:`~pillow_heif.from_pillow`
     * :py:func:`~pillow_heif.from_bytes`
 
-    .. note:: To get empty container to fill it later, create a class without parameters."""
+    .. note:: To get an empty container to fill up later, create a class with no parameters."""
 
     def __init__(
         self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict] = None, img_ids: List[int] = None, main_id: int = None
@@ -550,7 +550,7 @@ class HeifFile:
         return self
 
     def convert_to(self, mode: str) -> None:
-        """Decode and convert in place primary image to the specified mode.
+        """Decodes and convert in place the primary image to the specified mode.
 
         :param mode: for list of supported conversions, see: :ref:`convert_to`
 
@@ -561,7 +561,7 @@ class HeifFile:
     def to_pillow(self) -> Image.Image:
         """Helper method to create :py:class:`PIL.Image.Image`
 
-        :returns: :py:class:`PIL.Image.Image` class created from primary image."""
+        :returns: :py:class:`PIL.Image.Image` class created from the primary image."""
 
         return self.images[self.primary_index()].to_pillow()
 
@@ -571,7 +571,7 @@ class HeifFile:
         self.images[self.primary_index()].scale(width, height)
 
     def add_from_pillow(self, pil_image: Image.Image, load_one=False, ignore_primary=True, **kwargs):
-        """Add image(s) to container.
+        """Add image(s) to the container.
 
         :param pil_image: ``PIL.Image`` class to get images from.
         :param load_one: should be only one frame loaded. Default=``False``
@@ -632,7 +632,7 @@ class HeifFile:
         added_image.copy_thumbnails(frame.info.get("thumbnails", []))
 
     def add_from_heif(self, heif_image, load_one=False, ignore_primary=True, **kwargs):
-        """Add image(s) to container.
+        """Add image(s) to the container.
 
         :param heif_image: ``HeifFile`` or ``HeifImage`` class to get images from.
         :param load_one: should be only one frame loaded. Default=``False``
@@ -660,7 +660,7 @@ class HeifFile:
         return self
 
     def save(self, fp, **kwargs) -> None:
-        """Saves image under the given fp.
+        """Saves image(s) under the given fp.
 
         Keyword options can be used to provide additional instructions to the writer.
         If a writer does not recognise an option, it is silently ignored.
@@ -755,7 +755,7 @@ class HeifFile:
 
     @property
     def __array_interface__(self):
-        """Returns Primary Image as a numpy array."""
+        """Returns the primary image as a numpy array."""
 
         return self.images[self.primary_index()].__array_interface__
 
@@ -849,7 +849,7 @@ def is_supported(fp) -> bool:
 
 
 def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
-    """Opens the given HEIF image file.
+    """Opens the given HEIF(AVIF) image file.
 
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
@@ -863,7 +863,7 @@ def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
 
 
 def read_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
-    """Opens the given HEIF image file and decodes all images.
+    """Opens the given HEIF(AVIF) image file and decodes all images.
 
     .. note:: In most cases it is better to call :py:meth:`~pillow_heif.open_heif`, and
         let images decoded automatically only when needed.
