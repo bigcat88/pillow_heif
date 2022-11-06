@@ -5,8 +5,7 @@ Callback functions and wrappers for libheif `heif_context_read_from_memory_witho
 import builtins
 from io import SEEK_SET
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
-from warnings import warn
+from typing import Dict, List
 
 from _pillow_heif_cffi import ffi, lib
 
@@ -62,27 +61,16 @@ class LibHeifCtxWrite:
         self.encoder = ffi.gc(p_encoder[0], lib.heif_encoder_release)
         # lib.heif_encoder_set_logging_level(self.encoder, 4)
 
-    def set_encoder_parameters(self, enc_params: Union[List[Tuple[str, str]], Dict[str, str]], quality: int = None):
+    def set_encoder_parameters(self, enc_params: Dict[str, str], quality: int = None):
         if quality is not None:
             if quality == -1:
                 check_libheif_error(lib.heif_encoder_set_lossless(self.encoder, True))
             else:
                 check_libheif_error(lib.heif_encoder_set_lossy_quality(self.encoder, quality))
-        if isinstance(enc_params, dict):
-            for key, value in enc_params.items():
-                check_libheif_error(
-                    lib.heif_encoder_set_parameter(self.encoder, key.encode("ascii"), value.encode("ascii"))
-                )
-        else:
-            warn(
-                "Specifying `enc_params` as a list of tuple is marked as deprecated and will be removed in a future."
-                " Please use a dictionary instead.",
-                DeprecationWarning,
+        for key, value in enc_params.items():
+            check_libheif_error(
+                lib.heif_encoder_set_parameter(self.encoder, key.encode("ascii"), value.encode("ascii"))
             )
-            for param in enc_params:
-                check_libheif_error(
-                    lib.heif_encoder_set_parameter(self.encoder, param[0].encode("ascii"), param[1].encode("ascii"))
-                )
 
     def write(self, fp):
         __fp = self._get_fp(fp)
