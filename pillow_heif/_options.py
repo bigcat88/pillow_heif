@@ -2,7 +2,6 @@
 Options to change pillow_heif's runtime behaviour.
 """
 from typing import Union
-from warnings import warn
 
 
 class PyLibHeifOptions:
@@ -11,26 +10,6 @@ class PyLibHeifOptions:
     def __init__(self):
         self._cfg = {}
         self.reset()
-
-    @property
-    def strict(self) -> bool:
-        """Indicates should be or not partially supported files be marked as supported.
-        Affects on return result of :py:func:`~pillow_heif.is_supported` function
-        and on algorithm of accepting images of ``HeifImagePlugin``.
-
-        Default = ``False``
-
-        ``DEPRECATED``, will be removed in ``0.8.0``"""
-
-        return self._cfg["strict"]  # pragma: no cover
-
-    @strict.setter
-    def strict(self, value: bool):
-        warn(
-            "`strict` option is marked as deprecated and will be removed in a future.",
-            DeprecationWarning,
-        )
-        self._cfg["strict"] = value  # pragma: no cover
 
     @property
     def thumbnails(self) -> bool:
@@ -76,14 +55,13 @@ class PyLibHeifOptions:
         """Method for at once update multiply values in config."""
 
         _keys = kwargs.keys()
-        for k in ("strict", "thumbnails", "quality", "save_to_12bit"):
+        for k in ("thumbnails", "quality", "save_to_12bit"):
             if k in _keys:
                 setattr(self, k, kwargs[k])
 
     def reset(self) -> None:
         """Use this for reset config values to their defaults."""
 
-        self._cfg["strict"] = False
         self._cfg["thumbnails"] = True
         self._cfg["quality"] = None
         self._cfg["save_to_12bit"] = False
