@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Deprecated `options().strict` was removed(default behaviour do not change).
 - Deprecated `check`, `open`, `read` functions was removed.
 - Ability to pass `enc_params` for save as `List[Tuple[str, str]]` was removed, now it accepts only `Dict`.
+- `scale` method marked as deprecated.
 
 ### Fixed
 

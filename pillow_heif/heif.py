@@ -372,6 +372,7 @@ class HeifImage(HeifImageBase):
         :param width: new image width.
         :param height: new image height."""
 
+        warn("Method `scale` is deprecated, consider to use `PIL.Image.resize()` instead.", DeprecationWarning)
         self._load_if_not()
         p_scaled_img = ffi.new("struct heif_image **")
         check_libheif_error(lib.heif_image_scale_image(self.heif_img, p_scaled_img, width, height, ffi.NULL))
@@ -568,6 +569,7 @@ class HeifFile:
     def scale(self, width: int, height: int) -> None:
         """Scales primary image in the container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
 
+        warn("Method `scale` is deprecated, consider to use `PIL.Image.resize()` instead.", DeprecationWarning)
         self.images[self.primary_index()].scale(width, height)
 
     def add_from_pillow(self, pil_image: Image.Image, load_one=False, ignore_primary=True, **kwargs):
