@@ -196,7 +196,7 @@ def test_encoder_parameters():
     heif_buf = helpers.create_heif()
     im_heif = pillow_heif.open_heif(heif_buf)
     im_heif.save(out_buf1, enc_params={"x265:ctu": "32", "x265:min-cu-size": "16", "x265:rdLevel": "2"})
-    im_heif.save(out_buf2, enc_params={"x265:ctu": "64", "x265:min-cu-size": "8", "x265:rdLevel": "6"})
+    im_heif.save(out_buf2, enc_params={"x265:ctu": 64, "x265:min-cu-size": 8, "x265:rdLevel": 6})
     assert out_buf1.seek(0, SEEK_END) != out_buf2.seek(0, SEEK_END)
 
 
