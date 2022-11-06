@@ -63,29 +63,6 @@ class PyLibHeifOptions:
         self._cfg["quality"] = value
 
     @property
-    def ctx_in_memory(self) -> bool:
-        """Should files be read to memory fully.
-
-        As Python is much slower than ``C++``, we read a file to memory and let ``libheif`` manage reads.
-        You can look at source of class ``LibHeifCtx`` in ``_libheif_ctx.py`` file.
-        Deprecated, will be removed in ``0.8.0`` version.
-
-        Default = ``True``
-
-        ``DEPRECATED``, will be removed in ``0.8.0``"""
-
-        return self._cfg["ctx_in_memory"]
-
-    @ctx_in_memory.setter
-    def ctx_in_memory(self, value):
-        warn(
-            "`ctx_in_memory` is marked as deprecated and will be removed in a future."
-            " There is no particular reason to read the file partially, as tests show",
-            DeprecationWarning,
-        )
-        self._cfg["ctx_in_memory"] = value
-
-    @property
     def save_to_12bit(self) -> bool:
         """Should 16 bit images be saved to 12 bit instead of 10. Default = ``False``"""
 
@@ -99,7 +76,7 @@ class PyLibHeifOptions:
         """Method for at once update multiply values in config."""
 
         _keys = kwargs.keys()
-        for k in ("strict", "thumbnails", "quality", "ctx_in_memory", "save_to_12bit"):
+        for k in ("strict", "thumbnails", "quality", "save_to_12bit"):
             if k in _keys:
                 setattr(self, k, kwargs[k])
 
@@ -109,7 +86,6 @@ class PyLibHeifOptions:
         self._cfg["strict"] = False
         self._cfg["thumbnails"] = True
         self._cfg["quality"] = None
-        self._cfg["ctx_in_memory"] = True
         self._cfg["save_to_12bit"] = False
 
 

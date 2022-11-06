@@ -2,13 +2,17 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.x.x - 2022-xx-xx]
+## [0.8.0 - 2022-xx-xx]
+
+This release is fully compatible with `0.5.0`+ versions.
 
 ### Added
 
 - Armv7: wheels for Alpine 3.14+ with `musllinux_1_2_armv7l` tag.
 
 ### Changed
+
+- Deprecated `options().ctx_in_memory` was removed(default behaviour do not change).
 
 ### Fixed
 

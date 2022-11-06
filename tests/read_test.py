@@ -58,59 +58,48 @@ def test_pillow_image_order():
 
 @pytest.mark.parametrize("img_path", [Path("images/heif/RGBA_10.heif"), Path("images/heif/zPug_3.heic")])
 def test_heif_inputs(img_path):
-    def perform_test_input():
-        with builtins.open(img_path, "rb") as fh:
-            b = fh.read()
-            bytes_io = BytesIO(b)
-            for fp in [bytes_io, fh, img_path, img_path.as_posix(), b]:
-                heif_file = pillow_heif.open_heif(fp)
-                assert heif_file.mimetype
-                assert min(heif_file.size) > 0
-                assert heif_file.info
-                assert getattr(heif_file[0], "_heif_ctx") is not None
-                collect()
-                # This will load all data
-                for image in heif_file:
-                    assert not getattr(image, "_img_data")
-                    assert len(image.data) > 0
-                    for thumbnail in image.thumbnails:
-                        assert not getattr(thumbnail, "_img_data")
-                        assert len(thumbnail.data) > 0
-                        thumbnail.unload()
-                    image.unload()
-                collect()
-                for image in heif_file:
-                    assert not getattr(image, "_img_data")
-                    assert len(image.data) > 0
-                    for thumbnail in image.thumbnails:
-                        assert not getattr(thumbnail, "_img_data")
-                        assert len(thumbnail.data) > 0
-                collect()
-                assert getattr(heif_file[0], "_heif_ctx") is not None
-                if not pillow_heif.options().ctx_in_memory:
-                    assert getattr(heif_file[0]._heif_ctx, "fp") is not None
-                    assert getattr(heif_file[0]._heif_ctx, "_fp_close_after") == isinstance(fp, (Path, str, bytes))
-                # Create new heif_file
-                heif_file_from = pillow_heif.HeifFile().add_from_heif(heif_file)
-                collect()
-                helpers.compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
-                for _ in heif_file:
-                    _.unload()
-                for _ in heif_file_from:
-                    _.unload()
-                collect()
-                helpers.compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
-                heif_file = None  # noqa
-                assert len(heif_file_from[len(heif_file_from) - 1].data)
-                if not isinstance(fp, (Path, str, bytes)):
-                    assert not fp.closed
-
-    perform_test_input()
-    try:
-        pillow_heif.options().ctx_in_memory = False
-        perform_test_input()
-    finally:
-        pillow_heif.options().ctx_in_memory = True
+    with builtins.open(img_path, "rb") as fh:
+        b = fh.read()
+        bytes_io = BytesIO(b)
+        for fp in [bytes_io, fh, img_path, img_path.as_posix(), b]:
+            heif_file = pillow_heif.open_heif(fp)
+            assert heif_file.mimetype
+            assert min(heif_file.size) > 0
+            assert heif_file.info
+            assert getattr(heif_file[0], "_heif_ctx") is not None
+            collect()
+            # This will load all data
+            for image in heif_file:
+                assert not getattr(image, "_img_data")
+                assert len(image.data) > 0
+                for thumbnail in image.thumbnails:
+                    assert not getattr(thumbnail, "_img_data")
+                    assert len(thumbnail.data) > 0
+                    thumbnail.unload()
+                image.unload()
+            collect()
+            for image in heif_file:
+                assert not getattr(image, "_img_data")
+                assert len(image.data) > 0
+                for thumbnail in image.thumbnails:
+                    assert not getattr(thumbnail, "_img_data")
+                    assert len(thumbnail.data) > 0
+            collect()
+            assert getattr(heif_file[0], "_heif_ctx") is not None
+            # Create new heif_file
+            heif_file_from = pillow_heif.HeifFile().add_from_heif(heif_file)
+            collect()
+            helpers.compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
+            for _ in heif_file:
+                _.unload()
+            for _ in heif_file_from:
+                _.unload()
+            collect()
+            helpers.compare_heif_files_fields(heif_file_from, heif_file, ignore=["original_bit_depth"])
+            heif_file = None  # noqa
+            assert len(heif_file_from[len(heif_file_from) - 1].data)
+            if not isinstance(fp, (Path, str, bytes)):
+                assert not fp.closed
 
 
 @pytest.mark.parametrize("img_path", [Path("images/heif/RGBA_10.heif"), Path("images/heif/zPug_3.heic")])
@@ -239,13 +228,6 @@ def test_heif_read_images(image_path):
     one_more = test_read_image(False)
     if one_more:
         test_read_image(True)
-    try:
-        pillow_heif.options().ctx_in_memory = False
-        one_more = test_read_image(False)
-        if one_more:
-            test_read_image(True)
-    finally:
-        pillow_heif.options().ctx_in_memory = True
 
 
 @pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
