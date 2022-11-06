@@ -140,13 +140,3 @@ class HeifCompressionFormat(IntEnum):
     """The compression format is JPEG."""
     AV1 = 4
     """The compression format is AV1."""
-
-
-# --------------------------------------------------------------------
-# DEPRECATED CONSTANTS.
-# pylint: disable=invalid-name
-
-heif_filetype_no = 0
-heif_filetype_yes_supported = 1
-heif_filetype_yes_unsupported = 2
-heif_filetype_maybe = 3

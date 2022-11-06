@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Deprecated `options().ctx_in_memory` was removed(default behaviour do not changed).
+- Deprecated `options().strict` was removed(default behaviour do not change).
+- Deprecated `check` function was removed.
 
 ### Fixed
 
