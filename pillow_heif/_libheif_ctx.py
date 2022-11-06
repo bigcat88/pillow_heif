@@ -68,8 +68,9 @@ class LibHeifCtxWrite:
             else:
                 check_libheif_error(lib.heif_encoder_set_lossy_quality(self.encoder, quality))
         for key, value in enc_params.items():
+            _value = value if isinstance(value, str) else str(value)
             check_libheif_error(
-                lib.heif_encoder_set_parameter(self.encoder, key.encode("ascii"), value.encode("ascii"))
+                lib.heif_encoder_set_parameter(self.encoder, key.encode("ascii"), _value.encode("ascii"))
             )
 
     def write(self, fp):

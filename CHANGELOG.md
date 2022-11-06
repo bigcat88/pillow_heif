@@ -2,7 +2,7 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.x.x - 2022-xx-xx]
+## [0.8.0 - 2022-xx-xx]
 
 ### Added
 
@@ -10,12 +10,14 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Deprecated `options().ctx_in_memory` was removed(default behaviour do not changed).
+- Deprecated `options().ctx_in_memory` was removed(default behaviour do not change).
 - Deprecated `options().strict` was removed(default behaviour do not change).
 - Deprecated `check` function was removed.
+- Ability to pass `enc_params` for save as `List[Tuple[str, str]]` was removed, now it accepts only `Dict`.
 
 ### Fixed
 
+- Values in `enc_params` for `save` can now have `int` or `float` type and will be automatically converted to `str`.
 - Armv7: wheels supports Debian 10(was only Debian 11+\Ubuntu 20.04+ previously) with `manylinux_2_28_armv7l` tag.
 - Armv7: wheels sizes decreased significantly(almost in `3x`).
 

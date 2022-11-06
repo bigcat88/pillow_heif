@@ -712,7 +712,7 @@ class HeifFile:
         enc_params = kwargs.get("enc_params", {})
         chroma = kwargs.get("chroma", None)
         if chroma:
-            enc_params["chroma"] = chroma if isinstance(chroma, str) else str(chroma)
+            enc_params["chroma"] = chroma
         heif_ctx_write.set_encoder_parameters(enc_params, kwargs.get("quality", options().quality))
         self._save(heif_ctx_write, images_to_save, primary_index, **kwargs)
         heif_ctx_write.write(fp)
