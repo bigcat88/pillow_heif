@@ -30,17 +30,6 @@ def test_save_format(save_format):
     assert mime == "image/avif" if save_format == "AVIF" else "image/heic"
 
 
-def test_scale():
-    heif_buf = helpers.create_heif()
-    im_heif = pillow_heif.open_heif(heif_buf)
-    assert im_heif[0].size == (512, 512)
-    im_heif.scale(256, 256)
-    assert im_heif[0].size == (256, 256)
-    out_buffer = BytesIO()
-    im_heif.save(out_buffer, quality=-1)
-    helpers.compare_hashes([heif_buf, out_buffer])
-
-
 @pytest.mark.parametrize(
     "img",
     (
