@@ -24,14 +24,12 @@ from .constants import (
     HeifColorspace,
     HeifCompressionFormat,
     HeifErrorCode,
-    HeifFiletype,
 )
 from .error import HeifError
 from .heif import (
     HeifFile,
     HeifImage,
     HeifThumbnail,
-    check_heif,
     from_bytes,
     from_pillow,
     is_supported,

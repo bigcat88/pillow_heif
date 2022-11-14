@@ -9,7 +9,6 @@ import pillow_heif
 if __name__ == "__main__":
     file = sys.argv[1]
     print("Dumping info for file:", file)
-    print("Check result:", pillow_heif.HeifFiletype(pillow_heif.check_heif(file)))
     print("Supported:", pillow_heif.is_supported(file))
     print("Mime:", pillow_heif.get_file_mimetype(file))
     heif_file = pillow_heif.open_heif(file, convert_hdr_to_8bit=False)

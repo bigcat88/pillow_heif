@@ -58,9 +58,8 @@ def test_get_file_mimetype_invalid(img):
 
 
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)
-def test_heif_check_filetype(img_path):
+def test_is_supported(img_path):
     with builtins.open(img_path, "rb") as fh:
-        assert pillow_heif.check_heif(fh) != pillow_heif.HeifFiletype.NO
         assert pillow_heif.is_supported(fh)
 
 
