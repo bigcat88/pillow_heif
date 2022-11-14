@@ -25,16 +25,18 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-x265")
 source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         "001-pkgconfig-match-autotools.patch"::"https://patch-diff.githubusercontent.com/raw/strukturag/libheif/pull/529.diff"
-        "002-cmake-enable-gdk-pixbuf.patch"::"https://patch-diff.githubusercontent.com/raw/strukturag/libheif/pull/647.diff")
+        "002-cmake-enable-gdk-pixbuf.patch"::"https://patch-diff.githubusercontent.com/raw/strukturag/libheif/pull/647.diff"
+        "003-aom-remove-extend_padding_to_size.patch"::"https://github.com/strukturag/libheif/commit/a01baccaf40bafcabddba47846f5e914ca0724f6.diff")
 sha256sums=('c20ae01bace39e89298f6352f1ff4a54b415b33b9743902da798e8a1e51d7ca1'
             '9f9a1ee8161643c44cc7813cdd4d8721ab3e67b5262cf4a29988307fd667f4ae'
-            '9aea63f92de2d71a0d021baf2d31df39f9633b16d715c11572cf54e64bb4a52d')
+            '9aea63f92de2d71a0d021baf2d31df39f9633b16d715c11572cf54e64bb4a52d'
+            '900c2f1323002af1c6969ae1f9b4a50fe685374e203d034842ee53cb428179ea')
 
 prepare() {
   cd "${srcdir}/${_realname}-${pkgver}"
   patch -Np1 -i "${srcdir}/001-pkgconfig-match-autotools.patch"
   patch -Np1 -i "${srcdir}/002-cmake-enable-gdk-pixbuf.patch"
-  patch -Np1 -i "${srcdir}/../../../linux/libheif/001-aom-remove-extend_padding_to_size.patch"
+  patch -Np1 -i "${srcdir}/003-aom-remove-extend_padding_to_size.patch"
 }
 
 build() {
