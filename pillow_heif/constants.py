@@ -87,19 +87,6 @@ class HeifColorProfileType(IntEnum):
     """Usual ICC profile."""
 
 
-class HeifFiletype(IntEnum):
-    """Result of :py:func:`~pillow_heif.check_heif` function."""
-
-    NO = 0
-    """it is unsupported file"""
-    YES_SUPPORTED = 1
-    """it is heif and can be read by libheif"""
-    YES_UNSUPPORTED = 2
-    """it is heif, but probably cannot be read by libheif"""
-    MAYBE = 3
-    """not sure whether it is heif and is it supported"""
-
-
 class HeifErrorCode(IntEnum):
     """Possible LibHeif error codes in :py:class:`~pillow_heif.HeifError`"""
 

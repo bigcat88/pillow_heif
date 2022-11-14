@@ -12,13 +12,7 @@ from PIL import Image, ImageOps, ImageSequence
 from ._lib_info import have_encoder_for_format
 from ._libheif_ctx import LibHeifCtx, LibHeifCtxWrite
 from ._options import options
-from .constants import (
-    HeifChannel,
-    HeifChroma,
-    HeifColorspace,
-    HeifCompressionFormat,
-    HeifFiletype,
-)
+from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifCompressionFormat
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, get_file_mimetype, set_orientation
 from .private import (
@@ -819,20 +813,6 @@ class HeifFile:
                 heif_file = HeifFile().add_from_heif(img, save_one, no_primary, for_encoding=True)
             result += list(heif_file)
         return result
-
-
-def check_heif(fp):
-    """Wrapper around `libheif.heif_check_filetype` function.
-
-    .. note:: If `fp` contains less 12 bytes, then always return `HeifFiletype.NO`
-
-    :param fp: See parameter ``fp`` in :func:`is_supported`
-
-    :returns: Value from :py:class:`~pillow_heif.HeifFiletype` enumeration."""
-
-    warn("Function `check_heif` is deprecated, use `is_supported` instead.", DeprecationWarning)
-    magic = _get_bytes(fp, 16)
-    return HeifFiletype.NO if len(magic) < 12 else lib.heif_check_filetype(magic, len(magic))
 
 
 def is_supported(fp) -> bool:
