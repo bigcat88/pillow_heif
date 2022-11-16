@@ -32,6 +32,7 @@
 //  1.10         1             2            3             1             1            1
 //  1.11         1             2            4             1             1            1
 //  1.13         1             3            4             1             1            1
+//  1.14         1             3            5             1             1            1
 */
 
 /* === version numbers === */
@@ -86,7 +87,10 @@ enum heif_error_code
   heif_error_Encoding_error = 9,
 
   // Application has asked for a color profile type that does not exist
-  heif_error_Color_profile_does_not_exist = 10
+  heif_error_Color_profile_does_not_exist = 10,
+
+  // Error loading a dynamic plugin
+  heif_error_Plugin_loading_error = 11
 };
 
 
@@ -226,6 +230,7 @@ enum heif_suberror_code
   heif_suberror_Unsupported_color_conversion = 3003,
 
   heif_suberror_Unsupported_item_construction_method = 3004,
+  heif_suberror_Unsupported_header_compression_method = 3005,
 
 
   // --- Encoder_plugin_error ---
@@ -236,6 +241,13 @@ enum heif_suberror_code
   // --- Encoding_error ---
 
   heif_suberror_Cannot_write_output_data = 5000,
+
+
+  // --- Plugin loading error ---
+
+  heif_suberror_Plugin_loading_error = 6000,        // a specific plugin file cannot be loaded
+  heif_suberror_Plugin_is_not_loaded = 6001,        // trying to remove a plugin that is not loaded
+  heif_suberror_Cannot_read_plugin_directory = 6002 // error while scanning the directory for plugins
 };
 
 
@@ -588,8 +600,8 @@ struct heif_error heif_image_handle_get_auxiliary_image_handle(const struct heif
 
 // ------------------------- metadata (Exif / XMP) -------------------------
 
-// How many metadata blocks are attached to an image. Usually, the only metadata is
-// an "Exif" block.
+// How many metadata blocks are attached to an image. If you only want to get EXIF data,
+// set the type_filter to "Exif". Otherwise, set the type_filter to NULL.
 int heif_image_handle_get_number_of_metadata_blocks(const struct heif_image_handle* handle,
                                                     const char* type_filter);
 
@@ -606,6 +618,8 @@ int heif_image_handle_get_list_of_metadata_block_IDs(const struct heif_image_han
 const char* heif_image_handle_get_metadata_type(const struct heif_image_handle* handle,
                                                 heif_item_id metadata_id);
 
+// For EXIF, the content type is empty.
+// For XMP, the content type is "application/rdf+xml".
 const char* heif_image_handle_get_metadata_content_type(const struct heif_image_handle* handle,
                                                         heif_item_id metadata_id);
 
@@ -1175,6 +1189,20 @@ int heif_encoder_has_default(struct heif_encoder*,
                              const char* parameter_name);
 
 
+// The orientation values are defined equal to the EXIF Orientation tag.
+enum heif_orientation
+{
+  heif_orientation_normal = 1,
+  heif_orientation_flip_horizontally = 2,
+  heif_orientation_rotate_180 = 3,
+  heif_orientation_flip_vertically = 4,
+  heif_orientation_rotate_90_cw_then_flip_horizontally = 5,
+  heif_orientation_rotate_90_cw = 6,
+  heif_orientation_rotate_90_cw_then_flip_vertically = 7,
+  heif_orientation_rotate_270_cw = 8
+};
+
+
 struct heif_encoding_options
 {
   uint8_t version;
@@ -1201,6 +1229,11 @@ struct heif_encoding_options
   struct heif_color_profile_nclx* output_nclx_profile;
 
   uint8_t macOS_compatibility_workaround_no_nclx_profile;
+
+  // version 5 options
+
+  // libheif will generate irot/imir boxes to match these orientations
+  enum heif_orientation image_orientation;
 };
 
 struct heif_encoding_options* heif_encoding_options_alloc();
@@ -1221,6 +1254,7 @@ struct heif_error heif_context_encode_image(struct heif_context*,
 
 struct heif_error heif_context_set_primary_image(struct heif_context*,
                                                  struct heif_image_handle* image_handle);
+
 
 // Encode the 'image' as a scaled down thumbnail image.
 // The image is scaled down to fit into a square area of width 'bbox_size'.
@@ -1247,6 +1281,13 @@ struct heif_error heif_context_add_exif_metadata(struct heif_context*,
                                                  const struct heif_image_handle* image_handle,
                                                  const void* data, int size);
 
+enum heif_metadata_compression
+{
+  heif_metadata_compression_off,
+  heif_metadata_compression_auto,
+  heif_metadata_compression_deflate
+};
+
 // Add XMP metadata to an image.
 struct heif_error heif_context_add_XMP_metadata(struct heif_context*,
                                                 const struct heif_image_handle* image_handle,
@@ -1255,7 +1296,7 @@ struct heif_error heif_context_add_XMP_metadata(struct heif_context*,
 // Add generic, proprietary metadata to an image. You have to specify an 'item_type' that will
 // identify your metadata. 'content_type' can be an additional type, or it can be NULL.
 // For example, this function can be used to add IPTC metadata (IIM stream, not XMP) to an image.
-// Even not standard, we propose to store IPTC data with item type="iptc", content_type=NULL.
+// Although not standard, we propose to store IPTC data with item type="iptc", content_type=NULL.
 struct heif_error heif_context_add_generic_metadata(struct heif_context* ctx,
                                                     const struct heif_image_handle* image_handle,
                                                     const void* data, int size,
