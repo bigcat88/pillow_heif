@@ -1,3 +1,4 @@
+// original: https://github.com/strukturag/libheif/blob/master/libheif/heif.h
 /*
  * HEIF codec.
  * Copyright (c) 2017 struktur AG, Dirk Farin <farin@struktur.de>
@@ -32,6 +33,7 @@
 //  1.10         1             2            3             1             1            1
 //  1.11         1             2            4             1             1            1
 //  1.13         1             3            4             1             1            1
+//  1.14         1             3            5             1             1            1
 */
 
 /* === version numbers === */
@@ -86,7 +88,10 @@ enum heif_error_code
   heif_error_Encoding_error = 9,
 
   // Application has asked for a color profile type that does not exist
-  heif_error_Color_profile_does_not_exist = 10
+  heif_error_Color_profile_does_not_exist = 10,
+
+  // Error loading a dynamic plugin
+  heif_error_Plugin_loading_error = 11
 };
 
 
@@ -227,6 +232,8 @@ enum heif_suberror_code
 
   heif_suberror_Unsupported_item_construction_method = 3004,
 
+  heif_suberror_Unsupported_header_compression_method = 3005,
+
 
   // --- Encoder_plugin_error ---
 
@@ -236,8 +243,14 @@ enum heif_suberror_code
   // --- Encoding_error ---
 
   heif_suberror_Cannot_write_output_data = 5000,
-};
 
+
+  // --- Plugin loading error ---
+
+  heif_suberror_Plugin_loading_error = 6000,        // a specific plugin file cannot be loaded
+  heif_suberror_Plugin_is_not_loaded = 6001,        // trying to remove a plugin that is not loaded
+  heif_suberror_Cannot_read_plugin_directory = 6002 // error while scanning the directory for plugins
+};
 
 struct heif_error
 {
@@ -253,87 +266,6 @@ struct heif_error
 
 
 typedef uint32_t heif_item_id;
-
-
-
-// ========================= file type check ======================
-
-enum heif_filetype_result
-{
-  heif_filetype_no,
-  heif_filetype_yes_supported,   // it is heif and can be read by libheif
-  heif_filetype_yes_unsupported, // it is heif, but cannot be read by libheif
-  heif_filetype_maybe // not sure whether it is an heif, try detection with more input data
-};
-
-// input data should be at least 12 bytes
-enum heif_filetype_result heif_check_filetype(const uint8_t* data, int len);
-
-
-// DEPRECATED, use heif_brand2 instead
-enum heif_brand
-{
-  heif_unknown_brand,
-  heif_heic, // the usual HEIF images
-  heif_heix, // 10bit images, or anything that uses h265 with range extension
-  heif_hevc, heif_hevx, // brands for image sequences
-  heif_heim, // multiview
-  heif_heis, // scalable
-  heif_hevm, // multiview sequence
-  heif_hevs, // scalable sequence
-  heif_mif1, // image, any coding algorithm
-  heif_msf1, // sequence, any coding algorithm
-  heif_avif,
-  heif_avis
-};
-
-// input data should be at least 12 bytes
-// DEPRECATED, use heif_read_main_brand() instead
-enum heif_brand heif_main_brand(const uint8_t* data, int len);
-
-
-typedef uint32_t heif_brand2;
-
-// input data should be at least 12 bytes
-heif_brand2 heif_read_main_brand(const uint8_t* data, int len);
-
-// 'brand_fourcc' must be 4 character long, but need not be 0-terminated
-heif_brand2 heif_fourcc_to_brand(const char* brand_fourcc);
-
-// the output buffer must be at least 4 bytes long
-void heif_brand_to_fourcc(heif_brand2 brand, char* out_fourcc);
-
-// 'brand_fourcc' must be 4 character long, but need not be 0-terminated
-// returns 1 if file includes the brand, and 0 if it does not
-// returns -1 if the provided data is not sufficient
-//            (you should input at least as many bytes as indicated in the first 4 bytes of the file, usually ~50 bytes will do)
-// returns -2 on other errors
-int heif_has_compatible_brand(const uint8_t* data, int len, const char* brand_fourcc);
-
-// Returns an array of compatible brands. The array is allocated by this function and has to be freed with 'heif_free_list_of_compatible_brands()'.
-// The number of entries is returned in out_size.
-struct heif_error heif_list_compatible_brands(const uint8_t* data, int len, heif_brand2** out_brands, int* out_size);
-
-void heif_free_list_of_compatible_brands(heif_brand2* brands_list);
-
-
-// Returns one of these MIME types:
-// - image/heic           HEIF file using h265 compression
-// - image/heif           HEIF file using any other compression
-// - image/heic-sequence  HEIF image sequence using h265 compression
-// - image/heif-sequence  HEIF image sequence using any other compression
-// - image/jpeg    JPEG image
-// - image/png     PNG image
-// If the format could not be detected, an empty string is returned.
-//
-// Provide at least 12 bytes of input. With less input, its format might not
-// be detected. You may also provide more input to increase detection accuracy.
-//
-// Note that JPEG and PNG images cannot be decoded by libheif even though the
-// formats are detected by this function.
-const char* heif_get_file_mime_type(const uint8_t* data, int len);
-
-
 
 // ========================= heif_context =========================
 // A heif_context represents a HEIF file that has been read.
@@ -351,64 +283,11 @@ void heif_context_free(struct heif_context*);
 
 struct heif_reading_options;
 
-enum heif_reader_grow_status
-{
-  heif_reader_grow_status_size_reached,   // requested size has been reached, we can read until this point
-  heif_reader_grow_status_timeout,        // size has not been reached yet, but it may still grow further
-  heif_reader_grow_status_size_beyond_eof // size has not been reached and never will. The file has grown to its full size
-};
-
-struct heif_reader
-{
-  // API version supported by this reader
-  int reader_api_version;
-
-  // --- version 1 functions ---
-  int64_t (* get_position)(void* userdata);
-
-  // The functions read(), and seek() return 0 on success.
-  // Generally, libheif will make sure that we do not read past the file size.
-  int (* read)(void* data,
-               size_t size,
-               void* userdata);
-
-  int (* seek)(int64_t position,
-               void* userdata);
-
-  // When calling this function, libheif wants to make sure that it can read the file
-  // up to 'target_size'. This is useful when the file is currently downloaded and may
-  // grow with time. You may, for example, extract the image sizes even before the actual
-  // compressed image data has been completely downloaded.
-  //
-  // Even if your input files will not grow, you will have to implement at least
-  // detection whether the target_size is above the (fixed) file length
-  // (in this case, return 'size_beyond_eof').
-  enum heif_reader_grow_status (* wait_for_file_size)(int64_t target_size, void* userdata);
-};
-
-
-// Read a HEIF file from a named disk file.
-// The heif_reading_options should currently be set to NULL.
-struct heif_error heif_context_read_from_file(struct heif_context*, const char* filename,
-                                              const struct heif_reading_options*);
-
-// Read a HEIF file stored completely in memory.
-// The heif_reading_options should currently be set to NULL.
-// DEPRECATED: use heif_context_read_from_memory_without_copy() instead.
-struct heif_error heif_context_read_from_memory(struct heif_context*,
-                                                const void* mem, size_t size,
-                                                const struct heif_reading_options*);
-
 // Same as heif_context_read_from_memory() except that the provided memory is not copied.
 // That means, you will have to keep the memory area alive as long as you use the heif_context.
 struct heif_error heif_context_read_from_memory_without_copy(struct heif_context*,
                                                              const void* mem, size_t size,
                                                              const struct heif_reading_options*);
-
-struct heif_error heif_context_read_from_reader(struct heif_context*,
-                                                const struct heif_reader* reader,
-                                                void* userdata,
-                                                const struct heif_reading_options*);
 
 // Number of top-level images in the HEIF file. This does not include the thumbnails or the
 // tile images that are composed to an image grid. You can get access to the thumbnails via
@@ -588,8 +467,8 @@ struct heif_error heif_image_handle_get_auxiliary_image_handle(const struct heif
 
 // ------------------------- metadata (Exif / XMP) -------------------------
 
-// How many metadata blocks are attached to an image. Usually, the only metadata is
-// an "Exif" block.
+// How many metadata blocks are attached to an image. If you only want to get EXIF data,
+// set the type_filter to "Exif". Otherwise, set the type_filter to NULL.
 int heif_image_handle_get_number_of_metadata_blocks(const struct heif_image_handle* handle,
                                                     const char* type_filter);
 
@@ -606,6 +485,8 @@ int heif_image_handle_get_list_of_metadata_block_IDs(const struct heif_image_han
 const char* heif_image_handle_get_metadata_type(const struct heif_image_handle* handle,
                                                 heif_item_id metadata_id);
 
+// For EXIF, the content type is empty.
+// For XMP, the content type is "application/rdf+xml".
 const char* heif_image_handle_get_metadata_content_type(const struct heif_image_handle* handle,
                                                         heif_item_id metadata_id);
 
@@ -785,11 +666,6 @@ enum heif_chroma
   heif_chroma_interleaved_RRGGBBAA_LE = 15
 };
 
-// DEPRECATED ENUM NAMES
-//#define heif_chroma_interleaved_24bit  heif_chroma_interleaved_RGB
-//#define heif_chroma_interleaved_32bit  heif_chroma_interleaved_RGBA
-
-
 enum heif_colorspace
 {
   heif_colorspace_undefined = 99,
@@ -966,9 +842,6 @@ void heif_image_release(const struct heif_image*);
 // ====================================================================================================
 //  Encoding API
 
-struct heif_error heif_context_write_to_file(struct heif_context*,
-                                             const char* filename);
-
 struct heif_writer
 {
   // API version supported by this writer
@@ -1091,11 +964,6 @@ enum heif_encoder_parameter_type
 // Return the parameter type.
 enum heif_encoder_parameter_type heif_encoder_parameter_get_type(const struct heif_encoder_parameter*);
 
-// DEPRECATED. Use heif_encoder_parameter_get_valid_integer_values() instead.
-struct heif_error heif_encoder_parameter_get_valid_integer_range(const struct heif_encoder_parameter*,
-                                                                 int* have_minimum_maximum,
-                                                                 int* minimum, int* maximum);
-
 // If integer is limited by a range, have_minimum and/or have_maximum will be != 0 and *minimum, *maximum is set.
 // If integer is limited by a fixed set of values, *num_valid_values will be >0 and *out_integer_array is set.
 struct heif_error heif_encoder_parameter_get_valid_integer_values(const struct heif_encoder_parameter*,
@@ -1115,13 +983,6 @@ struct heif_error heif_encoder_set_parameter_integer(struct heif_encoder*,
 struct heif_error heif_encoder_get_parameter_integer(struct heif_encoder*,
                                                      const char* parameter_name,
                                                      int* value);
-
-// TODO: name should be changed to heif_encoder_get_valid_integer_parameter_range
-// DEPRECATED.
-struct heif_error heif_encoder_parameter_integer_valid_range(struct heif_encoder*,
-                                                             const char* parameter_name,
-                                                             int* have_minimum_maximum,
-                                                             int* minimum, int* maximum);
 
 struct heif_error heif_encoder_set_parameter_boolean(struct heif_encoder*,
                                                      const char* parameter_name,
@@ -1175,6 +1036,20 @@ int heif_encoder_has_default(struct heif_encoder*,
                              const char* parameter_name);
 
 
+// The orientation values are defined equal to the EXIF Orientation tag.
+enum heif_orientation
+{
+  heif_orientation_normal = 1,
+  heif_orientation_flip_horizontally = 2,
+  heif_orientation_rotate_180 = 3,
+  heif_orientation_flip_vertically = 4,
+  heif_orientation_rotate_90_cw_then_flip_horizontally = 5,
+  heif_orientation_rotate_90_cw = 6,
+  heif_orientation_rotate_90_cw_then_flip_vertically = 7,
+  heif_orientation_rotate_270_cw = 8
+};
+
+
 struct heif_encoding_options
 {
   uint8_t version;
@@ -1201,6 +1076,11 @@ struct heif_encoding_options
   struct heif_color_profile_nclx* output_nclx_profile;
 
   uint8_t macOS_compatibility_workaround_no_nclx_profile;
+
+  // version 5 options
+
+  // libheif will generate irot/imir boxes to match these orientations
+  enum heif_orientation image_orientation;
 };
 
 struct heif_encoding_options* heif_encoding_options_alloc();
@@ -1255,7 +1135,7 @@ struct heif_error heif_context_add_XMP_metadata(struct heif_context*,
 // Add generic, proprietary metadata to an image. You have to specify an 'item_type' that will
 // identify your metadata. 'content_type' can be an additional type, or it can be NULL.
 // For example, this function can be used to add IPTC metadata (IIM stream, not XMP) to an image.
-// Even not standard, we propose to store IPTC data with item type="iptc", content_type=NULL.
+// Although not standard, we propose to store IPTC data with item type="iptc", content_type=NULL.
 struct heif_error heif_context_add_generic_metadata(struct heif_context* ctx,
                                                     const struct heif_image_handle* image_handle,
                                                     const void* data, int size,
@@ -1285,14 +1165,3 @@ void heif_image_set_premultiplied_alpha(struct heif_image* image,
                                         int is_premultiplied_alpha);
 
 int heif_image_is_premultiplied_alpha(struct heif_image* image);
-
-
-
-// --- register plugins
-
-struct heif_decoder_plugin;
-struct heif_encoder_plugin;
-
-struct heif_error heif_register_decoder_plugin(const struct heif_decoder_plugin*);
-
-struct heif_error heif_register_encoder_plugin(const struct heif_encoder_plugin*);
