@@ -11,7 +11,7 @@ from ._lib_info import (
 )
 from ._options import options
 from ._version import __version__
-from .as_opener import (
+from .as_plugin import (
     AvifImageFile,
     HeifImageFile,
     register_avif_opener,

@@ -4,7 +4,7 @@ from typing import List, Union
 
 from PIL import Image
 
-from .as_opener import _LibHeifImageFile
+from .as_plugin import _LibHeifImageFile
 from .heif import HeifFile, HeifImage, HeifThumbnail
 from .private import HeifCtxAsDict
 
