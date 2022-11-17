@@ -189,7 +189,7 @@ jobs:
           key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
         env:
           KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
+          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/public_api.h') }}
 
       - name: Run cibuildwheel
         run: |
@@ -263,7 +263,7 @@ jobs:
           key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
         env:
           KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
+          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/public_api.h') }}
 
       - name: Run cibuildwheel
         run: |
@@ -326,7 +326,7 @@ jobs:
           key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
         env:
           KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
+          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/public_api.h') }}
 
       - name: Run cibuildwheel
         run: |
@@ -389,7 +389,7 @@ jobs:
           key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
         env:
           KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
+          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/public_api.h') }}
 
       - name: Run cibuildwheel
         run: |

@@ -7,7 +7,7 @@ on:
       - 'libheif/linux/**'
       - 'libheif/linux_*.py'
       - 'libheif/build.py'
-      - 'libheif/heif.h'
+      - 'libheif/public_api.h'
   schedule:
     - cron: '59 23 * * 5' # Every Friday at 23:59 (GMT+2)
   workflow_dispatch:
@@ -63,7 +63,7 @@ jobs:
           key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
         env:
           KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/heif.h') }}
+          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/public_api.h') }}
 
       - name: Start test build
         run: cibuildwheel
