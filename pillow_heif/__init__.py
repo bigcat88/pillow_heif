@@ -11,20 +11,13 @@ from ._lib_info import (
 )
 from ._options import options
 from ._version import __version__
-from .as_opener import (
+from .as_plugin import (
     AvifImageFile,
     HeifImageFile,
     register_avif_opener,
     register_heif_opener,
 )
-from .constants import (
-    HeifChannel,
-    HeifChroma,
-    HeifColorProfileType,
-    HeifColorspace,
-    HeifCompressionFormat,
-    HeifErrorCode,
-)
+from .constants import HeifCompressionFormat, HeifErrorCode
 from .error import HeifError
 from .heif import (
     HeifFile,
