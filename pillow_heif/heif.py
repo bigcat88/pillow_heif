@@ -366,7 +366,7 @@ class HeifImage(HeifImageBase):
         :param width: new image width.
         :param height: new image height."""
 
-        warn("Function `scale` is deprecated, consider to use `PIL.Image.resize()` instead.", DeprecationWarning)
+        warn("Method `scale` is deprecated, consider to use `PIL.Image.resize()` instead.", DeprecationWarning)
         self._load_if_not()
         p_scaled_img = ffi.new("struct heif_image **")
         check_libheif_error(lib.heif_image_scale_image(self.heif_img, p_scaled_img, width, height, ffi.NULL))
