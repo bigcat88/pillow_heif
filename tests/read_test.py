@@ -260,17 +260,12 @@ def test_pillow_read_images(image_path):
             assert getattr(pillow_image, "fp") is None
             assert getattr(pillow_image, "heif_file") is None
             assert getattr(pillow_image, "_close_exclusive_fp_after_loading")
-            # Testing here one more time, just for sure, that missing `heif_file` not affect anything.
+            # Testing here one more time, just for sure, that missing `heif_file` does not affect anything.
             collect()
             assert pillow_image.tobytes()
             assert len(ImageSequence.Iterator(pillow_image)[0].tobytes())
 
     test_read_image()
-    try:
-        pillow_heif.options().ctx_in_memory = False
-        test_read_image()
-    finally:
-        pillow_heif.options().ctx_in_memory = True
 
 
 @pytest.mark.parametrize("img_path", dataset.TRUNCATED_DATASET)
