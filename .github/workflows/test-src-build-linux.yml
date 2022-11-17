@@ -10,7 +10,7 @@ on:
       - 'libheif/linux/**'
       - 'libheif/linux_*.py'
       - 'libheif/build.py'
-      - 'libheif/heif.h'
+      - 'libheif/public_api.h'
       - 'setup.*'
       - 'pyproject.toml'
   push:
@@ -19,7 +19,7 @@ on:
       - 'libheif/linux/**'
       - 'libheif/linux_*.py'
       - 'libheif/build.py'
-      - 'libheif/heif.h'
+      - 'libheif/public_api.h'
       - 'setup.*'
       - 'pyproject.toml'
 

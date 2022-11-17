@@ -10,7 +10,7 @@ from cffi import FFI
 from libheif import linux_build_libs
 
 ffi = FFI()
-with open("libheif/heif.h", "r", encoding="utf-8") as f:
+with open("libheif/public_api.h", "r", encoding="utf-8") as f:
     ffi.cdef(f.read())
 
 ffi.cdef(
@@ -63,7 +63,7 @@ include_dirs.append(path.dirname(path.dirname(path.abspath(__file__))))
 ffi.set_source(
     "_pillow_heif_cffi",
     r"""
-    #include "libheif/heif.h"
+    #include "libheif/public_api.h"
     #include "pillow_heif/helpers.c"
     """,
     include_dirs=include_dirs,
