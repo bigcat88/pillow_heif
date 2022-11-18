@@ -147,10 +147,11 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           location: C:/temp
+          update: true
           install: >-
             mingw-w64-x86_64-libheif
 
-#     In release or building from source we do not build `dav1d` or `rav1e` libraries.
+#     In release or building from source we do not build `dav1d`, `rav1e` or `svt-enc` libraries.
 #     Here we just test working with original package from MSYS.
       - name: Copy DLLs from MSYS2
         run: |

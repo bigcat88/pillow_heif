@@ -10,10 +10,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- `libheif` updated  to `1.14.0` version
+- Ability to pass `enc_params` for save as `List[Tuple[str, str]]` was removed, now it accepts only `Dict`.
 - Deprecated `options().ctx_in_memory` was removed(default behaviour do not change).
 - Deprecated `options().strict` was removed(default behaviour do not change).
 - Deprecated `check`, `open`, `read`, `check_heif` functions was removed.
-- Ability to pass `enc_params` for save as `List[Tuple[str, str]]` was removed, now it accepts only `Dict`.
 - `scale` method marked as deprecated.
 
 ### Fixed
