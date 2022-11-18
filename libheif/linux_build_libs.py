@@ -153,7 +153,7 @@ def build_libs() -> str:
         else:
             print("libde265 already installed.")
         build_lib_linux(
-            "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
+            "https://github.com/strukturag/libheif/releases/download/v1.14.0/libheif-1.14.0.tar.gz",
             "libheif",
             _is_musllinux,
         )
