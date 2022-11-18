@@ -108,7 +108,7 @@ def test_full_build():
     assert info["decoders"]["AV1"]
     assert info["encoders"]["AV1"]
     assert info["encoders"]["HEVC"]
-    assert info["version"]["libheif"] == os.getenv("EXP_PH_LIBHEIF_VERSION", "1.13.0")
+    assert info["version"]["libheif"] == os.getenv("EXP_PH_LIBHEIF_VERSION", "1.14.0")
 
 
 @pytest.mark.skipif(not helpers.RELEASE_LIGHT_FLAG, reason="Only when building light release")
@@ -117,4 +117,4 @@ def test_light_build():
     assert not info["decoders"]["AV1"]
     assert not info["encoders"]["AV1"]
     assert not info["encoders"]["HEVC"]
-    assert info["version"]["libheif"] == os.getenv("EXP_PH_LIBHEIF_VERSION", "1.13.0")
+    assert info["version"]["libheif"] == os.getenv("EXP_PH_LIBHEIF_VERSION", "1.14.0")
