@@ -104,7 +104,10 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ..".split()
             cmake_args += ["-DCMAKE_BUILD_TYPE=Release"]
             if name == "libheif":
-                cmake_args += "-DWITH_EXAMPLES=OFF -DWITH_RAV1E=OFF -DWITH_DAV1D=OFF -DWITH_SvtEnc_PLUGIN=OFF".split()
+                cmake_args += (
+                    "-DWITH_EXAMPLES=OFF -DWITH_RAV1E=OFF -DWITH_DAV1D=OFF -DWITH_SvtEnc=OFF"
+                    " -DENABLE_PLUGIN_LOADING=OFF".split()
+                )
                 _hide_build_process = False
                 if musl:
                     cmake_args += [f"-DCMAKE_INSTALL_LIBDIR={INSTALL_DIR_LIBS}/lib"]

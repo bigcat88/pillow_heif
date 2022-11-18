@@ -13,7 +13,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def test_libheif_info():
     info = pillow_heif.libheif_info()
-    assert info["version"]["libheif"] in ("1.12.0", "1.13.0")
+    assert info["version"]["libheif"] in ("1.12.0", "1.13.0", "1.14.0")
     assert info["decoders"]["HEVC"]
 
 
