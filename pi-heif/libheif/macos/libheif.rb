@@ -15,12 +15,6 @@ class Libheif < Formula
   depends_on "libpng"
   depends_on "shared-mime-info"
 
-  # (001) AOM: remove extend_padding_to_size
-  patch do
-    url "https://github.com/strukturag/libheif/commit/a01baccaf40bafcabddba47846f5e914ca0724f6.diff"
-    sha256 "900c2f1323002af1c6969ae1f9b4a50fe685374e203d034842ee53cb428179ea"
-  end
-
   def install
     system "./configure", *std_configure_args, "--disable-silent-rules"
     system "make", "install"
