@@ -13,6 +13,7 @@ jobs:
     name: 🐍 • ${{ matrix.i['os'] }} • ${{ matrix.i['ver'] }} • ${{ matrix.i['arch'] }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         i: [
           { "os": "amazonlinux", "ver": "latest", "arch": "amd64" },
@@ -23,16 +24,19 @@ jobs:
           { "os": "fedora", "ver": "37", "arch": "amd64" },
           { "os": "centos", "ver": "7", "arch": "amd64" },
           { "os": "centos", "ver": "7", "arch": "arm64" },
-          { "os": "debian", "ver": "10.11", "arch": "amd64" },
-          { "os": "debian", "ver": "10.11", "arch": "arm64" },
-          { "os": "debian", "ver": "11.2", "arch": "amd64" },
-          { "os": "debian", "ver": "11.2", "arch": "arm64" },
+          { "os": "debian", "ver": "10", "arch": "amd64" },
+          { "os": "debian", "ver": "10", "arch": "arm64" },
+          { "os": "debian", "ver": "10", "arch": "arm/v7" },
+          { "os": "debian", "ver": "11", "arch": "amd64" },
+          { "os": "debian", "ver": "11", "arch": "arm64" },
           { "os": "alpine", "ver": "3.14", "arch": "amd64" },
           { "os": "alpine", "ver": "3.14", "arch": "arm64" },
+          { "os": "alpine", "ver": "3.14", "arch": "arm/v7" },
           { "os": "alpine", "ver": "3.15", "arch": "amd64" },
           { "os": "alpine", "ver": "3.15", "arch": "arm64" },
           { "os": "alpine", "ver": "3.16", "arch": "amd64" },
           { "os": "alpine", "ver": "3.16", "arch": "arm64" },
+          { "os": "alpine", "ver": "3.16", "arch": "arm/v7" },
         ]
 
     steps:
@@ -42,16 +46,23 @@ jobs:
 
       - uses: actions/checkout@v3
       - name: Set up QEMU
-        if: matrix.i['arch'] == 'arm64'
         uses: docker/setup-qemu-action@v2
-        with:
-          platforms: arm64
+
+      - name: Test type is Full
+        if: matrix.i['arch'] != 'arm/v7'
+        run: echo TEST_TYPE="export PH_FULL_ACTION=1" >> $GITHUB_ENV
+
+      - name: Test type is Light
+        if: matrix.i['arch'] == 'arm/v7'
+        run: echo TEST_TYPE="export PH_LIGHT_ACTION=1" >> $GITHUB_ENV
 
       - name: Preparing debian
         if: matrix.i['os'] == 'debian' || matrix.i['os'] == 'ubuntu'
         run: |
           echo PREPARE_CMD="apt update" >> $GITHUB_ENV
-          echo INSTALL_CMD="apt install -y python3-minimal python3-distutils python3-pip" >> $GITHUB_ENV
+          echo INSTALL_CMD="apt install -y \
+            python3-minimal python3-distutils python3-pip python3-dev \
+            zlib1g-dev libjpeg62-turbo-dev liblcms2-dev libwebp-dev libfribidi-dev libharfbuzz-dev" >> $GITHUB_ENV
 
       - name: Preparing musli
         if: matrix.i['os'] == 'alpine'
@@ -65,11 +76,12 @@ jobs:
 
       - name: Build image & Run tests
         run: |
-          docker buildx build --platform ${{ matrix.i.arch }} \
+          docker buildx build \
+            --platform linux/${{ matrix.i.arch }} \
             --build-arg BASE_IMAGE="${{ matrix.i['os'] }}:${{ matrix.i['ver'] }}" \
             --build-arg PREPARE_CMD="${{ env.PREPARE_CMD }}" \
             --build-arg INSTALL_CMD="${{ env.INSTALL_CMD }}" \
-            --build-arg TEST_TYPE="export PH_FULL_ACTION=1" \
+            --build-arg TEST_TYPE="${{ env.TEST_TYPE }}" \
             -f docker/test_wheels.Dockerfile .
 
   windows-wheels:
