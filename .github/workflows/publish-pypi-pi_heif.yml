@@ -291,75 +291,75 @@ jobs:
           path: ./dock_out/pi_heif/repaired_dist/*.whl
           if-no-files-found: error
 
-#  sdist:
-#    name: Source distribution
-#    runs-on: macos-12
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - name: Put pi-heif files
-#        run: |
-#          cp -r -v ./pi-heif/* .
-#          python3 .github/transform_to-pi_heif.py
-#
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.9'
-#
-#      - name: Prepare system
-#        run: |
-#          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-#          brew uninstall --force --ignore-dependencies imagemagick
-#          brew uninstall --force --ignore-dependencies libheif x265 aom
-#          brew install --formula ./libheif/macos/libheif.rb
-#
-#      - name: Install requirements
-#        run: python3 -m pip install twine wheel build
-#
-#      - name: Build sdist
-#        run: |
-#          python3 -m pip install pytest piexif pillow numpy pympler defusedxml
-#          python3 -m build --sdist --outdir wheelhouse
-#
-#      - name: Install and check sdist
-#        run: |
-#          python3 -m pip install --user wheelhouse/*.tar.gz
-#          python3 -m twine check wheelhouse/*
-#
-#      - name: LibHeif info
-#        run: python3 -c "import pi_heif; print(pi_heif.libheif_info())"
-#
-#      - name: Test sdist
-#        run: |
-#          export PH_LIGHT_ACTION=1
-#          python3 -m pytest -rs
-#
-#      - name: Upload sdist
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse/*.tar.gz
+  sdist:
+    name: Source distribution
+    runs-on: macos-12
 
-#  publish_release:
-#    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist,
-#            wheels_manylinux_armv7l, wheels_musllinux_armv7l]
-#    name: Publish release
-#    runs-on: ubuntu-20.04
-#    env:
-#      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-#      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-#
-#    steps:
-#      - name: Collect sdist and wheels
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse
-#
-#      - name: Publish wheels to PyPI
-#        run: |
-#            python3 -m pip install twine
-#            ls -la wheelhouse/
-#            python3 -m twine upload --repository testpypi --skip-existing wheelhouse/*.whl
-#            python3 -m twine upload --repository testpypi wheelhouse/*tar.gz
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Put pi-heif files
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Prepare system
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew uninstall --force --ignore-dependencies imagemagick
+          brew uninstall --force --ignore-dependencies libheif x265 aom
+          brew install --formula ./libheif/macos/libheif.rb
+
+      - name: Install requirements
+        run: python3 -m pip install twine wheel build
+
+      - name: Build sdist
+        run: |
+          python3 -m pip install pytest piexif pillow numpy pympler defusedxml
+          python3 -m build --sdist --outdir wheelhouse
+
+      - name: Install and check sdist
+        run: |
+          python3 -m pip install --user wheelhouse/*.tar.gz
+          python3 -m twine check wheelhouse/*
+
+      - name: LibHeif info
+        run: python3 -c "import pi_heif; print(pi_heif.libheif_info())"
+
+      - name: Test sdist
+        run: |
+          export PH_LIGHT_ACTION=1
+          python3 -m pytest -rs
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse/*.tar.gz
+
+  publish_release:
+    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist,
+            wheels_manylinux_armv7l, wheels_musllinux_armv7l]
+    name: Publish release
+    runs-on: ubuntu-20.04
+    env:
+      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+
+    steps:
+      - name: Collect sdist and wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse
+
+      - name: Publish wheels to PyPI
+        run: |
+            python3 -m pip install twine
+            ls -la wheelhouse/
+            python3 -m twine upload --repository testpypi --skip-existing wheelhouse/*.whl
+            python3 -m twine upload --repository testpypi wheelhouse/*tar.gz

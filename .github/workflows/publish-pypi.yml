@@ -504,24 +504,24 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifactErrorsFailBuild: true
 
-#  publish_release:
-#    needs: [create_release]
-#    name: Publish release
-#    runs-on: ubuntu-20.04
-#    env:
-#      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-#      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-#
-#    steps:
-#      - name: Collect sdist and wheels
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: wheels
-#          path: wheelhouse
-#
-#      - name: Publish wheels to PyPI
-#        run: |
-#            python3 -m pip install twine
-#            ls -la wheelhouse/
-#            python3 -m twine upload --repository testpypi --skip-existing wheelhouse/*.whl
-#            python3 -m twine upload --repository testpypi wheelhouse/*tar.gz
+  publish_release:
+    needs: [create_release]
+    name: Publish release
+    runs-on: ubuntu-20.04
+    env:
+      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+
+    steps:
+      - name: Collect sdist and wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse
+
+      - name: Publish wheels to PyPI
+        run: |
+            python3 -m pip install twine
+            ls -la wheelhouse/
+            python3 -m twine upload --repository testpypi --skip-existing wheelhouse/*.whl
+            python3 -m twine upload --repository testpypi wheelhouse/*tar.gz
