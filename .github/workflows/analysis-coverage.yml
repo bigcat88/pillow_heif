@@ -151,7 +151,7 @@ jobs:
           install: >-
             mingw-w64-x86_64-libheif
 
-#     In release or building from source we do not build `dav1d` and`rav1e` libraries.
+#     In release or building from source we do not build `dav1d`,`rav1e` and `libSvtAv1Enc` libraries.
 #     Here we just test working with original package from MSYS.
       - name: Copy DLLs from MSYS2
         run: |
@@ -166,6 +166,7 @@ jobs:
           cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libdav1d.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc.dll $site_packages/
 
       - name: Install from source
         run: |
