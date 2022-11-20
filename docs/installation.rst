@@ -38,7 +38,7 @@ Linux
         from source.
 
 There is many different ways how to build it from source. Main requirements are:
-    * libheif should be version ``1.12`` or ``1.13``
+    * libheif should be version ``1.12``, ``1.13`` or ``1.14``
     * ``x265`` should support 10 - 12 bit encoding(if you want to save in that bitness)
     * ``aom`` should be >= ``3.0.0`` version
 
@@ -86,10 +86,10 @@ Using **msys2** terminal change working directory and install `libheif`::
 
     cd .../pillow_heif/libheif/windows/mingw-w64-libheif
     makepkg-mingw --syncdeps
-    pacman -U mingw-w64-x86_64-libheif-1.13.0-2-any.pkg.tar.zst
+    pacman -U mingw-w64-x86_64-libheif-1.14.0-1-any.pkg.tar.zst
 
 .. note::
-    This is needed, so we dont want to `dav1d` or `rav1e` to be installed as the dependencies.
+    This is needed, so we dont want to `dav1d`, `rav1e` or `libSvtAv1Enc` to be installed as the dependencies.
 
 Now inside Pillow-Heif directory install it with pip from source::
 
