@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Values in `enc_params` for `save` can now have `int` or `float` type and will be automatically converted to `str`.
+- Values in `enc_params` for `save` can now be of type `int` or `float` and will be automatically converted to `str`.
 - Armv7: wheels supports Debian 10(was only Debian 11+\Ubuntu 20.04+ previously) with `manylinux_2_28_armv7l` tag.
 - Armv7: wheels sizes decreased significantly(almost in `3x`).
 
