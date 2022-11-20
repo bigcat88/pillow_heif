@@ -1,0 +1,55 @@
+diff --git a/libheif/CMakeLists.txt b/libheif/CMakeLists.txt
+index db9eac7fe..5330b4fe1 100644
+--- a/libheif/CMakeLists.txt
++++ b/libheif/CMakeLists.txt
+@@ -62,13 +62,17 @@ target_compile_definitions(heif
+                                LIBHEIF_EXPORTS
+                                HAVE_VISIBILITY)
+ 
+-add_subdirectory(plugins)
+-
+ if (ENABLE_PLUGIN_LOADING AND UNIX)
++    set(PLUGIN_LOADING_SUPPORTED_AND_ENABLED TRUE)
++endif()
++
++if (PLUGIN_LOADING_SUPPORTED_AND_ENABLED)
+     target_compile_definitions(heif PRIVATE ENABLE_PLUGIN_LOADING=1)
+     target_link_libraries(heif PRIVATE dl)
+ endif()
+ 
++add_subdirectory(plugins)
++
+ if (WITH_DEFLATE_HEADER_COMPRESSION)
+    find_package(ZLIB REQUIRED)
+    if (ZLIB_FOUND)
+diff --git a/libheif/plugins/CMakeLists.txt b/libheif/plugins/CMakeLists.txt
+index f25effc76..941a4889c 100644
+--- a/libheif/plugins/CMakeLists.txt
++++ b/libheif/plugins/CMakeLists.txt
+@@ -5,7 +5,8 @@ macro(plugin_compilation name varName optionName defineName)
+             set(${varName}_LINKDIR "-L${${varName}_LIBRARY_DIRS}")
+         endif ()
+ 
+-        if (WITH_${optionName}_PLUGIN)
++        if (PLUGIN_LOADING_SUPPORTED_AND_ENABLED AND WITH_${optionName}_PLUGIN)
++            message("Compiling '" ${name} "' as dynamic plugin")
+             add_library(heif-${name}
+                     MODULE ${${optionName}_sources} ${${optionName}_extra_plugin_sources}
+                     ../heif_plugin.cc
+@@ -26,6 +27,7 @@ macro(plugin_compilation name varName optionName defineName)
+                     LIBRARY DESTINATION ${PLUGIN_DIRECTORY}
+                     )
+         else ()
++            message("Compiling '" ${name} "' as built-in backend")
+             target_sources(heif PRIVATE ${${optionName}_sources})
+             target_compile_definitions(heif PRIVATE HAVE_${defineName}=1)
+             target_include_directories(heif PRIVATE ${${varName}_INCLUDE_DIR})
+@@ -34,6 +36,8 @@ macro(plugin_compilation name varName optionName defineName)
+ 
+         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${${varName}_CFLAGS}")
+         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${${varName}_CFLAGS}")
++    else()
++        message("Not compiling '" ${name} "' backend")
+     endif ()
+ endmacro()
+ 

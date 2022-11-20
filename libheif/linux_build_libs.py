@@ -69,7 +69,10 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                     #     run(f"patch -p 1 -i {patch_path}".split(), check=True)
                 elif name == "libheif":
                     chdir(_lib_path)
-                    for patch in ("libheif/001-aom-remove-extend_padding_to_size.patch",):
+                    for patch in (
+                        "libheif/001-void-unused-variable.patch",
+                        "libheif/002-fix-dynamic-plugins.patch",
+                    ):
                         patch_path = path.join(_linux_dir, patch)
                         run(f"patch -p 1 -i {patch_path}".split(), check=True)
             chdir(_build_path)
@@ -101,7 +104,10 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ..".split()
             cmake_args += ["-DCMAKE_BUILD_TYPE=Release"]
             if name == "libheif":
-                cmake_args += "-DWITH_EXAMPLES=OFF -DWITH_RAV1E=OFF -DWITH_DAV1D=OFF".split()
+                cmake_args += (
+                    "-DWITH_EXAMPLES=OFF -DWITH_RAV1E=OFF -DWITH_DAV1D=OFF -DWITH_SvtEnc=OFF"
+                    " -DENABLE_PLUGIN_LOADING=OFF".split()
+                )
                 _hide_build_process = False
                 if musl:
                     cmake_args += [f"-DCMAKE_INSTALL_LIBDIR={INSTALL_DIR_LIBS}/lib"]
@@ -150,7 +156,7 @@ def build_libs() -> str:
         else:
             print("libde265 already installed.")
         build_lib_linux(
-            "https://github.com/strukturag/libheif/releases/download/v1.13.0/libheif-1.13.0.tar.gz",
+            "https://github.com/strukturag/libheif/releases/download/v1.14.0/libheif-1.14.0.tar.gz",
             "libheif",
             _is_musllinux,
         )
