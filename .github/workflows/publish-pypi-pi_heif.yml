@@ -33,7 +33,7 @@ jobs:
         run: |
             cd libheif/windows/mingw-w64-libheif
             makepkg-mingw --syncdeps --noconfirm -f
-            pacman -U mingw-w64-x86_64-libheif-1.13.0-2-any.pkg.tar.zst --noconfirm
+            pacman -U mingw-w64-x86_64-libheif-1.14.0-1-any.pkg.tar.zst --noconfirm
 
       - name: Remove DLL trailing data
         run: ${{ env.MSYS2_PREFIX }}/bin/strip -s ${{ env.MSYS2_PREFIX }}/bin/*.dll
