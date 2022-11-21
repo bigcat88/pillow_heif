@@ -108,9 +108,9 @@ jobs:
           file: docker/src_ubuntu_22_04.Dockerfile
           platforms: ${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=src_build-manylinux-${{ matrix.build_arch }}
-          cache-to: type=gha,mode=min,scope=build-musllinux-${{ matrix.build_arch }}
-          tags: base-musllinux-${{ matrix.build_arch }}:latest
+          cache-from: type=gha,scope=src_build-manylinux-${{ matrix.arch }}
+          cache-to: type=gha,mode=min,scope=build-manylinux-${{ matrix.arch }}
+          tags: base-musllinux-${{ matrix.arch }}:latest
           target: base
 
       - name: Build & Test Pillow-Heif
@@ -120,6 +120,6 @@ jobs:
           file: docker/src_ubuntu_22_04.Dockerfile
           platforms: ${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=src_build-manylinux-${{ matrix.build_arch }}
-          tags: base-musllinux-${{ matrix.build_arch }}:latest
+          cache-from: type=gha,scope=src_build-manylinux-${{ matrix.arch }}
+          tags: base-musllinux-${{ matrix.arch }}:latest
           target: build_test
