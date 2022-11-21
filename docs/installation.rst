@@ -86,7 +86,7 @@ Using **msys2** terminal change working directory and install `libheif`::
 
     cd .../pillow_heif/libheif/windows/mingw-w64-libheif
     makepkg-mingw --syncdeps
-    pacman -U mingw-w64-x86_64-libheif-1.14.0-1-any.pkg.tar.zst
+    pacman -U mingw-w64-x86_64-libheif-*-any.pkg.tar.zst
 
 .. note::
     This is needed, so we dont want to `dav1d`, `rav1e` or `libSvtAv1Enc` to be installed as the dependencies.
