@@ -91,7 +91,8 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[docs]')"
     strategy:
       matrix:
-        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+        arch: ["linux/amd64" ]
 
     steps:
       - uses: actions/checkout@v3
@@ -108,9 +109,8 @@ jobs:
           file: docker/src_ubuntu_22_04.Dockerfile
           platforms: ${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=src_build-manylinux-${{ matrix.arch }}
-          cache-to: type=gha,mode=min,scope=build-manylinux-${{ matrix.arch }}
-          tags: base-musllinux-${{ matrix.arch }}:latest
+          cache-from: type=gha,scope=src-${{ $GITHUB_JOB }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=min,scope=src-${{ $GITHUB_JOB }}-${{ matrix.arch }}
           target: base
 
       - name: Build & Test Pillow-Heif
@@ -120,6 +120,5 @@ jobs:
           file: docker/src_ubuntu_22_04.Dockerfile
           platforms: ${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=src_build-manylinux-${{ matrix.arch }}
-          tags: base-musllinux-${{ matrix.arch }}:latest
+          cache-from: type=gha,scope=src-${{ $GITHUB_JOB }}-${{ matrix.arch }}
           target: build_test
