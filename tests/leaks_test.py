@@ -31,7 +31,7 @@ def perform_open_save(iterations, image_path):
 
 
 @pytest.mark.skipif(sys.executable.lower().find("pypy") != -1, reason="Disabled on PyPy.")
-@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 def test_open_save_objects_leaks():
     from pympler import summary, tracker
 

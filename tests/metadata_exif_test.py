@@ -15,7 +15,7 @@ pillow_heif.register_heif_opener()
 
 @pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
 @pytest.mark.skipif(not helpers.aom_enc(), reason="Requires AVIF encoder.")
-@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.skipif(parse_version(pil_version) < parse_version("9.2.0"), reason="Requires Pillow >= 9.2")
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 @pytest.mark.parametrize(
@@ -53,7 +53,7 @@ def test_exif_from_pillow(im_format, save_format):
     assert exif[0x010E] == exif_desc_value
 
 
-@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 def test_pillow_exif_add_remove():
     exif_desc_value = "this is a desc"
     exif = Image.Exif()
@@ -88,7 +88,7 @@ def test_pillow_exif_add_remove():
     assert "exif" not in im_heif_no_exif.info or im_heif_no_exif.info["exif"] is None
 
 
-@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 def test_heif_exif_add_remove():
     exif_desc_value = "this is a desc"
     exif = Image.Exif()
@@ -124,7 +124,7 @@ def test_heif_exif_add_remove():
     assert "exif" not in im_heif_no_exif.info or im_heif_no_exif.info["exif"] is None
 
 
-@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 def test_heif_multi_frame_exif_add_remove():
     exif_desc_value = "this is a desc"
     exif = Image.Exif()
@@ -166,7 +166,7 @@ def test_heif_multi_frame_exif_add_remove():
     assert "exif" not in im_heif_no_exif[1].info or im_heif_no_exif[1].info["exif"] is None
 
 
-@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEIF encoder.")
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 def test_corrupted_exif():
     exif_data = b"This_is_not_valid_EXIF_data"
     out_im = BytesIO()
