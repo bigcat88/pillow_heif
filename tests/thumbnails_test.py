@@ -9,7 +9,7 @@ import pillow_heif
 
 pillow_heif.register_heif_opener()
 if not hevc_enc():
-    pytest.skip(reason="Requires HEIF encoder.", allow_module_level=True)
+    pytest.skip(reason="Requires HEVC encoder.", allow_module_level=True)
 
 
 # Creating HEIF file in memory with 3 images.
