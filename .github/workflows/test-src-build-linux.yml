@@ -65,25 +65,43 @@ jobs:
 #
 #      - name: Build pillow_heif
 #        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_alpine_3_16.Dockerfile .
-#
-#  debian_10_build:
-#    name: Debian:Buster-${{ matrix.arch }}
-#    runs-on: ubuntu-latest
-#    if: "!contains(github.event.head_commit.message, '[docs]')"
-#    strategy:
-#      matrix:
-#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@v2
-#
-#      - name: Setup Docker Buildx
-#        uses: docker/setup-buildx-action@v2
-#
-#      - name: Build pillow_heif
-#        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_debian_10.Dockerfile .
+
+  debian_10_build:
+    name: Debian:Buster-${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[docs]')"
+    strategy:
+      matrix:
+        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Requirements
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/src_debian_10.Dockerfile
+          platforms: ${{ matrix.arch }}
+          push: false
+          cache-from: type=gha,scope=src-deb-10-${{ matrix.arch }}
+          cache-to: type=gha,mode=min,scope=src-deb-10-${{ matrix.arch }}
+          target: base
+
+      - name: Build & Test Pillow-Heif
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/src_debian_10.Dockerfile
+          platforms: ${{ matrix.arch }}
+          push: false
+          cache-from: type=gha,scope=src-deb-10-${{ matrix.arch }}
+          target: build_test
 
   ubuntu_22_04_build:
     name: Ubuntu:Jammy-${{ matrix.arch }}
@@ -91,8 +109,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[docs]')"
     strategy:
       matrix:
-#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
-        arch: ["linux/amd64" ]
+        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
 
     steps:
       - uses: actions/checkout@v3
@@ -109,8 +126,8 @@ jobs:
           file: docker/src_ubuntu_22_04.Dockerfile
           platforms: ${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=src-{{ github.job }}-${{ matrix.arch }}
-          cache-to: type=gha,mode=min,scope=src-{{ github.job }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=src-ubnt-22_04-${{ matrix.arch }}
+          cache-to: type=gha,mode=min,scope=src-ubnt-22_04-${{ matrix.arch }}
           target: base
 
       - name: Build & Test Pillow-Heif
@@ -120,5 +137,5 @@ jobs:
           file: docker/src_ubuntu_22_04.Dockerfile
           platforms: ${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=src-{{ github.job }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=src-ubnt-22_04-${{ matrix.arch }}
           target: build_test

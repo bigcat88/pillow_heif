@@ -1,6 +1,4 @@
-FROM debian:buster-slim
-
-COPY . /pillow_heif
+FROM debian:buster-slim as base
 
 RUN \
   apt-get -qq update && \
@@ -16,7 +14,13 @@ RUN \
     wget \
     autoconf \
     automake \
-    cmake && \
+    cmake
+
+FROM base as build_test
+
+COPY . /pillow_heif
+
+RUN \
   python3 -m pip install --upgrade pip && \
   if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
