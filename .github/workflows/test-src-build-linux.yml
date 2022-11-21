@@ -109,8 +109,8 @@ jobs:
           file: docker/src_ubuntu_22_04.Dockerfile
           platforms: ${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=src-${{ $GITHUB_JOB }}-${{ matrix.arch }}
-          cache-to: type=gha,mode=min,scope=src-${{ $GITHUB_JOB }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=src-$GITHUB_JOB-${{ matrix.arch }}
+          cache-to: type=gha,mode=min,scope=src-$GITHUB_JOB-${{ matrix.arch }}
           target: base
 
       - name: Build & Test Pillow-Heif
@@ -120,5 +120,5 @@ jobs:
           file: docker/src_ubuntu_22_04.Dockerfile
           platforms: ${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=src-${{ $GITHUB_JOB }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=src-$GITHUB_JOB-${{ matrix.arch }}
           target: build_test
