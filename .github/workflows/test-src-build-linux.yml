@@ -28,43 +28,79 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-#  alpine_3_14_build:
-#    name: Alpine:3.14-${{ matrix.arch }}
-#    runs-on: ubuntu-latest
-#    if: "!contains(github.event.head_commit.message, '[docs]')"
-#    strategy:
-#      matrix:
-#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@v2
-#
-#      - name: Setup Docker Buildx
-#        uses: docker/setup-buildx-action@v2
-#
-#      - name: Build pillow_heif
-#        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_alpine_3_14.Dockerfile .
-#
-#  alpine_3_16_build:
-#    name: Alpine:3.16-${{ matrix.arch }}
-#    runs-on: ubuntu-latest
-#    if: "!contains(github.event.head_commit.message, '[docs]')"
-#    strategy:
-#      matrix:
-#        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@v2
-#
-#      - name: Setup Docker Buildx
-#        uses: docker/setup-buildx-action@v2
-#
-#      - name: Build pillow_heif
-#        run: docker buildx build --platform ${{ matrix.arch }} -f docker/src_alpine_3_16.Dockerfile .
+  alpine_3_14_build:
+    name: Alpine:3.14-${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[docs]')"
+    strategy:
+      matrix:
+        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Requirements
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/src_alpine_3_14.Dockerfile
+          platforms: ${{ matrix.arch }}
+          push: false
+          cache-from: type=gha,scope=src-alpine-3_14-${{ matrix.arch }}
+          cache-to: type=gha,mode=min,scope=src-alpine-3_14-${{ matrix.arch }}
+          target: base
+
+      - name: Build & Test Pillow-Heif
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/src_alpine_3_14.Dockerfile
+          platforms: ${{ matrix.arch }}
+          push: false
+          cache-from: type=gha,scope=src-alpine-3_14-${{ matrix.arch }}
+          target: build_test
+
+  alpine_3_16_build:
+    name: Alpine:3.16-${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[docs]')"
+    strategy:
+      matrix:
+        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Requirements
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/src_alpine_3_16.Dockerfile
+          platforms: ${{ matrix.arch }}
+          push: false
+          cache-from: type=gha,scope=src-alpine-3_16-${{ matrix.arch }}
+          cache-to: type=gha,mode=min,scope=src-alpine-3_16-${{ matrix.arch }}
+          target: base
+
+      - name: Build & Test Pillow-Heif
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/src_alpine_3_16.Dockerfile
+          platforms: ${{ matrix.arch }}
+          push: false
+          cache-from: type=gha,scope=src-alpine-3_16-${{ matrix.arch }}
+          target: build_test
 
   debian_10_build:
     name: Debian:Buster-${{ matrix.arch }}

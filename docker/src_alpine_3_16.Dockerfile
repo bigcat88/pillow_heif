@@ -1,6 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.16
-
-COPY . /pillow_heif
+FROM ghcr.io/linuxserver/baseimage-alpine:3.16 as base
 
 RUN \
   apk add --no-cache \
@@ -25,7 +23,13 @@ RUN \
     libde265-dev \
     py3-cffi \
     py3-numpy \
-    py3-pillow && \
+    py3-pillow
+
+FROM base as build_test
+
+COPY . /pillow_heif
+
+RUN \
   python3 -m pip install --upgrade pip && \
   if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \

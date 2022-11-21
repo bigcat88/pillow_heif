@@ -1,6 +1,4 @@
-FROM alpine:3.14
-
-COPY . /pillow_heif
+FROM alpine:3.14 as base
 
 RUN \
   apk add --no-cache \
@@ -22,7 +20,13 @@ RUN \
     openjpeg-dev \
     nasm \
     py3-numpy \
-    py3-pillow && \
+    py3-pillow
+
+FROM base as build_test
+
+COPY . /pillow_heif
+
+RUN \
   python3 -m pip install --upgrade pip && \
   if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
