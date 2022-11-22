@@ -1,4 +1,4 @@
-FROM alpine:3.14 as base
+FROM alpine:3.15 as base
 
 RUN \
   apk add --no-cache \
@@ -19,6 +19,7 @@ RUN \
     lcms2-dev \
     openjpeg-dev \
     nasm \
+    libde265-dev \
     py3-numpy \
     py3-pillow
 
