@@ -1,9 +1,8 @@
-FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy
-
-COPY . /pillow_heif
+FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy as base
 
 RUN \
-  apt-get -qq update && apt-get -y -q install \
+  apt-get -qq update &&  \
+  apt-get -y -q install \
     python3-pip \
     libfribidi-dev \
     libharfbuzz-dev \
@@ -18,8 +17,16 @@ RUN \
     cmake \
     nasm \
     libaom-dev \
-    libde265-dev && \
-  python3 -m pip install --upgrade pip && \
+    libde265-dev
+
+RUN \
+  python3 -m pip install --upgrade pip
+
+FROM base as build_test
+
+COPY . /pillow_heif
+
+RUN \
   if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \

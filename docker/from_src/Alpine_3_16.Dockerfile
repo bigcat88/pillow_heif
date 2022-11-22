@@ -1,6 +1,4 @@
-FROM alpine:3.14
-
-COPY . /pillow_heif
+FROM ghcr.io/linuxserver/baseimage-alpine:3.16 as base
 
 RUN \
   apk add --no-cache \
@@ -12,18 +10,29 @@ RUN \
     m4 \
     perl \
     alpine-sdk \
-    autoconf \
-    automake \
     cmake \
     fribidi-dev \
     harfbuzz-dev \
     jpeg-dev \
     lcms2-dev \
     openjpeg-dev \
+    autoconf \
+    automake \
     nasm \
+    aom-dev \
+    libde265-dev \
+    py3-cffi \
     py3-numpy \
-    py3-pillow && \
-  python3 -m pip install --upgrade pip && \
+    py3-pillow
+
+RUN \
+  python3 -m pip install --upgrade pip
+
+FROM base as build_test
+
+COPY . /pillow_heif
+
+RUN \
   if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \
@@ -31,8 +40,5 @@ RUN \
   fi && \
   echo "**** Build Done ****" && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
-  if [ `uname -m` != "x86_64" ]; then \
-    export PH_TESTS_NO_HEVC_ENC=1; \
-  fi && \
   pytest -s pillow_heif && \
   echo "**** Test Done ****"
