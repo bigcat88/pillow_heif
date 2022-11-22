@@ -19,12 +19,15 @@ RUN \
     libaom-dev \
     libde265-dev
 
+RUN \
+  python3 -m pip install --upgrade pip && \
+  python3 -m pip install cffi
+
 FROM base as build_test
 
 COPY . /pillow_heif
 
 RUN \
-  python3 -m pip install --upgrade pip && \
   if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \

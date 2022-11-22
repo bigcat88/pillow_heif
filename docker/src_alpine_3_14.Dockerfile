@@ -22,12 +22,15 @@ RUN \
     py3-numpy \
     py3-pillow
 
+RUN \
+  python3 -m pip install --upgrade pip && \
+  python3 -m pip install cffi
+
 FROM base as build_test
 
 COPY . /pillow_heif
 
 RUN \
-  python3 -m pip install --upgrade pip && \
   if [ `uname -m` = "x86_64" ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \
