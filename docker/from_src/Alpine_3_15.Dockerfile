@@ -19,7 +19,6 @@ RUN \
     lcms2-dev \
     openjpeg-dev \
     nasm \
-    aom-dev \
     py3-numpy \
     py3-pillow
 

@@ -19,6 +19,7 @@ RUN \
     autoconf \
     automake \
     nasm \
+    aom-dev \
     libde265-dev \
     py3-cffi \
     py3-numpy \
@@ -36,7 +37,6 @@ RUN \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \
     python3 -m pip install -v "pillow_heif/.[tests-min]"; \
-    export PH_TESTS_NO_HEVC_ENC=1; \
   fi && \
   echo "**** Build Done ****" && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
