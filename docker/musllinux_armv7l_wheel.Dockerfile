@@ -7,24 +7,21 @@ RUN \
     py3-pip \
     python3-dev \
     libtool \
-    git \
     gcc \
     m4 \
     perl \
     alpine-sdk \
+    autoconf \
     automake \
     cmake \
     fribidi-dev \
     harfbuzz-dev \
     jpeg-dev \
-    lcms2-dev \
-    openjpeg-dev \
-    nasm \
     py3-numpy \
     py3-pillow && \
   python3 -m pip install --upgrade pip && \
   echo "**** Installing patchelf ****" && \
-  git clone -b 0.16.1 https://github.com/NixOS/patchelf.git && \
+  git clone -b 0.17.0 https://github.com/NixOS/patchelf.git && \
   cd patchelf && \
   ./bootstrap.sh && ./configure && make && make check && make install && \
   cd .. && \

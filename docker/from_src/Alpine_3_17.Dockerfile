@@ -15,8 +15,6 @@ RUN \
     fribidi-dev \
     harfbuzz-dev \
     jpeg-dev \
-    lcms2-dev \
-    openjpeg-dev \
     nasm \
     py3-cffi \
     py3-numpy \
