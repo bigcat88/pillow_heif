@@ -90,7 +90,7 @@ jobs:
           platforms: ${{ matrix.arch }}
           push: false
           cache-from: type=gha,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=min,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
           target: base
 
       - name: Build & Test Pillow-Heif
