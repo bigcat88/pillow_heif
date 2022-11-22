@@ -1,5 +1,6 @@
 from os import chdir, environ, makedirs, path, remove
-from re import IGNORECASE, MULTILINE, search
+from platform import machine
+from re import IGNORECASE, MULTILINE, match, search
 from subprocess import DEVNULL, PIPE, CalledProcessError, TimeoutExpired, run
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
@@ -104,5 +105,6 @@ def build_tools(musl: bool):
     build_tool("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.69")
     build_tool("https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.gz", "automake", "1.16.1")
     build_tool("https://github.com/Kitware/CMake/archive/refs/tags/v3.22.3.tar.gz", "cmake", "3.13.4")
-    nasm_url = "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz"
-    build_tool(nasm_url, "nasm", "2.15.05", chmod="774")
+    if match("(i[3-6]86|x86_64)$", machine()):
+        nasm_url = "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz"
+        build_tool(nasm_url, "nasm", "2.15.05", chmod="774")
