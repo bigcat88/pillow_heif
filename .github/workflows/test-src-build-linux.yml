@@ -34,8 +34,8 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[docs]')"
     strategy:
       matrix:
-        arch: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
-        docker_file: ["Alpine_3_15", "Alpine_3_16", "Debian_10", "Ubuntu_22_04"]
+        arch: ["amd64", "arm64", "arm/v7"]
+        docker_file: ["Alpine_3_15", "Alpine_3_17", "Debian_10", "Ubuntu_22_04"]
 
     steps:
       - uses: actions/checkout@v3
@@ -50,7 +50,7 @@ jobs:
         with:
           context: .
           file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
-          platforms: ${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch }}
           push: false
           cache-from: type=gha,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
           cache-to: type=gha,mode=min,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
@@ -61,7 +61,7 @@ jobs:
         with:
           context: .
           file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
-          platforms: ${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch }}
           push: false
           cache-from: type=gha,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
           target: build_test
