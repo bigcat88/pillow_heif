@@ -10,20 +10,20 @@ RUN \
     m4 \
     perl \
     alpine-sdk \
+    automake \
     cmake \
     fribidi-dev \
     harfbuzz-dev \
     jpeg-dev \
     lcms2-dev \
     openjpeg-dev \
-    autoconf \
-    automake \
     nasm \
-    aom-dev \
-    libde265-dev \
     py3-cffi \
     py3-numpy \
     py3-pillow
+
+#    aom-dev \
+#    libde265-dev \
 
 RUN \
   python3 -m pip install --upgrade pip

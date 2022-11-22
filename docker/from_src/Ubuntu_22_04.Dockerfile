@@ -12,12 +12,11 @@ RUN \
     libtool \
     git \
     pkg-config \
-    autoconf \
     automake \
     cmake \
-    nasm \
-    libaom-dev \
-    libde265-dev
+    nasm
+#    libaom-dev \
+#    libde265-dev
 
 RUN \
   python3 -m pip install --upgrade pip

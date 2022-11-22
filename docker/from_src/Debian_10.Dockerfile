@@ -12,7 +12,6 @@ RUN \
     libtool \
     git \
     wget \
-    autoconf \
     automake \
     cmake
 

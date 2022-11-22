@@ -102,7 +102,7 @@ def build_tools(musl: bool):
         "0.29.1" if not musl else "",
         configure_args=["--with-internal-glib"],
     )
-    build_tool("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.69")
+    # build_tool("https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz", "autoconf", "2.69")
     build_tool("https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.gz", "automake", "1.16.1")
     build_tool("https://github.com/Kitware/CMake/archive/refs/tags/v3.22.3.tar.gz", "cmake", "3.13.4")
     if match("(i[3-6]86|x86_64)$", machine()):
