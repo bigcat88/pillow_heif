@@ -20,7 +20,6 @@ RUN \
     automake \
     nasm \
     libde265-dev \
-    x265-dev \
     py3-cffi \
     py3-numpy \
     py3-pillow
