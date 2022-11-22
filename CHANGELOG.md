@@ -2,7 +2,20 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.8.0 - 2022-xx-xx]
+## [0.8.1 - 2022-1x-xx]
+
+### Added
+
+### Changed
+
+- `libheif` updated  to `1.14.1` version
+
+### Fixed
+
+- Linux: speed of loading images increased by `2x`. Thanks to @jtressle for pointing on this issue. #53
+- Libheif: fixed limited-range offset for HDR color conversion [issue](https://github.com/strukturag/libheif/issues/706)
+
+## [0.8.0 - 2022-11-20]
 
 ### Added
 
