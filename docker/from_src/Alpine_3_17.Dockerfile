@@ -10,7 +10,6 @@ RUN \
     m4 \
     perl \
     alpine-sdk \
-    automake \
     cmake \
     fribidi-dev \
     harfbuzz-dev \

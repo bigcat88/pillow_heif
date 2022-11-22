@@ -12,7 +12,6 @@ RUN \
     libtool \
     git \
     pkg-config \
-    automake \
     cmake \
     nasm
 #    libaom-dev \
