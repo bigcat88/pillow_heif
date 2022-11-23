@@ -8,7 +8,7 @@ on:
     types: [opened, reopened, edited]
     paths:
       - 'libheif/linux/**'
-      - 'libheif/linux_*.py'
+      - 'libheif/linux_build_libs.py'
       - 'libheif/build.py'
       - 'libheif/public_api.h'
       - 'setup.*'
@@ -17,7 +17,7 @@ on:
     branches: [master]
     paths:
       - 'libheif/linux/**'
-      - 'libheif/linux_*.py'
+      - 'libheif/linux_build_libs.py'
       - 'libheif/build.py'
       - 'libheif/public_api.h'
       - 'setup.*'
@@ -35,8 +35,7 @@ jobs:
     strategy:
       matrix:
         arch: ["amd64", "arm64", "arm/v7"]
-#        docker_file: ["Alpine_3_15", "Alpine_3_17", "Debian_10", "Ubuntu_22_04"]
-        docker_file: ["Debian_11", "Ubuntu_22_04"]
+        docker_file: ["Alpine_3_15", "Alpine_3_17", "Debian_11", "Ubuntu_22_04"]
 
     steps:
       - uses: actions/checkout@v3
@@ -53,8 +52,8 @@ jobs:
           file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
           platforms: linux/${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=t1-${{ matrix.docker_file }}-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=t1-${{ matrix.docker_file }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=min,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
           target: base
 
       - name: Build & Test Pillow-Heif
@@ -64,5 +63,5 @@ jobs:
           file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
           platforms: linux/${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=t1-${{ matrix.docker_file }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
           target: build_test

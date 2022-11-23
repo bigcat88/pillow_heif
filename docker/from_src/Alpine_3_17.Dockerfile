@@ -2,8 +2,8 @@ FROM alpine:3.17 as base
 
 RUN \
   apk add --no-cache \
-    py3-pip \
     python3-dev \
+    py3-pip \
     perl \
     alpine-sdk \
     libffi-dev \
@@ -15,9 +15,6 @@ RUN \
 
 RUN \
   python3 -m pip install --upgrade pip
-
-RUN \
-  python3 -m pip install wheel cffi==1.15.1
 
 FROM base as build_test
 
