@@ -3,10 +3,6 @@ name: Build from source(Alpine)
 on:
   workflow_dispatch:
 
-concurrency:
-  group: src_linux-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   test_src_build:
     name: ${{ matrix.docker_file }}-${{ matrix.arch }}
