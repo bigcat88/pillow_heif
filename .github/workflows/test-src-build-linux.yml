@@ -53,8 +53,8 @@ jobs:
           file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
           platforms: linux/${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
-          cache-to: type=gha,mode=min,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=t1-${{ matrix.docker_file }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=t1-${{ matrix.docker_file }}-${{ matrix.arch }}
           target: base
 
       - name: Build & Test Pillow-Heif
@@ -64,5 +64,5 @@ jobs:
           file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
           platforms: linux/${{ matrix.arch }}
           push: false
-          cache-from: type=gha,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=t1-${{ matrix.docker_file }}-${{ matrix.arch }}
           target: build_test
