@@ -1,15 +1,96 @@
 import sys
-from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path
-from subprocess import PIPE, STDOUT, run
-
-from libheif import linux_build_tools
+from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path, remove
+from platform import machine
+from re import IGNORECASE, MULTILINE, match, search
+from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
+BUILD_DIR_TOOLS = path.join(BUILD_DIR_PREFIX, "build-tools")
 BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
 INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
-
-
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
+
+
+def download_file(url: str, out_path: str) -> bool:
+    n_download_clients = 2
+    for _ in range(2):
+        try:
+            run(
+                ["wget", "-q", "--no-check-certificate", url, "-O", out_path],
+                timeout=90,
+                stderr=DEVNULL,
+                stdout=DEVNULL,
+                check=True,
+            )
+            return True
+        except (CalledProcessError, TimeoutExpired):
+            break
+        except FileNotFoundError:
+            n_download_clients -= 1
+            break
+    for _ in range(2):
+        try:
+            run(["curl", "-L", url, "-o", out_path], timeout=90, stderr=DEVNULL, stdout=DEVNULL, check=True)
+            return True
+        except (CalledProcessError, TimeoutExpired):
+            break
+        except FileNotFoundError:
+            n_download_clients -= 1
+            break
+    if not n_download_clients:
+        raise EnvironmentError("Both curl and wget cannot be found.")
+    return False
+
+
+def download_extract_to(url: str, out_path: str, strip: bool = True):
+    makedirs(out_path, exist_ok=True)
+    _archive_path = path.join(out_path, "download.tar.gz")
+    download_file(url, _archive_path)
+    _tar_cmd = f"tar -xf {_archive_path} -C {out_path}"
+    if strip:
+        _tar_cmd += " --strip-components 1"
+    run(_tar_cmd.split(), check=True)
+    remove(_archive_path)
+
+
+def tool_check_version(name: str, min_version: str) -> bool:
+    try:
+        _ = run([name, "--version"], stdout=PIPE, stderr=DEVNULL, check=True)
+    except (CalledProcessError, FileNotFoundError):
+        return False
+    if name == "nasm":
+        _regexp = r"version\s*(\d+(\.\d+){2})"
+    else:  # cmake
+        _regexp = r"(\d+(\.\d+){2})$"
+    m_groups = search(_regexp, _.stdout.decode("utf-8"), flags=MULTILINE + IGNORECASE)
+    if m_groups is None:
+        return False
+    current_version = tuple(map(int, str(m_groups.groups()[0]).split(".")))
+    min_version = tuple(map(int, min_version.split(".")))
+    if current_version >= min_version:
+        print(f"Tool {name} with version {str(m_groups.groups()[0])} satisfy requirements.", flush=True)
+        return True
+    return False
+
+
+def check_install_nasm(version: str):
+    if not match("(i[3-6]86|x86_64)$", machine()):
+        return True
+    if tool_check_version("nasm", version):
+        return True
+    print("Can not find `nasm` with version >=2.15.05, installing it...")
+    _tool_path = path.join(BUILD_DIR_TOOLS, "nasm")
+    if path.isdir(_tool_path):
+        print("Cache found for nasm", flush=True)
+        chdir(_tool_path)
+    else:
+        download_extract_to(f"https://www.nasm.us/pub/nasm/releasebuilds/{version}/nasm-{version}.tar.gz", _tool_path)
+        chdir(_tool_path)
+        run(["./configure"], check=True)
+        run("make".split(), check=True)
+    run("make install".split(), check=True)
+    run("nasm --version".split(), check=True)
+    run(f"chmod -R 774 {_tool_path}".split(), check=True)
 
 
 def is_musllinux() -> bool:
@@ -47,19 +128,19 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         _script_dir = path.dirname(path.abspath(__file__))
         _linux_dir = path.join(_script_dir, "linux")
         if name == "x265":
-            linux_build_tools.download_extract_to(url, _lib_path)
+            download_extract_to(url, _lib_path)
             chdir(_lib_path)
         else:
             _build_path = path.join(_lib_path, "build")
             makedirs(_build_path)
             if name == "aom":
-                linux_build_tools.download_extract_to(url, path.join(_lib_path, "aom"), False)
+                download_extract_to(url, path.join(_lib_path, "aom"), False)
                 if musl:
                     patch_path = path.join(_linux_dir, "aom-musl/fix-stack-size-e53da0b-2.patch")
                     chdir(path.join(_lib_path, "aom"))
                     run(f"patch -p 1 -i {patch_path}".split(), check=True)
             else:
-                linux_build_tools.download_extract_to(url, _lib_path)
+                download_extract_to(url, _lib_path)
                 if name == "libde265":
                     chdir(_lib_path)
                     # for patch in (
@@ -132,7 +213,10 @@ def build_libs() -> str:
         return INSTALL_DIR_LIBS
     _original_dir = getcwd()
     try:
-        linux_build_tools.build_tools(_is_musllinux)
+        if not tool_check_version("cmake", "3.13.4"):
+            raise ValueError("Can not find `cmake` with version >=3.13.4")
+        if not check_install_nasm("2.15.05"):
+            raise ValueError("Can not find/install `nasm` with version >=2.15.05")
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:
                 build_lib_linux(

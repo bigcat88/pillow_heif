@@ -11,11 +11,8 @@ RUN \
     libffi-dev \
     libtool \
     git \
-    pkg-config \
     cmake \
     nasm
-#    libaom-dev \
-#    libde265-dev
 
 RUN \
   python3 -m pip install --upgrade pip

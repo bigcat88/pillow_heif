@@ -1,4 +1,4 @@
-FROM debian:buster-slim as base
+FROM debian:bullseye-slim as base
 
 RUN \
   apt-get -qq update && \
@@ -11,8 +11,9 @@ RUN \
     libffi-dev \
     libtool \
     git \
-    wget \
-    cmake
+    cmake \
+    nasm \
+    wget
 
 RUN \
   python3 -m pip install --upgrade pip
