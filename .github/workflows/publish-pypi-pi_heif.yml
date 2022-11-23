@@ -15,7 +15,7 @@ jobs:
 #    steps:
 #      - uses: actions/checkout@v3
 #
-#      - name: Put pi-heif files
+#      - name: Transform to Pi-Heif
 #        run: |
 #          cp -r -v -force ./pi-heif/* .
 #          python3 .github/transform_to-pi_heif.py
@@ -67,7 +67,7 @@ jobs:
 #    steps:
 #      - uses: actions/checkout@v3
 #
-#      - name: Put pi-heif files
+#      - name: Transform to Pi-Heif
 #        run: |
 #          cp -r -v ./pi-heif/* .
 #          python3 .github/transform_to-pi_heif.py
@@ -109,7 +109,7 @@ jobs:
 #    steps:
 #      - uses: actions/checkout@v3
 #
-#      - name: Put pi-heif files
+#      - name: Transform to Pi-Heif
 #        run: |
 #          cp -r -v ./pi-heif/* .
 #          python3 .github/transform_to-pi_heif.py
@@ -178,7 +178,7 @@ jobs:
 #    steps:
 #      - uses: actions/checkout@v3
 #
-#      - name: Put pi-heif files
+#      - name: Transform to Pi-Heif
 #        run: |
 #          cp -r -v ./pi-heif/* .
 #          python3 .github/transform_to-pi_heif.py
@@ -232,7 +232,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Put pi-heif files
+      - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
@@ -240,25 +240,26 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      - name: Build pi_heif
-        run: |
-          mkdir dock_out
-          docker buildx build \
-              --output type=local,dest=./dock_out \
-              --platform "linux/arm/v7" \
-              -f docker/${{ matrix.i['docker_file'] }}.Dockerfile .
+      - name: Build Pi-Heif
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/${{ matrix.i['docker_file'] }}.Dockerfile
+          platforms: linux/arm/v7
+          push: false
+          outputs: type=local,dest=./
 
       - name: Checking built wheels
         run: |
-          ls -la ./dock_out/pi_heif/repaired_dist
+          ls -la ./pi_heif/repaired_dist
           python3 -m pip install twine
-          python3 -m twine check ./dock_out/pi_heif/repaired_dist/*
+          python3 -m twine check ./pi_heif/repaired_dist/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
           name: wheels
-          path: ./dock_out/pi_heif/repaired_dist/*.whl
+          path: ./pi_heif/repaired_dist/*.whl
           if-no-files-found: error
 
 #  sdist:
@@ -268,7 +269,7 @@ jobs:
 #    steps:
 #      - uses: actions/checkout@v3
 #
-#      - name: Put pi-heif files
+#      - name: Transform to Pi-Heif
 #        run: |
 #          cp -r -v ./pi-heif/* .
 #          python3 .github/transform_to-pi_heif.py
