@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 
 - Linux: speed of loading images increased by `2x`(bug was probably introduced in `0.6.0` version). Thanks to @jtressle for pointing on this issue. #53
 - Libheif: fixed limited-range offset for HDR color conversion [libheif issue](https://github.com/strukturag/libheif/issues/706)
-- Linux: Building from source was reworked, do not require `autoconf`, `automake` and `pkg-config` from now.
+- Linux: building from source has been reworked to no longer require `autoconf`, `automake` and `pkg-config`.
 
 ## [0.8.0 - 2022-11-20]
 

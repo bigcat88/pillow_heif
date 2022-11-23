@@ -90,6 +90,7 @@ def check_install_nasm(version: str):
     run("make install".split(), check=True)
     run("nasm --version".split(), check=True)
     run(f"chmod -R 774 {_tool_path}".split(), check=True)
+    return True
 
 
 def is_musllinux() -> bool:
