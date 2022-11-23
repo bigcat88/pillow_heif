@@ -5,7 +5,6 @@ from re import IGNORECASE, MULTILINE, match, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
-BUILD_DIR_TOOLS = path.join(BUILD_DIR_PREFIX, "build-tools")
 BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
 INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
@@ -79,7 +78,7 @@ def check_install_nasm(version: str):
     if tool_check_version("nasm", version):
         return True
     print(f"Can not find `nasm` with version >={version}, installing...")
-    _tool_path = path.join(BUILD_DIR_TOOLS, "nasm")
+    _tool_path = path.join(BUILD_DIR_LIBS, "nasm")
     if path.isdir(_tool_path):
         print("Cache found for nasm", flush=True)
         chdir(_tool_path)

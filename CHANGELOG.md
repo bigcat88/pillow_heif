@@ -15,9 +15,7 @@ All notable changes to this project will be documented in this file.
 
 - Linux: speed of loading images increased by `2x`(bug was probably introduced in `0.6.0` version). Thanks to @jtressle for pointing on this issue. #53
 - Libheif: fixed limited-range offset for HDR color conversion [libheif issue](https://github.com/strukturag/libheif/issues/706)
-- Linux: Building from source from scratch (when there is no `libheif` on the system) does not require:
-  1. nasm for `arm7`/`arm8`. [commit](https://github.com/bigcat88/pillow_heif/commit/1dcf76da254c775d50b5c5c15964b9a6df1029e7)
-  2. `autoconf` and `automake`.
+- Linux: Building from source was reworked, do not require `autoconf`, `automake` and `pkg-config` from now.
 
 ## [0.8.0 - 2022-11-20]
 

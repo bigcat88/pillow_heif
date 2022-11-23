@@ -5,7 +5,7 @@ on:
     branches: [master]
     paths:
       - 'libheif/linux/**'
-      - 'libheif/linux_*.py'
+      - 'libheif/linux_build_libs.py'
       - 'libheif/build.py'
       - 'libheif/public_api.h'
   schedule:
@@ -51,11 +51,6 @@ jobs:
         run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
 
       - uses: actions/cache@v3
         with:
