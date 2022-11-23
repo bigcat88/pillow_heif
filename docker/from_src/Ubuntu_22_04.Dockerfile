@@ -13,7 +13,6 @@ RUN \
     git \
     cmake \
     nasm \
-    libaom-dev \
     libx265-dev
 
 RUN \
