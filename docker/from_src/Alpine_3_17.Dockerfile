@@ -4,23 +4,12 @@ RUN \
   apk add --no-cache \
     py3-pip \
     python3-dev \
-    libtool \
-    git \
-    gcc \
-    m4 \
-    perl \
     alpine-sdk \
     cmake \
-    fribidi-dev \
-    harfbuzz-dev \
-    jpeg-dev \
     nasm \
     py3-cffi \
     py3-numpy \
     py3-pillow
-
-#    aom-dev \
-#    libde265-dev \
 
 RUN \
   python3 -m pip install --upgrade pip
