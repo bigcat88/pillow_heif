@@ -224,7 +224,6 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        docker_file: [ "Debian_11", "Ubuntu_22_04" ]
         i: [
           { "docker_file": "manylinux_armv7l_wheel", "name": "manylinux" },
           { "docker_file": "musllinux_armv7l_wheel", "name": "musllinux" },
