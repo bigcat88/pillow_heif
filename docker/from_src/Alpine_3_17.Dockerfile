@@ -5,14 +5,17 @@ RUN \
     py3-pip \
     python3-dev \
     alpine-sdk \
+    libffi-dev \
     cmake \
     nasm \
-    py3-cffi \
     py3-numpy \
     py3-pillow
 
 RUN \
   python3 -m pip install --upgrade pip
+
+RUN \
+  python3 -m pip install wheel cffi==1.15.1
 
 FROM base as build_test
 
