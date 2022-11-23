@@ -36,7 +36,7 @@ jobs:
       matrix:
         arch: ["amd64", "arm64", "arm/v7"]
 #        docker_file: ["Alpine_3_15", "Alpine_3_17", "Debian_10", "Ubuntu_22_04"]
-        docker_file: ["Debian_10", "Ubuntu_22_04"]
+        docker_file: ["Debian_11", "Ubuntu_22_04"]
 
     steps:
       - uses: actions/checkout@v3

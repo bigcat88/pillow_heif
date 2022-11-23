@@ -12,7 +12,9 @@ RUN \
     libtool \
     git \
     cmake \
-    nasm
+    nasm \
+    libaom-dev \
+    libx265-dev
 
 RUN \
   python3 -m pip install --upgrade pip
