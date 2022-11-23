@@ -78,7 +78,7 @@ def check_install_nasm(version: str):
         return True
     if tool_check_version("nasm", version):
         return True
-    print(f"Can not find `nasm` with version >={version}, installing it...")
+    print(f"Can not find `nasm` with version >={version}, installing...")
     _tool_path = path.join(BUILD_DIR_TOOLS, "nasm")
     if path.isdir(_tool_path):
         print("Cache found for nasm", flush=True)

@@ -1,4 +1,4 @@
-name: Build from source(Alpine)
+name: Build from source(Alpine_3_15)
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         arch: ["amd64", "arm64", "arm/v7"]
-        docker_file: ["Alpine_3_17"]
+        docker_file: ["Alpine_3_15"]
 
     steps:
       - uses: actions/checkout@v3

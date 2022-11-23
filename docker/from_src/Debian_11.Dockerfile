@@ -20,7 +20,7 @@ RUN \
   python3 -m pip install --upgrade pip
 
 RUN \
-   python3 -m pip install Pillow==9.2.0 cffi==1.15.0
+  python3 -m pip install wheel cffi==1.15.0 Pillow==9.2.0
 
 FROM base as build_test
 

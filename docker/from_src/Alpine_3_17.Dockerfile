@@ -9,6 +9,7 @@ RUN \
     libffi-dev \
     cmake \
     nasm \
+    aom-dev \
     py3-numpy \
     py3-pillow
 

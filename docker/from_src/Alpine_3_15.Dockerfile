@@ -4,22 +4,20 @@ RUN \
   apk add --no-cache \
     py3-pip \
     python3-dev \
-    libtool \
-    git \
-    gcc \
-    m4 \
     perl \
     alpine-sdk \
+    libffi-dev \
     cmake \
-    fribidi-dev \
-    harfbuzz-dev \
-    jpeg-dev \
     nasm \
+    libde265-dev \
     py3-numpy \
     py3-pillow
 
 RUN \
   python3 -m pip install --upgrade pip
+
+RUN \
+  python3 -m pip install wheel cffi==1.15.0
 
 FROM base as build_test
 

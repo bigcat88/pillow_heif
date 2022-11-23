@@ -1,7 +1,7 @@
 FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy as base
 
 RUN \
-  apt-get -qq update &&  \
+  apt-get -qq update && \
   apt-get -y -q install \
     python3-pip \
     libfribidi-dev \
@@ -19,7 +19,7 @@ RUN \
   python3 -m pip install --upgrade pip
 
 RUN \
-   python3 -m pip install Pillow==9.3.0 cffi==1.15.1
+  python3 -m pip install wheel cffi==1.15.1 Pillow==9.3.0
 
 FROM base as build_test
 
@@ -30,7 +30,6 @@ RUN \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \
     python3 -m pip install -v "pillow_heif/.[tests-min]"; \
-    export PH_TESTS_NO_HEVC_ENC=1; \
   fi && \
   echo "**** Build Done ****" && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
