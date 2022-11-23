@@ -14,7 +14,8 @@ RUN \
     automake \
     fribidi-dev \
     harfbuzz-dev \
-    jpeg-dev
+    jpeg-dev \
+    lcms2-dev
 
 RUN \
   echo "**** Installing patchelf ****" && \

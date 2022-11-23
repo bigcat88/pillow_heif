@@ -219,9 +219,16 @@ jobs:
 #      - name: Fix cache permissions
 #        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
 
-  wheels_manylinux_armv7l:
-    name: Wheels • Debian 10+ • ARMv7l • CPython3.7+
+  wheels_armv7l:
+    name: Wheels • ${{ matrix.i['name'] }} • ARMv7l • CPython3.7+
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        docker_file: [ "Debian_11", "Ubuntu_22_04" ]
+        i: [
+          { "docker_file": "manylinux_armv7l_wheel", "name": "manylinux" },
+          { "docker_file": "musllinux_armv7l_wheel", "name": "musllinux" },
+        ]
 
     steps:
       - uses: actions/checkout@v3
@@ -232,7 +239,7 @@ jobs:
           python3 .github/transform_to-pi_heif.py
 
       - name: Set up QEMU
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        uses: docker/setup-qemu-action@v2
 
       - name: Build pi_heif
         run: |
@@ -240,47 +247,11 @@ jobs:
           docker buildx build \
               --output type=local,dest=./dock_out \
               --platform "linux/arm/v7" \
-              -f docker/manylinux_armv7l_wheel.Dockerfile .
-          ls -la ./dock_out/pi_heif/repaired_dist
+              -f docker/${{ matrix.i['docker_file'] }}.Dockerfile .
 
       - name: Checking built wheels
         run: |
-          python3 -m pip install twine
-          python3 -m twine check ./dock_out/pi_heif/repaired_dist/*
-
-      - name: Uploading wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: ./dock_out/pi_heif/repaired_dist/*.whl
-          if-no-files-found: error
-
-  wheels_musllinux_armv7l:
-    name: Wheels • Alpine 3.14+ • ARMv7l • CPython3.7+
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Put pi-heif files
-        run: |
-          cp -r -v ./pi-heif/* .
-          python3 .github/transform_to-pi_heif.py
-
-      - name: Set up QEMU
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
-      - name: Build pi_heif
-        run: |
-          mkdir dock_out
-          docker buildx build \
-              --output type=local,dest=./dock_out \
-              --platform "linux/arm/v7" \
-              -f docker/musllinux_armv7l_wheel.Dockerfile .
           ls -la ./dock_out/pi_heif/repaired_dist
-
-      - name: Checking built wheels
-        run: |
           python3 -m pip install twine
           python3 -m twine check ./dock_out/pi_heif/repaired_dist/*
 
@@ -342,8 +313,7 @@ jobs:
 #          path: wheelhouse/*.tar.gz
 
 #  publish_release:
-#    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist,
-#            wheels_manylinux_armv7l, wheels_musllinux_armv7l]
+#    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
 #    name: Publish release
 #    runs-on: ubuntu-20.04
 #    env:
