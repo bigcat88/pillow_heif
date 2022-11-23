@@ -19,6 +19,9 @@ RUN \
 RUN \
   python3 -m pip install --upgrade pip
 
+RUN \
+   python3 -m pip install Pillow==9.3.0 cffi==1.15.1
+
 FROM base as build_test
 
 COPY . /pillow_heif
