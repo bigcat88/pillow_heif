@@ -14,7 +14,6 @@ RUN \
     cmake \
     nasm \
     wget \
-    libaom-dev \
     libde265-dev
 
 RUN \
@@ -28,7 +27,7 @@ FROM base as build_test
 COPY . /pillow_heif
 
 RUN \
-  if [ `getconf LONG_BIT` = 64 ]; then \
+  if [ `uname -m` = "x86_64" ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \
     python3 -m pip install -v "pillow_heif/.[tests-min]"; \
