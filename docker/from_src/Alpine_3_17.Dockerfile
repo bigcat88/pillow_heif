@@ -4,6 +4,7 @@ RUN \
   apk add --no-cache \
     py3-pip \
     python3-dev \
+    perl \
     alpine-sdk \
     libffi-dev \
     cmake \
