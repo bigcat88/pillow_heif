@@ -5,68 +5,46 @@ on:
   workflow_dispatch:
 
 jobs:
-  wheels_manylinux_armv7l:
-    name: Wheels • Debian 10+ • ARMv7l • CPython3.7+
+  wheels_armv7l:
+    name: ${{ matrix.i['name'] }} • ARMv7l • CPython3.7+
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        i: [
+          { "docker_file": "manylinux_armv7l_wheel", "name": "manylinux" },
+          { "docker_file": "musllinux_armv7l_wheel", "name": "musllinux" },
+        ]
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up QEMU
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-      - name: Build pillow_heif
-        run: |
-          mkdir dock_out
-          docker buildx build \
-              --output type=local,dest=./dock_out \
-              --platform "linux/arm/v7" \
-              -f docker/manylinux_armv7l_wheel.Dockerfile .
-          ls -la ./dock_out/pillow_heif/repaired_dist
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Build Pillow-Heif
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/${{ matrix.i['docker_file'] }}.Dockerfile
+          platforms: linux/arm/v7
+          push: false
+          outputs: type=local,dest=./
 
       - name: Checking built wheels
         run: |
+          ls -la ./pillow_heif/repaired_dist
           python3 -m pip install twine
-          python3 -m twine check ./dock_out/pillow_heif/repaired_dist/*
+          python3 -m twine check ./pillow_heif/repaired_dist/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
           name: wheels
-          path: ./dock_out/pillow_heif/repaired_dist/*.whl
-          if-no-files-found: error
-
-  wheels_musllinux_armv7l:
-    name: Wheels • Alpine 3.14+ • ARMv7l • CPython3.7+
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up QEMU
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
-      - name: Build pillow_heif
-        run: |
-          mkdir dock_out
-          docker buildx build \
-              --output type=local,dest=./dock_out \
-              --platform "linux/arm/v7" \
-              -f docker/musllinux_armv7l_wheel.Dockerfile .
-          ls -la ./dock_out/pillow_heif/repaired_dist
-
-      - name: Checking built wheels
-        run: |
-          python3 -m pip install twine
-          python3 -m twine check ./dock_out/pillow_heif/repaired_dist/*
-
-      - name: Uploading wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: ./dock_out/pillow_heif/repaired_dist/*.whl
+          path: ./pillow_heif/repaired_dist/*.whl
           if-no-files-found: error
 
   wheels_windows:
-    name: Wheels • windows • x86_64
+    name: windows • x86_64
     runs-on: windows-2019
     env:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
@@ -115,7 +93,7 @@ jobs:
           if-no-files-found: error
 
   wheels_macos:
-    name: Wheels • macosx • x86_64
+    name: macosx • x86_64
     runs-on: macos-11
 
     steps:
@@ -148,7 +126,7 @@ jobs:
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "aarch64", "x86_64" ]
-    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
+    name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
@@ -177,11 +155,6 @@ jobs:
       - name: Only minimal testing on aarch64
         if: matrix.cibw_arch == 'aarch64'
         run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
 
       - uses: actions/cache@v3
         with:
@@ -222,7 +195,7 @@ jobs:
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "i686" ]
-    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
+    name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
@@ -251,11 +224,6 @@ jobs:
       - name: Only minimal testing on aarch64
         if: matrix.cibw_arch == 'aarch64'
         run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
 
       - uses: actions/cache@v3
         with:
@@ -297,7 +265,7 @@ jobs:
         cibw_buildlinux: [ manylinux ]
         cibw_arch: [ "aarch64", "x86_64" ]
         cibw_build: [ "pp37", "pp38" ]
-    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
+    name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
@@ -314,11 +282,6 @@ jobs:
       - name: Only minimal testing on aarch64
         if: matrix.cibw_arch == 'aarch64'
         run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
 
       - uses: actions/cache@v3
         with:
@@ -360,7 +323,7 @@ jobs:
         cibw_buildlinux: [ manylinux ]
         cibw_arch: [ "i686" ]
         cibw_build: [ "pp37", "pp38" ]
-    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
+    name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
@@ -377,11 +340,6 @@ jobs:
       - name: Only minimal testing on aarch64
         if: matrix.cibw_arch == 'aarch64'
         run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
 
       - uses: actions/cache@v3
         with:
@@ -465,7 +423,7 @@ jobs:
   create_release:
     needs: [sdist, wheels_macos, wheels_windows, wheels_linux_cpython,
             wheels_linux_pypy, wheels_linux_pypy_32bit, wheels_linux_cpython_32bit,
-            wheels_manylinux_armv7l, wheels_musllinux_armv7l]
+            wheels_armv7l]
     runs-on: ubuntu-20.04
     name: Create GitHub release
 

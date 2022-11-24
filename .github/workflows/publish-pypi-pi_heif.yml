@@ -7,7 +7,7 @@ on:
 
 jobs:
   wheels_windows:
-    name: Wheels • windows • x86_64
+    name: windows • x86_64
     runs-on: windows-2019
     env:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Put pi-heif files
+      - name: Transform to Pi-Heif
         run: |
           cp -r -v -force ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
@@ -61,13 +61,13 @@ jobs:
           if-no-files-found: error
 
   wheels_macos:
-    name: Wheels • macosx • x86_64
+    name: macosx • x86_64
     runs-on: macos-11
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Put pi-heif files
+      - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
@@ -100,7 +100,7 @@ jobs:
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "aarch64", "i686", "x86_64" ]
-    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
+    name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
@@ -109,7 +109,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Put pi-heif files
+      - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
@@ -131,11 +131,6 @@ jobs:
         run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
 
       - name: Run cibuildwheel
         run: |
@@ -159,9 +154,6 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
-
   wheels_linux_pypy:
     strategy:
       fail-fast: true
@@ -169,7 +161,7 @@ jobs:
         cibw_buildlinux: [ manylinux ]
         cibw_arch: [ "aarch64", "i686", "x86_64" ]
         cibw_build: [ "pp37", "pp38" ]
-    name: Wheels • ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
+    name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
     runs-on: ubuntu-20.04
     env:
       BUILD_DIR_PREFIX: "/tmp/pillow_heif"
@@ -178,7 +170,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Put pi-heif files
+      - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
@@ -188,11 +180,6 @@ jobs:
         uses: docker/setup-qemu-action@v2
         with:
           platforms: arm64
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-tools
-          key: ${{ env.KEY_HEAD }}-${{ hashFiles('libheif/linux_build_tools.py') }}
 
       - name: Run cibuildwheel
         run: |
@@ -216,79 +203,47 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
-
-  wheels_manylinux_armv7l:
-    name: Wheels • Debian 10+ • ARMv7l • CPython3.7+
+  wheels_armv7l:
+    name: ${{ matrix.i['name'] }} • ARMv7l • CPython3.7+
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        i: [
+          { "docker_file": "manylinux_armv7l_wheel", "name": "manylinux" },
+          { "docker_file": "musllinux_armv7l_wheel", "name": "musllinux" },
+        ]
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Put pi-heif files
+      - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
 
       - name: Set up QEMU
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        uses: docker/setup-qemu-action@v2
 
-      - name: Build pi_heif
-        run: |
-          mkdir dock_out
-          docker buildx build \
-              --output type=local,dest=./dock_out \
-              --platform "linux/arm/v7" \
-              -f docker/manylinux_armv7l_wheel.Dockerfile .
-          ls -la ./dock_out/pi_heif/repaired_dist
+      - name: Build Pi-Heif
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/${{ matrix.i['docker_file'] }}.Dockerfile
+          platforms: linux/arm/v7
+          push: false
+          outputs: type=local,dest=./
 
       - name: Checking built wheels
         run: |
+          ls -la ./pi_heif/repaired_dist
           python3 -m pip install twine
-          python3 -m twine check ./dock_out/pi_heif/repaired_dist/*
+          python3 -m twine check ./pi_heif/repaired_dist/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
           name: wheels
-          path: ./dock_out/pi_heif/repaired_dist/*.whl
-          if-no-files-found: error
-
-  wheels_musllinux_armv7l:
-    name: Wheels • Alpine 3.14+ • ARMv7l • CPython3.7+
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Put pi-heif files
-        run: |
-          cp -r -v ./pi-heif/* .
-          python3 .github/transform_to-pi_heif.py
-
-      - name: Set up QEMU
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
-      - name: Build pi_heif
-        run: |
-          mkdir dock_out
-          docker buildx build \
-              --output type=local,dest=./dock_out \
-              --platform "linux/arm/v7" \
-              -f docker/musllinux_armv7l_wheel.Dockerfile .
-          ls -la ./dock_out/pi_heif/repaired_dist
-
-      - name: Checking built wheels
-        run: |
-          python3 -m pip install twine
-          python3 -m twine check ./dock_out/pi_heif/repaired_dist/*
-
-      - name: Uploading wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: ./dock_out/pi_heif/repaired_dist/*.whl
+          path: ./pi_heif/repaired_dist/*.whl
           if-no-files-found: error
 
   sdist:
@@ -298,7 +253,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Put pi-heif files
+      - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
@@ -342,8 +297,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   publish_release:
-    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist,
-            wheels_manylinux_armv7l, wheels_musllinux_armv7l]
+    needs: [wheels_windows, wheels_macos, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
     name: Publish release
     runs-on: ubuntu-20.04
     env:
