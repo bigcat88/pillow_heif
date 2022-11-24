@@ -5,7 +5,7 @@ on:
     branches: [master]
     paths:
       - 'libheif/linux/**'
-      - 'libheif/linux_build_libs.py'
+      - 'libheif/linux_*.py'
       - 'libheif/build.py'
       - 'libheif/public_api.h'
   schedule:
