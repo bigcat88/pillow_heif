@@ -6,7 +6,8 @@ from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
 BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
-INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
+# INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
+INSTALL_DIR_LIBS = path.join(environ.get("HOME"), "rtd_build")
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 
 
