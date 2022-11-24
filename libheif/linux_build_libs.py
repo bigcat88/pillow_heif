@@ -205,7 +205,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
     else:
         # run("ldconfig", check=True)
-        run("export LD_LIBRARY_PATH=$HOME/rtd_build/lib:$LD_LIBRARY_PATH")
+        run("export LD_LIBRARY_PATH=$HOME/rtd_build/lib:$LD_LIBRARY_PATH".split(), shell=True)
 
 
 def build_libs() -> str:
