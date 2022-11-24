@@ -32,10 +32,13 @@ jobs:
           python-version: '3.7'
 
       - name: Prepare system
-        run: sudo apt -y install libaom-dev libx265-dev libde265-dev nasm
+        run: |
+          sudo apt -y install libaom-dev libx265-dev libde265-dev nasm
 
       - name: Install from source
-        run: sudo -H python3 -m pip -v install ".[dev]"
+        run: |
+          export RTD_BUILD=1
+          python3 -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
         run: python3 -m pylint pillow_heif
