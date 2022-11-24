@@ -1,7 +1,7 @@
 FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy as base
 
 RUN \
-  apt-get -qq update &&  \
+  apt-get -qq update && \
   apt-get -y -q install \
     python3-pip \
     libfribidi-dev \
@@ -11,16 +11,15 @@ RUN \
     libffi-dev \
     libtool \
     git \
-    pkg-config \
-    autoconf \
-    automake \
     cmake \
     nasm \
-    libaom-dev \
-    libde265-dev
+    libaom-dev
 
 RUN \
   python3 -m pip install --upgrade pip
+
+RUN \
+  python3 -m pip install Pillow==9.3.0
 
 FROM base as build_test
 

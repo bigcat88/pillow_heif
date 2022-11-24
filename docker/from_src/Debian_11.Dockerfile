@@ -1,42 +1,37 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.16 as base
+FROM debian:bullseye-slim as base
 
 RUN \
-  apk add --no-cache \
-    py3-pip \
-    python3-dev \
+  apt-get -qq update && \
+  apt-get -y -q install \
+    python3-pip \
+    libfribidi-dev \
+    libharfbuzz-dev \
+    libjpeg-dev \
+    liblcms2-dev \
+    libffi-dev \
     libtool \
     git \
-    gcc \
-    m4 \
-    perl \
-    alpine-sdk \
     cmake \
-    fribidi-dev \
-    harfbuzz-dev \
-    jpeg-dev \
-    lcms2-dev \
-    openjpeg-dev \
-    autoconf \
-    automake \
     nasm \
-    aom-dev \
-    libde265-dev \
-    py3-cffi \
-    py3-numpy \
-    py3-pillow
+    wget \
+    libde265-dev
 
 RUN \
   python3 -m pip install --upgrade pip
+
+RUN \
+  python3 -m pip install Pillow==9.2.0
 
 FROM base as build_test
 
 COPY . /pillow_heif
 
 RUN \
-  if [ `getconf LONG_BIT` = 64 ]; then \
+  if [ `uname -m` = "x86_64" ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \
     python3 -m pip install -v "pillow_heif/.[tests-min]"; \
+    export PH_TESTS_NO_HEVC_ENC=1; \
   fi && \
   echo "**** Build Done ****" && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \

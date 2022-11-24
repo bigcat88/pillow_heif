@@ -1,20 +1,18 @@
-FROM debian:buster-slim as base
+FROM alpine:3.17 as base
 
 RUN \
-  apt-get -qq update && \
-  apt-get -y -q install \
-    python3-pip \
-    libfribidi-dev \
-    libharfbuzz-dev \
-    libjpeg-dev \
-    liblcms2-dev \
+  apk add --no-cache \
+    python3-dev \
+    py3-pip \
+    perl \
+    alpine-sdk \
     libffi-dev \
-    libtool \
-    git \
-    wget \
-    autoconf \
-    automake \
-    cmake
+    cmake \
+    nasm \
+    aom-dev \
+    py3-numpy \
+    py3-pillow \
+    py3-cffi
 
 RUN \
   python3 -m pip install --upgrade pip
@@ -24,11 +22,10 @@ FROM base as build_test
 COPY . /pillow_heif
 
 RUN \
-  if [ `uname -m` = "x86_64" ]; then \
+  if [ `getconf LONG_BIT` = 64 ]; then \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \
     python3 -m pip install -v "pillow_heif/.[tests-min]"; \
-    export PH_TESTS_NO_HEVC_ENC=1; \
   fi && \
   echo "**** Build Done ****" && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
