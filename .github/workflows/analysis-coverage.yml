@@ -35,7 +35,7 @@ jobs:
         run: sudo apt -y install libaom-dev libx265-dev libde265-dev nasm
 
       - name: Install from source
-        run: sudo python3 -m pip -v install ".[dev]"
+        run: sudo -H python3 -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
         run: python3 -m pylint pillow_heif
