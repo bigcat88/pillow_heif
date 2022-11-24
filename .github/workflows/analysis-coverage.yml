@@ -3,7 +3,7 @@ name: Analysis & Coverage
 on:
   pull_request:
     branches: [master]
-    types: [opened, reopened, edited]
+    types: [opened, edited, reopened, synchronize]
     paths:
       - 'pillow_heif/*.py'
       - 'tests/**'
