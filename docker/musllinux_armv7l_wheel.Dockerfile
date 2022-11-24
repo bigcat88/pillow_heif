@@ -7,30 +7,30 @@ RUN \
     py3-pip \
     python3-dev \
     libtool \
-    git \
-    gcc \
-    m4 \
     perl \
     alpine-sdk \
+    cmake \
     autoconf \
     automake \
-    cmake \
     fribidi-dev \
     harfbuzz-dev \
     jpeg-dev \
-    lcms2-dev \
-    openjpeg-dev \
-    nasm \
-    py3-numpy \
-    py3-pillow && \
-  python3 -m pip install --upgrade pip && \
+    lcms2-dev
+
+RUN \
   echo "**** Installing patchelf ****" && \
-  git clone -b 0.16.1 https://github.com/NixOS/patchelf.git && \
+  git clone -b 0.17.0 https://github.com/NixOS/patchelf.git && \
   cd patchelf && \
   ./bootstrap.sh && ./configure && make && make check && make install && \
-  cd .. && \
+  cd ..
+
+RUN \
   echo "**** Install python build dependencies ****" && \
-  python3 -m pip install cffi pytest wheel && \
+  python3 -m pip install --upgrade pip && \
+  python3 -m pip install wheel && \
+  python3 -m pip install pytest cffi Pillow
+
+RUN \
   echo "**** Start building ****" && \
   cd pillow_heif && \
   python3 setup.py bdist_wheel && \
