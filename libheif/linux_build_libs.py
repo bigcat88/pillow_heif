@@ -6,7 +6,10 @@ from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
 BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
-INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
+if getenv("RTD_BUILD", "0") == "1":  # ReadTheDocs build.
+    INSTALL_DIR_LIBS = path.join(environ.get("HOME"), "rtd_build")
+else:
+    INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 
 
@@ -203,7 +206,10 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
     if musl:
         run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
     else:
-        run("ldconfig", check=True)
+        if getenv("RTD_BUILD", "0") == "1":  # ReadTheDocs build.
+            run("export LD_LIBRARY_PATH=$HOME/rtd_build/lib:$LD_LIBRARY_PATH".split(), shell=True)
+        else:
+            run("ldconfig", check=True)
 
 
 def build_libs() -> str:
