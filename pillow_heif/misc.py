@@ -9,12 +9,6 @@ import pathlib
 import re
 from struct import pack, unpack
 from typing import Union
-from warnings import warn
-
-try:
-    from defusedxml import ElementTree
-except ImportError:
-    ElementTree = None
 
 
 def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
@@ -106,47 +100,3 @@ def _get_bytes(fp, length=None) -> bytes:
             fp.seek(offset)
         return result
     return bytes(fp)[:length]
-
-
-def getxmp(xmp_data: bytes) -> dict:
-    """Returns a dictionary containing the XMP tags.
-    **Requires defusedxml to be installed.** Implementation taken from ``Pillow``.
-
-    Used in :py:meth:`pillow_heif.as_opener._LibHeifImageFile.getxmp` by Pillow plugins.
-
-    :param xmp_data: ``bytes`` containing string in UTF-8 encoding with XMP tags.
-
-    :returns: XMP tags in a dictionary."""
-
-    def get_name(tag):
-        return tag.split("}")[1]
-
-    def get_value(element):
-        value = {get_name(k): v for k, v in element.attrib.items()}
-        children = list(element)
-        if children:
-            for child in children:
-                name = get_name(child.tag)
-                child_value = get_value(child)
-                if name in value:
-                    if not isinstance(value[name], list):
-                        value[name] = [value[name]]
-                    value[name].append(child_value)
-                else:
-                    value[name] = child_value
-        elif value:
-            if element.text:
-                value["text"] = element.text
-        else:
-            return element.text
-        return value
-
-    if xmp_data:
-        if ElementTree is None:
-            warn("XMP data cannot be read without defusedxml dependency")
-            return {}
-        _clear_data = xmp_data.rsplit(b"\x00", 1)
-        if _clear_data[0]:
-            root = ElementTree.fromstring(_clear_data[0])
-            return {get_name(root.tag): get_value(root)}
-    return {}
