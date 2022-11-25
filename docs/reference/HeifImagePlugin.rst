@@ -14,7 +14,7 @@ HeifImageFile object
 .. autoclass:: pillow_heif.AvifImageFile
     :show-inheritance:
 
-.. autoclass:: pillow_heif.as_opener._LibHeifImageFile
+.. autoclass:: pillow_heif.as_plugin._LibHeifImageFile
     :show-inheritance:
     :members:
 
