@@ -3,9 +3,6 @@
 Constants
 ---------
 
-.. autoclass:: HeifFiletype
-    :members:
-
 .. autoclass:: HeifErrorCode
     :members:
 
@@ -13,4 +10,7 @@ Constants
     :members:
 
 .. autoclass:: HeifChroma
+    :members:
+
+.. autoclass:: HeifColorProfileType
     :members:
