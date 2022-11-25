@@ -17,7 +17,7 @@ from .as_plugin import (
     register_avif_opener,
     register_heif_opener,
 )
-from .constants import HeifErrorCode
+from .constants import HeifCompressionFormat, HeifErrorCode
 from .error import HeifError
 from .heif import (
     HeifFile,
