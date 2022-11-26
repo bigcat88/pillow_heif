@@ -39,7 +39,7 @@ jobs:
       - name: Install from source
         run: |
           export RTD_BUILD=1
-          python3 -m pip -v install .
+          python3 -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
         run: python3 -m pylint pillow_heif
