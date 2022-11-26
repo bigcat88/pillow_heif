@@ -12,7 +12,7 @@ from ._options import options
 from .constants import HeifCompressionFormat, HeifErrorCode
 from .error import HeifError
 from .heif import HeifFile, open_heif
-from .misc import _get_bytes, getxmp, set_orientation
+from .misc import _get_bytes, set_orientation
 
 
 class _LibHeifImageFile(ImageFile.ImageFile):
@@ -61,7 +61,11 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
         :returns: XMP tags in a dictionary."""
 
-        return getxmp(self.info["xmp"])
+        if self.info.get("xmp", None):
+            xmp_data = self.info["xmp"].rsplit(b"\x00", 1)
+            if xmp_data[0]:
+                return self._getxmp(xmp_data[0])
+        return {}
 
     def seek(self, frame):
         if not self._seek_check(frame):
