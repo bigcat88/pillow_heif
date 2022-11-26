@@ -80,51 +80,43 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-#  coverage-macos:
-#    needs: [analysis]
-#    runs-on: macos-12
-#    name: Coverage(macOS)
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.10'
-#
-#      - name: Prepare system
-#        run: |
-#          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-#          brew install libheif
-#
-#      - name: Install from source
-#        run: |
-#          python3 -m pip install opencv-python coverage
-#          python3 -m pip -v install ".[tests]"
-#
-#      - name: LibHeif info
-#        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
-#
-#      - name: Generate coverage report
-#        run: |
-#          export PH_FULL_ACTION=1
-#          coverage run -m pytest -s && coverage xml && coverage html
-#
-#      - name: HTML coverage to artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: coverage_macos
-#          path: ./htmlcov
-#          if-no-files-found: error
-#
-#      - name: Upload report to Codecov
-#        uses: codecov/codecov-action@v3
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          file: ./coverage.xml
-#          fail_ci_if_error: true
-#          verbose: true
-#
+  coverage-macos:
+    needs: [analysis]
+    runs-on: macos-12
+    name: Coverage(macOS)
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install from source
+        run: |
+          python3 -m pip install opencv-python coverage
+          python3 -m pip -v install ".[tests]"
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Generate coverage report
+        run: coverage run -m pytest -s && coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_macos
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
+
 #  coverage-windows:
 #    needs: [analysis]
 #    runs-on: windows-2022
@@ -189,90 +181,82 @@ jobs:
 #          file: ./coverage.xml
 #          fail_ci_if_error: true
 #          verbose: true
-#
-#  coverage-pi-heif:
-#    needs: [analysis]
-#    runs-on: macos-12
-#    name: Pi-Heif Coverage(macOS)
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - name: Put pi-heif files
-#        run: cp -r -v ./pi-heif/* .
-#
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.7'
-#
-#      - name: Prepare system
-#        run: |
-#          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-#          brew uninstall --force --ignore-dependencies imagemagick
-#          brew uninstall --force --ignore-dependencies libheif x265 aom
-#          brew install --formula ./libheif/macos/libheif.rb
-#
-#      - name: Install from source
-#        run: |
-#          python3 -m pip install opencv-python coverage
-#          python3 -m pip -v install ".[tests]"
-#
-#      - name: LibHeif info
-#        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
-#
-#      - name: Generate coverage report
-#        run: |
-#          export PH_LIGHT_ACTION=1
-#          coverage run -m pytest -s && coverage xml && coverage html
-#
-#      - name: HTML coverage to artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: coverage_light_macos
-#          path: ./htmlcov
-#          if-no-files-found: error
-#
-#      - name: Upload report to Codecov
-#        uses: codecov/codecov-action@v3
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          file: ./coverage.xml
-#          fail_ci_if_error: true
-#          verbose: true
-#
-#  test-pi-heif:
-#    needs: [analysis]
-#    runs-on: macos-12
-#    name: Pi-Heif Test(macOS)
-#    env:
-#      PH_LIGHT_ACTION: 1
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#
-#      - name: Put pi-heif files
-#        run: |
-#          cp -r -v ./pi-heif/* .
-#          python3 .github/transform_to-pi_heif.py
-#
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.7'
-#
-#      - name: Prepare system
-#        run: |
-#          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-#          brew uninstall --force --ignore-dependencies imagemagick
-#          brew uninstall --force --ignore-dependencies libheif x265 aom
-#          brew install --formula ./libheif/macos/libheif.rb
-#
-#      - name: Install from source
-#        run: |
-#          python3 -m pip install opencv-python
-#          python3 -m pip -v install ".[tests]"
-#
-#      - name: LibHeif info
-#        run: python3 -c "import pi_heif; print(pi_heif.libheif_info())"
-#
-#      - name: Perform tests
-#        run: python3 -m pytest -rs
+
+  coverage-pi-heif:
+    needs: [analysis]
+    runs-on: macos-12
+    name: Pi-Heif Coverage(macOS)
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Put pi-heif files
+        run: cp -r -v ./pi-heif/* .
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.7'
+
+      - name: Prepare system
+        run: |
+          brew uninstall --force --ignore-dependencies imagemagick
+          brew uninstall --force --ignore-dependencies libheif x265 aom
+          brew install --formula ./libheif/macos/libheif.rb
+
+      - name: Install from source
+        run: |
+          python3 -m pip install opencv-python coverage
+          python3 -m pip -v install ".[tests]"
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Generate coverage report
+        run: coverage run -m pytest -s && coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_light_macos
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
+
+  test-pi-heif:
+    needs: [analysis]
+    runs-on: macos-12
+    name: Pi-Heif Test(macOS)
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Put pi-heif files
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.7'
+
+      - name: Prepare system
+        run: |
+          brew uninstall --force --ignore-dependencies imagemagick
+          brew uninstall --force --ignore-dependencies libheif x265 aom
+          brew install --formula ./libheif/macos/libheif.rb
+
+      - name: Install from source
+        run: |
+          python3 -m pip install opencv-python
+          python3 -m pip -v install ".[tests]"
+
+      - name: LibHeif info
+        run: python3 -c "import pi_heif; print(pi_heif.libheif_info())"
+
+      - name: Perform tests
+        run: python3 -m pytest -rs
