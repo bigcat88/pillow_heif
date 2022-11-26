@@ -229,6 +229,9 @@ jobs:
     needs: [analysis]
     runs-on: macos-12
     name: Pi-Heif Test(macOS)
+    env:
+      EXP_PH_LIBHEIF_VERSION: ""
+      PH_LIGHT_ACTION: 1
 
     steps:
       - uses: actions/checkout@v3
