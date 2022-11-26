@@ -32,12 +32,13 @@ jobs:
           python-version: '3.7'
 
       - name: Prepare system
-        run: sudo apt -y install libaom-dev libx265-dev libde265-dev nasm
+        run: |
+          sudo add-apt-repository ppa:strukturag/libheif
+          sudo apt update
+          sudo apt install libheif
 
       - name: Install from source
-        run: |
-          export RTD_BUILD=1
-          python3 -m pip -v install ".[dev]"
+        run: python3 -m pip -v install ".[dev]"
 
       - name: Pylint Analysis
         run: python3 -m pylint pillow_heif
@@ -135,7 +136,6 @@ jobs:
     name: Coverage(Windows)
     env:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
-      PH_FULL_ACTION: 1
 
     steps:
       - uses: actions/checkout@v3
@@ -147,7 +147,6 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           location: C:/temp
-          update: true
           install: >-
             mingw-w64-x86_64-libheif
 
