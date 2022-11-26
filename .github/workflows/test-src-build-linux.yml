@@ -5,7 +5,7 @@ on:
   workflow_call:
   pull_request:
     branches: [master]
-    types: [opened, reopened, edited]
+    types: [opened, edited, reopened, synchronize]
     paths:
       - 'libheif/linux/**'
       - 'libheif/linux_*.py'

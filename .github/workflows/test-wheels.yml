@@ -6,8 +6,6 @@ on:
     workflows: [Build & Publish, Publish(from GH Release)]
     types:
       - completed
-#  schedule:
-#    - cron: '0 */12 * * *'
 
 jobs:
   docker-tests:
