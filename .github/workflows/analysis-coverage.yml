@@ -35,7 +35,7 @@ jobs:
         run: |
           sudo add-apt-repository ppa:strukturag/libheif
           sudo apt update
-          sudo apt install libheif
+          sudo apt install libheif-dev -y
 
       - name: Install from source
         run: python3 -m pip -v install ".[dev]"
