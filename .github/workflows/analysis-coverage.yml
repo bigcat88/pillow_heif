@@ -51,6 +51,9 @@ jobs:
         run: |
           sudo apt -y purge libheif1
           sudo apt -y install libaom-dev libx265-dev libde265-dev nasm
+          sudo add-apt-repository ppa:strukturag/libheif
+          sudo apt update
+          sudo apt -y install libheif-dev
           python3 -m pip install pytest coverage numpy pillow==8.3.0
 
       - name: Install from source
@@ -60,10 +63,7 @@ jobs:
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: |
-          export PH_FULL_ACTION=1
-          export EXP_PH_LIBHEIF_VERSION="1.14.0"
-          coverage run -m pytest -s && coverage xml && coverage html
+        run: coverage run -m pytest -s && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
