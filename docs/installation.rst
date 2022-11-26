@@ -34,23 +34,24 @@ Linux
         additional info what will happen during installing from source...
     | Here is a
         `GH Action <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-linux.yml>`_
-        and in ``docker`` folder there are docker files for ``Ubuntu`` and ``Alpine`` with examples how to build
-        from source.
+        and in ``docker/from_src`` folder there are docker files for ``Debian``, ``Ubuntu`` and ``Alpine`` with examples
+        how to build from source.
 
 There is many different ways how to build it from source. Main requirements are:
-    * libheif should be version ``1.12``, ``1.13`` or ``1.14``
+    * libheif should be version ``1.13``, ``1.14`` or ``1.14.1``
     * ``x265`` should support 10 - 12 bit encoding(if you want to save in that bitness)
-    * ``aom`` should be >= ``3.0.0`` version
+    * ``aom`` should be >= ``3.3.0`` version
+    * ``libde265`` should be >= ``1.0.8`` version
 
-``Ubuntu 22.04`` have all that in their repositories, so you can just install ``libehif`` with:
+``Ubuntu 22.04`` have all that in their repositories, except ``libheif`` (it has only ``1.12.0`` version):
 
-| :bash:`sudo apt install -y libaom-dev libx265-dev libde265-dev libheif-dev`
+| :bash:`sudo apt install -y libaom-dev libx265-dev libde265-dev`
 
-and after that compile it from source.
+and after that you should build libheif yourself(or run pip install with `root` privileges)...
+
+.. note:: Alpine ``3.17`` has libheif ``1.14.0`` version in their repositories.
 
 If you have questions about custom build from sources you can ask them in discussions or create an issue.
-
-Also if you are Guru in ``cmake`` and ``c++`` and find any error, I'll be glad for any pull requests.
 
 macOS
 ^^^^^
