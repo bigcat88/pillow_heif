@@ -24,7 +24,16 @@ def have_encoder_for_format(format_id: HeifCompressionFormat) -> bool:
 
 def libheif_info() -> dict:
     """Returns dictionary with available decoders & encoders and libheif version.
-    Keys are `versions`, `decoders`, `encoders`."""
+    Keys are `versions`, `decoders`, `encoders`.
+
+    {'version': {
+        'libheif': '1.14.0',
+        'x265': 'x265 HEVC encoder (3.4+31-6722fce1f)',
+        'aom': 'AOMedia Project AV1 Encoder 3.5.0'
+        },
+     'decoders': {'HEVC': 1, 'AV1': 1, 'AVC': 0},
+     'encoders': {'HEVC': 1, 'AV1': 1, 'AVC': 0}
+    }"""
 
     decoders = {}
     encoders = {}

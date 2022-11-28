@@ -3,12 +3,7 @@ Import all possible stuff that can be used.
 """
 
 
-from ._lib_info import (
-    have_decoder_for_format,
-    have_encoder_for_format,
-    libheif_info,
-    libheif_version,
-)
+from ._lib_info import libheif_info, libheif_version
 from ._options import options
 from ._version import __version__
 from .as_plugin import (
@@ -17,7 +12,7 @@ from .as_plugin import (
     register_avif_opener,
     register_heif_opener,
 )
-from .constants import HeifCompressionFormat, HeifErrorCode
+from .constants import HeifErrorCode
 from .error import HeifError
 from .heif import (
     HeifFile,

@@ -5,16 +5,7 @@ from typing import Union
 
 from PIL import Image, ImageMath, ImageOps
 
-from pillow_heif import (
-    HeifCompressionFormat,
-    HeifFile,
-    HeifImage,
-    HeifThumbnail,
-    add_thumbnails,
-    have_decoder_for_format,
-    have_encoder_for_format,
-    libheif_info,
-)
+from pillow_heif import HeifFile, HeifImage, HeifThumbnail, add_thumbnails, libheif_info
 
 try:
     import numpy as np
@@ -226,7 +217,7 @@ def gradient_pa_bytes(im_format: str) -> bytearray:
 def hevc_enc() -> bool:
     if getenv("PH_TESTS_NO_HEVC_ENC", "0") != "0":
         return False
-    return have_encoder_for_format(HeifCompressionFormat.HEVC)
+    return libheif_info()["encoders"]["HEVC"]
 
 
 def aom_dec() -> bool:
@@ -234,7 +225,7 @@ def aom_dec() -> bool:
         return False
     if libheif_info()["version"]["aom"] == "Rav1e encoder":
         return False
-    return have_decoder_for_format(HeifCompressionFormat.AV1)
+    return libheif_info()["decoders"]["AV1"]
 
 
 def aom_enc() -> bool:
@@ -242,4 +233,4 @@ def aom_enc() -> bool:
         return False
     if libheif_info()["version"]["aom"] == "Rav1e encoder":
         return False
-    return have_encoder_for_format(HeifCompressionFormat.AV1)
+    return libheif_info()["encoders"]["AV1"]
