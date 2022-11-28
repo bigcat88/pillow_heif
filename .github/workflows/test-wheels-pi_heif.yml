@@ -101,7 +101,7 @@ jobs:
 
       - name: Preparations
         run: |
-          python3 -m pip install pytest piexif pillow cffi numpy pympler defusedxml opencv-python
+          python3 -m pip install pytest pillow cffi numpy pympler defusedxml opencv-python
           python3 -m pip install --only-binary=:all: pi-heif
 
       - name: Test wheel
@@ -131,7 +131,7 @@ jobs:
       - name: Preparations
         run: |
           brew install libjpeg little-cms2
-          python3 -m pip install pytest piexif cffi pillow numpy pympler defusedxml
+          python3 -m pip install pytest cffi pillow numpy pympler defusedxml
           python3 -m pip install --only-binary=:all: pi-heif
 
       - name: Install OpenCV for CPython
@@ -166,7 +166,7 @@ jobs:
       - name: Preparations
         run: |
           sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
-          python3 -m pip install pytest piexif cffi pillow numpy pympler defusedxml
+          python3 -m pip install pytest cffi pillow numpy pympler defusedxml
           python3 -m pip install --only-binary=:all: pi-heif
 
       - name: Install OpenCV for CPython
@@ -201,7 +201,7 @@ jobs:
       - name: Preparations
         run: |
           brew install libjpeg little-cms2
-          python3 -m pip install pytest piexif cffi pillow numpy pympler defusedxml
+          python3 -m pip install pytest cffi pillow numpy pympler defusedxml
           python3 -m pip install --only-binary=:all: pillow-heif
           python3 -m pip install --only-binary=:all: pi-heif
 
@@ -236,7 +236,7 @@ jobs:
       - name: Preparations
         run: |
           sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
-          python3 -m pip install pytest piexif cffi pillow numpy pympler defusedxml
+          python3 -m pip install pytest cffi pillow numpy pympler defusedxml
           python3 -m pip install --only-binary=:all: pillow-heif
           python3 -m pip install --only-binary=:all: pi-heif
 
