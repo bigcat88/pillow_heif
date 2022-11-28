@@ -1,19 +1,24 @@
-import sys
 from io import BytesIO
 
-import piexif
 from PIL import Image, ImageCms, ImageSequence
+from PIL.ExifTags import TAGS
 
-import pillow_heif.HeifImagePlugin
+import pillow_heif.HeifImagePlugin  # noqa
 
 if __name__ == "__main__":
-    file = sys.argv[1]
+    file = "../tests/images/heif_other/cat.hif"
     print("Dumping info for file:", file)
     heif_pillow = Image.open(file)
     print("Number of images:", len([i for i in ImageSequence.Iterator(heif_pillow)]))
     print("Information about each image:")
     for image in ImageSequence.Iterator(heif_pillow):
         print("Number of thumbnails:", len(image.info["thumbnails"]))
+        print("\tThumbnails:")
+        for thumbnail in image.info["thumbnails"]:
+            print("\t\tMode:", thumbnail.mode)
+            print("\t\tSize:", thumbnail.size)
+            print("\t\tData size:", len(thumbnail.data))
+            print("")
         print("\tMode:", image.mode)
         print("\tSize:", image.size)
         print("\tData size:", len(image.tobytes()))
@@ -24,31 +29,23 @@ if __name__ == "__main__":
             else:
                 print("\tICC: Empty")
         if image.info.get("nclx_profile", None):
-            print("\tNCLX:", "TODO")
-        if image.info.get("exif", None):
-            print("\tExif:")
-            exif_dict = piexif.load(image.info["exif"], key_is_name=True)
-            for key, value in exif_dict.items():
-                print(f"\t\t{key}:")
-                if value is not None:
-                    for sub_key, sub_value in value.items():
-                        if isinstance(sub_value, bytes) and len(sub_value) > 20:
-                            print(f"\t\t\t{sub_key}: {len(sub_value)} bytes.")
-                        else:
-                            print(f"\t\t\t{sub_key}: {sub_value}")
-        if image.info.get("xmp", None):
+            print("\tNCLX:", "will do soon :)")
+        exif = image.getexif()
+        if exif:
+            exif = exif._get_merged_dict()  # noqa
+        for k, v in exif.items():
+            if isinstance(v, bytes) and len(v) > 8:
+                print(f"{TAGS[k]} : size {len(v)} bytes")
+            else:
+                print(TAGS[k], ":", v)
+        xmp = image.getxmp()
+        if xmp:
             print("\tXmp:")
-            print("\t\t", pillow_heif.getxmp(image.info["xmp"]))
+            print("\t\t", xmp)
         if image.info.get("metadata", None):
             print("\tMetadata:")
             for block in image.info["metadata"]:
                 print("\t\tType:", block["type"])
                 print("\t\tcontent_type:", block["content_type"])
                 print("\t\tData length:", len(block["data"]))
-        print("\tThumbnails:")
-        for thumbnail in image.info["thumbnails"]:
-            print("\t\tMode:", thumbnail.mode)
-            print("\t\tSize:", thumbnail.size)
-            print("\t\tData size:", len(thumbnail.data))
-            print("")
         print("")

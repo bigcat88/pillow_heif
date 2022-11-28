@@ -1,4 +1,3 @@
-import sys
 from io import BytesIO
 
 import piexif
@@ -7,7 +6,7 @@ from PIL import ImageCms
 import pillow_heif
 
 if __name__ == "__main__":
-    file = sys.argv[1]
+    file = "../tests/images/heif_other/cat.hif"  # noqa
     print("Dumping info for file:", file)
     print("Supported:", pillow_heif.is_supported(file))
     print("Mime:", pillow_heif.get_file_mimetype(file))
@@ -33,7 +32,7 @@ if __name__ == "__main__":
             else:
                 print("\tICC: Empty")
         if image.info.get("nclx_profile", None):
-            print("\tNCLX:", "TODO")
+            print("\tNCLX:", "soon :)")
         if image.info.get("exif", None):
             print("\tExif:")
             exif_dict = piexif.load(image.info["exif"], key_is_name=True)
@@ -46,8 +45,7 @@ if __name__ == "__main__":
                         else:
                             print(f"\t\t\t{sub_key}: {sub_value}")
         if image.info.get("xmp", None):
-            print("\tXmp:")
-            print("\t\t", pillow_heif.getxmp(image.info["xmp"]))
+            print(f"\tXmp size: {len(image.info['xmp'])}")
         if image.info.get("metadata", None):
             print("\tMetadata:")
             for block in image.info["metadata"]:
