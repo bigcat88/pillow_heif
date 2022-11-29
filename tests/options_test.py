@@ -17,6 +17,8 @@ from pillow_heif import (
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
+@pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
+@pytest.mark.skipif(not aom_enc(), reason="No AVIF encoder.")
 @pytest.mark.parametrize("register_opener", (register_avif_opener, register_heif_opener))
 def test_options_change_from_plugin_registering(register_opener):
     try:
@@ -73,6 +75,7 @@ def test_quality_option(save_format):
 
 @pytest.mark.skipif(os.cpu_count() < 2, reason="Requires at least a processor with two cores.")
 @pytest.mark.skipif(os.getenv("TEST_DECODE_THREADS", "1") == "0", reason="TEST_DECODE_THREADS set to `0`")
+@pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
 def test_decode_threads():
     test_image = "images/heif_other/cat.hif"  # not all images can be decoded using more than one thread
     # As we do not know real performance of hardware, measure relative
