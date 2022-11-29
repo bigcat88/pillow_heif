@@ -1,4 +1,5 @@
 from io import BytesIO
+from typing import Tuple
 
 import helpers
 import pytest
@@ -8,6 +9,8 @@ from PIL import Image
 import pillow_heif
 
 np = pytest.importorskip("numpy", reason="NumPy not installed")
+if parse_version(np.__version__) < parse_version("1.23.0"):
+    pytest.skip(reason="Requires numpy >= 1.23", allow_module_level=True)
 
 pillow_heif.register_heif_opener()
 if not helpers.hevc_enc():
@@ -21,10 +24,10 @@ heif_buf = BytesIO()
 im_heif.save(heif_buf)
 
 
-@pytest.mark.parametrize("im_size", ((256, 128), (127, 64), (63, 64), (31, 32), (20, 100), (14, 16), (11, 16)))
 @pytest.mark.parametrize("mode", ("L", "RGB", "RGBA", "I;16"))
-def test_numpy_array(im_size, mode):
-    im = im_pillow.convert(mode=mode)
+@pytest.mark.parametrize("im_size", ((256, 128), (127, 64), (63, 64), (31, 32), (20, 100), (14, 16), (11, 16)))
+def test_numpy_array(im_size: Tuple, mode):
+    im = im_pillow.resize(im_size).convert(mode=mode)
     heif_file = pillow_heif.from_pillow(im)
     pil_array = np.asarray(im)
     heif_array = np.asarray(heif_file[0])
@@ -32,7 +35,6 @@ def test_numpy_array(im_size, mode):
     assert np.array_equal(pil_array, np.asarray(heif_file))
 
 
-@pytest.mark.skipif(parse_version(np.__version__) < parse_version("1.23.0"), reason="Requires numpy >= 1.23")
 def test_numpy_array_pillow_thumbnail():
     pil_img = Image.open(heif_buf)
     thumbnail = pillow_heif.thumbnail(pil_img)

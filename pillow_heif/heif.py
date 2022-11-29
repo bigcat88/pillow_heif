@@ -3,15 +3,14 @@ Functions and classes for heif images to read and write.
 """
 
 from typing import Any, Dict, Iterator, List, Union
-from warnings import warn
 from weakref import ref
 
 from _pillow_heif_cffi import ffi, lib
 from PIL import Image, ImageOps, ImageSequence
 
+from . import options
 from ._lib_info import have_encoder_for_format
 from ._libheif_ctx import LibHeifCtx, LibHeifCtxWrite
-from ._options import options
 from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifCompressionFormat
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, get_file_mimetype, set_orientation
@@ -71,7 +70,7 @@ class HeifImageBase:
             if heif_ctx.data:
                 new_mode = MODE_INFO[self.mode][4] if for_encoding else None
                 if isinstance(new_mode, tuple):
-                    new_mode = new_mode[1] if options().save_to_12bit else new_mode[0]
+                    new_mode = new_mode[1] if options.SAVE_HDR_TO_12_BIT else new_mode[0]
                 _img = self._create_image(heif_ctx.data, heif_ctx.stride, new_mode)
                 self._img_to_img_data_dict(_img)
 
@@ -133,7 +132,7 @@ class HeifImageBase:
     def data(self):
         """Decodes image and returns image data from ``libheif``. See :ref:`image_data`
 
-        .. note:: Actual size of data returned by ``data`` can be bigger then ``width * height * pixel size``.
+        .. note:: Actual size of data returned by ``data`` can be bigger than ``width * height * pixel size``.
 
         :returns: ``bytes`` of the decoded image from ``libheif``."""
 
@@ -358,26 +357,6 @@ class HeifImage(HeifImageBase):
             f"with {_bytes} image data and {len(self.thumbnails)} thumbnails>"
         )
 
-    def scale(self, width: int, height: int):
-        """Rescales image by a specific width and height given in parameters.
-
-        .. note:: Image will be scaled in place. Images converted to some specific modes not always can be scaled.
-
-        :param width: new image width.
-        :param height: new image height."""
-
-        warn("Method `scale` is deprecated, consider to use `PIL.Image.resize()` instead.", DeprecationWarning)
-        self._load_if_not()
-        p_scaled_img = ffi.new("struct heif_image **")
-        check_libheif_error(lib.heif_image_scale_image(self.heif_img, p_scaled_img, width, height, ffi.NULL))
-        scaled_heif_img = ffi.gc(p_scaled_img[0], lib.heif_image_release)
-        self.size = (
-            lib.heif_image_get_primary_width(scaled_heif_img),
-            lib.heif_image_get_primary_height(scaled_heif_img),
-        )
-        self._img_to_img_data_dict(scaled_heif_img)
-        return self
-
     def copy_thumbnails(self, thumbnails: List[HeifThumbnail]):
         """Private. For use only in ``add_from_pillow`` and ``add_from_heif``."""
 
@@ -386,7 +365,7 @@ class HeifImage(HeifImageBase):
 
     def __read_thumbnails(self) -> List[HeifThumbnail]:
         result: List[HeifThumbnail] = []
-        if self._handle is None or not options().thumbnails:
+        if self._handle is None or not options.THUMBNAILS:
             return result
         thumbs_count = lib.heif_image_handle_get_number_of_thumbnails(self._handle)
         if thumbs_count == 0:
@@ -560,12 +539,6 @@ class HeifFile:
 
         return self.images[self.primary_index()].to_pillow()
 
-    def scale(self, width: int, height: int) -> None:
-        """Scales primary image in the container. See :py:meth:`~pillow_heif.HeifImage.scale`"""
-
-        warn("Method `scale` is deprecated, consider to use `PIL.Image.resize()` instead.", DeprecationWarning)
-        self.images[self.primary_index()].scale(width, height)
-
     def add_from_pillow(self, pil_image: Image.Image, load_one=False, ignore_primary=True, **kwargs):
         """Add image(s) to the container.
 
@@ -670,7 +643,7 @@ class HeifFile:
 
             .. note:: Appended images always will have ``info["primary"]=False``
 
-            ``quality`` - see :py:attr:`~pillow_heif._options.PyLibHeifOptions.quality`
+            ``quality`` - see :py:attr:`~pillow_heif.options.QUALITY`
 
             ``enc_params`` - dictionary with key:value to pass to :ref:`x265 <hevc-encoder>` encoder.
 
@@ -709,7 +682,7 @@ class HeifFile:
         chroma = kwargs.get("chroma", None)
         if chroma:
             enc_params["chroma"] = chroma
-        heif_ctx_write.set_encoder_parameters(enc_params, kwargs.get("quality", options().quality))
+        heif_ctx_write.set_encoder_parameters(enc_params, kwargs.get("quality", options.QUALITY))
         self._save(heif_ctx_write, images_to_save, primary_index, **kwargs)
         heif_ctx_write.write(fp)
 

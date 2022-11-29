@@ -202,7 +202,6 @@ def test_heif_read_images(image_path):
     def test_read_image(convert_hdr_to_8bit: bool) -> bool:
         heif_file = pillow_heif.open_heif(image_path, convert_hdr_to_8bit=convert_hdr_to_8bit)
         for image in heif_file:
-            assert isinstance(pillow_heif.getxmp(image.info["xmp"]), dict)
             assert min(image.size) > 0
             assumed_mode = "RGBA" if image.has_alpha else "RGB"
             if image.bit_depth > 8:
@@ -238,7 +237,7 @@ def test_pillow_read_images(image_path):
         assert getattr(pillow_image, "heif_file") is not None
         assert not getattr(pillow_image, "_close_exclusive_fp_after_loading")
         pillow_image.verify()
-        images_count = len([_ for _ in ImageSequence.Iterator(pillow_image)])
+        images_count = len(list(ImageSequence.Iterator(pillow_image)))
         for i, image in enumerate(ImageSequence.Iterator(pillow_image)):
             assert image.info
             assert image.custom_mimetype in ("image/heic", "image/heif", "image/heif-sequence", "image/avif")
@@ -294,12 +293,6 @@ def test_heif_index():
         del heif_file[-1]
     with pytest.raises(IndexError):
         del heif_file[len(heif_file)]
-
-
-@mock.patch("pillow_heif.misc.ElementTree", None)
-def test_no_defusedxml(monkeypatch):
-    with pytest.warns(UserWarning):
-        pillow_heif.getxmp(b"xmp_data")
 
 
 def test_read_heif():

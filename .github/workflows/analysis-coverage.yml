@@ -123,6 +123,7 @@ jobs:
     name: Coverage(Windows)
     env:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
+      TEST_DECODE_THREADS: 0    # Till `MSYS2` update to `1.14.1`
 
     steps:
       - uses: actions/checkout@v3

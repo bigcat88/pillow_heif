@@ -40,7 +40,7 @@ def test_convert_to_same_mode():
 @pytest.mark.parametrize("mode", ("RGB;16", "BGR;16"))
 def test_rgb8_to_16_bit_color_mode(mode, enc_bits):
     try:
-        options().save_to_12bit = True if enc_bits == 12 else False
+        options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
         png_pillow = helpers.gradient_rgb()
         heif_file = from_pillow(png_pillow)
         assert heif_file.bit_depth == 8
@@ -54,14 +54,14 @@ def test_rgb8_to_16_bit_color_mode(mode, enc_bits):
         assert not heif_file.has_alpha
         helpers.compare_hashes([png_pillow, out_heic], hash_size=8)
     finally:
-        options().reset()
+        options.SAVE_HDR_TO_12_BIT = False
 
 
 @pytest.mark.parametrize("enc_bits", (10, 12))
 @pytest.mark.parametrize("mode", ("RGBA;16", "BGRA;16"))
 def test_rgba8_to_16_bit_color_mode(mode, enc_bits):
     try:
-        options().save_to_12bit = True if enc_bits == 12 else False
+        options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
         png_pillow = helpers.gradient_rgba()
         heif_file = from_pillow(png_pillow)
         assert heif_file.bit_depth == 8
@@ -75,7 +75,7 @@ def test_rgba8_to_16_bit_color_mode(mode, enc_bits):
         assert heif_file.has_alpha
         helpers.compare_hashes([png_pillow, out_heic], hash_size=8)
     finally:
-        options().reset()
+        options.SAVE_HDR_TO_12_BIT = False
 
 
 @pytest.mark.parametrize("img, bit", (("images/heif/RGB_10.heif", 10), ("images/heif/RGB_12.heif", 12)))

@@ -30,17 +30,6 @@ def test_save_format(save_format):
     assert mime == "image/avif" if save_format == "AVIF" else "image/heic"
 
 
-def test_scale():
-    heif_buf = helpers.create_heif()
-    im_heif = pillow_heif.open_heif(heif_buf)
-    assert im_heif[0].size == (512, 512)
-    im_heif.scale(256, 256)
-    assert im_heif[0].size == (256, 256)
-    out_buffer = BytesIO()
-    im_heif.save(out_buffer, quality=-1)
-    helpers.compare_hashes([heif_buf, out_buffer])
-
-
 @pytest.mark.parametrize(
     "img",
     (
@@ -286,7 +275,7 @@ def test_CMYK_color_mode():  # noqa
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 def test_I_color_modes_to_10_12_bit(enc_bits, save_format):  # noqa
     try:
-        pillow_heif.options().save_to_12bit = True if enc_bits == 12 else False
+        pillow_heif.options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
         src_pillow = Image.open(Path("images/non_heif/L_16.png"))
         assert src_pillow.mode == "I"
         for mode in ("I", "I;16", "I;16L"):
@@ -297,7 +286,7 @@ def test_I_color_modes_to_10_12_bit(enc_bits, save_format):  # noqa
             heic_pillow = Image.open(out_heic)
             helpers.compare_hashes([src_pillow, heic_pillow], hash_size=8)
     finally:
-        pillow_heif.options().reset()
+        pillow_heif.options.SAVE_HDR_TO_12_BIT = False
 
 
 def test_gif():
@@ -325,7 +314,7 @@ def test_pillow_append_images():
     out_buf = BytesIO()
     im_heif.save(out_buf, format="HEIF", append_images=[im_heif, heif_file2[1], heif_file3], save_all=True)
     heif_file_out = pillow_heif.open_heif(out_buf)
-    assert len([i for i in heif_file_out.thumbnails_all()]) == 2 + 2 + 1 + 4
+    assert len(list(heif_file_out.thumbnails_all())) == 2 + 2 + 1 + 4
     assert len(heif_file_out) == 2 + 2 + 1 + 2
     helpers.compare_heif_files_fields(heif_file_out[0], heif_file_out[2])
     helpers.compare_heif_files_fields(heif_file_out[1], heif_file_out[3])

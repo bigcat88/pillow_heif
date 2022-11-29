@@ -4,12 +4,11 @@ from pathlib import Path
 
 import helpers
 import pytest
-from packaging.version import parse as parse_version
-from PIL import Image
-from PIL import __version__ as pil_version
-from PIL import features
+from PIL import Image, features
 
 import pillow_heif
+
+pytest.importorskip("defusedxml", reason="defusedxml not installed")
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 pillow_heif.register_avif_opener()
@@ -19,7 +18,6 @@ pillow_heif.register_heif_opener()
 @pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
 @pytest.mark.skipif(not helpers.aom_enc(), reason="Requires AVIF encoder.")
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 @pytest.mark.parametrize(
     "img_path",
@@ -32,9 +30,9 @@ pillow_heif.register_heif_opener()
 )
 def test_xmp_from_pillow(img_path, save_format):
     im = Image.open(Path(img_path))
-    xmp = im.getxmp() if hasattr(im, "getxmp") else pillow_heif.getxmp(im.info["xmp"])  # noqa
-    pytest.importorskip("defusedxml", reason="requires `defusedxml`")
-    assert xmp["xmpmeta"]["RDF"]["Description"]["subject"]["Bag"]["li"] == "TestSubject"
+    if hasattr(im, "getxmp"):  # WebP do not have `getxmp` method(Pillow <=9.3.0)
+        xmp = im.getxmp()  # noqa
+        assert xmp["xmpmeta"]["RDF"]["Description"]["subject"]["Bag"]["li"] == "TestSubject"
     out_im_heif = BytesIO()
     im.save(out_im_heif, format=save_format)
     im_heif = Image.open(out_im_heif)

@@ -2,9 +2,7 @@ from io import BytesIO
 
 import pytest
 from helpers import assert_image_similar, hevc_enc
-from packaging.version import parse as parse_version
 from PIL import Image, ImageOps
-from PIL import __version__ as pil_version
 
 import pillow_heif
 
@@ -43,7 +41,6 @@ def get_xmp_with_orientation(orientation: int, style=1) -> str:
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 @pytest.mark.parametrize("orientation", (1, 2, 3, 4, 5, 6, 7, 8))
 @pytest.mark.parametrize("im_format", ("JPEG", "PNG"))
 def test_exif_orientation(orientation, im_format):
@@ -68,7 +65,6 @@ def test_exif_orientation(orientation, im_format):
             assert_image_similar(im, im_heif)
 
 
-@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 @pytest.mark.parametrize("orientation", (1, 2, 3, 4, 5, 6, 7, 8))
 def test_png_xmp_orientation(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
@@ -161,7 +157,6 @@ def test_heif_xmp_orientation_with_exif_eq_1(orientation):
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.skipif(parse_version(pil_version) < parse_version("8.3.0"), reason="Requires Pillow >= 8.3")
 @pytest.mark.parametrize("orientation", (1, 2))
 @pytest.mark.parametrize("im_format", ("JPEG", "PNG"))
 def test_exif_heif_exif_orientation(orientation, im_format):

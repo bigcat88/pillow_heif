@@ -21,7 +21,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 @pytest.mark.parametrize("enc_bits", (10, 12))
 def test_save_bgr_16bit_to_10_12_bit(enc_bits):
     try:
-        options().save_to_12bit = True if enc_bits == 12 else False
+        options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
         image_path = "images/non_heif/RGB_16.png"
         cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         assert cv_img.shape[2] == 3  # 3 channels(BGR)
@@ -34,14 +34,14 @@ def test_save_bgr_16bit_to_10_12_bit(enc_bits):
         heif_pillow = Image.open(out_heic)
         compare_hashes([png_pillow, heif_pillow], hash_size=8)
     finally:
-        options().reset()
+        options.SAVE_HDR_TO_12_BIT = False
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("enc_bits", (10, 12))
 def test_save_bgra_16bit_to_10_12_bit(enc_bits):
     try:
-        options().save_to_12bit = True if enc_bits == 12 else False
+        options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
         image_path = "images/non_heif/RGBA_16.png"
         cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         assert cv_img.shape[2] == 4  # 4 channels(BGRA)
@@ -54,7 +54,7 @@ def test_save_bgra_16bit_to_10_12_bit(enc_bits):
         heif_pillow = Image.open(out_heic)
         compare_hashes([png_pillow, heif_pillow], hash_size=8, max_difference=1)
     finally:
-        options().reset()
+        options.SAVE_HDR_TO_12_BIT = False
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
