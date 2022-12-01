@@ -3,6 +3,7 @@ from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path, remove
 from platform import machine
 from re import IGNORECASE, MULTILINE, match, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
+from warnings import warn
 
 BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
 BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
@@ -15,7 +16,7 @@ PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/get/0b75c44c10e605fe9e9ebed58f04a46271131827.tar.gz"
 LIBAOM_URL = "https://aomedia.googlesource.com/aom/+archive/v3.5.0.tar.gz"
 LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz"
-LIBHEIF_URL = "https://github.com/strukturag/libheif/archive/7caa01dd150b6c96f33d35bff2eab8a32b8edf2b.tar.gz"
+LIBHEIF_URL = "https://github.com/strukturag/libheif/archive/012d77c8340ef8b6e190aea5ac4ff9262d992f0c.tar.gz"
 
 
 def download_file(url: str, out_path: str) -> bool:
@@ -211,6 +212,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
         run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
     else:
         if getenv("READTHEDOCS", "False") == "True":  # ReadTheDocs build.
+            warn("RTD BUILD")
             run("export LD_LIBRARY_PATH=$HOME/rtd_build/lib:$LD_LIBRARY_PATH".split(), shell=True)
         else:
             run("ldconfig", check=True)
