@@ -91,3 +91,8 @@ def test_decode_threads():
         assert total_time_one_thread > total_time_two_threads * 1.2
     finally:
         options.DECODE_THREADS = 4
+
+
+def test_plugin_register_unknown_option():
+    with pytest.warns(UserWarning, match="Unknown option: unknown_option"):
+        register_heif_opener(unknown_option=12345)
