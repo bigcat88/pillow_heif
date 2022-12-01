@@ -639,7 +639,7 @@ class HeifFile:
             (default = ``True``)
 
             ``append_images`` - do the same as in Pillow.
-            Accept ``HeifFile``, ``HeifImage`` and ``PIL.Image``
+            Accepts ``HeifFile``, ``HeifImage`` and ``PIL.Image``
 
             .. note:: Appended images always will have ``info["primary"]=False``
 
@@ -647,9 +647,10 @@ class HeifFile:
 
             ``enc_params`` - dictionary with key:value to pass to :ref:`x265 <hevc-encoder>` encoder.
 
-            ``exif`` - override primary image's EXIF with specified. Accept ``None`` or ``bytes``.
+            ``exif`` - override primary image's EXIF with specified.
+            Accepts ``None``, ``bytes`` or ``PIL.Image.Exif`` class.
 
-            ``xmp`` - override primary image's XMP with specified. Accept ``None`` or ``bytes``.
+            ``xmp`` - override primary image's XMP with specified. Accepts ``None`` or ``bytes``.
 
             ``primary_index`` - ignore ``info["primary"]`` and set `PrimaryImage` by index.
 
@@ -745,6 +746,8 @@ class HeifFile:
                     lib.heif_context_set_primary_image(ctx.ctx, new_img_handle)
                 if kwargs.get("exif", -1) != -1:
                     exif = kwargs["exif"]
+                    if isinstance(exif, Image.Exif):
+                        exif = exif.tobytes()
                 if kwargs.get("xmp", -1) != -1:
                     xmp = kwargs["xmp"]
             set_exif(ctx, new_img_handle, exif)

@@ -175,3 +175,18 @@ def test_corrupted_exif():
     with pytest.raises(SyntaxError):
         im.getexif()
     assert im.info["exif"] == exif_data
+
+
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
+def test_exif_as_class():
+    exif = Image.Exif()
+    exif[258] = 8
+    exif[40963] = 455
+    exif[305] = "exif test"
+    out_im = BytesIO()
+    helpers.gradient_rgb().save(out_im, format="HEIF", exif=exif)
+    im = Image.open(out_im)
+    exif = im.getexif()
+    assert exif[258] == 8
+    assert exif[40963] == 455
+    assert exif[305] == "exif test"
