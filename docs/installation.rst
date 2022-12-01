@@ -47,7 +47,7 @@ There is many different ways how to build it from source. Main requirements are:
 
 | :bash:`sudo apt install -y libaom-dev libx265-dev libde265-dev`
 
-and after that you should build libheif yourself(or run pip install with `root` privileges)...
+and after that you should build libheif yourself(or run pip install with `root` privileges).
 
 .. note:: Alpine ``3.17`` has libheif ``1.14.0`` version in their repositories.
 

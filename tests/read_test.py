@@ -237,7 +237,7 @@ def test_pillow_read_images(image_path):
         assert getattr(pillow_image, "heif_file") is not None
         assert not getattr(pillow_image, "_close_exclusive_fp_after_loading")
         pillow_image.verify()
-        images_count = len([_ for _ in ImageSequence.Iterator(pillow_image)])
+        images_count = len(list(ImageSequence.Iterator(pillow_image)))
         for i, image in enumerate(ImageSequence.Iterator(pillow_image)):
             assert image.info
             assert image.custom_mimetype in ("image/heic", "image/heif", "image/heif-sequence", "image/avif")

@@ -28,9 +28,6 @@ Automatic
 Manual
 """"""
 
-.. note:: Function :py:func:`~pillow_heif.register_heif_opener` can override default
-    :py:class:`~pillow_heif._options.PyLibHeifOptions` if you needed to.
-
 .. code-block:: python
 
     from PIL import Image
@@ -53,6 +50,24 @@ AVIF plugin
 
 ``AVIF`` plugin should support all operations and work the same way as ``HEIF`` plugin do.
 
+Tips & Tricks
+"""""""""""""
+
+If you do not need HEIF thumbnails functionality, then it is a good idea
+to disable them during plugin registration:
+
+.. code-block:: python
+
+    register_heif_opener(thumbnails=False)
+
+Remember, then you can pass multiply config values to :py:func:`~pillow_heif.register_heif_opener` at once:
+
+.. code-block:: python
+
+    register_heif_opener(thumbnails=False, quality=-1)
+
+.. note:: :py:func:`~pillow_heif.register_avif_opener` works in the same way.
+
 Image Modes
 ***********
 
@@ -64,7 +79,7 @@ See :ref:`image-modes` for a list of supported modes for saving.
 Metadata
 ********
 
-Avalaible metadata are stored in ``info`` dictionary as in other Pillow plugins.
+Available metadata are stored in ``info`` dictionary as in other Pillow plugins.
 
 Those are:
 ``exif``, ``xmp``, ``metadata`` and ``primary``
@@ -122,7 +137,7 @@ Save operation
 
 For `HEIF` next extensions are registered: ``.heic``, ``.heics``, ``.heif``, ``.heifs`` and ``.hif``
 
-For `AVIF` registered extensions are: ``.avif`` and ``.avifs``
+For `AVIF` registered extensions are: ``.avif``
 
 Also images can be saved to memory, using ``format`` parameter:
 

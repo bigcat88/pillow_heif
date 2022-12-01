@@ -3,8 +3,8 @@ Import all possible stuff that can be used.
 """
 
 
+from . import options
 from ._lib_info import libheif_info, libheif_version
-from ._options import options
 from ._version import __version__
 from .as_plugin import (
     AvifImageFile,

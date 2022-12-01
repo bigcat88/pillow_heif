@@ -7,8 +7,8 @@ from warnings import warn
 
 from PIL import Image, ImageFile
 
+from . import options
 from ._lib_info import have_decoder_for_format, have_encoder_for_format
-from ._options import options
 from .constants import HeifCompressionFormat, HeifErrorCode
 from .error import HeifError
 from .heif import HeifFile, open_heif
@@ -150,10 +150,10 @@ def _save_all_heif(im, fp, _filename):
 def register_heif_opener(**kwargs) -> None:
     """Registers a Pillow plugin for HEIF format.
 
-    :param kwargs: dictionary with values to set in :py:class:`~pillow_heif._options.PyLibHeifOptions`
+    :param kwargs: dictionary with values to set in options. See: :ref:`options`.
     """
 
-    options().update(**kwargs)
+    __options_update(**kwargs)
     Image.register_open(HeifImageFile.format, HeifImageFile, _is_supported_heif)
     if have_encoder_for_format(HeifCompressionFormat.HEVC):
         Image.register_save(HeifImageFile.format, _save_heif)
@@ -195,7 +195,7 @@ def _save_all_avif(im, fp, _filename):
 def register_avif_opener(**kwargs) -> None:
     """Registers a Pillow plugin for AVIF format.
 
-    :param kwargs: dictionary with values to set in :py:class:`~pillow_heif._options.PyLibHeifOptions`
+    :param kwargs: dictionary with values to set in options. See: :ref:`options`.
     """
 
     if not have_decoder_for_format(HeifCompressionFormat.AV1) and not have_encoder_for_format(
@@ -203,7 +203,7 @@ def register_avif_opener(**kwargs) -> None:
     ):
         warn("This version of `pillow-heif` was built without AVIF support.")
         return
-    options().update(**kwargs)
+    __options_update(**kwargs)
     if have_decoder_for_format(HeifCompressionFormat.AV1):
         Image.register_open(AvifImageFile.format, AvifImageFile, _is_supported_avif)
     if have_encoder_for_format(HeifCompressionFormat.AV1):
@@ -213,3 +213,19 @@ def register_avif_opener(**kwargs) -> None:
     extensions = [".avif"]
     Image.register_mime(AvifImageFile.format, "image/avif")
     Image.register_extensions(AvifImageFile.format, extensions)
+
+
+def __options_update(**kwargs):
+    """Internal function to set options from `register_avif_opener` and `register_heif_opener`"""
+
+    for k, v in kwargs.items():
+        if k == "thumbnails":
+            options.THUMBNAILS = v
+        elif k == "quality":
+            options.QUALITY = v
+        elif k == "save_to_12bit":
+            options.SAVE_HDR_TO_12_BIT = v
+        elif k == "decode_threads":
+            options.DECODE_THREADS = v
+        else:
+            warn(f"Unknown option: {k}")

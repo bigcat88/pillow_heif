@@ -8,9 +8,9 @@ from weakref import ref
 from _pillow_heif_cffi import ffi, lib
 from PIL import Image, ImageOps, ImageSequence
 
+from . import options
 from ._lib_info import have_encoder_for_format
 from ._libheif_ctx import LibHeifCtx, LibHeifCtxWrite
-from ._options import options
 from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifCompressionFormat
 from .error import HeifError, HeifErrorCode, check_libheif_error
 from .misc import _get_bytes, get_file_mimetype, set_orientation
@@ -70,7 +70,7 @@ class HeifImageBase:
             if heif_ctx.data:
                 new_mode = MODE_INFO[self.mode][4] if for_encoding else None
                 if isinstance(new_mode, tuple):
-                    new_mode = new_mode[1] if options().save_to_12bit else new_mode[0]
+                    new_mode = new_mode[1] if options.SAVE_HDR_TO_12_BIT else new_mode[0]
                 _img = self._create_image(heif_ctx.data, heif_ctx.stride, new_mode)
                 self._img_to_img_data_dict(_img)
 
@@ -132,7 +132,7 @@ class HeifImageBase:
     def data(self):
         """Decodes image and returns image data from ``libheif``. See :ref:`image_data`
 
-        .. note:: Actual size of data returned by ``data`` can be bigger then ``width * height * pixel size``.
+        .. note:: Actual size of data returned by ``data`` can be bigger than ``width * height * pixel size``.
 
         :returns: ``bytes`` of the decoded image from ``libheif``."""
 
@@ -365,7 +365,7 @@ class HeifImage(HeifImageBase):
 
     def __read_thumbnails(self) -> List[HeifThumbnail]:
         result: List[HeifThumbnail] = []
-        if self._handle is None or not options().thumbnails:
+        if self._handle is None or not options.THUMBNAILS:
             return result
         thumbs_count = lib.heif_image_handle_get_number_of_thumbnails(self._handle)
         if thumbs_count == 0:
@@ -643,7 +643,7 @@ class HeifFile:
 
             .. note:: Appended images always will have ``info["primary"]=False``
 
-            ``quality`` - see :py:attr:`~pillow_heif._options.PyLibHeifOptions.quality`
+            ``quality`` - see :py:attr:`~pillow_heif.options.QUALITY`
 
             ``enc_params`` - dictionary with key:value to pass to :ref:`x265 <hevc-encoder>` encoder.
 
@@ -683,7 +683,7 @@ class HeifFile:
         chroma = kwargs.get("chroma", None)
         if chroma:
             enc_params["chroma"] = chroma
-        heif_ctx_write.set_encoder_parameters(enc_params, kwargs.get("quality", options().quality))
+        heif_ctx_write.set_encoder_parameters(enc_params, kwargs.get("quality", options.QUALITY))
         self._save(heif_ctx_write, images_to_save, primary_index, **kwargs)
         heif_ctx_write.write(fp)
 

@@ -13,16 +13,9 @@ class Libheif < Formula
   depends_on "jpeg-turbo"
   depends_on "libde265"
   depends_on "libpng"
-  depends_on "shared-mime-info"
 
   def install
     system "./configure", *std_configure_args, "--disable-silent-rules"
     system "make", "install"
-    pkgshare.install "examples/example.heic"
-    pkgshare.install "examples/example.avif"
-  end
-
-  def post_install
-    system Formula["shared-mime-info"].opt_bin/"update-mime-database", "#{HOMEBREW_PREFIX}/share/mime"
   end
 end

@@ -1,24 +1,28 @@
-.. py:currentmodule:: pillow_heif
+.. _options:
 
 Options
 -------
 
-.. autofunction:: options
-.. autoclass:: pillow_heif._options.PyLibHeifOptions
-    :members:
+.. autodata:: pillow_heif.options.DECODE_THREADS
+.. autodata:: pillow_heif.options.THUMBNAILS
+.. autodata:: pillow_heif.options.QUALITY
+.. autodata:: pillow_heif.options.SAVE_HDR_TO_12_BIT
 
-Overriding default options
-""""""""""""""""""""""""""
-
-When registering a Pillow plugin with :py:func:`pillow_heif.register_heif_opener`
-
-.. code-block:: python
-
-    register_heif_opener(thumbnails=False, quality=100)
-
-With call to :py:func:`pillow_heif.options()`
+Example of use
+""""""""""""""
 
 .. code-block:: python
 
-    options().thumbnails = False
-    options().quality = 100
+    import pillow_heif
+
+    pillow_heif.options.THUMBNAILS = False
+    pillow_heif.options.DECODE_THREADS = 1
+
+Overriding multiple options at once
+"""""""""""""""""""""""""""""""""""
+
+When registering a Pillow plugin with :py:func:`pillow_heif.register_heif_opener` or :py:func:`pillow_heif.register_avif_opener`
+
+.. code-block:: python
+
+    register_heif_opener(thumbnails=False, quality=100, decode_threads=10)

@@ -12,6 +12,11 @@ else:
     INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 
+LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/get/0b75c44c10e605fe9e9ebed58f04a46271131827.tar.gz"
+LIBAOM_URL = "https://aomedia.googlesource.com/aom/+archive/v3.5.0.tar.gz"
+LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz"
+LIBHEIF_URL = "https://github.com/strukturag/libheif/archive/7caa01dd150b6c96f33d35bff2eab8a32b8edf2b.tar.gz"
+
 
 def download_file(url: str, out_path: str) -> bool:
     n_download_clients = 2
@@ -153,12 +158,11 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                     #     run(f"patch -p 1 -i {patch_path}".split(), check=True)
                 elif name == "libheif":
                     chdir(_lib_path)
-                    for patch in (
-                        "libheif/001-void-unused-variable.patch",
-                        "libheif/002-fix-dynamic-plugins.patch",
-                    ):
-                        patch_path = path.join(_linux_dir, patch)
-                        run(f"patch -p 1 -i {patch_path}".split(), check=True)
+                    # for patch in (
+                    #     "libheif/001-void-unused-variable.patch",
+                    # ):
+                    #     patch_path = path.join(_linux_dir, patch)
+                    #     run(f"patch -p 1 -i {patch_path}".split(), check=True)
             chdir(_build_path)
         print(f"Preconfiguring {name}...", flush=True)
         if name == "aom":
@@ -225,31 +229,19 @@ def build_libs() -> str:
             raise ValueError("Can not find/install `nasm` with version >=2.15.05")
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:
-                build_lib_linux(
-                    "https://bitbucket.org/multicoreware/x265_git/get/0b75c44c10e605fe9e9ebed58f04a46271131827.tar.gz",
-                    "x265",
-                    _is_musllinux,
-                )
+                build_lib_linux(LIBX265_URL, "x265", _is_musllinux)
         else:
             print("x265 already installed.")
         if not is_library_installed("aom"):
             if not PH_LIGHT_VERSION:
-                build_lib_linux("https://aomedia.googlesource.com/aom/+archive/v3.5.0.tar.gz", "aom", _is_musllinux)
+                build_lib_linux(LIBAOM_URL, "aom", _is_musllinux)
         else:
             print("aom already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
-            build_lib_linux(
-                "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz",
-                "libde265",
-                _is_musllinux,
-            )
+            build_lib_linux(LIBDE265_URL, "libde265", _is_musllinux)
         else:
             print("libde265 already installed.")
-        build_lib_linux(
-            "https://github.com/strukturag/libheif/releases/download/v1.14.0/libheif-1.14.0.tar.gz",
-            "libheif",
-            _is_musllinux,
-        )
+        build_lib_linux(LIBHEIF_URL, "libheif", _is_musllinux)
     finally:
         chdir(_original_dir)
     return INSTALL_DIR_LIBS

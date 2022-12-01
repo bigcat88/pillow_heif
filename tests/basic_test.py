@@ -13,7 +13,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def test_libheif_info():
     info = pillow_heif.libheif_info()
-    assert info["version"]["libheif"] in ("1.12.0", "1.13.0", "1.14.0")
+    assert info["version"]["libheif"] in ("1.13.0", "1.14.0", "1.14.1")
     assert info["decoders"]["HEVC"]
 
 
@@ -108,7 +108,9 @@ def test_full_build():
     assert info["decoders"]["AV1"]
     assert info["encoders"]["AV1"]
     assert info["encoders"]["HEVC"]
-    assert info["version"]["libheif"] == os.getenv("EXP_PH_LIBHEIF_VERSION", "1.14.0")
+    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.14.1")
+    if expected_version:
+        assert info["version"]["libheif"] == expected_version
 
 
 @pytest.mark.skipif(not helpers.RELEASE_LIGHT_FLAG, reason="Only when building light release")
@@ -117,4 +119,6 @@ def test_light_build():
     assert not info["decoders"]["AV1"]
     assert not info["encoders"]["AV1"]
     assert not info["encoders"]["HEVC"]
-    assert info["version"]["libheif"] == os.getenv("EXP_PH_LIBHEIF_VERSION", "1.14.0")
+    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.14.1")
+    if expected_version:
+        assert info["version"]["libheif"] == expected_version

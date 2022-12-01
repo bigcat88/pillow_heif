@@ -9,6 +9,7 @@ from typing import Dict, List
 
 from _pillow_heif_cffi import ffi, lib
 
+from . import options
 from .constants import HeifCompressionFormat
 from .error import check_libheif_error
 from .misc import _get_bytes, get_file_mimetype
@@ -37,6 +38,7 @@ class LibHeifCtx:
         error = lib.heif_context_read_from_memory_without_copy(self.ctx, cdata_buf, len(cdata_buf), ffi.NULL)
         check_libheif_error(error)
         self.mimetype = get_file_mimetype(self.c_userdata)
+        lib.heif_context_set_max_decoding_threads(self.ctx, options.DECODE_THREADS)
 
     def get_main_img_id(self) -> int:
         p_main_image_id = ffi.new("heif_item_id *")

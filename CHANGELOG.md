@@ -10,13 +10,12 @@ All notable changes to this project will be documented in this file.
 
 - `libheif` updated  to `1.14.1` version. Minimum supported version to build from source is `1.13.0`
 - Minimum required `Pillow` version increased from `6.2.0` to `8.3.0`, `getxmp` is used from Pillow now. #55
-- `scale` method was removed(`PIL.Image.resize()` working better).
+- `options()` was reworked. Added new `DECODE_THREADS` option. #57
 
 ### Fixed
 
 - Added ability to `save` method to accept `exif` as `PIL.Image.Exif` class. #51
 - Linux, Windows: fixed disabled multithreading for image decode. Added tests for this. Thanks to @jtressle #53
-- Libheif: fixed limited-range offset for HDR color conversion [libheif issue](https://github.com/strukturag/libheif/issues/706)
 - Linux: building from source has been reworked to no longer require `autoconf`, `automake` and `pkg-config`.
 
 ## [0.8.0 - 2022-11-20]

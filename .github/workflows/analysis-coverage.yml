@@ -5,14 +5,14 @@ on:
     branches: [master]
     types: [opened, edited, reopened, synchronize]
     paths:
-      - 'pillow_heif/*.py'
+      - 'pillow_heif/*.*'
       - 'tests/**'
       - 'setup.*'
       - 'pyproject.toml'
   push:
     branches: [master]
     paths:
-      - 'pillow_heif/*.py'
+      - 'pillow_heif/*.*'
       - 'tests/**'
       - 'setup.*'
       - 'pyproject.toml'
@@ -20,24 +20,18 @@ on:
 
 jobs:
   analysis:
-    runs-on: ubuntu-22.04
+    runs-on: macos-12
     name: Analysis
     if: "!contains(github.event.head_commit.message, '[docs]')"
 
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
           python-version: '3.7'
 
-      - name: Prepare system
-        run: sudo apt -y install libaom-dev libx265-dev libde265-dev nasm
-
       - name: Install from source
-        run: |
-          export RTD_BUILD=1
-          python3 -m pip -v install ".[dev]"
+        run: python3 -m pip install . pylint
 
       - name: Pylint Analysis
         run: python3 -m pylint pillow_heif
@@ -49,13 +43,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
       - name: Prepare system
         run: |
+          sudo apt -y purge libheif1
+          sudo apt -y install libaom-dev libx265-dev libde265-dev nasm
+          sudo add-apt-repository ppa:strukturag/libheif
+          sudo apt update
           sudo apt -y install libheif-dev
           python3 -m pip install pytest coverage numpy pillow==8.3.0
 
@@ -66,10 +63,7 @@ jobs:
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: |
-          export PH_FULL_ACTION=1
-          export EXP_PH_LIBHEIF_VERSION="1.12.0"
-          coverage run -m pytest -s && coverage xml && coverage html
+        run: coverage run -m pytest -s && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
@@ -93,15 +87,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
-      - name: Prepare system
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install libheif
 
       - name: Install from source
         run: |
@@ -112,9 +100,7 @@ jobs:
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: |
-          export PH_FULL_ACTION=1
-          coverage run -m pytest -s && coverage xml && coverage html
+        run: coverage run -m pytest -s && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
@@ -137,11 +123,10 @@ jobs:
     name: Coverage(Windows)
     env:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
-      PH_FULL_ACTION: 1
+      TEST_DECODE_THREADS: 0    # Till `MSYS2` update to `1.14.1`
 
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
@@ -149,7 +134,6 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           location: C:/temp
-          update: true
           install: >-
             mingw-w64-x86_64-libheif
 
@@ -166,9 +150,9 @@ jobs:
           cp ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
-          cp ${{ env.MSYS2_PREFIX }}/bin/libdav1d.dll $site_packages/
-          cp ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
-          cp ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libdav1d.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc.dll $site_packages/
 
       - name: Install from source
         run: |
@@ -203,7 +187,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - name: Put pi-heif files
         run: cp -r -v ./pi-heif/* .
 
@@ -213,7 +196,6 @@ jobs:
 
       - name: Prepare system
         run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           brew uninstall --force --ignore-dependencies imagemagick
           brew uninstall --force --ignore-dependencies libheif x265 aom
           brew install --formula ./libheif/macos/libheif.rb
@@ -227,9 +209,7 @@ jobs:
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: |
-          export PH_LIGHT_ACTION=1
-          coverage run -m pytest -s && coverage xml && coverage html
+        run: coverage run -m pytest -s && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
@@ -250,10 +230,12 @@ jobs:
     needs: [analysis]
     runs-on: macos-12
     name: Pi-Heif Test(macOS)
+    env:
+      EXP_PH_LIBHEIF_VERSION: ""
+      PH_LIGHT_ACTION: 1
 
     steps:
       - uses: actions/checkout@v3
-
       - name: Put pi-heif files
         run: |
           cp -r -v ./pi-heif/* .
@@ -265,7 +247,6 @@ jobs:
 
       - name: Prepare system
         run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           brew uninstall --force --ignore-dependencies imagemagick
           brew uninstall --force --ignore-dependencies libheif x265 aom
           brew install --formula ./libheif/macos/libheif.rb
@@ -279,6 +260,4 @@ jobs:
         run: python3 -c "import pi_heif; print(pi_heif.libheif_info())"
 
       - name: Perform tests
-        run: |
-          export PH_LIGHT_ACTION=1
-          python3 -m pytest -rs
+        run: python3 -m pytest -rs

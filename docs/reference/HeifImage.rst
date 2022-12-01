@@ -40,7 +40,7 @@ HeifImage object
 
         Can be absent. Maybe later, will be added some stuff to work with nclx profiles.
 
-        If you need it now, look at `heif.h` for struct describing it in ``C`` language.
+        If you need it now, look at `public_api.h` for struct describing it in ``C`` language.
 
     .. py:attribute:: info["primary"]
         :type: bool
