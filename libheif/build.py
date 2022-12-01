@@ -1,6 +1,7 @@
 import sys
 from os import getenv, path
 from pathlib import Path
+from re import sub
 from shutil import copy
 from subprocess import DEVNULL, PIPE, run
 from warnings import warn
@@ -11,7 +12,12 @@ from libheif import linux_build_libs
 
 ffi = FFI()
 with open("libheif/public_api.h", "r", encoding="utf-8") as f:
-    ffi.cdef(f.read())
+    libheif_definitions = f.read()
+    if getenv("READTHEDOCS", "False") == "True":
+        # As ReadTheDocs has pre-installed libheif.so and we do not have root privileges to uninstall it
+        # remove lines from `public_api.h` with `REMOVE_FOR_RTD` string.
+        libheif_definitions = sub(r".*REMOVE_FOR_RTD\n?", "", libheif_definitions)
+    ffi.cdef(libheif_definitions)
 
 ffi.cdef(
     """
