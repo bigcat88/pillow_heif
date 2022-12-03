@@ -28,13 +28,24 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.7'
+          python-version: '3.8'
 
-      - name: Install from source
-        run: python3 -m pip install . pylint
+      - name: pre-commit cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: lint-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            lint-pre-commit-
 
-      - name: Pylint Analysis
-        run: python3 -m pylint pillow_heif
+      - name: Making preparations
+        run: |
+          python3 -m pip install .
+          python3 -m pip install wheel pre-commit pylint
+          pre-commit install
+
+      - name: Run Analysis
+        run: pre-commit run --all-files --verbose --show-diff-on-failure
 
   coverage-linux:
     runs-on: ubuntu-22.04
