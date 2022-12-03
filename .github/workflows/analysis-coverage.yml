@@ -41,7 +41,7 @@ jobs:
       - name: Install from source
         run: |
           python3 -m pip install .
-          python3 -m pip install pre-commit
+          python3 -m pip install pre-commit pylint
           pre-commit install
 
       - name: Run Analysis
