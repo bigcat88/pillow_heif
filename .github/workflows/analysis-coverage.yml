@@ -37,7 +37,6 @@ jobs:
         run: python3 -m pylint pillow_heif
 
   coverage-linux:
-    needs: [analysis]
     runs-on: ubuntu-22.04
     name: Coverage(Linux)
 
@@ -81,7 +80,6 @@ jobs:
           verbose: true
 
   coverage-macos:
-    needs: [analysis]
     runs-on: macos-12
     name: Coverage(macOS)
 
@@ -118,7 +116,6 @@ jobs:
           verbose: true
 
   coverage-windows:
-    needs: [analysis]
     runs-on: windows-2022
     name: Coverage(Windows)
     env:
@@ -181,7 +178,6 @@ jobs:
           verbose: true
 
   coverage-pi-heif:
-    needs: [analysis]
     runs-on: macos-12
     name: Pi-Heif Coverage(macOS)
 
@@ -227,7 +223,6 @@ jobs:
           verbose: true
 
   test-pi-heif:
-    needs: [analysis]
     runs-on: macos-12
     name: Pi-Heif Test(macOS)
     env:
