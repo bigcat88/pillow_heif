@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Script to build wheel"""
 from setuptools import setup
 from wheel.bdist_wheel import bdist_wheel
 
@@ -20,8 +21,8 @@ class WheelsABI3(bdist_wheel):
 
 def get_version():
     version_file = "pillow_heif/_version.py"
-    with open(version_file) as f:
-        exec(compile(f.read(), version_file, "exec"))
+    with open(version_file, encoding="utf-8") as f:
+        exec(compile(f.read(), version_file, "exec"))  # pylint: disable=exec-used
     return locals()["__version__"]
 
 

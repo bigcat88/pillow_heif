@@ -32,3 +32,17 @@ repos:
      -  id: mypy
         files: pillow_heif/
         additional_dependencies: [pillow, cffi, pytest]
+
+-   repo: local
+    hooks:
+    -   id: pylint
+        name: pylint
+        entry: pylint "setup.py" "pillow_heif/"
+        language: system
+        types: [ python ]
+        pass_filenames: false
+        args:
+            [
+                "-rn", # Only display messages
+                "-sn", # Don't display the score
+            ]
