@@ -76,7 +76,7 @@ def test_quality_option(save_format):
 @pytest.mark.skipif(os.cpu_count() < 2, reason="Requires at least a processor with two cores.")
 @pytest.mark.skipif(os.getenv("TEST_DECODE_THREADS", "1") == "0", reason="TEST_DECODE_THREADS set to `0`")
 def test_decode_threads():
-    test_image = "images/heif_other/cat.hif"  # not all images can be decoded using more than one thread
+    test_image = "images/heif_other/arrow.heic"  # not all images can be decoded using more than one thread
     # As we do not know real performance of hardware, measure relative
     try:
         options.DECODE_THREADS = 1
