@@ -10,7 +10,6 @@ RUN \
     cmake \
     nasm \
     libde265-dev \
-    aom-dev \
     py3-numpy \
     py3-pillow
 
