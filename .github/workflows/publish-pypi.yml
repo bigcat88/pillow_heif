@@ -106,7 +106,7 @@ jobs:
           CIBW_BUILD: "*-macosx_x86_64"
           CIBW_SKIP: "cp36-* pp39-*"
           CIBW_TEST_SKIP: "cp311-*"
-          CIBW_ENVIRONMENT_MACOS: PH_FULL_ACTION=1
+          CIBW_ENVIRONMENT_MACOS: PH_FULL_ACTION=1 TEST_DECODE_THREADS=0
 
       - name: Check built wheels
         run: |
