@@ -83,12 +83,12 @@ def test_decode_threads():
         start_time_one_thread = perf_counter()
         open_heif(test_image, convert_hdr_to_8bit=False).load()
         total_time_one_thread = perf_counter() - start_time_one_thread
-        options.DECODE_THREADS = 2
-        start_time_two_threads = perf_counter()
+        options.DECODE_THREADS = os.cpu_count()
+        start_time_multiply_threads = perf_counter()
         open_heif(test_image, convert_hdr_to_8bit=False).load()
-        total_time_two_threads = perf_counter() - start_time_two_threads
-        # decoding in two threads should be faster at least by 8%
-        assert total_time_one_thread > total_time_two_threads * 1.08
+        total_time_multiply_threads = perf_counter() - start_time_multiply_threads
+        # decoding in multiply threads should be faster at least by 8%
+        assert total_time_one_thread > total_time_multiply_threads * 1.08
     finally:
         options.DECODE_THREADS = 4
 
