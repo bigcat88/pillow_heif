@@ -138,6 +138,7 @@ jobs:
 
       - name: Test wheel
         run: |
+          export TEST_DECODE_THREADS=0
           python3 .github/transform_to-pi_heif.py
           export PH_LIGHT_ACTION=1
           cd .. && python3 -m pytest -rs pillow_heif
@@ -205,6 +206,7 @@ jobs:
 
       - name: Test wheels
         run: |
+          export TEST_DECODE_THREADS=0
           export PH_FULL_ACTION=1
           cd .. && python3 -m pytest -rs pillow_heif
           export PH_FULL_ACTION=0 && cd pillow_heif

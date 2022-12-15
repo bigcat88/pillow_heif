@@ -143,6 +143,7 @@ jobs:
 
       - name: Test wheel
         run: |
+          export TEST_DECODE_THREADS=0
           export PH_FULL_ACTION=1
           cd .. && python3 -m pytest -rs pillow_heif
 
