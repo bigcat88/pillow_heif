@@ -2,13 +2,13 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.9.0 - 2022-12-0x]
+## [0.9.0 - 2022-12-15]
 
 ### Added
 
 ### Changed
 
-- `libheif` updated  to `1.14.1` version. Minimum supported version to build from source is `1.13.0`
+- Minimum supported version of `libheif` to build from source is `1.13.0`
 - Minimum required `Pillow` version increased from `6.2.0` to `8.3.0`, `getxmp` is used from Pillow now. #55
 - `options()` was reworked. Added new `DECODE_THREADS` option. #57
 
