@@ -2,15 +2,12 @@ name: Analysis & Coverage
 
 on:
   pull_request:
-    branches: [master]
-    types: [opened, edited, reopened, synchronize]
     paths:
       - 'pillow_heif/*.*'
       - 'tests/**'
       - 'setup.*'
       - 'pyproject.toml'
   push:
-    branches: [master]
     paths:
       - 'pillow_heif/*.*'
       - 'tests/**'

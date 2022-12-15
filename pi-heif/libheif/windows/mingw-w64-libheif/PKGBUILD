@@ -4,7 +4,7 @@
 _realname=libheif
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=7caa01dd150b6c96f33d35bff2eab8a32b8edf2b
+pkgver=03fb8f092248bd4f76fad5399f4e3a9d3db4dba2
 pkgrel=1
 pkgdesc="HEIF image decoder/encoder library and tools (mingw-w64)"
 arch=('any')
@@ -18,8 +18,8 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-cc")
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-libde265")
-source=("https://github.com/strukturag/libheif/archive/7caa01dd150b6c96f33d35bff2eab8a32b8edf2b.tar.gz")
-sha256sums=('ee52028a16624ee82cd4cf393ab3d565179da4a3e893644dd3a25fd8b91ff108')
+source=("https://github.com/strukturag/libheif/archive/03fb8f092248bd4f76fad5399f4e3a9d3db4dba2.tar.gz")
+sha256sums=('decbea102e051e928073363621d7df822b6a2a68d60a3965a62e734daa731cf9')
 
 prepare() {
   cd "${srcdir}/${_realname}-${pkgver}"
