@@ -2,7 +2,6 @@ name: Build Linux dependencies
 
 on:
   push:
-    branches: [master]
     paths:
       - 'libheif/linux/**'
       - 'libheif/linux_*.py'

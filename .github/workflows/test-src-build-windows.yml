@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   workflow_call:
   pull_request:
-    branches: [master]
-    types: [opened, reopened, edited]
     paths:
       - 'libheif/windows/**'
       - 'libheif/build.py'
@@ -13,7 +11,6 @@ on:
       - 'setup.*'
       - 'pyproject.toml'
   push:
-    branches: [master]
     paths:
       - 'libheif/windows/**'
       - 'libheif/build.py'
