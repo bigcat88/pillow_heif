@@ -91,7 +91,7 @@ jobs:
     runs-on: macos-12
     name: Coverage(macOS)
     env:
-      TEST_DECODE_THREADS: 0    # Till `brew` update to `1.14.1`
+      TEST_DECODE_THREADS: 0    # Till `brew` update to `1.14.1` bbb
 
     steps:
       - uses: actions/checkout@v3
