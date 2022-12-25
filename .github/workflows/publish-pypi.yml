@@ -6,7 +6,7 @@ on:
 
 jobs:
   wheels_armv7l:
-    name: ${{ matrix.i['name'] }} • ARMv7l • CPython3.7+
+    name: ${{ matrix.i['name'] }} • ARMv7l • CPython
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -75,7 +75,7 @@ jobs:
           python3 -m pip install cibuildwheel
           python3 -m cibuildwheel
         env:
-          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-*"
+          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-* cp311-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.MSYS2_PREFIX }}/bin"
           CIBW_ENVIRONMENT_WINDOWS: PH_FULL_ACTION=1
@@ -104,8 +104,6 @@ jobs:
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: "*-macosx_x86_64"
-          CIBW_SKIP: "cp36-* pp39-*"
-          CIBW_TEST_SKIP: "cp311-*"
           CIBW_ENVIRONMENT_MACOS: PH_FULL_ACTION=1 TEST_DECODE_THREADS=0
 
       - name: Check built wheels

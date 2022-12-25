@@ -61,6 +61,7 @@ filterwarnings = [
 
 [tool.cibuildwheel]
 build-verbosity = "2"
+skip = ["cp36-*", "pp39-*"]
 
 [tool.cibuildwheel.linux]
 test-extras = "tests"

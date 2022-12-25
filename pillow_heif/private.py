@@ -2,6 +2,7 @@
 Undocumented private functions to make other code look better.
 """
 
+from dataclasses import dataclass
 from math import ceil
 from typing import Union
 
@@ -15,9 +16,8 @@ from .error import check_libheif_error
 FFI_DRY_ALLOC = ffi.new_allocator(should_clear_after_alloc=False)
 
 
-# from dataclasses import dataclass
-# @dataclass                # Available from Python 3.7
-class HeifCtxAsDict:  # noqa # pylint: disable=too-few-public-methods
+@dataclass
+class HeifCtxAsDict:
     """Representation of one image"""
 
     def __init__(self, mode: str, size: tuple, data, **kwargs):
@@ -31,7 +31,7 @@ class HeifCtxAsDict:  # noqa # pylint: disable=too-few-public-methods
         self.additional_info = kwargs.get("add_info", {})
 
 
-def get_pure_stride(mode: str, width: int):
+def get_pure_stride(mode: str, width: int) -> int:
     return width * MODE_INFO[mode][0] * ceil(MODE_INFO[mode][1] / 8)
 
 
