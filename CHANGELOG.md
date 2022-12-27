@@ -2,6 +2,16 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.1 - 202x-xx-xx]
+
+### Added
+
+### Changed
+
+- Drop support for Python 3.6
+
+### Fixed
+
 ## [0.9.0 - 2022-12-15]
 
 ### Added
