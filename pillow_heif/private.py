@@ -114,24 +114,40 @@ MODE_INFO = {
 }
 
 
+NCLX_FIELDS = ("version", "color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag")
+NCLX_DECODE_ONLY_FIELDS = (
+    "color_primary_red_x",
+    "color_primary_red_y",
+    "color_primary_green_x",
+    "color_primary_green_y",
+    "color_primary_blue_x",
+    "color_primary_blue_y",
+    "color_primary_white_x",
+    "color_primary_white_y",
+)
+
+
 def read_color_profile(handle) -> dict:
     profile_type = lib.heif_image_handle_get_color_profile_type(handle)
     if profile_type == HeifColorProfileType.NOT_PRESENT:
         return {}
     if profile_type == HeifColorProfileType.NCLX:
-        _type = "nclx"
         pp_data = ffi.new("struct heif_color_profile_nclx **")
-        data_length = ffi.sizeof("struct heif_color_profile_nclx")
         error = lib.heif_image_handle_get_nclx_color_profile(handle, pp_data)
-        p_data = pp_data[0]
+        check_libheif_error(error)
+        libheif_nclx_profile = pp_data[0]
         ffi.release(pp_data)
-    else:
-        _type = "prof" if profile_type == HeifColorProfileType.PROF else "rICC"
-        data_length = lib.heif_image_handle_get_raw_color_profile_size(handle)
-        if data_length == 0:
-            return {"type": _type, "data": b""}
-        p_data = ffi.new("char[]", data_length)
-        error = lib.heif_image_handle_get_raw_color_profile(handle, p_data)
+        nclx_profile = {}
+        for i in NCLX_FIELDS + NCLX_DECODE_ONLY_FIELDS:
+            nclx_profile[i] = getattr(libheif_nclx_profile, i)
+        lib.heif_nclx_color_profile_free(libheif_nclx_profile)
+        return {"type": "nclx", "data": nclx_profile}
+    _type = "prof" if profile_type == HeifColorProfileType.PROF else "rICC"
+    data_length = lib.heif_image_handle_get_raw_color_profile_size(handle)
+    if data_length == 0:
+        return {"type": _type, "data": b""}
+    p_data = ffi.new("char[]", data_length)
+    error = lib.heif_image_handle_get_raw_color_profile(handle, p_data)
     check_libheif_error(error)
     data_buffer = ffi.buffer(p_data, data_length)
     return {"type": _type, "data": bytes(data_buffer)}
@@ -146,10 +162,14 @@ def set_color_profile(heif_img, info: dict) -> None:
         )
         check_libheif_error(error)
     elif info.get("nclx_profile", None):
-        error = lib.heif_image_set_nclx_color_profile(
-            heif_img,
-            ffi.cast("const struct heif_color_profile_nclx*", ffi.from_buffer(info["nclx_profile"])),
-        )
+        nclx_profile = info["nclx_profile"]
+        libheif_nclx_profile = lib.heif_nclx_color_profile_alloc()
+        for i in NCLX_FIELDS:
+            v = nclx_profile.get(i, None)
+            if v is not None:
+                setattr(libheif_nclx_profile, i, v)
+        error = lib.heif_image_set_nclx_color_profile(heif_img, libheif_nclx_profile)
+        lib.heif_nclx_color_profile_free(libheif_nclx_profile)
         check_libheif_error(error)
 
 
