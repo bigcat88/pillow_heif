@@ -78,4 +78,4 @@ Modes with premultiplied Alpha:
     * ``RGBa;12``  -->  ``RGBa;16`` or ``BGRa;16``
     * ``RGBa;10``  -->  ``RGBa;16`` or ``BGRa;16``
     * ``BGRa``  -->  ``RGBa``
-    * ``RGBa`` --> ``RGB``, ``BGR``, ``RGBa;16`` or ``BGRa;16``
+    * ``RGBa`` --> ``BGRa``, ``RGBa;16`` or ``BGRa;16``
