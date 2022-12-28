@@ -2,7 +2,7 @@
 Functions and classes for heif images to read and write.
 """
 
-from typing import Any, Dict, Iterator, List, Union
+from typing import Any, Dict, Iterator, List, Optional, Union
 from weakref import ref
 
 from _pillow_heif_cffi import ffi, lib
@@ -388,15 +388,13 @@ class HeifFile:
 
     .. note:: To get an empty container to fill up later, create a class with no parameters."""
 
-    def __init__(
-        self, heif_ctx: Union[LibHeifCtx, HeifCtxAsDict] = None, img_ids: List[int] = None, main_id: int = None
-    ):
-        if heif_ctx is None:
-            heif_ctx = HeifCtxAsDict("", (0, 0), None)
+    def __init__(self, heif_ctx: Optional[LibHeifCtx] = None):
+        self.mimetype = ""
         self.images: List[HeifImage] = []
-        self.mimetype = heif_ctx.mimetype if isinstance(heif_ctx, LibHeifCtx) else ""
-        if img_ids:
-            for img_id in img_ids:
+        if isinstance(heif_ctx, LibHeifCtx):
+            self.mimetype = heif_ctx.mimetype
+            main_id = heif_ctx.get_main_img_id()
+            for img_id in heif_ctx.get_top_images_ids():
                 self.images.append(HeifImage(heif_ctx, img_id, img_id == main_id))
 
     @property
@@ -816,8 +814,7 @@ def open_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
     :returns: An :py:class:`~pillow_heif.HeifFile` object.
     :exception HeifError: If file is corrupted or is not in Heif format."""
 
-    heif_ctx = LibHeifCtx(fp, convert_hdr_to_8bit)
-    return HeifFile(heif_ctx, heif_ctx.get_top_images_ids(), heif_ctx.get_main_img_id())
+    return HeifFile(LibHeifCtx(fp, convert_hdr_to_8bit))
 
 
 def read_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
@@ -833,9 +830,7 @@ def read_heif(fp, convert_hdr_to_8bit=True) -> HeifFile:
     :returns: An :py:class:`~pillow_heif.HeifFile` object.
     :exception HeifError: If file is corrupted or is not in Heif format."""
 
-    heif_file = open_heif(fp, convert_hdr_to_8bit)
-    heif_file.load(everything=True)
-    return heif_file
+    return open_heif(fp, convert_hdr_to_8bit).load(everything=True)
 
 
 def from_pillow(pil_image: Image.Image, load_one: bool = False, ignore_primary=True) -> HeifFile:
