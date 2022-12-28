@@ -29,14 +29,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.8'
 
-      - name: Install brew
+      - name: Install libheif from formula
         run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew uninstall --force --ignore-dependencies imagemagick
           brew install --formula ./libheif/macos/libheif.rb
 
       - name: Installing Pillow-Heif
