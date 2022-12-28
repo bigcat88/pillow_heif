@@ -36,11 +36,9 @@ HeifImage object
         Possible values: ``prof`` or ``rICC``. Can be absent.
 
     .. py:attribute:: info["nclx_profile"]
-        :type: bytes
+        :type: dict
 
-        Can be absent. Maybe later, will be added some stuff to work with nclx profiles.
-
-        If you need it now, look at `public_api.h` for struct describing it in ``C`` language.
+        Can be absent. Look at `public_api.h` for struct describing it in ``C`` language.
 
     .. py:attribute:: info["primary"]
         :type: bool

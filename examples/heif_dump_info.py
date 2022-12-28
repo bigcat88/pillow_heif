@@ -32,7 +32,7 @@ if __name__ == "__main__":
             else:
                 print("\tICC: Empty")
         if image.info.get("nclx_profile", None):
-            print("\tNCLX:", "soon :)")
+            print("\tNCLX:", image.info["nclx_profile"])
         if image.info.get("exif", None):
             print("\tExif:")
             exif_dict = piexif.load(image.info["exif"], key_is_name=True)

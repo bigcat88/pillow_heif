@@ -8,6 +8,7 @@ on:
       - 'setup.*'
       - 'pyproject.toml'
   push:
+    branches: [master]
     paths:
       - 'pillow_heif/*.*'
       - 'tests/**'

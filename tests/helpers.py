@@ -112,7 +112,8 @@ def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail
                     assert heif_image.info[k] == pillow_image.info[k]
                 else:
                     assert len(heif_image.info[k]) == len(pillow_image.info[k])
-        for k in ("icc_profile", "icc_profile_type", "nclx_profile"):
+        assert heif_image.info.get("nclx_profile", None) == pillow_image.info.get("nclx_profile", None)
+        for k in ("icc_profile", "icc_profile_type"):
             if heif_image.info.get(k, None):
                 assert len(heif_image.info[k]) == len(pillow_image.info[k])
 

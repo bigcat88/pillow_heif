@@ -79,3 +79,20 @@ def test_open_to_numpy_mem_leaks():
             mem_limit = mem + 1
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
+
+
+@pytest.mark.skipif(sys.platform.lower() == "win32", reason="requires Unix or macOS")
+@pytest.mark.skipif(machine().find("x86_64") == -1, reason="run only on x86_64")
+def test_nclx_profile_leaks():
+    mem_limit = None
+    im_path = Path("images/heif_other/cat.hif")
+    heif_file = pillow_heif.open_heif(im_path, convert_hdr_to_8bit=False)
+    for i in range(800):
+        _nclx = pillow_heif.private.read_color_profile(heif_file[0]._handle)  # noqa
+        _nclx = None  # noqa
+        gc.collect()
+        mem = _get_mem_usage()
+        if i < 300:
+            mem_limit = mem + 1
+            continue
+        assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"

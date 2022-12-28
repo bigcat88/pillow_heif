@@ -2,15 +2,18 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.9.1 - 202x-xx-xx]
+## [0.9.1 - 2023-01-xx]
 
 ### Added
 
 ### Changed
 
 - Drop support for Python 3.6
+- info["nclx_profile"] changed type from bytes(format of which was not described) to dict.
 
 ### Fixed
+
+- Small memory leak when opening image with `nclx` color profile. #64
 
 ## [0.9.0 - 2022-12-15]
 

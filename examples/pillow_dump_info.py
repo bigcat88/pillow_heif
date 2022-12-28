@@ -29,7 +29,7 @@ if __name__ == "__main__":
             else:
                 print("\tICC: Empty")
         if image.info.get("nclx_profile", None):
-            print("\tNCLX:", "will do soon :)")
+            print("\tNCLX:", image.info["nclx_profile"])
         exif = image.getexif()
         if exif:
             exif = exif._get_merged_dict()  # noqa
