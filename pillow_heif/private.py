@@ -114,7 +114,7 @@ MODE_INFO = {
 }
 
 
-NCLX_FIELDS = ("version", "color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag")
+NCLX_FIELDS = ("color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag")
 NCLX_DECODE_ONLY_FIELDS = (
     "color_primary_red_x",
     "color_primary_red_y",
@@ -137,9 +137,7 @@ def read_color_profile(handle) -> dict:
         check_libheif_error(error)
         libheif_nclx_profile = pp_data[0]
         ffi.release(pp_data)
-        nclx_profile = {}
-        for i in NCLX_FIELDS + NCLX_DECODE_ONLY_FIELDS:
-            nclx_profile[i] = getattr(libheif_nclx_profile, i)
+        nclx_profile = {i: getattr(libheif_nclx_profile, i) for i in NCLX_FIELDS + NCLX_DECODE_ONLY_FIELDS}
         lib.heif_nclx_color_profile_free(libheif_nclx_profile)
         return {"type": "nclx", "data": nclx_profile}
     _type = "prof" if profile_type == HeifColorProfileType.PROF else "rICC"
