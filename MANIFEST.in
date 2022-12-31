@@ -13,7 +13,6 @@ exclude *.yaml
 exclude *.yml
 exclude CODE_OF_CONDUCT.md
 exclude SECURITY.md
-exclude renovate.json
 
 prune docs
 prune docker
