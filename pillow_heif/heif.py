@@ -278,7 +278,7 @@ class HeifImageBase:
 class HeifThumbnail(HeifImageBase):
     """Class represents a single thumbnail for a HeifImage."""
 
-    def __init__(self, original_img, reference, thumb_id: int = None):
+    def __init__(self, original_img, reference, thumb_id: Optional[int] = None):
         if isinstance(original_img, HeifImage):
             p_handle = ffi.new("struct heif_image_handle **")
             check_libheif_error(lib.heif_image_handle_get_thumbnail(original_img._handle, thumb_id, p_handle))

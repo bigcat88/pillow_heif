@@ -5,7 +5,7 @@ Callback functions and wrappers for libheif `heif_context_read_from_memory_witho
 import builtins
 from io import SEEK_SET
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from _pillow_heif_cffi import ffi, lib
 
@@ -63,7 +63,7 @@ class LibHeifCtxWrite:
         self.encoder = ffi.gc(p_encoder[0], lib.heif_encoder_release)
         # lib.heif_encoder_set_logging_level(self.encoder, 4)
 
-    def set_encoder_parameters(self, enc_params: Dict[str, str], quality: int = None):
+    def set_encoder_parameters(self, enc_params: Dict[str, str], quality: Optional[int] = None):
         if quality is not None:
             if quality == -1:
                 check_libheif_error(lib.heif_encoder_set_lossless(self.encoder, True))
