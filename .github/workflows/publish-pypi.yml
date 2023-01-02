@@ -17,7 +17,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -51,7 +50,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - uses: msys2/setup-msys2@v2
         with:
           location: C:/temp
@@ -138,17 +136,11 @@ jobs:
         with:
           platforms: arm64
 
-      - name: manylinux preparations
-        if: matrix.cibw_buildlinux == 'manylinux'
-        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
-
       - name: musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux'
         run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
-          OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
+          OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
 
       - name: Only minimal testing on aarch64
         if: matrix.cibw_arch == 'aarch64'
@@ -207,17 +199,11 @@ jobs:
         with:
           platforms: arm64
 
-      - name: manylinux preparations
-        if: matrix.cibw_buildlinux == 'manylinux'
-        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
-
       - name: musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux'
         run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
-          OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
+          OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
 
       - name: Only minimal testing on aarch64
         if: matrix.cibw_arch == 'aarch64'
@@ -262,7 +248,7 @@ jobs:
       matrix:
         cibw_buildlinux: [ manylinux ]
         cibw_arch: [ "aarch64", "x86_64" ]
-        cibw_build: [ "pp37", "pp38" ]
+        cibw_build: [ "pp38", "pp39" ]
     name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
     runs-on: ubuntu-20.04
     env:
@@ -296,7 +282,7 @@ jobs:
         env:
           CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
-          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
+          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y libjpeg-turbo-devel lcms2-devel"
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_FULL_ACTION=1
 
       - name: Checking built wheels
@@ -320,7 +306,7 @@ jobs:
       matrix:
         cibw_buildlinux: [ manylinux ]
         cibw_arch: [ "i686" ]
-        cibw_build: [ "pp37", "pp38" ]
+        cibw_build: [ "pp38", "pp39" ]
     name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
     runs-on: ubuntu-20.04
     env:
@@ -354,7 +340,6 @@ jobs:
         env:
           CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
-          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y git-all libjpeg-turbo-devel lcms2-devel libffi-devel"
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_LIGHT_ACTION=1
 
       - name: Checking built wheels
@@ -378,7 +363,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
@@ -409,7 +393,7 @@ jobs:
 
       - name: Test sdist
         run: |
-          export PH_FULL_ACTION=1
+          export PH_FULL_ACTION=1 TEST_DECODE_THREADS=0
           python3 -m pytest -rs
 
       - name: Upload sdist

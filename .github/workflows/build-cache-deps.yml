@@ -39,17 +39,11 @@ jobs:
       - name: Install cibuildwheel & twine
         run: python3 -m pip install cibuildwheel twine
 
-      - name: manylinux preparations
-        if: matrix.cibw_buildlinux == 'manylinux'
-        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "git-all"
-
-      - name: musllinux preparations
-        if: matrix.cibw_buildlinux == 'musllinux'
+      - name: 32-bit musllinux preparations
+        if: matrix.cibw_buildlinux == 'musllinux' && matrix.cibw_arch == 'i686'
         run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
-          OS_PACKAGES: "sudo py3-pip python3-dev fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
+          OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
 
       - uses: actions/cache@v3
         with:
