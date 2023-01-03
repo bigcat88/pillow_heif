@@ -37,7 +37,7 @@ jobs:
           platforms: arm64
 
       - name: Install cibuildwheel & twine
-        run: python3 -m pip install cibuildwheel twine
+        run: python3 -m pip install cibuildwheel==2.11.4 twine
 
       - name: 32-bit musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux' && matrix.cibw_arch == 'i686'
