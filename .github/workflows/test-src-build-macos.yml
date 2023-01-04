@@ -1,4 +1,4 @@
-name: Build from source(macOS)
+name: From source(macOS)
 
 on:
   workflow_dispatch:
@@ -34,7 +34,7 @@ jobs:
     name: macOS:11-x86_64
     runs-on: macos-11
     env:
-      TEST_DECODE_THREADS: 0    # This test fails on GitHub, for macOS we have such enabled test on Cirrus.
+      TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
       PH_FULL_ACTION: 1
       EXP_PH_LIBHEIF_VERSION: ""
 

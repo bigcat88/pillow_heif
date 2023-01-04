@@ -1,4 +1,4 @@
-name: Build from source(Windows)
+name: From source(Windows)
 
 on:
   workflow_dispatch:

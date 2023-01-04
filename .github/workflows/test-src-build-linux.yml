@@ -1,10 +1,12 @@
-name: Build from source(Linux)
+name: From source(Linux)
 
 on:
   workflow_dispatch:
   workflow_call:
   pull_request:
     paths:
+      - '.github/workflows/test-src-build-linux.yml'
+      - 'docker/from_src/*.Dockerfile'
       - 'libheif/linux/**'
       - 'libheif/linux_*.py'
       - 'libheif/build.py'
@@ -12,7 +14,10 @@ on:
       - 'setup.*'
       - 'pyproject.toml'
   push:
+    branches: [master]
     paths:
+      - '.github/workflows/test-src-build-linux.yml'
+      - 'docker/from_src/*.Dockerfile'
       - 'libheif/linux/**'
       - 'libheif/linux_*.py'
       - 'libheif/build.py'
@@ -25,10 +30,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test_src_build:
+  full_linux:
     name: ${{ matrix.docker_file }}-${{ matrix.arch }}
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[docs]')"
+
     strategy:
       matrix:
         arch: ["amd64", "arm64", "arm/v7"]
