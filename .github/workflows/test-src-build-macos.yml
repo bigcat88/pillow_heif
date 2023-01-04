@@ -5,34 +5,41 @@ on:
   workflow_call:
   pull_request:
     paths:
+      - '.github/workflows/test-src-build-macos.yml'
       - 'libheif/macos/**'
       - 'libheif/build.py'
       - 'libheif/public_api.h'
       - 'setup.*'
       - 'pyproject.toml'
+      - 'pi-heif/libheif/macos/**'
+      - 'pi-heif/setup.cfg'
   push:
+    branches: [master]
     paths:
+      - '.github/workflows/test-src-build-macos.yml'
       - 'libheif/macos/**'
       - 'libheif/build.py'
       - 'libheif/public_api.h'
       - 'setup.*'
       - 'pyproject.toml'
+      - 'pi-heif/libheif/macos/**'
+      - 'pi-heif/setup.cfg'
 
 concurrency:
   group: src_macos-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  macos_11:
+  full_macos_11:
     name: macOS:11-x86_64
     runs-on: macos-11
+    env:
+      TEST_DECODE_THREADS: 0    # This test fails on GitHub, for macOS we have such enabled test on Cirrus.
+      PH_FULL_ACTION: 1
+      EXP_PH_LIBHEIF_VERSION: ""
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.8'
-
       - name: Install libheif from formula
         run: |
           brew uninstall --force --ignore-dependencies imagemagick
@@ -43,6 +50,35 @@ jobs:
 
       - name: LibHeif info
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Perform tests
+        run: python3 -m pytest -rs
+
+  lite_macos_11:
+    name: macOS:11-x86_64(Pi-Heif)
+    runs-on: macos-11
+    env:
+      TEST_DECODE_THREADS: 0
+      PH_LIGHT_ACTION: 1
+      EXP_PH_LIBHEIF_VERSION: ""
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Transform to Pi-Heif
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - name: Install libheif from formula
+        run: |
+          brew uninstall --force --ignore-dependencies imagemagick x265 aom
+          brew install --formula ./libheif/macos/libheif.rb
+
+      - name: Installing Pi-Heif
+        run: python3 -m pip -v install ".[tests]"
+
+      - name: LibHeif info
+        run: python3 -c "import pi_heif; print(pi_heif.libheif_info())"
 
       - name: Perform tests
         run: python3 -m pytest -rs

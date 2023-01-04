@@ -13,7 +13,9 @@ exclude *.yaml
 exclude *.yml
 exclude CODE_OF_CONDUCT.md
 exclude SECURITY.md
+exclude .cirrus.star
 
+prune ci
 prune docs
 prune docker
 prune benchmarks
