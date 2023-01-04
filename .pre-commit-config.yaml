@@ -36,6 +36,12 @@ repos:
         files: pillow_heif/
         additional_dependencies: [pillow, cffi, pytest]
 
+-   repo: https://github.com/mgedmin/check-manifest
+    rev: "0.49"
+    hooks:
+    -   id: check-manifest
+        args: [--no-build-isolation]
+
 -   repo: local
     hooks:
     -   id: pylint
