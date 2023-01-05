@@ -3,16 +3,18 @@ name: Analysis & Coverage
 on:
   pull_request:
     paths:
+      - '.github/workflows/analysis-coverage.yml'
       - 'pillow_heif/*.*'
       - 'tests/**'
-      - 'setup.*'
+      - 'setup.py'
       - 'pyproject.toml'
   push:
     branches: [master]
     paths:
+      - '.github/workflows/analysis-coverage.yml'
       - 'pillow_heif/*.*'
       - 'tests/**'
-      - 'setup.*'
+      - 'setup.py'
       - 'pyproject.toml'
   workflow_dispatch:
 
@@ -20,30 +22,16 @@ jobs:
   analysis:
     runs-on: macos-12
     name: Analysis
-    if: "!contains(github.event.head_commit.message, '[docs]')"
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.8'
-
-      - name: pre-commit cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pre-commit
-          key: lint-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
-          restore-keys: |
-            lint-pre-commit-
-
-      - name: Making preparations
-        run: |
-          python3 -m pip install .
-          python3 -m pip install wheel pre-commit pylint
-          pre-commit install
+      - name: Install from source
+        run: python3 -m pip install .
 
       - name: Run Analysis
-        run: pre-commit run --all-files --verbose --show-diff-on-failure
+        run: |
+          python3 -m pip install wheel pylint
+          python3 -m pylint "setup.py" "pillow_heif/" -sn
 
   coverage-linux:
     runs-on: ubuntu-22.04
@@ -62,10 +50,11 @@ jobs:
           sudo add-apt-repository ppa:strukturag/libheif
           sudo apt update
           sudo apt -y install libheif-dev
-          python3 -m pip install pytest coverage numpy pillow==8.3.0
 
       - name: Install from source
-        run: python3 -m pip -v install .
+        run: |
+          python3 -m pip install pytest coverage numpy pillow==8.3.0
+          python3 -m pip -v install .
 
       - name: LibHeif info
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
@@ -92,7 +81,7 @@ jobs:
     runs-on: macos-12
     name: Coverage(macOS)
     env:
-      TEST_DECODE_THREADS: 0    # Till `brew` update to `1.14.1`
+      TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
 
     steps:
       - uses: actions/checkout@v3
@@ -189,14 +178,12 @@ jobs:
           verbose: true
 
   coverage-pi-heif:
-    runs-on: macos-12
-    name: Pi-Heif Coverage(macOS)
-    env:
-      TEST_DECODE_THREADS: 0    # Till `brew` update to `1.14.1`
+    runs-on: ubuntu-22.04
+    name: Pi-Heif Coverage(Linux)
 
     steps:
       - uses: actions/checkout@v3
-      - name: Put pi-heif files
+      - name: Transform to Pi-Heif
         run: cp -r -v ./pi-heif/* .
 
       - uses: actions/setup-python@v4
@@ -205,20 +192,19 @@ jobs:
 
       - name: Prepare system
         run: |
-          brew uninstall --force --ignore-dependencies imagemagick
-          brew uninstall --force --ignore-dependencies libheif x265 aom
-          brew install --formula ./libheif/macos/libheif.rb
+          sudo apt -y purge libheif1 libaom-dev libx265-dev
+          sudo apt -y install libde265-dev nasm
 
       - name: Install from source
         run: |
-          python3 -m pip install opencv-python coverage
-          python3 -m pip -v install ".[tests]"
+          sudo -H python3 -m pip install pillow==9.0.1 cffi==1.15.1 pytest defusedxml packaging numpy coverage
+          sudo -H PH_LIGHT_ACTION=1 python3 -m pip -v install --no-build-isolation .
 
       - name: LibHeif info
-        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+        run: sudo -H python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: coverage run -m pytest -s && coverage xml && coverage html
+        run: sudo -H coverage run -m pytest -s && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
@@ -236,16 +222,12 @@ jobs:
           verbose: true
 
   test-pi-heif:
-    runs-on: macos-12
-    name: Pi-Heif Test(macOS)
-    env:
-      EXP_PH_LIBHEIF_VERSION: ""
-      PH_LIGHT_ACTION: 1
-      TEST_DECODE_THREADS: 0    # Till `brew` update to `1.14.1`
+    runs-on: ubuntu-22.04
+    name: Pi-Heif Test(Linux)
 
     steps:
       - uses: actions/checkout@v3
-      - name: Put pi-heif files
+      - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
@@ -256,17 +238,16 @@ jobs:
 
       - name: Prepare system
         run: |
-          brew uninstall --force --ignore-dependencies imagemagick
-          brew uninstall --force --ignore-dependencies libheif x265 aom
-          brew install --formula ./libheif/macos/libheif.rb
+          sudo apt -y purge libheif1 libaom-dev libx265-dev
+          sudo apt -y install libde265-dev nasm
 
       - name: Install from source
         run: |
-          python3 -m pip install opencv-python
-          python3 -m pip -v install ".[tests]"
+          sudo -H python3 -m pip install pillow==9.1.1 cffi==1.15.1 pytest defusedxml packaging numpy
+          sudo -H PH_LIGHT_ACTION=1 python3 -m pip -v install --no-build-isolation .
 
       - name: LibHeif info
-        run: python3 -c "import pi_heif; print(pi_heif.libheif_info())"
+        run: sudo -H python3 -c "import pi_heif; print(pi_heif.libheif_info())"
 
       - name: Perform tests
-        run: python3 -m pytest -rs
+        run: sudo -H PH_LIGHT_ACTION=1 EXP_PH_LIBHEIF_VERSION="" python3 -m pytest -rs
