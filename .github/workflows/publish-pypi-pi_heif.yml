@@ -244,15 +244,9 @@ jobs:
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Prepare system
+      - name: Install libheif from formula
         run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew uninstall --force --ignore-dependencies imagemagick
-          brew uninstall --force --ignore-dependencies libheif x265 aom
+          brew uninstall --force --ignore-dependencies imagemagick x265 aom
           brew install --formula ./libheif/macos/libheif.rb
 
       - name: Install requirements

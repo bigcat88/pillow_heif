@@ -359,24 +359,20 @@ jobs:
 
   sdist:
     name: Source distribution
-    runs-on: macos-11
+    runs-on: macos-12
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
       - name: Install requirements
         run: python3 -m pip install check-manifest twine wheel
 
       - name: Run check-manifest
         run: python3 -m check_manifest
 
-      - name: Install brew
+      - name: Install libheif from formula
         run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install x265 libjpeg libde265 libheif
+          brew uninstall --force --ignore-dependencies imagemagick
+          brew install --formula ./libheif/macos/libheif.rb
 
       - name: Build sdist
         run: |
