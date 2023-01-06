@@ -6,9 +6,7 @@ Options to change pillow_heif's runtime behaviour.
 DECODE_THREADS = 4
 """Maximum number of threads to use for decoding images(when it is possible)
 
-When use pillow_heif as a plugin you can set it with: `register_*_opener(decode_threads=8)`
-
-.. note:: Currently do not work on macOS, will be fixed in `0.9.1` version"""
+When use pillow_heif as a plugin you can set it with: `register_*_opener(decode_threads=8)`"""
 
 
 THUMBNAILS = True
