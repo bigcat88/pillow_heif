@@ -19,5 +19,5 @@ def main(ctx):
     if "[skip cirrus]" in dct["message"] or "[skip ci]" in dct["message"]:
         return []
 
-    # this configuration(default) runs linux_aarch64 + macosx_arm64 builds from source.
+    # this configuration(default) runs macosx_arm64 builds from source.
     return fs.read("ci/cirrus_general_ci.yml")
