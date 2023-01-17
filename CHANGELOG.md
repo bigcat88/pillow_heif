@@ -2,6 +2,12 @@ _# Changelog
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.2 - 2023-01-18]
+
+### Changed
+
+- libheif updated from `1.14.0` to `1.14.2`
+
 ## [0.9.1 - 2023-01-02]
 
 ### Changed
