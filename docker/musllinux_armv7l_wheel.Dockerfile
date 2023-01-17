@@ -19,7 +19,7 @@ RUN \
 
 RUN \
   echo "**** Installing patchelf ****" && \
-  git clone -b 0.17.0 https://github.com/NixOS/patchelf.git && \
+  git clone -b 0.17.2 https://github.com/NixOS/patchelf.git && \
   cd patchelf && \
   ./bootstrap.sh && ./configure && make && make check && make install && \
   cd ..
