@@ -3,7 +3,7 @@ name: Wheels test
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: [Build & Publish, Publish(from GH Release)]
+    workflows: [Publish • Pillow-Heif]
     types:
       - completed
 

@@ -1,10 +1,37 @@
-name: Build & Publish
-#Note: Wheels for the Apple M1 are assembled locally and manually uploaded.
+name: Publish • Pillow-Heif
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: [Publish]
+    types:
+      - completed
 
 jobs:
+  wheels_macos_arm:
+    name: macosx • aarch64
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Waiting for Cirrus CI
+      uses: lewagon/wait-on-check-action@v1.2.0
+      with:
+        ref: ${{ github.ref }}
+        check-name: 'macosx • aarch64 • Cirrus'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        wait-interval: 10
+
+    - name: Download artifacts
+      run: |
+        curl -L https://api.cirrus-ci.com/v1/artifact/github/${{ github.repository }}/wheel_macos_arm/wheels.zip -o wheels.zip
+        unzip wheels.zip
+
+    - name: Upload built wheels
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels
+        path: wheelhouse/*.whl
+        if-no-files-found: error
+
   wheels_armv7l:
     name: ${{ matrix.i['name'] }} • ARMv7l • CPython
     runs-on: ubuntu-20.04
@@ -399,7 +426,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   create_release:
-    needs: [sdist, wheels_macos, wheels_windows, wheels_linux_cpython,
+    needs: [sdist, wheels_macos, wheels_macos_arm, wheels_windows, wheels_linux_cpython,
             wheels_linux_pypy, wheels_linux_pypy_32bit, wheels_linux_cpython_32bit,
             wheels_armv7l]
     runs-on: ubuntu-20.04
@@ -457,7 +484,7 @@ jobs:
 
       - name: Publish wheels to PyPI
         run: |
-            python3 -m pip install twine
-            ls -la wheelhouse/
-            python3 -m twine upload --skip-existing wheelhouse/*.whl
-            python3 -m twine upload wheelhouse/*tar.gz
+          ls -la wheelhouse/
+          python3 -m pip install twine
+          python3 -m twine upload --skip-existing wheelhouse/*.whl
+          python3 -m twine upload --skip-existing wheelhouse/*tar.gz

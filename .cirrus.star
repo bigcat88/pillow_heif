@@ -19,5 +19,9 @@ def main(ctx):
     if "[skip cirrus]" in dct["message"] or "[skip ci]" in dct["message"]:
         return []
 
+    # this configuration starts building wheels for release.
+    if "[publish]" in dct["message"]:
+        return fs.read("ci/cirrus_wheels.yml")
+
     # this configuration(default) runs macosx_arm64 builds from source.
     return fs.read("ci/cirrus_general_ci.yml")
