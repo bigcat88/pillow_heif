@@ -9,6 +9,7 @@ on:
 
 jobs:
   wheels_macos_arm:
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
     name: macosx • aarch64
     runs-on: ubuntu-20.04
 
@@ -34,6 +35,7 @@ jobs:
         if-no-files-found: error
 
   wheels_windows:
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
     name: windows • x86_64
     runs-on: windows-2019
     env:
@@ -87,6 +89,7 @@ jobs:
           if-no-files-found: error
 
   wheels_macos:
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
     name: macosx • x86_64
     runs-on: macos-11
 
@@ -118,6 +121,7 @@ jobs:
           if-no-files-found: error
 
   wheels_linux_cpython:
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
     strategy:
       fail-fast: true
       matrix:
@@ -171,6 +175,7 @@ jobs:
           if-no-files-found: error
 
   wheels_linux_pypy:
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
     strategy:
       fail-fast: true
       matrix:
@@ -219,6 +224,7 @@ jobs:
           if-no-files-found: error
 
   wheels_armv7l:
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
     name: ${{ matrix.i['name'] }} • ARMv7l • CPython
     runs-on: ubuntu-20.04
     strategy:
@@ -261,6 +267,7 @@ jobs:
           if-no-files-found: error
 
   sdist:
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
     name: Source distribution
     runs-on: macos-12
 
@@ -304,6 +311,7 @@ jobs:
           path: wheelhouse/*.tar.gz
 
   publish_release:
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
     needs: [wheels_windows, wheels_macos, wheels_macos_arm, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
     name: Publish release
     runs-on: ubuntu-20.04
