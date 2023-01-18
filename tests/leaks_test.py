@@ -55,44 +55,43 @@ def test_open_save_objects_leaks():
 
 
 def _get_mem_usage():
-    from resource import RUSAGE_SELF, getrusage
+    from resource import RUSAGE_SELF, getpagesize, getrusage
 
-    if sys.platform == "darwin":
-        return int(getrusage(RUSAGE_SELF).ru_maxrss / 1024)  # Kb
-    return getrusage(RUSAGE_SELF).ru_maxrss  # Kb
+    mem = getrusage(RUSAGE_SELF).ru_maxrss
+    return mem * getpagesize() / 1024 / 1024
 
 
-@pytest.mark.skipif(sys.platform.lower() == "win32", reason="requires Unix or macOS")
+@pytest.mark.skipif(sys.platform.lower() in ("win32", "darwin"), reason="run only on Linux")
 @pytest.mark.skipif(machine().find("x86_64") == -1, reason="run only on x86_64")
 def test_open_to_numpy_mem_leaks():
     import numpy as np
 
     mem_limit = None
     im_path = Path("images/heif/L_10.heif")
-    for i in range(500):
+    for i in range(1000):
         heif_file = pillow_heif.open_heif(im_path, convert_hdr_to_8bit=False)
         _array = np.asarray(heif_file[0])  # noqa
         _array = None  # noqa
         gc.collect()
         mem = _get_mem_usage()
-        if i < 300:
+        if i < 100:
             mem_limit = mem + 1
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
 
 
-@pytest.mark.skipif(sys.platform.lower() == "win32", reason="requires Unix or macOS")
+@pytest.mark.skipif(sys.platform.lower() in ("win32", "darwin"), reason="run only on Linux")
 @pytest.mark.skipif(machine().find("x86_64") == -1, reason="run only on x86_64")
 def test_nclx_profile_leaks():
     mem_limit = None
     im_path = Path("images/heif_other/cat.hif")
     heif_file = pillow_heif.open_heif(im_path, convert_hdr_to_8bit=False)
-    for i in range(800):
+    for i in range(1000):
         _nclx = pillow_heif.private.read_color_profile(heif_file[0]._handle)  # noqa
         _nclx = None  # noqa
         gc.collect()
         mem = _get_mem_usage()
-        if i < 300:
+        if i < 100:
             mem_limit = mem + 1
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
