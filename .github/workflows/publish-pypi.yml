@@ -1,10 +1,7 @@
 name: Publish • Pillow-Heif
 
 on:
-  workflow_run:
-    workflows: [Publish]
-    types:
-      - completed
+  workflow_call:
 
 jobs:
   wheels_macos_arm:
@@ -232,10 +229,6 @@ jobs:
         env:
           OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
 
-      - name: Only minimal testing on aarch64
-        if: matrix.cibw_arch == 'aarch64'
-        run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
-
       - uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
@@ -347,10 +340,6 @@ jobs:
         uses: docker/setup-qemu-action@v2
         with:
           platforms: arm64
-
-      - name: Only minimal testing on aarch64
-        if: matrix.cibw_arch == 'aarch64'
-        run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
 
       - uses: actions/cache@v3
         with:
