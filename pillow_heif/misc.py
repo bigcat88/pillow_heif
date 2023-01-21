@@ -51,14 +51,27 @@ def set_orientation(info: dict, orientation: int = 1) -> Union[int, None]:
         except Exception:  # noqa # pylint: disable=broad-except
             pass
     if info.get("xmp", None):
-        xmp_data = info["xmp"].decode("utf-8")
-        match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_data)
-        if match:
-            if original_orientation is None and int(match[2]) != 1:
-                original_orientation = int(match[2])
-            xmp_data = re.sub(r'tiff:Orientation="([0-9])"', "", xmp_data)
-            xmp_data = re.sub(r"<tiff:Orientation>([0-9])</tiff:Orientation>", "", xmp_data)
-            info["xmp"] = xmp_data.encode("utf-8")
+        xmp_data = info["xmp"].rsplit(b"\x00", 1)
+        if xmp_data[0]:
+            decoded_xmp_data = None
+            for encoding in ("utf-8", "latin1"):
+                try:
+                    decoded_xmp_data = xmp_data[0].decode(encoding)
+                    break
+                except Exception:  # noqa # pylint: disable=broad-except
+                    pass
+            if decoded_xmp_data:
+                _original_orientation = 1
+                match = re.search(r'tiff:Orientation(="|>)([0-9])', decoded_xmp_data)
+                if match:
+                    _original_orientation = int(match[2])
+                    if original_orientation is None and _original_orientation != 1:
+                        original_orientation = _original_orientation
+                    decoded_xmp_data = re.sub(r'tiff:Orientation="([0-9])"', "", decoded_xmp_data)
+                    decoded_xmp_data = re.sub(r"<tiff:Orientation>([0-9])</tiff:Orientation>", "", decoded_xmp_data)
+                # should encode in "utf-8" anyway, as `defusedxml` do not work with `latin1` encoding.
+                if encoding != "utf-8" or _original_orientation != 1:
+                    info["xmp"] = b"".join([decoded_xmp_data.encode("utf-8"), b"\x00" if len(xmp_data) > 1 else b""])
     return original_orientation
 
 

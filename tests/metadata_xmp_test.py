@@ -52,15 +52,15 @@ def test_pillow_xmp_add_remove():
     im.save(out_heif, format="HEIF", xmp=xmp_data)
     assert "xmp" not in im.info or im.info["xmp"] is None
     im_heif = Image.open(out_heif)
-    assert im_heif.info["xmp"]
+    assert im_heif.info["xmp"] == xmp_data
     # filling `info["xmp"]` before save.
     im.info["xmp"] = xmp_data
     im.save(out_heif, format="HEIF")
     im_heif = Image.open(out_heif)
-    assert im_heif.info["xmp"]
+    assert im_heif.info["xmp"] == xmp_data
     # setting `xmp` to `None` during save.
     im_heif.save(out_heif_no_xmp, format="HEIF", xmp=None)
-    assert im_heif.info["xmp"]
+    assert im_heif.info["xmp"] == xmp_data
     im_heif_no_xmp = Image.open(out_heif_no_xmp)
     assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
     # filling `info["xmp"]` with `None` before save.
@@ -85,16 +85,16 @@ def test_heif_xmp_add_remove():
     im_heif.save(out_heif, xmp=xmp_data)
     assert "xmp" not in im_heif.info or im_heif.info["xmp"] is None
     im_heif = pillow_heif.open_heif(out_heif)
-    assert im_heif.info["xmp"]
+    assert im_heif.info["xmp"] == xmp_data
     # test filling `info["xmp"]` before save.
     im_heif = pillow_heif.from_pillow(Image.new("RGB", (15, 15), 0))
     im_heif.info["xmp"] = xmp_data
     im_heif.save(out_heif)
     im_heif = pillow_heif.open_heif(out_heif)
-    assert im_heif.info["xmp"]
+    assert im_heif.info["xmp"] == xmp_data
     # setting `xmp` to `None` during save.
     im_heif.save(out_heif_no_xmp, xmp=None)
-    assert im_heif.info["xmp"]
+    assert im_heif.info["xmp"] == xmp_data
     im_heif_no_xmp = pillow_heif.open_heif(out_heif_no_xmp)
     assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
     # filling `info["xmp"]` with `None` before save.
@@ -107,3 +107,13 @@ def test_heif_xmp_add_remove():
     im_heif.save(out_heif_no_xmp)
     im_heif_no_xmp = pillow_heif.open_heif(out_heif_no_xmp)
     assert "xmp" not in im_heif_no_xmp.info or im_heif_no_xmp.info["xmp"] is None
+
+
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
+def test_heif_xmp_latin1_with_zero_byte():
+    im = Image.open("images/heif_other/xmp_latin1.heic")
+    out_heif = BytesIO()
+    im.save(out_heif, format="HEIF")
+    out_im = Image.open(out_heif)
+    assert im.getxmp() == out_im.getxmp()  # noqa
+    assert out_im.info["xmp"][-1] == 0  # check null byte not to get lost
