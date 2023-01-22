@@ -1,4 +1,5 @@
 import os
+import sys
 from io import SEEK_END, BytesIO
 from time import perf_counter
 
@@ -75,6 +76,7 @@ def test_quality_option(save_format):
 
 @pytest.mark.skipif(os.cpu_count() < 2, reason="Requires at least a processor with two cores.")
 @pytest.mark.skipif(os.getenv("TEST_DECODE_THREADS", "1") == "0", reason="TEST_DECODE_THREADS set to `0`")
+@pytest.mark.skipif(sys.maxsize <= 2147483647, reason="Run test only on 64 bit CPU.")
 def test_decode_threads():
     test_image = "images/heif_other/arrow.heic"  # not all images can be decoded using more than one thread
     # As we do not know real performance of hardware, measure relative
@@ -83,7 +85,7 @@ def test_decode_threads():
         start_time_one_thread = perf_counter()
         open_heif(test_image, convert_hdr_to_8bit=False).load()
         total_time_one_thread = perf_counter() - start_time_one_thread
-        options.DECODE_THREADS = os.cpu_count()
+        options.DECODE_THREADS = 2
         start_time_multiply_threads = perf_counter()
         open_heif(test_image, convert_hdr_to_8bit=False).load()
         total_time_multiply_threads = perf_counter() - start_time_multiply_threads
