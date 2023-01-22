@@ -1,4 +1,4 @@
-name: Publish • Pi-Heif
+name: Wheels • Pi-Heif
 # This action build `pi-heif` which is `pillow-heif` but without `aom` and `x265` libraries.
 
 on:
@@ -26,7 +26,7 @@ jobs:
     - name: Upload built wheels
       uses: actions/upload-artifact@v3
       with:
-        name: wheels
+        name: wheels_pi_heif
         path: wheelhouse/*.whl
         if-no-files-found: error
 
@@ -79,7 +79,7 @@ jobs:
       - name: Upload built wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pi_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -110,7 +110,7 @@ jobs:
       - name: Upload built wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pi_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -167,7 +167,7 @@ jobs:
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pi_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -219,7 +219,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pi_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -261,7 +261,7 @@ jobs:
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pi_heif
           path: ./pi_heif/repaired_dist/*.whl
           if-no-files-found: error
 
@@ -305,27 +305,5 @@ jobs:
       - name: Upload sdist
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pi_heif
           path: wheelhouse/*.tar.gz
-
-  publish_release:
-    needs: [wheels_windows, wheels_macos, wheels_macos_arm, wheels_linux_cpython, wheels_linux_pypy, sdist, wheels_armv7l]
-    name: Publish release
-    runs-on: ubuntu-20.04
-    env:
-      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-
-    steps:
-      - name: Collect sdist and wheels
-        uses: actions/download-artifact@v3
-        with:
-          name: wheels
-          path: wheelhouse
-
-      - name: Publish wheels to PyPI
-        run: |
-          ls -la wheelhouse/
-          python3 -m pip install twine
-          python3 -m twine upload --skip-existing wheelhouse/*.whl
-          python3 -m twine upload --skip-existing wheelhouse/*tar.gz

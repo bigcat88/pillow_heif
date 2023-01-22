@@ -5,13 +5,60 @@ on:
     branches: [ master ]
 
 jobs:
-  trigger_pillow_heif_build:
+  pillow_heif_build:
     if: "contains(github.event.head_commit.message, '[publish]')"
     name: Pillow-Heif
-    uses: ./.github/workflows/publish-pypi.yml
+    uses: ./.github/workflows/wheels-pillow_heif.yml
 
-  trigger_pi_heif_build:
-    needs: [trigger_pillow_heif_build]
+  pi_heif_build:
+    needs: [pillow_heif_build]
     if: "contains(github.event.head_commit.message, '[publish]')"
     name: Pi-Heif
-    uses: ./.github/workflows/publish-pypi-pi_heif.yml
+    uses: ./.github/workflows/wheels-pi_heif.yml
+
+  publish_pypi:
+    needs: [pi_heif_build]
+    if: "contains(github.event.head_commit.message, '[publish]')"
+    name: Upload to PyPi
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get tag
+        run: |
+          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
+          echo RELEASE_TAG="v$RELEASE_VERSION" >> $GITHUB_ENV
+
+      - name: Pillow-Heif sdist and wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels_pillow_heif
+          path: wheelhouse_pillow_heif
+
+      - name: Pi-Heif sdist and wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels_pi_heif
+          path: wheelhouse_pi_heif
+
+      - name: Publish Pillow-Heif
+        run: |
+          python3 -m pip install twine
+          python3 -m twine upload --skip-existing wheelhouse_pillow_heif/*.whl
+          python3 -m twine upload --skip-existing wheelhouse_pillow_heif/*tar.gz
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_PILLOW_HEIF }}
+
+      - name: Publish Pi-Heif
+        run: |
+          python3 -m pip install twine
+          python3 -m twine upload --skip-existing wheelhouse_pi_heif/*.whl
+          python3 -m twine upload --skip-existing wheelhouse_pi_heif/*tar.gz
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_PI_HEIF }}
+
+      - uses: rickstaa/action-create-tag@v1
+        with:
+          tag: ${{ env.RELEASE_TAG }}

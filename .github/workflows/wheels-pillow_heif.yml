@@ -1,4 +1,4 @@
-name: Publish • Pillow-Heif
+name: Wheels • Pillow-Heif
 
 on:
   workflow_call:
@@ -25,7 +25,7 @@ jobs:
     - name: Upload built wheels
       uses: actions/upload-artifact@v3
       with:
-        name: wheels
+        name: wheels_pillow_heif
         path: wheelhouse/*.whl
         if-no-files-found: error
 
@@ -62,7 +62,7 @@ jobs:
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pillow_heif
           path: ./pillow_heif/repaired_dist/*.whl
           if-no-files-found: error
 
@@ -110,7 +110,7 @@ jobs:
       - name: Upload built wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pillow_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -136,7 +136,7 @@ jobs:
       - name: Upload built wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pillow_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -196,7 +196,7 @@ jobs:
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pillow_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -255,7 +255,7 @@ jobs:
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pillow_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -313,7 +313,7 @@ jobs:
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pillow_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -366,7 +366,7 @@ jobs:
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pillow_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -411,69 +411,5 @@ jobs:
       - name: Upload sdist
         uses: actions/upload-artifact@v3
         with:
-          name: wheels
+          name: wheels_pillow_heif
           path: wheelhouse/*.tar.gz
-
-  create_release:
-    needs: [sdist, wheels_macos, wheels_macos_arm, wheels_windows, wheels_linux_cpython,
-            wheels_linux_pypy, wheels_linux_pypy_32bit, wheels_linux_cpython_32bit,
-            wheels_armv7l]
-    runs-on: ubuntu-20.04
-    name: Create GitHub release
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Get release info
-        id: get_release_info
-        run: |
-          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
-          echo RELEASE_TAG="v$RELEASE_VERSION" >> $GITHUB_ENV
-          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
-          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
-          if [ "$CHANGELOG" == "" ]; then
-            echo "changelog is empty!"
-            exit 1
-          fi
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          echo "$CHANGELOG" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Collect sdist and wheels
-        uses: actions/download-artifact@v3
-        with:
-          name: wheels
-          path: wheelhouse
-
-      - name: Create release draft
-        uses: ncipollo/release-action@v1.12.0
-        with:
-          name: ${{ env.RELEASE_TAG }}
-          tag: ${{ env.RELEASE_TAG }}
-          commit: ${{ github.ref }}
-          draft: false
-          body: ${{ env.CHANGELOG }}
-          artifacts: wheelhouse/*
-          token: ${{ secrets.GITHUB_TOKEN }}
-          artifactErrorsFailBuild: true
-
-  publish_release:
-    needs: [create_release]
-    name: Publish release
-    runs-on: ubuntu-20.04
-    env:
-      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-
-    steps:
-      - name: Collect sdist and wheels
-        uses: actions/download-artifact@v3
-        with:
-          name: wheels
-          path: wheelhouse
-
-      - name: Publish wheels to PyPI
-        run: |
-          ls -la wheelhouse/
-          python3 -m pip install twine
-          python3 -m twine upload --skip-existing wheelhouse/*.whl
-          python3 -m twine upload --skip-existing wheelhouse/*tar.gz
