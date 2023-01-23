@@ -1,7 +1,6 @@
 # pi-heif
 
 [![Analysis & Coverage](https://github.com/bigcat88/pillow_heif/actions/workflows/analysis-coverage.yml/badge.svg)](https://github.com/bigcat88/pillow_heif/actions/workflows/analysis-coverage.yml)
-[![Build & Publish(Pi-Heif)](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi-pi_heif.yml/badge.svg)](https://github.com/bigcat88/pillow_heif/actions/workflows/publish-pypi-pi_heif.yml)
 [![Wheels test(Pi-Heif)](https://github.com/bigcat88/pillow_heif/actions/workflows/test-wheels-pi_heif.yml/badge.svg)](https://github.com/bigcat88/pillow_heif/actions/workflows/test-wheels-pi_heif.yml)
 
 ![PythonVersion](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
