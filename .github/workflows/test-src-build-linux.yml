@@ -48,7 +48,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Requirements
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
@@ -59,7 +59,7 @@ jobs:
           target: base
 
       - name: Build & Test Pillow-Heif
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
