@@ -244,7 +244,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
 
       - name: Build Pi-Heif
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/${{ matrix.i['docker_file'] }}.Dockerfile
