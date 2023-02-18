@@ -127,3 +127,9 @@ class HeifCompressionFormat(IntEnum):
     """The compression format is JPEG."""
     AV1 = 4
     """The compression format is AV1."""
+    VVC = 5
+    """The compression format is VVC."""
+    EVC = 6
+    """The compression format is EVC."""
+    JPEG2000 = 7
+    """The compression format is JPEG200 ISO/IEC 15444-16:2021"""
