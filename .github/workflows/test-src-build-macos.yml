@@ -7,23 +7,21 @@ on:
     paths:
       - '.github/workflows/test-src-build-macos.yml'
       - 'libheif/macos/**'
-      - 'libheif/build.py'
-      - 'libheif/public_api.h'
       - 'setup.*'
       - 'pyproject.toml'
       - 'pi-heif/libheif/macos/**'
       - 'pi-heif/setup.cfg'
+      - 'pillow_heif/_pillow_heif.c'
   push:
     branches: [master]
     paths:
       - '.github/workflows/test-src-build-macos.yml'
       - 'libheif/macos/**'
-      - 'libheif/build.py'
-      - 'libheif/public_api.h'
       - 'setup.*'
       - 'pyproject.toml'
       - 'pi-heif/libheif/macos/**'
       - 'pi-heif/setup.cfg'
+      - 'pillow_heif/_pillow_heif.c'
 
 concurrency:
   group: src_macos-${{ github.ref }}

@@ -3,5 +3,11 @@
 Constants
 ---------
 
-.. autoclass:: HeifErrorCode
+.. autoclass:: HeifColorPrimaries
+    :members:
+
+.. autoclass:: HeifTransferCharacteristics
+    :members:
+
+.. autoclass:: HeifMatrixCoefficients
     :members:

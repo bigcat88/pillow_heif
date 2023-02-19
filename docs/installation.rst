@@ -14,12 +14,12 @@ Install Pillow-Heif with :command:`pip`::
     python3 -m pip install --upgrade pillow-heif
 
 
-Wheels are present for all systems supported by `cibuildwheel <https://cibuildwheel.readthedocs.io/en/stable/>`_
+Wheels are present for most popular systems with help of `cibuildwheel <https://cibuildwheel.readthedocs.io/en/stable/>`_
 
 Building From Source
 --------------------
 
-    All **pillow-heif's** **PyPi** packages are build on GitHub Actions, so you can take a look at `it <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/publish-pypi.yml>`_.
+    All **pillow-heif's** **PyPi** packages are build on GitHub Actions, so you can take a look at `it <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/publish-wheels.yml>`_.
 
 .. role:: bash(code)
    :language: bash
@@ -38,20 +38,28 @@ Linux
         how to build from source.
 
 There is many different ways how to build it from source. Main requirements are:
-    * libheif should be version ``1.13``, ``1.14`` or ``1.14.1``
+    * ``libheif`` should be version >= ``1.12.0`` version.
     * ``x265`` should support 10 - 12 bit encoding(if you want to save in that bitness)
     * ``aom`` should be >= ``3.3.0`` version
     * ``libde265`` should be >= ``1.0.8`` version
 
-``Ubuntu 22.04`` have all that in their repositories, except ``libheif`` (it has only ``1.12.0`` version):
+On `Ubuntu 22.04`:
 
-| :bash:`sudo apt install -y libaom-dev libx265-dev libde265-dev`
+| :bash:`sudo apt install -y libheif-dev`
 
-and after that you should build libheif yourself(or run pip install with `root` privileges).
+On `Alpine`:
 
-.. note:: Alpine ``3.17`` has libheif ``1.14.0`` version in their repositories.
+| :bash:`sudo apk add --no-cache libheif-dev`
 
-If you have questions about custom build from sources you can ask them in discussions or create an issue.
+Now install Pillow-Heif with::
+
+    python3 -m pip install --upgrade pillow-heif --no-binary :all:
+
+or from within the uncompressed source directory::
+
+    python3 -m pip install .
+
+If you have questions about build from sources you can ask them in discussions or create an issue.
 
 macOS
 ^^^^^
@@ -77,7 +85,7 @@ Windows
 `GA Action to test build on Windows from source <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-windows.yml>`_
 
 .. note::
-    | On Windows installation is a bit tricky...
+    | On Windows, use prebuilt binaries. Installing from source on Windows is tricky.
     | First install `msys2 <https://www.msys2.org/>`_, if it is not installed.
     | By default, build script assumes that **msys2** builds libs in :bash:`C:/msys64/mingw64`
     | You can set **MSYS2_PREFIX** environment variable to your custom path, e.g.:
@@ -98,4 +106,4 @@ Now inside Pillow-Heif directory install it with pip from source::
 
 | After that copy **libheif.dll**, **libaom.dll**, **libde265-0.dll**, **libx265.dll**,
     **libgcc_s_seh-1.dll**, **libstdc++-6.dll** and **libwinpthread-1.dll** from
-    *msys64\\mingw6\\bin* to python site-packages root.
+    *msys64\\mingw64\\bin* to python site-packages root.

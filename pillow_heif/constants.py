@@ -1,5 +1,5 @@
 """
-Enums from LibHeif that can be used.
+Enums from LibHeif that are used.
 """
 
 from enum import IntEnum
@@ -45,75 +45,6 @@ class HeifColorspace(IntEnum):
     """Monochrome colorspace."""
 
 
-class HeifChannel(IntEnum):
-    """Type of color channel."""
-
-    Y = 0
-    """Luma component"""
-    CB = 1
-    """Blue difference"""
-    CR = 2
-    """Red difference"""
-    R = 3
-    """Red color channel"""
-    G = 4
-    """Green color channel"""
-    B = 5
-    """Blue color channel"""
-    ALPHA = 6
-    """Alpha color channel"""
-    INTERLEAVED = 10
-    """Interleaved color channel"""
-
-
-def encode_fourcc(fourcc):
-    """Encodes 4 bytes in reverse order"""
-    return ord(fourcc[0]) << 24 | ord(fourcc[1]) << 16 | ord(fourcc[2]) << 8 | ord(fourcc[3])
-
-
-class HeifColorProfileType(IntEnum):
-    """
-    Color profile type definitions.
-    If there is an ICC profile and an NCLX profile, the ICC profile prioritized.
-    """
-
-    NOT_PRESENT = 0
-    """There is no color profile."""
-    NCLX = encode_fourcc("nclx")
-    """ISO/IEC 29199-2:2020"""
-    RICC = encode_fourcc("rICC")
-    """Restricted ICC. ISO/IEC 14496-12:2022"""
-    PROF = encode_fourcc("prof")
-    """Usual ICC profile."""
-
-
-class HeifErrorCode(IntEnum):
-    """Possible LibHeif error codes in :py:class:`~pillow_heif.HeifError`"""
-
-    OK = 0
-    """Everything ok, no error occurred."""
-    INPUT_DOES_NOT_EXIST = 1
-    """Input file does not exist."""
-    INVALID_INPUT = 2
-    """Error in input file. Corrupted or invalid content."""
-    UNSUPPORTED_FILETYPE = 3
-    """Input file type is not supported."""
-    UNSUPPORTED_FEATURE = 4
-    """Image requires an unsupported decoder feature."""
-    USAGE_ERROR = 5
-    """Library API has been used in an invalid way."""
-    MEMORY_ALLOCATION_ERROR = 6
-    """Could not allocate enough memory."""
-    DECODER_PLUGIN_ERROR = 7
-    """The decoder plugin generated an error."""
-    ENCODER_PLUGIN_ERROR = 8
-    """The encoder plugin generated an error."""
-    ENCODING_ERROR = 9
-    """Error during encoding or when writing to the output."""
-    COLOR_PROFILE_DOES_NOT_EXIST = 10
-    """Application has asked for a color profile type that does not exist."""
-
-
 class HeifCompressionFormat(IntEnum):
     """Possible LibHeif compression formats."""
 
@@ -133,3 +64,104 @@ class HeifCompressionFormat(IntEnum):
     """The compression format is EVC."""
     JPEG2000 = 7
     """The compression format is JPEG200 ISO/IEC 15444-16:2021"""
+
+
+class HeifColorPrimaries(IntEnum):
+    """Possible NCLX color_primaries values."""
+
+    ITU_R_BT_709_5 = 1
+    """g=0.3;0.6, b=0.15;0.06, r=0.64;0.33, w=0.3127,0.3290"""
+    UNSPECIFIED = 2
+    """No color primaries"""
+    ITU_R_BT_470_6_SYSTEM_M = 4
+    """Unknown"""
+    ITU_R_BT_470_6_SYSTEM_B_G = 5
+    """Unknown"""
+    ITU_R_BT_601_6 = 6
+    """Unknown"""
+    SMPTE_240M = 7
+    """Unknown"""
+    GENERIC_FILM = 8
+    """Unknown"""
+    ITU_R_BT_2020_2_AND_2100_0 = 9
+    """Unknown"""
+    SMPTE_ST_428_1 = 10
+    """Unknown"""
+    SMPTE_RP_431_2 = 11
+    """Unknown"""
+    SMPTE_EG_432_1 = 12
+    """Unknown"""
+    EBU_TECH_3213_E = 22
+    """Unknown"""
+
+
+class HeifTransferCharacteristics(IntEnum):
+    """Possible NCLX transfer_characteristics values."""
+
+    ITU_R_BT_709_5 = 1
+    """Unknown"""
+    UNSPECIFIED = 2
+    """No transfer characteristics"""
+    ITU_R_BT_470_6_SYSTEM_M = 4
+    """Unknown"""
+    ITU_R_BT_470_6_SYSTEM_B_G = 5
+    """Unknown"""
+    ITU_R_BT_601_6 = 6
+    """Unknown"""
+    SMPTE_240M = 7
+    """Unknown"""
+    LINEAR = 8
+    """Unknown"""
+    LOGARITHMIC_100 = 9
+    """Unknown"""
+    LOGARITHMIC_100_SQRT10 = 10
+    """Unknown"""
+    IEC_61966_2_4 = 11
+    """Unknown"""
+    ITU_R_BT_1361 = 12
+    """Unknown"""
+    IEC_61966_2_1 = 13
+    """Unknown"""
+    ITU_R_BT_2020_2_10BIT = 14
+    """Unknown"""
+    ITU_R_BT_2020_2_12BIT = 15
+    """Unknown"""
+    ITU_R_BT_2100_0_PQ = 16
+    """Unknown"""
+    SMPTE_ST_428_1 = 17
+    """Unknown"""
+    ITU_R_BT_2100_0_HLG = 18
+    """Unknown"""
+
+
+class HeifMatrixCoefficients(IntEnum):
+    """Possible NCLX matrix_coefficients values."""
+
+    RGB_GBR = 0
+    """Unknown"""
+    ITU_R_BT_709_5 = 1
+    """Unknown"""
+    UNSPECIFIED = 2
+    """Unknown"""
+    US_FCC_T47 = 4
+    """Unknown"""
+    ITU_R_BT_470_6_SYSTEM_B_G = 5
+    """Unknown"""
+    ITU_R_BT_601_6 = 6
+    """Unknown"""
+    SMPTE_240M = 7
+    """Unknown"""
+    YCGCO = 8
+    """Unknown"""
+    ITU_R_BT_2020_2_NON_CONSTANT_LUMINANCE = 9
+    """Unknown"""
+    ITU_R_BT_2020_2_CONSTANT_LUMINANCE = 10
+    """Unknown"""
+    SMPTE_ST_2085 = 11
+    """Unknown"""
+    CHROMATICITY_DERIVED_NON_CONSTANT_LUMINANCE = 12
+    """Unknown"""
+    CHROMATICITY_DERIVED_CONSTANT_LUMINANCE = 13
+    """Unknown"""
+    ICTCP = 14
+    """Unknown"""

@@ -180,10 +180,10 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
+          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
         env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/public_api.h') }}
+          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
+          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
 
       - name: Run cibuildwheel
         run: |
@@ -239,10 +239,10 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
+          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
         env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/public_api.h') }}
+          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
+          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
 
       - name: Run cibuildwheel
         run: |
@@ -297,10 +297,10 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
+          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
         env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/public_api.h') }}
+          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
+          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
 
       - name: Run cibuildwheel
         run: |
@@ -351,10 +351,10 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_CFFI_BUILD }}-${{ env.KEY_LINUX_LIBS }}
+          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
         env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/linux/**') }}
-          KEY_CFFI_BUILD: ${{ hashFiles('libheif/build.py') }}-${{ hashFiles('libheif/public_api.h') }}
+          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
+          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
 
       - name: Run cibuildwheel
         run: |

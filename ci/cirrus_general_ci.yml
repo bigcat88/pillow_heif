@@ -2,8 +2,6 @@ test_src_build_full_macos_arm_task:
   only_if: "changesInclude(
     'ci/cirrus_general_ci.yml',
     'libheif/macos/**',
-    'libheif/build.py',
-    'libheif/public_api.h',
     'setup.*',
     'pyproject.toml')"
 
@@ -30,8 +28,6 @@ test_src_build_lite_macos_arm_task:
     'ci/cirrus_general_ci.yml',
     'pi-heif/libheif/macos/**',
     'pi-heif/setup.cfg',
-    'libheif/build.py',
-    'libheif/public_api.h',
     'setup.py',
     'pyproject.toml')"
 

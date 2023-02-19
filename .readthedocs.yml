@@ -5,11 +5,7 @@ build:
   tools:
     python: "3.9"
   apt_packages:
-    - cmake
-    - nasm
-    - libaom-dev
-    - libx265-dev
-    - libde265-dev
+    - libheif-dev
 
 python:
   install:

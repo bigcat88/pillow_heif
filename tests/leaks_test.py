@@ -7,7 +7,7 @@ from platform import machine
 
 import helpers
 import pytest
-from PIL import Image
+from PIL import Image, ImageSequence
 
 import pillow_heif
 
@@ -25,7 +25,7 @@ def perform_open_save(iterations, image_path):
         if helpers.hevc_enc():
             out_buf = BytesIO()
             image.save(out_buf, quality=20, format="HEIF", save_all=True)
-        elif helpers.aom_enc():
+        elif helpers.aom():
             out_buf = BytesIO()
             image.save(out_buf, quality=20, format="AVIF", save_all=True)
 
@@ -35,23 +35,22 @@ def perform_open_save(iterations, image_path):
 def test_open_save_objects_leaks():
     from pympler import summary, tracker
 
-    image_path = Path("images/heif/zPug_3.heic")
-    perform_open_save(1, image_path)
+    image_file_data = BytesIO(open(Path("images/heif/zPug_3.heic"), mode="rb").read())
+    perform_open_save(1, image_file_data)
     gc.collect()
     _summary1 = tracker.SummaryTracker().create_summary()
     _summary1 = tracker.SummaryTracker().create_summary()  # noqa
     gc.collect()
     gc.set_debug(gc.DEBUG_SAVEALL)
-    perform_open_save(5, image_path)
+    perform_open_save(8, image_file_data)
+    gc.collect()
+    gc.collect()
     gc.collect()
     summary2 = tracker.SummaryTracker().create_summary()
     results = summary._sweep(summary.get_diff(_summary1, summary2))  # noqa
-    summary.print_(results)
-    for result in results:
-        # look for strings like: `_cffi_backend.__CDataGCP`, `_cffi_backend.__CDataOwnGC`
-        assert result[0].find("cffi") == -1
-        # look for strings like: `pillow_heif._libheif_ctx.LibHeifCtx`
-        assert result[0].find("pillow_heif") == -1
+    if results:
+        summary.print_(results)
+        raise MemoryError("Potential memory leaks")
 
 
 def _get_mem_usage():
@@ -67,9 +66,9 @@ def test_open_to_numpy_mem_leaks():
     import numpy as np
 
     mem_limit = None
-    im_path = Path("images/heif/L_10.heif")
+    image_file_data = BytesIO(open(Path("images/heif/L_10__29x100.heif"), mode="rb").read())
     for i in range(1000):
-        heif_file = pillow_heif.open_heif(im_path, convert_hdr_to_8bit=False)
+        heif_file = pillow_heif.open_heif(image_file_data, convert_hdr_to_8bit=False)
         _array = np.asarray(heif_file[0])  # noqa
         _array = None  # noqa
         gc.collect()
@@ -82,16 +81,54 @@ def test_open_to_numpy_mem_leaks():
 
 @pytest.mark.skipif(sys.platform.lower() in ("win32", "darwin"), reason="run only on Linux")
 @pytest.mark.skipif(machine().find("x86_64") == -1, reason="run only on x86_64")
-def test_nclx_profile_leaks():
+@pytest.mark.parametrize(
+    "im, cp_type", [("images/heif_other/cat.hif", "NCLX"), ("images/heif_other/arrow.heic", "ICC")]
+)
+def test_color_profile_leaks(im, cp_type):
     mem_limit = None
-    im_path = Path("images/heif_other/cat.hif")
-    heif_file = pillow_heif.open_heif(im_path, convert_hdr_to_8bit=False)
+    heif_file = pillow_heif.open_heif(Path(im), convert_hdr_to_8bit=False)
     for i in range(1000):
-        _nclx = pillow_heif.private.read_color_profile(heif_file[0]._handle)  # noqa
+        _nclx = heif_file[0]._c_image.color_profile  # noqa
         _nclx = None  # noqa
         gc.collect()
         mem = _get_mem_usage()
         if i < 100:
+            mem_limit = mem + 1
+            continue
+        assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations. Color profile type:{cp_type}"
+
+
+@pytest.mark.skipif(sys.platform.lower() in ("win32", "darwin"), reason="run only on Linux")
+@pytest.mark.skipif(machine().find("x86_64") == -1, reason="run only on x86_64")
+def test_metadata_leaks():
+    mem_limit = None
+    heif_file = pillow_heif.open_heif(Path("images/heif_other/exif_xmp_iptc.heic"))
+    for i in range(1000):
+        _metadata = heif_file[0]._c_image.metadata  # noqa
+        _metadata = None  # noqa
+        gc.collect()
+        mem = _get_mem_usage()
+        if i < 100:
+            mem_limit = mem + 1
+            continue
+        assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
+
+
+@pytest.mark.skipif(sys.platform.lower() in ("win32", "darwin"), reason="run only on Linux")
+@pytest.mark.skipif(machine().find("x86_64") == -1, reason="run only on x86_64")
+def test_pillow_plugin_leaks():
+    mem_limit = None
+    image_file_data = BytesIO(open(Path("images/heif/zPug_3.heic"), mode="rb").read())
+    for i in range(1000):
+        im = Image.open(image_file_data)
+        for frame in ImageSequence.Iterator(im):
+            frame.load()
+            frame = None  # noqa
+        im = None  # noqa
+        gc.collect()
+        gc.collect()
+        mem = _get_mem_usage()
+        if i < 400:
             mem_limit = mem + 1
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"

@@ -2,58 +2,64 @@
 Plugins for Pillow library.
 """
 
-from typing import Any
+from itertools import chain
+from typing import Union
 from warnings import warn
 
-from PIL import Image, ImageFile
+from _pillow_heif import lib_info
+from PIL import Image, ImageFile, ImageSequence
 
 from . import options
-from ._lib_info import have_decoder_for_format, have_encoder_for_format
-from .constants import HeifCompressionFormat, HeifErrorCode
-from .error import HeifError
-from .heif import HeifFile, open_heif
-from .misc import _get_bytes, set_orientation
+from .constants import HeifCompressionFormat
+from .heif import HeifFile
+from .misc import (
+    CtxEncode,
+    _exif_from_pillow,
+    _get_bytes,
+    _get_primary_index,
+    _pil_to_supported_mode,
+    _rotate_pil,
+    _xmp_from_pillow,
+    set_orientation,
+)
 
 
 class _LibHeifImageFile(ImageFile.ImageFile):
     """Base class with all functionality for ``HeifImageFile`` and ``AvifImageFile`` classes."""
 
-    heif_file: Any
-    _close_exclusive_fp_after_loading = False
+    heif_file: Union[HeifFile, None]
+    _close_exclusive_fp_after_loading = True
 
     def __init__(self, *args, **kwargs):
         self.__frame = 0
-        self.heif_file = None
         super().__init__(*args, **kwargs)
 
     def _open(self):
         try:
-            heif_file = open_heif(self.fp)
-        except HeifError as exception:
+            heif_file = HeifFile(self.fp, convert_hdr_to_8bit=True, postprocess=False)
+        except (OSError, ValueError, SyntaxError, RuntimeError, EOFError) as exception:
             raise SyntaxError(str(exception)) from None
         self.custom_mimetype = heif_file.mimetype
         self.heif_file = heif_file
-        self.__frame = heif_file.primary_index()
+        self.__frame = heif_file.primary_index
         self._init_from_heif_file(self.__frame)
         self.tile = []
 
     def load(self):
         if self.heif_file:
-            frame_heif = self.heif_file[self.tell()]
             self.load_prepare()
+            frame_heif = self.heif_file[self.tell()]
             try:
-                self.frombytes(frame_heif.data, "raw", (frame_heif.mode, frame_heif.stride))
-            except HeifError as exc:
-                truncated = exc.code == HeifErrorCode.DECODER_PLUGIN_ERROR and exc.subcode == 100
-                if not truncated or not ImageFile.LOAD_TRUNCATED_IMAGES:
+                self.frombytes(bytes(frame_heif.data), "raw", (frame_heif.mode, frame_heif.stride))
+            except EOFError:
+                if not ImageFile.LOAD_TRUNCATED_IMAGES:
                     raise
+            # In any case, we close `fp`, since the input data bytes are held by the `heif_file` class.
+            if self.fp and getattr(self, "_exclusive_fp", False) and hasattr(self.fp, "close"):
+                self.fp.close()
+            self.fp = None
             if not self.is_animated:
-                self.info["thumbnails"] = [i.clone_nd() for i in self.info["thumbnails"]]
                 self.heif_file = None
-                self._close_exclusive_fp_after_loading = True
-                if self.fp and getattr(self, "_exclusive_fp", False) and hasattr(self.fp, "close"):
-                    self.fp.close()
-                self.fp = None
         return super().load()
 
     def getxmp(self) -> dict:
@@ -103,11 +109,11 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         return self.tell() != frame
 
     def _init_from_heif_file(self, img_index: int) -> None:
-        self._size = self.heif_file[img_index].size
-        self.mode = self.heif_file[img_index].mode
-        self.info = self.heif_file[img_index].info
-        self.info["thumbnails"] = self.heif_file[img_index].thumbnails
-        self.info["original_orientation"] = set_orientation(self.info)
+        if self.heif_file:
+            self._size = self.heif_file[img_index].size
+            self.mode = self.heif_file[img_index].mode
+            self.info = self.heif_file[img_index].info
+            self.info["original_orientation"] = set_orientation(self.info)
 
 
 class HeifImageFile(_LibHeifImageFile):
@@ -138,13 +144,11 @@ def _is_supported_heif(fp) -> bool:
 
 
 def _save_heif(im, fp, _filename):
-    heif_file = HeifFile().add_from_pillow(im, load_one=True, for_encoding=True)
-    heif_file.save(fp, save_all=False, **im.encoderinfo, dont_copy=True)
+    __save_one(im, fp, HeifCompressionFormat.HEVC)
 
 
 def _save_all_heif(im, fp, _filename):
-    heif_file = HeifFile().add_from_pillow(im, ignore_primary=False, for_encoding=True)
-    heif_file.save(fp, save_all=True, **im.encoderinfo, dont_copy=True)
+    __save_all(im, fp, HeifCompressionFormat.HEVC)
 
 
 def register_heif_opener(**kwargs) -> None:
@@ -155,7 +159,7 @@ def register_heif_opener(**kwargs) -> None:
 
     __options_update(**kwargs)
     Image.register_open(HeifImageFile.format, HeifImageFile, _is_supported_heif)
-    if have_encoder_for_format(HeifCompressionFormat.HEVC):
+    if lib_info["HEIF"]:
         Image.register_save(HeifImageFile.format, _save_heif)
         Image.register_save_all(HeifImageFile.format, _save_all_heif)
     extensions = [".heic", ".heics", ".heif", ".heifs", ".hif"]
@@ -183,13 +187,11 @@ def _is_supported_avif(fp) -> bool:
 
 
 def _save_avif(im, fp, _filename):
-    heif_file = HeifFile().add_from_pillow(im, load_one=True, for_encoding=True)
-    heif_file.save(fp, save_all=False, **im.encoderinfo, dont_copy=True, format="AVIF")
+    __save_one(im, fp, HeifCompressionFormat.AV1)
 
 
 def _save_all_avif(im, fp, _filename):
-    heif_file = HeifFile().add_from_pillow(im, ignore_primary=False, for_encoding=True)
-    heif_file.save(fp, save_all=True, **im.encoderinfo, dont_copy=True, format="AVIF")
+    __save_all(im, fp, HeifCompressionFormat.AV1)
 
 
 def register_avif_opener(**kwargs) -> None:
@@ -198,17 +200,13 @@ def register_avif_opener(**kwargs) -> None:
     :param kwargs: dictionary with values to set in options. See: :ref:`options`.
     """
 
-    if not have_decoder_for_format(HeifCompressionFormat.AV1) and not have_encoder_for_format(
-        HeifCompressionFormat.AV1
-    ):
+    if not lib_info["AVIF"]:
         warn("This version of `pillow-heif` was built without AVIF support.")
         return
     __options_update(**kwargs)
-    if have_decoder_for_format(HeifCompressionFormat.AV1):
-        Image.register_open(AvifImageFile.format, AvifImageFile, _is_supported_avif)
-    if have_encoder_for_format(HeifCompressionFormat.AV1):
-        Image.register_save(AvifImageFile.format, _save_avif)
-        Image.register_save_all(AvifImageFile.format, _save_all_avif)
+    Image.register_open(AvifImageFile.format, AvifImageFile, _is_supported_avif)
+    Image.register_save(AvifImageFile.format, _save_avif)
+    Image.register_save_all(AvifImageFile.format, _save_all_avif)
     # extensions = [".avif", ".avifs"]
     extensions = [".avif"]
     Image.register_mime(AvifImageFile.format, "image/avif")
@@ -229,3 +227,39 @@ def __options_update(**kwargs):
             options.DECODE_THREADS = v
         else:
             warn(f"Unknown option: {k}")
+
+
+def __save_one(im, fp, compression_format: HeifCompressionFormat):
+    ctx_write = CtxEncode(compression_format, **im.encoderinfo)
+    _pil_encode_image(ctx_write, im, True, **im.encoderinfo)
+    ctx_write.save(fp)
+
+
+def __save_all(im, fp, compression_format: HeifCompressionFormat):
+    ctx_write = CtxEncode(compression_format, **im.encoderinfo)
+    current_frame = im.tell() if hasattr(im, "tell") else None
+    append_images = im.encoderinfo.get("append_images", [])
+    primary_index = _get_primary_index(
+        chain(ImageSequence.Iterator(im), append_images), im.encoderinfo.get("primary_index", None)
+    )
+    for i, frame in enumerate(chain(ImageSequence.Iterator(im), append_images)):
+        _pil_encode_image(ctx_write, frame, i == primary_index, **im.encoderinfo)
+    if current_frame is not None and hasattr(im, "seek"):
+        im.seek(current_frame)
+    ctx_write.save(fp)
+
+
+def _pil_encode_image(ctx: CtxEncode, img: Image.Image, primary: bool, **kwargs):
+    if img.size[0] <= 0 or img.size[1] <= 0:
+        raise ValueError("Empty images are not supported.")
+    _info = img.info.copy()
+    _info["exif"] = _exif_from_pillow(img)
+    _info["xmp"] = _xmp_from_pillow(img)
+    if primary:
+        _info.update(**kwargs)
+    _info["primary"] = primary
+    original_orientation = set_orientation(_info)
+    _img = _pil_to_supported_mode(img)
+    if original_orientation is not None and original_orientation != 1:
+        _img = _rotate_pil(_img, original_orientation)
+    ctx.add_image(_img.size, _img.mode, _img.tobytes(), **_info)

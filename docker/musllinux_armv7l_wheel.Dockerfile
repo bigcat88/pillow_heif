@@ -28,7 +28,7 @@ RUN \
   echo "**** Install python build dependencies ****" && \
   python3 -m pip install --upgrade pip && \
   python3 -m pip install wheel && \
-  python3 -m pip install pytest cffi Pillow
+  python3 -m pip install pytest Pillow
 
 RUN \
   echo "**** Start building ****" && \

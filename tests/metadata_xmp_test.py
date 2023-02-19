@@ -16,7 +16,7 @@ pillow_heif.register_heif_opener()
 
 
 @pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
-@pytest.mark.skipif(not helpers.aom_enc(), reason="Requires AVIF encoder.")
+@pytest.mark.skipif(not helpers.aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 @pytest.mark.parametrize(

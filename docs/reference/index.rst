@@ -8,8 +8,5 @@ Reference
    API
    HeifFile
    HeifImage
-   thumbnails
-   exceptions
    constants
-   internal
    links

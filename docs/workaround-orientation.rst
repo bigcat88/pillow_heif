@@ -40,13 +40,14 @@ Q. So is there a decision?
 The best one and simplest solution is to
 `remove it <https://github.com/strukturag/libheif/issues/219#issuecomment-638110043>`_.
 
-So we set ``orientation`` to ``1`` in :py:meth:`~pillow_heif.HeifFile.add_from_pillow` to remove orientation,
-and then using ``Pillow`` method ``ImageOps.exif_transpose`` we rotate it before adding it to HEIF.
+So we set ``orientation`` to ``1`` in
+:py:meth:`~pillow_heif.HeifFile.add_from_pillow` (or during encoding `Pillow.Image`) to remove EXIF/XMP orientation tag
+and rotate the image according to the removed tag.
 
 That allow us to properly handle situations when JPEG or PNG with orientation get encoded to HEIF.
 
-To properly handle HEIF images with rotation tag in Exif, in Pillow plugin we do the same during image open, by calling
-:py:func:`~pillow_heif.set_orientation` function.
+To properly handle HEIF images with rotation tag in Exif/XMP, in Pillow plugin we do the same during image open,
+by calling :py:func:`~pillow_heif.set_orientation` function.
 
 .. note:: When using :py:func:`~pillow_heif.open_heif` and :py:meth:`~pillow_heif.HeifFile.add_from_heif` functions
     orientation tag will not be get reset automatically.
@@ -56,10 +57,4 @@ Here is list of functions and method that resets orientations automatically:
     * :py:meth:`pillow_heif.HeifFile.add_from_pillow`
     * :py:meth:`pillow_heif.HeifImage.to_pillow`
     * :py:class:`pillow_heif.HeifImageFile` *Pillow plugin class*
-
-Q. What about XMP orientation tag?
-""""""""""""""""""""""""""""""""""
-
-In version 0.2.4 implemented removing of XMP tag, almost the same tech as for EXIF tag.
-
-It was done by adding code to :py:func:`~pillow_heif.set_orientation` function, so the same rules will be applied.
+    * :py:class:`pillow_heif.AvifImageFile` *Pillow plugin class*
