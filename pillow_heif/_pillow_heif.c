@@ -1154,36 +1154,11 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
     return images_list;
 }
 
-static PyObject* _test(PyObject* self, PyObject* args){
-    PyObject *input_object, *mem_view = NULL;
-    Py_buffer *buffer;
-    unsigned const char *data;
-    Py_ssize_t size;
-
-    if (!PyArg_ParseTuple(args, "O", &input_object))
-        return NULL;
-
-    if (PyMemoryView_Check(input_object)) {
-        mem_view = PyMemoryView_FromObject(input_object);
-        buffer = PyMemoryView_GET_BUFFER(mem_view);
-        data = buffer->buf;
-        size = buffer->len;
-    }
-    else {
-        if (!PyArg_ParseTuple(args, "y#", &data, &size))
-            return NULL;
-    }
-
-    Py_XDECREF(mem_view);
-    RETURN_NONE
-}
-
 /* =========== Module =========== */
 
 static PyMethodDef heifMethods[] = {
     {"CtxWrite", (PyCFunction)_CtxWrite, METH_VARARGS},
     {"load_file", (PyCFunction)_load_file, METH_VARARGS},
-    {"test", (PyCFunction)_test, METH_VARARGS},
     {NULL, NULL}
 };
 
