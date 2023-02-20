@@ -114,7 +114,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
         stride_in = stride_in * 2;
     if (stride_in * height != buffer.len) {
         PyBuffer_Release(&buffer);
-        PyErr_SetString(PyExc_RuntimeError, "image plane size does not match data size");
+        PyErr_SetString(PyExc_ValueError, "image plane size does not match data size");
         return NULL;
     }
 
@@ -277,7 +277,7 @@ static PyObject* _CtxWriteImage_add_plane_la(CtxWriteImageObject* self, PyObject
         stride_in = stride_in * 2;
     if (stride_in * height != buffer.len) {
         PyBuffer_Release(&buffer);
-        PyErr_SetString(PyExc_RuntimeError, "image plane size does not match data size");
+        PyErr_SetString(PyExc_ValueError, "image plane size does not match data size");
         return NULL;
     }
 
@@ -380,7 +380,7 @@ static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject*
         stride_in = stride_in * 2;
     if (stride_in * height != buffer.len) {
         PyBuffer_Release(&buffer);
-        PyErr_SetString(PyExc_RuntimeError, "image plane size does not match data size");
+        PyErr_SetString(PyExc_ValueError, "image plane size does not match data size");
         return NULL;
     }
 

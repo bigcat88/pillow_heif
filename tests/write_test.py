@@ -423,8 +423,15 @@ def test_chroma_avif_encoding_8bit(chroma, diff_epsilon, im):
 
 
 @pytest.mark.parametrize("size", ((8, 8), (9, 9), (11, 11), (21, 21), (31, 31), (64, 64)))
-def test_encode_function(size):
+def test_encode_function(size: tuple):
     im = Image.effect_mandelbrot(size, (-3, -2.5, 2, 2.5), 100)
     buf = BytesIO()
     pillow_heif.encode(im.mode, im.size, im.tobytes(), buf, quality=-1)
     helpers.compare_hashes([buf, im])
+
+
+@pytest.mark.parametrize("mode", ("L", "LA", "RGB", "RGBA", "L;16", "LA;16", "RGB;16", "RGBA;16"))
+def test_encode_function_not_enough_data(mode):
+    buf = BytesIO()
+    with pytest.raises(ValueError):
+        pillow_heif.encode(mode, (128, 128), b"123456", buf)
