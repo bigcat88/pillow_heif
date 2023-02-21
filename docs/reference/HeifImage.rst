@@ -21,9 +21,30 @@ HeifImage object
         XMP metadata. String in bytes in UTF-8 encoding. Can be `None`
 
     .. py:attribute:: info["metadata"]
-        :type: list
+        :type: list[dict]
 
-        IPTC metadata. Usual will be an empty list.
+        Other metadata(IPTC for example). List of dictionaries. Usual will be empty. Keys:
+
+            * `type`: str
+            * `content_type`: str
+            * `data`: bytes
+
+    .. py:attribute:: info["primary"]
+        :type: bool
+
+        A boolean value that specifies whether the image is the main image when the file
+        contains more than one image.
+
+    .. py:attribute:: info["bit_depth"]
+        :type: int
+
+        Shows the bit-depth of image in file(not the decoded one, so it may differs from bit depth of mode).
+        Possible values: 8, 10 and 12.
+
+    .. py:attribute:: info["thumbnails"]
+        :type: list[int]
+
+        List of thumbnail boxes sizes. Can be empty.
 
     .. py:attribute:: info["icc_profile"]
         :type: bytes
@@ -38,15 +59,9 @@ HeifImage object
     .. py:attribute:: info["nclx_profile"]
         :type: dict
 
-        Can be absent. Look at `public_api.h` for struct describing it in ``C`` language.
+        NCLX color profile. Can be absent. Keys:
 
-    .. py:attribute:: info["primary"]
-        :type: bool
-
-        A boolean value that specifies whether the image is the main image when the file
-        contains more than one image.
-
-    .. py:attribute:: thumbnails
-        :type: list
-
-        List of thumbnails(:class:`HeifThumbnail`) present for this image. Can be empty.
+            * `color_primaries`: :py:class:`HeifColorPrimaries`
+            * `transfer_characteristics`: :py:class:`HeifTransferCharacteristics`
+            * `matrix_coefficients`: :py:class:`HeifMatrixCoefficients`
+            * `full_range_flag`: `bool`

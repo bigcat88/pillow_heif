@@ -9,12 +9,12 @@ DEV_NAME_ADD = ""  # This is only for debugging purposes of this script.
 if __name__ == "__main__":
     # change `pillow_heif` to `pi_heif`
     files_list = [
-        "libheif/build.py",
         "setup.py",
-        "docker/manylinux_armv7l_wheel.Dockerfile",
-        "docker/musllinux_armv7l_wheel.Dockerfile",
+        "docker/manylinux_armv7l_wheels.Dockerfile",
+        "docker/musllinux_armv7l_wheels.Dockerfile",
         "docker/test_wheels.Dockerfile",
         "MANIFEST.in",
+        "pillow_heif/_pillow_heif.c",
     ]
     for dir_name in ("pillow_heif", "tests"):
         for x in os.listdir(dir_name):
@@ -29,4 +29,5 @@ if __name__ == "__main__":
             with open(file_name + DEV_NAME_ADD, "w") as file:
                 file.write(modified_data)
 
+    os.rename("pillow_heif/_pillow_heif.c", "pillow_heif/_pi_heif.c")
     os.rename("pillow_heif", "pi_heif")

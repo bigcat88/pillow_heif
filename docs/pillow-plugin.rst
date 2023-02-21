@@ -81,8 +81,7 @@ Metadata
 
 Available metadata are stored in ``info`` dictionary as in other Pillow plugins.
 
-Those are:
-``exif``, ``xmp``, ``metadata`` and ``primary``
+It is the same as in :py:class:`~pillow_heif.HeifImage` class.
 
 During saving operation all known metadata in ``info`` dictionary are **saved**.
 So it can be edited in place.
@@ -123,7 +122,7 @@ Edit ``info["exif"]`` field of each copy of image:
     empty_pillow = Image.new("P", (0, 0))
     empty_pillow.save("no_exif.heic", save_all=True, append_images=output_wo_exif)
 
-Or editing ``info["exif"]`` in place(from version `0.3.1`):
+Or editing ``info["exif"]`` in place:
 
 .. code-block:: python
 

@@ -30,14 +30,15 @@ Saving 16 bit images
 
 All 16 bit images that was created with:
 
-* :py:meth:`~pillow_heif.HeifImage.convert_to`
 * :py:meth:`~pillow_heif.HeifFile.add_from_pillow`
 * :py:meth:`~pillow_heif.HeifFile.add_frombytes`
 * or images opened in ``I`` Pillow modes when using as a Pillow plugin
 
 Will be saved by default in 10 bit mode.
 
-To ``save`` 16 bit image in 12 bit for you can convert it to 12 bit before saving or set ``options().save_to_12bit`` to ``True``.
+To ``save`` 16 bit image in 12 bit set ``options().save_to_12bit`` to ``True``.
+
+Images opened from file will be saved based on ``info["bit_depth"]`` value if it is present.
 
 .. _order-of-images:
 
@@ -45,9 +46,6 @@ Order Of Images
 """""""""""""""
 
 All information here is only for files that has multiply images and when first image in file is not a `PrimaryImage`
-
-There was a slightly different behaviour in 0.2.x versions and 0.3.0 - 0.4.0 versions.
-Starting from version `0.5.0` ``pillow-heif`` in both ``Pillow`` and ``stand alone`` mode works the same way.
 
 Lets imagine that we have file with 3 images and second image in file is a primary image.
 

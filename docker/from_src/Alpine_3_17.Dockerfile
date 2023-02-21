@@ -11,8 +11,7 @@ RUN \
     nasm \
     aom-dev \
     py3-numpy \
-    py3-pillow \
-    py3-cffi
+    py3-pillow
 
 RUN \
   python3 -m pip install --upgrade pip

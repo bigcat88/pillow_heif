@@ -89,8 +89,12 @@ jobs:
         with:
           python-version: '3.10'
 
+#      to remove `brew uninstall --force --ignore-dependencies imagemagick libheif` when libheif will be updated.
+#      https://github.com/strukturag/libheif/issues/788
       - name: Install from source
         run: |
+          brew uninstall --force --ignore-dependencies imagemagick libheif
+          brew install --formula ./libheif/macos/libheif.rb
           python3 -m pip install opencv-python coverage
           python3 -m pip -v install ".[tests]"
 
@@ -196,7 +200,7 @@ jobs:
 
       - name: Install from source
         run: |
-          sudo -H python3 -m pip install pillow==9.0.1 cffi==1.15.1 pytest defusedxml packaging numpy coverage
+          sudo -H python3 -m pip install pillow==9.0.1 pytest defusedxml packaging numpy coverage
           sudo -H PH_LIGHT_ACTION=1 python3 -m pip -v install --no-build-isolation .
 
       - name: LibHeif info
@@ -242,7 +246,7 @@ jobs:
 
       - name: Install from source
         run: |
-          sudo -H python3 -m pip install pillow==9.1.1 cffi==1.15.1 pytest defusedxml packaging numpy
+          sudo -H python3 -m pip install pillow==9.1.1 pytest defusedxml packaging numpy
           sudo -H PH_LIGHT_ACTION=1 python3 -m pip -v install --no-build-isolation .
 
       - name: LibHeif info

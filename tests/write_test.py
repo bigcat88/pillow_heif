@@ -13,8 +13,8 @@ import pillow_heif
 
 pytest.importorskip("numpy", reason="NumPy not installed")
 
-if not helpers.hevc_enc() or not helpers.aom_enc():
-    pytest.skip("No HEVC or AVIF encoder.", allow_module_level=True)
+if not helpers.hevc_enc() or not helpers.aom():
+    pytest.skip("No HEIF or AVIF support.", allow_module_level=True)
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 pillow_heif.register_avif_opener()
@@ -33,9 +33,9 @@ def test_save_format(save_format):
 @pytest.mark.parametrize(
     "img",
     (
-        helpers.gradient_rgba_bytes("HEIF"),
-        "images/heif/RGBA_10.heif",
-        "images/heif/RGBA_12.heif",
+        "images/heif/RGBA_8__29x100.heif",
+        "images/heif/RGBA_10__29x100.heif",
+        "images/heif/RGBA_12__29x100.heif",
     ),
 )
 def test_premultiplied_alpha(img):
@@ -94,12 +94,10 @@ def test_pillow_save_one_all():
 
 
 def test_heif_no_encoder():
-    with mock.patch("pillow_heif.heif.have_encoder_for_format") as mock_func:
-        mock_func.return_value = False
-
+    with mock.patch.dict("pillow_heif.heif.lib_info", {"libheif": "1.14.2", "HEIF": "", "AVIF": ""}):
         im_heif = pillow_heif.from_pillow(Image.new("L", (64, 64)))
         out_buffer = BytesIO()
-        with pytest.raises(pillow_heif.HeifError):
+        with pytest.raises(RuntimeError):
             im_heif.save(out_buffer)
 
 
@@ -114,7 +112,7 @@ def test_pillow_save_zero(size: tuple):
 @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
 def test_heif_save_zero(size: tuple):
     out_heif = BytesIO()
-    im = pillow_heif.from_pillow(Image.new("RGB", size))
+    im = pillow_heif.from_bytes("L", size, b"")
     with pytest.raises(ValueError):
         im.save(out_heif, format="HEIF")
 
@@ -130,9 +128,9 @@ def test_save_empty_with_append():
     out_buffer = BytesIO()
     empty_heif_file = pillow_heif.HeifFile()
     heif_file = pillow_heif.open_heif(helpers.create_heif())
-    empty_heif_file.save(out_buffer, append_images=heif_file)
+    empty_heif_file.save(out_buffer, append_images=[heif_file[0]])
     helpers.compare_heif_files_fields(heif_file, pillow_heif.open_heif(out_buffer))
-    empty_heif_file.save(out_buffer, append_images=heif_file, save_all=False)
+    empty_heif_file.save(out_buffer, append_images=[heif_file[0]], save_all=False)
     heif_file = pillow_heif.open_heif(out_buffer)
     assert len(heif_file) == 1
 
@@ -140,42 +138,40 @@ def test_save_empty_with_append():
 def test_hif_file():
     hif_path = Path("images/heif_other/cat.hif")
     heif_file1 = pillow_heif.open_heif(hif_path)
-    assert heif_file1.original_bit_depth == 10
+    assert heif_file1.info["bit_depth"] == 10
     out_buf = BytesIO()
-    heif_file1.save(out_buf, quality=1)
+    heif_file1.save(out_buf, quality=80)
     heif_file2 = pillow_heif.open_heif(out_buf)
-    assert heif_file2.original_bit_depth == 8
-    helpers.compare_heif_files_fields(heif_file1, heif_file2, ignore=["t_stride", "original_bit_depth"])
-    helpers.compare_hashes([hif_path, out_buf], hash_size=8)
+    assert heif_file2.info["bit_depth"] == 8
+    helpers.compare_heif_files_fields(heif_file1, heif_file2, ignore=["bit_depth"])
+    helpers.compare_hashes([hif_path, out_buf], hash_size=16)
 
 
 @pytest.mark.parametrize(
     "im_path",
     (
-        "images/heif/L_10",
-        "images/heif/L_12",
-        "images/heif/RGB_10",
-        "images/heif/RGB_12",
-        "images/heif/RGBA_10",
-        "images/heif/RGBA_12",
+        "images/heif/L_10__29x100",
+        "images/heif/L_10__128x128",
+        "images/heif/L_12__29x100",
+        "images/heif/L_12__128x128",
+        "images/heif/RGB_10__29x100",
+        "images/heif/RGB_10__128x128",
+        "images/heif/RGB_12__29x100",
+        "images/heif/RGB_12__128x128",
+        "images/heif/RGBA_10__29x100",
+        "images/heif/RGBA_10__128x128",
+        "images/heif/RGBA_12__29x100",
+        "images/heif/RGBA_12__128x128",
     ),
 )
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 def test_hdr_save(im_path, save_format):
     im_path = im_path + (".heif" if save_format == "HEIF" else ".avif")
     heif_file = pillow_heif.open_heif(im_path, convert_hdr_to_8bit=False)
-    heif_file_to_add = pillow_heif.HeifFile().add_from_heif(heif_file)
-    heif_file.add_from_heif(heif_file_to_add)
-    heif_file_to_add = None  # noqa
-    collect()
-    helpers.compare_heif_files_fields(heif_file[0], heif_file[1])
     out_buf = BytesIO()
     heif_file.save(out_buf, quality=-1, format=save_format, chroma=444)
     heif_file_out = pillow_heif.open_heif(out_buf, convert_hdr_to_8bit=False)
-    assert len(heif_file_out) == 2
-    helpers.compare_heif_files_fields(heif_file[0], heif_file_out[0])
-    helpers.compare_heif_files_fields(heif_file[1], heif_file_out[1])
-    helpers.compare_heif_files_fields(heif_file_out[0], heif_file_out[1])
+    helpers.compare_heif_files_fields(heif_file, heif_file_out)
     helpers.compare_hashes([im_path, out_buf], hash_size=32)
 
 
@@ -192,8 +188,8 @@ def test_encoder_parameters():
 def test_pillow_heif_orientation():
     heic_pillow = Image.open(Path("images/heif_other/arrow.heic"))
     out_jpeg = BytesIO()
-    heic_pillow.save(out_jpeg, format="JPEG")
-    helpers.compare_hashes([heic_pillow, out_jpeg], max_difference=1)
+    heic_pillow.save(out_jpeg, format="JPEG", quality=90)
+    helpers.compare_hashes([heic_pillow, out_jpeg])
 
 
 def test_pillow_quality():
@@ -216,7 +212,7 @@ def test_P_color_mode(save_format):  # noqa
     im.save(out_heic, format=save_format, quality=90)
     im_heif = Image.open(out_heic)
     assert im_heif.mode == "RGB"
-    helpers.compare_hashes([im_buffer, im_heif], hash_size=8)
+    helpers.compare_hashes([im_buffer, im_heif], hash_size=16)
 
 
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
@@ -227,7 +223,7 @@ def test_PA_color_mode(save_format):  # noqa
     im.save(out_heic, format=save_format, quality=90)
     im_heif = Image.open(out_heic)
     assert im_heif.mode == "RGBA"
-    helpers.compare_hashes([im_buffer, im_heif], hash_size=8)
+    helpers.compare_hashes([im_buffer, im_heif], hash_size=16)
 
 
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
@@ -237,7 +233,7 @@ def test_L_color_mode(save_format):  # noqa
     im.save(out_heif, format=save_format, quality=-1)
     im_heif = Image.open(out_heif)
     assert im_heif.mode == "RGB"
-    helpers.compare_hashes([im, im_heif], hash_size=8)
+    helpers.compare_hashes([im, im_heif], hash_size=32)
 
 
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
@@ -247,7 +243,7 @@ def test_LA_color_mode(save_format):  # noqa
     im.save(out_heif, format=save_format, quality=-1)
     im_heif = Image.open(out_heif)
     assert im_heif.mode == "RGBA"
-    helpers.compare_hashes([im, im_heif], hash_size=8)
+    helpers.compare_hashes([im, im_heif], hash_size=32)
 
 
 def test_1_color_mode():
@@ -258,7 +254,7 @@ def test_1_color_mode():
     im.save(out_heif, format="HEIF", quality=-1)
     im_heif = Image.open(out_heif)
     assert im_heif.mode == "RGB"
-    helpers.compare_hashes([im, im_heif], hash_size=8)
+    helpers.compare_hashes([im, im_heif], hash_size=16)
 
 
 def test_CMYK_color_mode():  # noqa
@@ -268,7 +264,17 @@ def test_CMYK_color_mode():  # noqa
     im.save(out_heif, format="HEIF", quality=-1)
     im_heif = Image.open(out_heif)
     assert im_heif.mode == "RGBA"
-    helpers.compare_hashes([im, im_heif], hash_size=8)
+    helpers.compare_hashes([im, im_heif], hash_size=16)
+
+
+def test_YCbCr_color_mode():  # noqa
+    im = helpers.gradient_rgb().convert("YCbCr")
+    assert im.mode == "YCbCr"
+    out_heif = BytesIO()
+    im.save(out_heif, format="HEIF", quality=-1)
+    im_heif = Image.open(out_heif)
+    assert im_heif.mode == "RGB"
+    helpers.compare_hashes([im, im_heif], hash_size=16)
 
 
 @pytest.mark.parametrize("enc_bits", (10, 12))
@@ -276,13 +282,13 @@ def test_CMYK_color_mode():  # noqa
 def test_I_color_modes_to_10_12_bit(enc_bits, save_format):  # noqa
     try:
         pillow_heif.options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
-        src_pillow = Image.open(Path("images/non_heif/L_16.png"))
+        src_pillow = Image.open(Path("images/non_heif/L_16__29x100.png"))
         assert src_pillow.mode == "I"
         for mode in ("I", "I;16", "I;16L"):
             i_mode_img = src_pillow.convert(mode=mode)
             out_heic = BytesIO()
             i_mode_img.save(out_heic, format=save_format, quality=-1)
-            assert pillow_heif.open_heif(out_heic, convert_hdr_to_8bit=False).bit_depth == enc_bits
+            assert pillow_heif.open_heif(out_heic, convert_hdr_to_8bit=False).info["bit_depth"] == enc_bits
             heic_pillow = Image.open(out_heic)
             helpers.compare_hashes([src_pillow, heic_pillow], hash_size=8)
     finally:
@@ -304,74 +310,70 @@ def test_gif():
     assert out_heic.seek(0, SEEK_END) * 2 < out_all_heic.seek(0, SEEK_END)
     heic_pillow = Image.open(out_all_heic)
     for i, frame in enumerate(ImageSequence.Iterator(gif_pillow)):
+        # On Ubuntu 22.04 with basic repos(old versions of libs) without `max_difference` it fails.
         helpers.compare_hashes([ImageSequence.Iterator(heic_pillow)[i], frame], max_difference=1)
 
 
 def test_pillow_append_images():
-    im_heif = Image.open(helpers.create_heif((51, 49), thumb_boxes=[16], n_images=2))
-    heif_file2 = pillow_heif.open_heif(helpers.create_heif((81, 79), thumb_boxes=[32], n_images=2))
-    heif_file3 = pillow_heif.open_heif(helpers.create_heif((72, 68), thumb_boxes=[32, 16], n_images=2))
+    im_pil1 = Image.open("images/heif/L_8__29x100.heif")
+    im_pil2 = Image.open("images/heif/RGB_8__128x128.heif")
+    im_pil3 = Image.open("images/non_heif/RGBA_8__29x100.png")
+    im_pil1.info["thumbnails"] = [16]
+    im_pil2.info["thumbnails"] = [32]
+    im_pil3.info["thumbnails"] = [64]
     out_buf = BytesIO()
-    im_heif.save(out_buf, format="HEIF", append_images=[im_heif, heif_file2[1], heif_file3], save_all=True)
-    heif_file_out = pillow_heif.open_heif(out_buf)
-    assert len(list(heif_file_out.thumbnails_all())) == 2 + 2 + 1 + 4
-    assert len(heif_file_out) == 2 + 2 + 1 + 2
-    helpers.compare_heif_files_fields(heif_file_out[0], heif_file_out[2])
-    helpers.compare_heif_files_fields(heif_file_out[1], heif_file_out[3])
-    helpers.compare_heif_files_fields(heif_file2[1], heif_file_out[4])
-    helpers.compare_heif_files_fields(heif_file3[0], heif_file_out[5])
-    helpers.compare_heif_files_fields(heif_file3[1], heif_file_out[6])
+    im_pil1.save(out_buf, append_images=[im_pil2, im_pil3], format="HEIF", save_all=True, quality=-1)
+    out_heif = Image.open(out_buf)
+    assert len([True for _ in ImageSequence.Iterator(out_heif)]) == 3
+    assert ImageSequence.Iterator(out_heif)[0].info["thumbnails"] == [16]
+    assert ImageSequence.Iterator(out_heif)[1].info["thumbnails"] == [32]
+    assert ImageSequence.Iterator(out_heif)[2].info["thumbnails"] == [64]
+    helpers.compare_hashes([ImageSequence.Iterator(out_heif)[0], im_pil1], hash_size=24)
+    helpers.compare_hashes([ImageSequence.Iterator(out_heif)[1], im_pil2], hash_size=24)
+    helpers.compare_hashes([ImageSequence.Iterator(out_heif)[2], im_pil3], hash_size=24)
 
 
 def test_add_from():
-    heif_file1_buf = helpers.create_heif()
-    heif_file1 = pillow_heif.open_heif(heif_file1_buf)
-    heif_file2_buf = helpers.create_heif((210, 128), thumb_boxes=[48, 32], n_images=2)
-    heif_file2 = pillow_heif.open_heif(heif_file2_buf)
-    heif_file1.add_from_heif(heif_file2, load_one=True)
-    heif_file1.add_from_heif(heif_file2[1], load_one=True)
-    heif_file1.add_from_heif(heif_file2[1])
+    heif_file1 = pillow_heif.open_heif("images/heif/L_8__29x100.heif")
+    heif_file2 = pillow_heif.open_heif("images/heif/RGB_8__128x128.heif")
+    im_pil3 = Image.open("images/non_heif/RGBA_8__29x100.png")
+    heif_file1.add_from_heif(heif_file2[0])
+    heif_file1.add_from_pillow(im_pil3)
+    heif_file1[0].info["thumbnails"].append(16)
+    heif_file1[1].info["thumbnails"].append(32)
+    heif_file1[2].info["thumbnails"].append(64)
+    assert not heif_file2.info["thumbnails"]
+    heif_file2.info["thumbnails"].append(32)
     collect()
     out_buf = BytesIO()
-    heif_file1.save(out_buf, quality=-1)
+    heif_file1.save(out_buf, quality=-1, chroma=444)
     out_heif = pillow_heif.open_heif(out_buf)
-    assert len(out_heif) == 4
-    assert len(list(out_heif.thumbnails_all(one_for_image=True))) == 3
-    assert len(list(out_heif.thumbnails_all(one_for_image=False))) == 6
-    helpers.compare_heif_files_fields(heif_file1[0], out_heif[0])
-    helpers.compare_heif_files_fields(heif_file2[0], out_heif[1])
-    helpers.compare_heif_files_fields(heif_file2[1], out_heif[2])
-    helpers.compare_heif_files_fields(heif_file2[1], out_heif[3])
-    pillow_image = Image.open(out_buf)
-    helpers.compare_hashes([pillow_image, heif_file1_buf])
-    pillow_image.seek(1)
-    pillow_original = Image.open(heif_file2_buf)
-    helpers.compare_hashes([pillow_image, pillow_original])
-    pillow_image.seek(2)
-    pillow_original.seek(1)
-    helpers.compare_hashes([pillow_image, pillow_original], max_difference=1)
+    assert len(out_heif) == 3
+    assert out_heif.info["thumbnails"] == [16]
+    assert out_heif[1].info["thumbnails"] == [32]
+    assert out_heif[2].info["thumbnails"] == [64]
+    helpers.compare_heif_files_fields(out_heif[0], heif_file1[0])
+    helpers.compare_heif_files_fields(out_heif[1], heif_file2[0])
+    helpers.compare_heif_to_pillow_fields(out_heif[2], im_pil3)
 
 
 def test_remove():
-    heif_buf = helpers.create_heif((72, 68), thumb_boxes=[32], n_images=2)
     out_buffer = BytesIO()
-    # clear list with images
-    heif_file = pillow_heif.open_heif(heif_buf)
-    heif_file.images.clear()
-    assert len(heif_file) == 0
     # removing first image
-    heif_file = pillow_heif.open_heif(heif_buf)
+    heif_file = pillow_heif.open_heif(Path("images/heif/zPug_3.heic"))
+    del heif_file[0]
+    heif_file.save(out_buffer)
+    _ = pillow_heif.open_heif(out_buffer)
+    assert len(_) == 2
+    assert len(_.info["thumbnails"]) == 1
+    # removing second and first image
+    heif_file = pillow_heif.open_heif(Path("images/heif/zPug_3.heic"))
+    del heif_file[1]
     del heif_file[0]
     heif_file.save(out_buffer)
     _ = pillow_heif.open_heif(out_buffer)
     assert len(_) == 1
-    assert len(_.thumbnails) == 1
-    assert _.size == (36, 34)
-    # removing second and first image
-    heif_file = pillow_heif.open_heif(heif_buf)
-    del heif_file[1]
-    del heif_file[0]
-    assert len(heif_file) == 0
+    assert len(_.info["thumbnails"]) == 0
 
 
 def test_heif_save_multi_frame():
@@ -382,7 +384,7 @@ def test_heif_save_multi_frame():
     for i in range(3):
         assert heif_file[i].size == out_heif_file[i].size
         assert heif_file[i].mode == out_heif_file[i].mode
-        assert heif_file[i].bit_depth == out_heif_file[i].bit_depth
+        assert heif_file[i].info["bit_depth"] == out_heif_file[i].info["bit_depth"]
         assert heif_file[i].info["primary"] == out_heif_file[i].info["primary"]
 
 
@@ -418,3 +420,20 @@ def test_chroma_avif_encoding_8bit(chroma, diff_epsilon, im):
     im_out = Image.open(im_buf)
     im = im.convert(mode=im_out.mode)
     helpers.assert_image_similar(im, im_out, diff_epsilon)
+
+
+@pytest.mark.parametrize("size", ((8, 8), (9, 9), (10, 10), (11, 11), (21, 21), (31, 31), (64, 64)))
+@pytest.mark.parametrize("mode", ("L", "LA", "RGB", "RGBA"))
+def test_encode_function(mode, size: tuple):
+    im = Image.effect_mandelbrot(size, (-3, -2.5, 2, 2.5), 100)
+    im = im.convert(mode)
+    buf = BytesIO()
+    pillow_heif.encode(im.mode, im.size, im.tobytes(), buf, quality=-1)
+    helpers.compare_hashes([buf, im])
+
+
+@pytest.mark.parametrize("mode", ("L", "LA", "RGB", "RGBA", "L;16", "LA;16", "RGB;16", "RGBA;16"))
+def test_encode_function_not_enough_data(mode):
+    buf = BytesIO()
+    with pytest.raises(ValueError):
+        pillow_heif.encode(mode, (128, 128), b"123456", buf)

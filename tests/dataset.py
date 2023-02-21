@@ -17,8 +17,8 @@ TRUNCATED_DATASET = [i for i in TRUNCATED_DATASET if not i.name.endswith(".txt")
 MINIMAL_DATASET = [i for i in MINIMAL_DATASET if not i.name.endswith(".txt")]
 FULL_DATASET = [i for i in FULL_DATASET if not i.name.endswith(".txt")]
 
-if not helpers.aom_dec():
-    warn("Skipping tests for `AV1` format due to lack of codecs.")
+if not helpers.aom():
+    warn("Skipping tests for `AVIF` format due to lack of codecs.")
     CORRUPTED_DATASET = [i for i in CORRUPTED_DATASET if not i.name.endswith(".avif")]
     TRUNCATED_DATASET = [i for i in TRUNCATED_DATASET if not i.name.endswith(".avif")]
     MINIMAL_DATASET = [i for i in MINIMAL_DATASET if not i.name.endswith(".avif")]

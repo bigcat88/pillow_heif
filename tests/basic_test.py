@@ -13,12 +13,12 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def test_libheif_info():
     info = pillow_heif.libheif_info()
-    assert info["version"]["libheif"] in ("1.13.0", "1.14.0", "1.14.1", "1.14.2")
-    assert info["decoders"]["HEVC"]
+    for key in ("HEIF", "AVIF"):
+        assert key in info.keys()
+    assert pillow_heif.libheif_version() in ("1.12.0", "1.13.0", "1.14.0", "1.14.1", "1.14.2", "1.15.1")
 
 
-@pytest.mark.skipif(helpers.aom_enc() and helpers.aom_dec(), reason="Only when AOM missing.")
-@pytest.mark.skipif(pillow_heif.libheif_info()["version"]["aom"] == "Rav1e encoder", reason="Rav1e not supported")
+@pytest.mark.skipif(helpers.aom(), reason="Only when AVIF support missing.")
 def test_pillow_register_avif_plugin():
     with pytest.warns(UserWarning):
         pillow_heif.register_avif_opener()
@@ -83,42 +83,33 @@ def test_heif_str():
     str_img_nl_3 = "<HeifImage 96x64 RGB with no image data and 0 thumbnails>"
     str_img_l_1 = "<HeifImage 64x64 RGB with 12288 bytes image data and 2 thumbnails>"
     str_img_l_2 = "<HeifImage 64x64 RGB with 12288 bytes image data and 1 thumbnails>"
-    str_thumb_nl = "<HeifThumbnail 32x32 RGB with no image data>"
-    str_thumb_l = "<HeifThumbnail 32x32 RGB with 6144 bytes image data>"
     heif_file = pillow_heif.open_heif(Path("images/heif/zPug_3.heic"))
     assert str(heif_file) == f"<HeifFile with 3 images: ['{str_img_nl_1}', '{str_img_nl_2}', '{str_img_nl_3}']>"
     assert str(heif_file[0]) == str_img_nl_1
     assert str(heif_file[1]) == str_img_nl_2
     assert str(heif_file[2]) == str_img_nl_3
-    assert str(heif_file.thumbnails[0]) == f"{str_thumb_nl} Original:{str_img_nl_2}"
-    heif_file.load()
+    assert heif_file.data
     assert str(heif_file) == f"<HeifFile with 3 images: ['{str_img_nl_1}', '{str_img_l_2}', '{str_img_nl_3}']>"
-    heif_file.thumbnails[0].load()
-    assert str(heif_file.thumbnails[0]) == f"{str_thumb_l} Original:{str_img_l_2}"
-    heif_file = pillow_heif.HeifFile().add_from_heif(heif_file[0])
-    assert str(heif_file) == f"<HeifFile with 1 images: ['{str_img_l_1}']>"
-    assert str(heif_file.thumbnails[0]) == f"{str_thumb_nl} Original:{str_img_l_1}"
-    heif_file.thumbnails[0].load()  # Should not change anything, thumbnails are cloned without data.
-    assert str(heif_file.thumbnails[0]) == f"{str_thumb_nl} Original:{str_img_l_1}"
+    heif_file2 = pillow_heif.HeifFile()
+    heif_file2.add_from_heif(heif_file[0])
+    assert str(heif_file2) == f"<HeifFile with 1 images: ['{str_img_l_1}']>"
 
 
 @pytest.mark.skipif(not helpers.RELEASE_FULL_FLAG, reason="Only when building full release")
 def test_full_build():
     info = pillow_heif.libheif_info()
-    assert info["decoders"]["AV1"]
-    assert info["encoders"]["AV1"]
-    assert info["encoders"]["HEVC"]
+    assert info["AVIF"]
+    assert info["HEIF"]
     expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.14.2")
     if expected_version:
-        assert info["version"]["libheif"] == expected_version
+        assert info["libheif"] == expected_version
 
 
 @pytest.mark.skipif(not helpers.RELEASE_LIGHT_FLAG, reason="Only when building light release")
 def test_light_build():
     info = pillow_heif.libheif_info()
-    assert not info["decoders"]["AV1"]
-    assert not info["encoders"]["AV1"]
-    assert not info["encoders"]["HEVC"]
+    assert not info["AVIF"]
+    assert not info["HEIF"]
     expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.14.2")
     if expected_version:
-        assert info["version"]["libheif"] == expected_version
+        assert info["libheif"] == expected_version

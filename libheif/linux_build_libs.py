@@ -4,17 +4,13 @@ from platform import machine
 from re import IGNORECASE, MULTILINE, match, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
 
-BUILD_DIR_PREFIX = environ.get("BUILD_DIR_PREFIX", "/tmp/pillow_heif")
-BUILD_DIR_LIBS = path.join(BUILD_DIR_PREFIX, "build-stuff")
-if getenv("READTHEDOCS", "False") == "True":
-    INSTALL_DIR_LIBS = path.join(environ.get("HOME"), "rtd_build")
-else:
-    INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
+BUILD_DIR = environ.get("BUILD_DIR", "/tmp/ph_build_stuff")
+INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 
 LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/get/0b75c44c10e605fe9e9ebed58f04a46271131827.tar.gz"
 LIBAOM_URL = "https://aomedia.googlesource.com/aom/+archive/v3.5.0.tar.gz"
-LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.0.9/libde265-1.0.9.tar.gz"
+LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.0.11/libde265-1.0.11.tar.gz"
 LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.14.2/libheif-1.14.2.tar.gz"
 
 
@@ -86,7 +82,7 @@ def check_install_nasm(version: str):
     if tool_check_version("nasm", version):
         return True
     print(f"Can not find `nasm` with version >={version}, installing...")
-    _tool_path = path.join(BUILD_DIR_LIBS, "nasm")
+    _tool_path = path.join(BUILD_DIR, "nasm")
     if path.isdir(_tool_path):
         print("Cache found for nasm", flush=True)
         chdir(_tool_path)
@@ -127,7 +123,7 @@ def run_print_if_error(args) -> None:
 
 
 def build_lib_linux(url: str, name: str, musl: bool = False):
-    _lib_path = path.join(BUILD_DIR_LIBS, name)
+    _lib_path = path.join(BUILD_DIR, name)
     if path.isdir(_lib_path):
         print(f"Cache found for {name}", flush=True)
         chdir(path.join(_lib_path, "build")) if name != "x265" else chdir(_lib_path)
@@ -210,10 +206,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
     if musl:
         run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
     else:
-        if getenv("READTHEDOCS", "False") == "True":
-            run("export LD_LIBRARY_PATH=$HOME/rtd_build/lib:$LD_LIBRARY_PATH".split(), shell=True)
-        else:
-            run("ldconfig", check=True)
+        run("ldconfig", check=True)
 
 
 def build_libs() -> str:

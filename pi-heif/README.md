@@ -13,8 +13,6 @@
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 ![Raspberry Pi](https://img.shields.io/badge/Rasberry_Pi-FCC624.svg?style=for-the-badge&logo=raspberry-pi&logoColor=red)
 
-#### NOTE: Please pin version to skip `0.10.x` versions, as it will be alpha version branch. [0.10.0 changes](https://github.com/bigcat88/pillow_heif/issues/75)
-
 This is a light version of [Pillow-Heif](https://github.com/bigcat88/pillow_heif) with more permissive license for binary wheels.
 
 It includes only `HEIF` decoder and does not support `save` operations.
@@ -40,16 +38,15 @@ im = Image.open("images/input.heic")  # do whatever need with a Pillow image
 im.show()
 ```
 
-### 8/10/12 bit HEIF to 16 bit PNG using OpenCV
+### 8/10/12 bit HEIF to 8/16 bit PNG using OpenCV
 ```python3
 import numpy as np
 import cv2
 import pi_heif
 
-heif_file = pi_heif.open_heif("images/rgb12.heif", convert_hdr_to_8bit=False)
-heif_file.convert_to("BGRA;16" if heif_file.has_alpha else "BGR;16")
+heif_file = pi_heif.open_heif("image.heic", convert_hdr_to_8bit=False, bgr_mode=True)
 np_array = np.asarray(heif_file)
-cv2.imwrite("rgb16.png", np_array)
+cv2.imwrite("image.png", np_array)
 ```
 
 ### Get decoded image data as a Numpy array
@@ -66,7 +63,7 @@ if pi_heif.is_supported("input.heic"):
 
 | **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
 |--------------------|:---------------:|:-----------------:|:-----------------:|:----------:|:----------:|
-| CPython 3.7        |        ✅        |        N/A        |         ✅         |     ✅      |     ✅      |
+| CPython 3.7        |        ✅        |        N/A        |         ✅         |    N/A     |     ✅      |
 | CPython 3.8        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.9        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |

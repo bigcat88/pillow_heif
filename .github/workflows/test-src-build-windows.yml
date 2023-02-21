@@ -7,23 +7,23 @@ on:
     paths:
       - '.github/workflows/test-src-build-windows.yml'
       - 'libheif/windows/**'
-      - 'libheif/build.py'
-      - 'libheif/public_api.h'
+      - 'libheif/heif.h'
       - 'setup.*'
       - 'pyproject.toml'
       - 'pi-heif/libheif/windows/**'
       - 'pi-heif/setup.cfg'
+      - 'pillow_heif/_pillow_heif.c'
   push:
     branches: [master]
     paths:
       - '.github/workflows/test-src-build-windows.yml'
       - 'libheif/windows/**'
-      - 'libheif/build.py'
-      - 'libheif/public_api.h'
+      - 'libheif/heif.h'
       - 'setup.*'
       - 'pyproject.toml'
       - 'pi-heif/libheif/windows/**'
       - 'pi-heif/setup.cfg'
+      - 'pillow_heif/_pillow_heif.c'
 
 concurrency:
   group: src_windows-${{ github.ref }}

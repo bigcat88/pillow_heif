@@ -2,7 +2,6 @@
 requires = [
     "setuptools>=42",
     "wheel",
-    "cffi>=1.14.6",
 ]
 # build-backend = "setuptools.build_meta"
 
@@ -29,10 +28,10 @@ profile = "black"
 
 [tool.pylint]
 master.py-version = "3.7"
-master.extension-pkg-allow-list = ["_pillow_heif_cffi"]
-design.max-attributes = 9
+master.extension-pkg-allow-list = ["_pillow_heif"]
+design.max-attributes = 8
 design.max-branches = 14
-design.max-locals = 18
+design.max-locals = 16
 design.max-returns = 8
 basic.good-names = [
     "a", "b", "c", "d", "e", "f", "i", "j", "k", "v",
@@ -62,7 +61,7 @@ filterwarnings = [
 
 [tool.cibuildwheel]
 build-verbosity = "2"
-skip = ["cp36-*", "pp37-*"]
+skip = ["cp36-*", "pp37-*", "cp37-musllinux*"]
 
 [tool.cibuildwheel.linux]
 test-extras = "tests"
@@ -71,6 +70,7 @@ test-command = "pytest -rs {project}"
 [tool.cibuildwheel.macos]
 before-all = [
     "brew install libjpeg little-cms2",
+    "brew uninstall --force --ignore-dependencies libheif",
     "brew install --formula {project}/libheif/macos/libheif.rb",
     "HOMEBREW_PREFIX=$(brew --prefix)",
     "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib",
@@ -81,6 +81,7 @@ repair-wheel-command = [
 ]
 test-extras = "tests"
 test-command = "pytest -rs {project}"
+test-skip = "cp38-macosx_arm64"
 
 [tool.cibuildwheel.windows]
 before-build = "pip install delvewheel"

@@ -14,7 +14,7 @@ pillow_heif.register_heif_opener()
 
 
 @pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
-@pytest.mark.skipif(not helpers.aom_enc(), reason="Requires AVIF encoder.")
+@pytest.mark.skipif(not helpers.aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.skipif(parse_version(pil_version) < parse_version("9.2.0"), reason="Requires Pillow >= 9.2")
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
@@ -32,7 +32,7 @@ def test_exif_from_pillow(im_format, save_format):
         _exif = Image.Exif()
         _exif[0x010E] = exif_desc_value
         _ = BytesIO()
-        Image.new("RGB", (10, 10), 0).save(_, format=im_format, exif=_exif)
+        Image.new("RGB", (16, 16), 0).save(_, format=im_format, exif=_exif)
         return _
 
     exif_desc_value = "this is a desc"

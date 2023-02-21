@@ -5,7 +5,7 @@ from typing import Union
 
 from PIL import Image, ImageMath, ImageOps
 
-from pillow_heif import HeifFile, HeifImage, HeifThumbnail, add_thumbnails, libheif_info
+from pillow_heif import HeifFile, HeifImage, libheif_info
 
 try:
     import numpy as np
@@ -72,20 +72,15 @@ def compare_heif_files_fields(
     def compare_images_fields(image1: HeifImage, image2: HeifImage):
         assert image1.size == image2.size
         assert image1.mode == image2.mode
-        if "original_bit_depth" not in ignore:
-            assert image1.original_bit_depth == image2.original_bit_depth
-        assert image1.bit_depth == image2.bit_depth
+        if "bit_depth" not in ignore:
+            assert image1.info["bit_depth"] == image2.info["bit_depth"]
         if "stride" not in ignore:
             assert image1.stride == image2.stride
             assert len(image1.data) == len(image2.data)
-        for i_thumb, thumbnail in enumerate(image1.thumbnails):
-            with_difference = thumbnail.size[0] - image2.thumbnails[i_thumb].size[0]
-            height_difference = thumbnail.size[1] - image2.thumbnails[i_thumb].size[1]
-            assert with_difference + height_difference <= thumb_size_max_differ
-            assert thumbnail.mode == image2.thumbnails[i_thumb].mode
-            if "original_bit_depth" not in ignore:
-                assert thumbnail.original_bit_depth == image2.thumbnails[i_thumb].original_bit_depth
-            assert thumbnail.bit_depth == image2.thumbnails[i_thumb].bit_depth
+        if "thumbnails" not in ignore:
+            for i2, box in enumerate(image1.info["thumbnails"]):
+                difference = box - image2.info["thumbnails"][i2]
+                assert abs(difference) <= thumb_size_max_differ
         assert image1.info["exif"] == image2.info["exif"]
         assert image1.info["xmp"] == image2.info["xmp"]
         for block_i, block in enumerate(image1.info["metadata"]):
@@ -102,8 +97,8 @@ def compare_heif_files_fields(
         compare_images_fields(heif1, heif2)
 
 
-def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage, HeifThumbnail], pillow: Image):
-    def compare_images_fields(heif_image: Union[HeifImage, HeifThumbnail], pillow_image: Image):
+def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage], pillow: Image):
+    def compare_images_fields(heif_image: Union[HeifImage], pillow_image: Image):
         assert heif_image.size == pillow_image.size
         assert heif_image.mode == pillow_image.mode
         for k in ("exif", "xmp", "metadata"):
@@ -134,7 +129,7 @@ def create_heif(size: tuple = None, thumb_boxes: list = None, n_images=1, **kwar
     for i in range(n_images):
         im_heif.add_from_pillow(Image.effect_mandelbrot(size, (-3, -2.5, 2, 2.5), 100))
         size = (int(size[0] / 2), int(size[1] / 2))
-        add_thumbnails(im_heif[i], thumb_boxes)
+        im_heif[i].info["thumbnails"] = thumb_boxes
     heif_buf = BytesIO()
     im_heif.save(heif_buf, **kwargs)
     return heif_buf
@@ -218,20 +213,12 @@ def gradient_pa_bytes(im_format: str) -> bytearray:
 def hevc_enc() -> bool:
     if getenv("PH_TESTS_NO_HEVC_ENC", "0") != "0":
         return False
-    return libheif_info()["encoders"]["HEVC"]
+    return bool(libheif_info()["HEIF"])
 
 
-def aom_dec() -> bool:
+def aom() -> bool:
     if getenv("PH_TESTS_NO_AVIF_DEC", "0") != "0":
         return False
-    if libheif_info()["version"]["aom"] == "Rav1e encoder":
+    if libheif_info()["AVIF"] == "Rav1e encoder":
         return False
-    return libheif_info()["decoders"]["AV1"]
-
-
-def aom_enc() -> bool:
-    if getenv("PH_TESTS_NO_AVIF_ENC", "0") != "0":
-        return False
-    if libheif_info()["version"]["aom"] == "Rav1e encoder":
-        return False
-    return libheif_info()["encoders"]["AV1"]
+    return bool(libheif_info()["AVIF"])
