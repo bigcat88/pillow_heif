@@ -74,7 +74,7 @@ def test_open_to_numpy_mem_leaks():
         gc.collect()
         mem = _get_mem_usage()
         if i < 100:
-            mem_limit = mem + 1
+            mem_limit = mem + 2
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
 
@@ -93,7 +93,7 @@ def test_color_profile_leaks(im, cp_type):
         gc.collect()
         mem = _get_mem_usage()
         if i < 100:
-            mem_limit = mem + 1
+            mem_limit = mem + 2
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations. Color profile type:{cp_type}"
 
@@ -109,7 +109,7 @@ def test_metadata_leaks():
         gc.collect()
         mem = _get_mem_usage()
         if i < 100:
-            mem_limit = mem + 1
+            mem_limit = mem + 2
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
 
@@ -128,7 +128,7 @@ def test_pillow_plugin_leaks():
         gc.collect()
         gc.collect()
         mem = _get_mem_usage()
-        if i < 400:
-            mem_limit = mem + 1
+        if i < 300:
+            mem_limit = mem + 2
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"

@@ -912,7 +912,7 @@ int decode_image(CtxImageObject* self) {
                             out[i2 * 4 + 0] = in[i2 * 4 + 2];
                             out[i2 * 4 + 1] = in[i2 * 4 + 1];
                             out[i2 * 4 + 2] = tmp;
-                            out[i2 * 4 + 3] = in[i2 * 4 + 3];;
+                            out[i2 * 4 + 3] = in[i2 * 4 + 3];
                         }
                         in += stride;
                         out += self->stride;

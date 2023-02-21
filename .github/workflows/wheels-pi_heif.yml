@@ -16,7 +16,7 @@ jobs:
         ref: ${{ github.ref }}
         check-name: 'macosx • aarch64 • Pi-Heif • Cirrus'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        wait-interval: 10
+        wait-interval: 30
 
     - name: Download artifacts
       run: |
@@ -128,8 +128,8 @@ jobs:
     name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
     runs-on: ubuntu-20.04
     env:
-      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
-      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+      BUILD_DIR: "/tmp/ph_build_stuff"
+      KEY_HEAD: Pi-Heif-${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v3
@@ -154,6 +154,14 @@ jobs:
         if: matrix.cibw_arch == 'aarch64'
         run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
 
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR }}
+          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
+        env:
+          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
+          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
+
       - name: Run cibuildwheel
         run: |
           python3 -m pip install cibuildwheel==2.11.4
@@ -162,7 +170,7 @@ jobs:
           CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
-          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_LIGHT_ACTION=1
+          CIBW_ENVIRONMENT_LINUX: BUILD_DIR=/host${{ env.BUILD_DIR }} PH_LIGHT_ACTION=1
 
       - name: Checking built wheels
         run: |
@@ -176,6 +184,9 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
+
   wheels_linux_pypy:
     strategy:
       fail-fast: true
@@ -186,8 +197,8 @@ jobs:
     name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_build }}
     runs-on: ubuntu-20.04
     env:
-      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
-      KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+      BUILD_DIR: "/tmp/ph_build_stuff"
+      KEY_HEAD: Pi-Heif-${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v3
@@ -206,6 +217,14 @@ jobs:
         if: matrix.cibw_arch == 'aarch64'
         run: echo CIBW_TEST_EXTRAS="tests-min" >> $GITHUB_ENV
 
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR }}
+          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
+        env:
+          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
+          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
+
       - name: Run cibuildwheel
         run: |
           python3 -m pip install cibuildwheel==2.11.4
@@ -214,7 +233,7 @@ jobs:
           CIBW_BUILD: ${{ format('{0}-{1}_{2}', matrix.cibw_build , matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y libjpeg-turbo-devel lcms2-devel"
-          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }} PH_LIGHT_ACTION=1
+          CIBW_ENVIRONMENT_LINUX: BUILD_DIR=/host${{ env.BUILD_DIR }} PH_LIGHT_ACTION=1
 
       - name: Checking built wheels
         run: |
@@ -228,15 +247,25 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
+
   wheels_armv7l:
-    name: ${{ matrix.i['name'] }} • ARMv7l • CPython
+    name: ${{ matrix.i['name'] }} • ARMv7l • CPython${{ matrix.v }}
     runs-on: ubuntu-20.04
     strategy:
       matrix:
         i: [
-          { "docker_file": "manylinux_armv7l_wheel", "name": "manylinux" },
-          { "docker_file": "musllinux_armv7l_wheel", "name": "musllinux" },
+          { "docker_file": "manylinux_armv7l_wheels", "name": "manylinux" },
+          { "docker_file": "musllinux_armv7l_wheels", "name": "musllinux" },
         ]
+        v: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        exclude:
+          - v: "3.7"
+            i: { "docker_file": "musllinux_armv7l_wheels", "name": "musllinux" }
+    env:
+      KEY_HEAD: Pi-Heif-ARMv7l-${{ matrix.i['name'] }}
+      BUILD_DIR: "./build_cache"
 
     steps:
       - uses: actions/checkout@v3
@@ -248,27 +277,39 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR }}
+          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
+        env:
+          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
+          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
+
       - name: Build Pi-Heif
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/${{ matrix.i['docker_file'] }}.Dockerfile
+          build-args: |
+            PY_VERSION=${{ matrix.v }}
           platforms: linux/arm/v7
           push: false
           outputs: type=local,dest=./
 
       - name: Checking built wheels
         run: |
-          ls -la ./pi_heif/repaired_dist
           python3 -m pip install twine
-          python3 -m twine check ./pi_heif/repaired_dist/*
+          python3 -m twine check ./repaired_dist/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
           name: wheels_pi_heif
-          path: ./pi_heif/repaired_dist/*.whl
+          path: ./repaired_dist/*.whl
           if-no-files-found: error
+
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
 
   sdist:
     name: Source distribution

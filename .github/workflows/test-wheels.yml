@@ -19,14 +19,14 @@ jobs:
           { "os": "fedora", "ver": "37", "arch": "amd64" },
           { "os": "debian", "ver": "10", "arch": "amd64" },
           { "os": "debian", "ver": "10", "arch": "arm64" },
-          { "os": "debian", "ver": "10", "arch": "arm/v7" },
           { "os": "debian", "ver": "11", "arch": "amd64" },
           { "os": "debian", "ver": "11", "arch": "arm64" },
           { "os": "alpine", "ver": "3.15", "arch": "amd64" },
           { "os": "alpine", "ver": "3.15", "arch": "arm64" },
           { "os": "alpine", "ver": "3.16", "arch": "amd64" },
           { "os": "alpine", "ver": "3.16", "arch": "arm64" },
-          { "os": "alpine", "ver": "3.16", "arch": "arm/v7" },
+          { "os": "alpine", "ver": "3.17", "arch": "amd64" },
+          { "os": "alpine", "ver": "3.17", "arch": "arm64" },
         ]
 
     steps:

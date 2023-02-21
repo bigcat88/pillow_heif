@@ -18,18 +18,15 @@
 ![Alpine Linux](https://img.shields.io/badge/Alpine_Linux-0078D6.svg?style=for-the-badge&logo=alpine-linux&logoColor=white)
 ![Raspberry Pi](https://img.shields.io/badge/Rasberry_Pi-FCC624.svg?style=for-the-badge&logo=raspberry-pi&logoColor=red)
 
-
-#### NOTE: Please pin version to skip `0.10.x` versions, as it will be alpha version branch. [0.10.0 changes](https://github.com/bigcat88/pillow_heif/issues/75)
-
-Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and an add-on for Pillow.
+Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and plugin for Pillow.
 
 Features:
  * Decoding of `8`, `10`, `12` bit HEIC and AVIF files.
  * Encoding of `8`, `10`, `12` bit HEIC and AVIF files.
  * `EXIF`, `XMP`, `IPTC` read & write support.
  * Support of multiple images in one file and a `PrimaryImage` attribute.
- * HEIF `thumbnails` support.
- * Adding all this features to Pillow in one line of code as a plugin.
+ * Adding & removing `thumbnails`.
+ * Adding HEIF support to Pillow in one line of code as a plugin.
 
 Note: Here is a light version [pi-heif](https://pypi.org/project/pi-heif/) of this project without encoding capabilities.
 
@@ -46,7 +43,7 @@ from pillow_heif import register_heif_opener
 
 register_heif_opener()
 
-im = Image.open("images/input.heic")  # do whatever need with a Pillow image
+im = Image.open("image.heic")  # do whatever need with a Pillow image
 im = im.rotate(13)
 im.save(f"rotated_image.heic", quality=90)
 ```
@@ -56,7 +53,7 @@ im.save(f"rotated_image.heic", quality=90)
 import cv2
 import pillow_heif
 
-cv_img = cv2.imread("images/jpeg_gif_png/RGBA_16.png", cv2.IMREAD_UNCHANGED)
+cv_img = cv2.imread("16bit_with_alpha.png", cv2.IMREAD_UNCHANGED)
 heif_file = pillow_heif.from_bytes(
     mode="BGRA;16",
     size=(cv_img.shape[1], cv_img.shape[0]),
@@ -65,28 +62,26 @@ heif_file = pillow_heif.from_bytes(
 heif_file.save("RGBA_10bit.heic", quality=-1)
 ```
 
-### 8/10/12 bit HEIF to 16 bit PNG using OpenCV
+### 8/10/12 bit HEIF to 8/16 bit PNG using OpenCV
 ```python3
 import numpy as np
 import cv2
-import pillow_heif
+import pi_heif
 
-heif_file = pillow_heif.open_heif("images/rgb12.heif", convert_hdr_to_8bit=False)
-heif_file.convert_to("BGRA;16" if heif_file.has_alpha else "BGR;16")
+heif_file = pi_heif.open_heif("image.heic", convert_hdr_to_8bit=False, bgr_mode=True)
 np_array = np.asarray(heif_file)
-cv2.imwrite("rgb16.png", np_array)
+cv2.imwrite("image.png", np_array)
 ```
 
 ### Accessing decoded image data
 ```python3
 import pillow_heif
 
-if pillow_heif.is_supported("images/rgb10.heif"):
-    heif_file = pillow_heif.open_heif("images/rgb10.heif", convert_hdr_to_8bit=False)
+if pillow_heif.is_supported("image.heic"):
+    heif_file = pillow_heif.open_heif("image.heic", convert_hdr_to_8bit=False)
     print("image mode:", heif_file.mode)
     print("image data length:", len(heif_file.data))
     print("image data stride:", heif_file.stride)
-    heif_file.convert_to("RGB;16")  # convert 10 bit image to RGB 16 bit.
     print("image mode:", heif_file.mode)
 ```
 
@@ -98,56 +93,6 @@ import pillow_heif
 if pillow_heif.is_supported("input.heic"):
     heif_file = pillow_heif.open_heif("input.heic")
     np_array = np.asarray(heif_file)
-```
-
-### Adding & Removing thumbnails
-```python3
-import pillow_heif
-
-if pillow_heif.is_supported("input.heic"):
-    heif_file = pillow_heif.open_heif("input.heic")
-    pillow_heif.add_thumbnails(heif_file, [768, 512, 256])  # add three new thumbnail boxes.
-    heif_file.save("output_with_thumbnails.heic")
-    heif_file.thumbnails.clear()               # clear list with thumbnails.
-    heif_file.save("output_without_thumbnails.heic")
-```
-
-### (Pillow)Adding & Removing thumbnails
-```python3
-from PIL import Image
-import pillow_heif
-
-pillow_heif.register_heif_opener()
-
-im = Image.open("input.heic")
-pillow_heif.add_thumbnails(im, [768, 512, 256])  # add three new thumbnail boxes.
-im.save("output_with_thumbnails.heic")
-im.info["thumbnails"].clear()               # clear list with thumbnails.
-im.save("output_without_thumbnails.heic")
-```
-
-### Using thumbnails when they are present in a file
-```python3
-import pillow_heif
-
-if pillow_heif.is_supported("input.heic"):
-    heif_file = pillow_heif.open_heif("input.heic")
-    for img in heif_file:
-        img = pillow_heif.thumbnail(img)
-        print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
-```
-
-### (Pillow)Using thumbnails when they are present in a file
-```python3
-from PIL import Image, ImageSequence
-import pillow_heif
-
-pillow_heif.register_heif_opener()
-
-pil_img = Image.open("input.heic")
-for img in ImageSequence.Iterator(pil_img):
-    img = pillow_heif.thumbnail(img)
-    print(img)  # This will be a thumbnail or if thumbnail is not avalaible then an original.
 ```
 
 ### AVIF support
@@ -178,7 +123,7 @@ pillow_heif.register_avif_opener()
 
 | **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
 |--------------------|:---------------:|:-----------------:|:-----------------:|:----------:|:----------:|
-| CPython 3.7        |        ✅        |        N/A        |         ✅         |     ✅      |     ✅      |
+| CPython 3.7        |        ✅        |        N/A        |         ✅         |    N/A     |     ✅      |
 | CPython 3.8        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.9        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
@@ -188,5 +133,4 @@ pillow_heif.register_avif_opener()
 
 &ast; **i686**, **x86_64**, **aarch64** wheels.
 
-For `ARMv7`(`armv7l`) wheels are present for Debian 10+(Ubuntu 20.04+) and Alpine 14+.
-They supports only decoding and builds without `x265` encoder.
+`ARMv7l`, `PyPy` 32-bit wheels are published only for [pi-heif](https://pypi.org/project/pi-heif/) from `0.10.0` version.

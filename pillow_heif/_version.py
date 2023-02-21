@@ -1,3 +1,3 @@
-""" Version of pillow_heif 1"""
+""" Version of pillow_heif"""
 
-__version__ = "0.10.0"
+__version__ = "0.10.0.dev0"

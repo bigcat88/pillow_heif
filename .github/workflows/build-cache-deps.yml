@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - '.github/workflows/build-cache-deps.yml'
+      - 'docker/*_armv7l_wheels.Dockerfile'
       - 'libheif/linux/**'
       - 'libheif/linux_*.py'
       - 'setup.py'
@@ -27,7 +28,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
-      BUILD_DIR_PREFIX: "/tmp/pillow_heif"
+      BUILD_DIR: "/tmp/ph_build_stuff"
 
     steps:
       - uses: actions/checkout@v3
@@ -38,7 +39,7 @@ jobs:
           platforms: arm64
 
       - name: Install cibuildwheel & twine
-        run: python3 -m pip install cibuildwheel==2.11.4 twine
+        run: python3 -m pip install twine cibuildwheel==2.11.4
 
       - name: 32-bit musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux' && matrix.cibw_arch == 'i686'
@@ -48,7 +49,7 @@ jobs:
 
       - uses: actions/cache@v3
         with:
-          path: ${{ env.BUILD_DIR_PREFIX }}/build-stuff
+          path: ${{ env.BUILD_DIR }}
           key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
         env:
           KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
@@ -60,7 +61,7 @@ jobs:
           CIBW_BUILD: ${{ format('cp38-{0}*', matrix.cibw_buildlinux) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
-          CIBW_ENVIRONMENT_LINUX: BUILD_DIR_PREFIX=/host${{ env.BUILD_DIR_PREFIX }}
+          CIBW_ENVIRONMENT_LINUX: BUILD_DIR=/host${{ env.BUILD_DIR }}
           CIBW_TEST_COMMAND: "python3 -c 'import pillow_heif; print(pillow_heif.libheif_info())'"
           CIBW_TEST_EXTRAS: ""
           CIBW_BUILD_VERBOSITY: 1
@@ -68,7 +69,7 @@ jobs:
       - name: Checking built wheels
         run: twine check wheelhouse/*
 
-      - name: Uploading wheel
+      - name: Uploading wheels
         uses: actions/upload-artifact@v3
         with:
           name: wheels
@@ -76,4 +77,129 @@ jobs:
           if-no-files-found: error
 
       - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR_PREFIX }}
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
+
+  pi_heif_dependencies_linux:
+    strategy:
+      fail-fast: true
+      matrix:
+        cibw_buildlinux: [ manylinux, musllinux ]
+        cibw_arch: [ "aarch64", "i686", "x86_64" ]
+    name: Pi-Heif • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
+    runs-on: ubuntu-20.04
+    env:
+      KEY_HEAD: Pi-Heif-${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
+      BUILD_DIR: "/tmp/ph_build_stuff"
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Transform to Pi-Heif
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'aarch64'
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
+
+      - name: Install cibuildwheel & twine
+        run: python3 -m pip install twine cibuildwheel==2.11.4
+
+      - name: 32-bit musllinux preparations
+        if: matrix.cibw_buildlinux == 'musllinux' && matrix.cibw_arch == 'i686'
+        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
+        env:
+          OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
+
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR }}
+          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
+        env:
+          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
+          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
+
+      - name: Start test build
+        run: cibuildwheel
+        env:
+          CIBW_BUILD: ${{ format('cp38-{0}*', matrix.cibw_buildlinux) }}
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
+          CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
+          CIBW_ENVIRONMENT_LINUX: BUILD_DIR=/host${{ env.BUILD_DIR }} PH_LIGHT_ACTION=1
+          CIBW_TEST_COMMAND: "python3 -c 'import pi_heif; print(pi_heif.libheif_info())'"
+          CIBW_TEST_EXTRAS: ""
+          CIBW_BUILD_VERBOSITY: 1
+
+      - name: Checking built wheels
+        run: twine check wheelhouse/*
+
+      - name: Uploading wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
+
+  pi_heif_dependencies_linux_armv7:
+    strategy:
+      fail-fast: true
+      matrix:
+        i: [
+          { "docker_file": "manylinux_armv7l_wheels", "name": "manylinux" },
+          { "docker_file": "musllinux_armv7l_wheels", "name": "musllinux" },
+        ]
+        v: ["3.8"]
+    name: Pi-Heif • ARMv7l • ${{ matrix.i['name'] }}
+    runs-on: ubuntu-20.04
+    env:
+      KEY_HEAD: Pi-Heif-ARMv7l-${{ matrix.i['name'] }}
+      BUILD_DIR: "./build_cache"
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Transform to Pi-Heif
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILD_DIR }}
+          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
+        env:
+          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
+          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
+
+      - name: Build Pi-Heif
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/${{ matrix.i['docker_file'] }}.Dockerfile
+          build-args: |
+            PY_VERSION=${{ matrix.v }}
+          platforms: linux/arm/v7
+          push: false
+          outputs: type=local,dest=./
+
+      - name: Checking built wheels
+        run: |
+          python3 -m pip install twine
+          python3 -m twine check ./repaired_dist/*
+
+      - name: Uploading wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels_pi_heif
+          path: ./repaired_dist/*.whl
+          if-no-files-found: error
+
+      - name: Fix cache permissions
+        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}

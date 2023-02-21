@@ -32,7 +32,7 @@ def test_exif_from_pillow(im_format, save_format):
         _exif = Image.Exif()
         _exif[0x010E] = exif_desc_value
         _ = BytesIO()
-        Image.new("RGB", (10, 10), 0).save(_, format=im_format, exif=_exif)
+        Image.new("RGB", (16, 16), 0).save(_, format=im_format, exif=_exif)
         return _
 
     exif_desc_value = "this is a desc"
