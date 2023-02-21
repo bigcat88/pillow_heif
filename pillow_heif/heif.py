@@ -32,9 +32,7 @@ class HeifImage:
     """Class represents one image in a :py:class:`~pillow_heif.HeifFile`"""
 
     size: tuple
-    """Width and height of the image.
-
-    .. note:: in rare cases this value can be changed during decoding."""
+    """Width and height of the image."""
 
     mode: str
     """A string which defines the type and depth of a pixel in the image:
