@@ -350,3 +350,17 @@ def test_hdr_read(im_path, original_path):
 @pytest.mark.skipif(not helpers.aom(), reason="requires AVIF support.")
 def test_hdr_read_avif(im_path, original_path):
     helpers.compare_hashes([im_path, original_path], hash_size=16)
+
+
+def test_invalid_ispe():
+    im = Image.open("images/heif_special/L_8__29(255)x100.heif")
+    assert im.size == (255, 100)
+    with pytest.raises(ValueError):
+        im.load()
+    im = Image.open("images/heif_special/L_8__29x100(255).heif")
+    assert im.size == (29, 255)
+    with pytest.raises(ValueError):
+        im.load()
+    im = Image.open("images/heif_special/L_8__128(64)x128(64).heif")
+    assert im.size == (64, 64)
+    im.load()

@@ -875,6 +875,17 @@ int decode_image(CtxImageObject* self) {
         return 0;
     }
 
+    int decoded_width = heif_image_get_primary_width(self->heif_image);
+    int decoded_height = heif_image_get_primary_height(self->heif_image);
+    if ((self->width > decoded_width) || (self->height > decoded_height)) {
+        heif_image_release(self->heif_image);
+        self->heif_image = NULL;
+        PyErr_Format(PyExc_ValueError,
+                    "corrupted image(dimensions in header: (%d, %d), decoded dimensions: (%d, %d)",
+                    self->width, self->height, decoded_width, decoded_height);
+        return 0;
+    }
+
     if (!self->postprocess) {
         self->stride = stride;
         return 1;
