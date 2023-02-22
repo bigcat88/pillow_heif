@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [0.10.0 - 2023-02-22]
+## [0.10.0 - 2023-02-24]
 
 Reworked version with native C extension.
 
@@ -14,6 +14,10 @@ Reworked version with native C extension.
 - `libde265`(HEIF decoder) updated from 1.0.9 to 1.0.11 version. [changelog](https://github.com/strukturag/libde265/releases/tag/v1.0.10)
 - (Heif) `convert_to` method was removed, `bgr_mode` opt. parameter added to `open_heif`
 - Many other changes mostly for standalone usage. [topic](https://github.com/bigcat88/pillow_heif/issues/75)
+
+### Changed
+
+- Fixed Access Violation(all version was affected) when image size after decoding differs. #79
 
 ## [0.9.3 - 2023-01-22]
 
