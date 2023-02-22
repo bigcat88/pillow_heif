@@ -79,10 +79,10 @@ import pillow_heif
 
 if pillow_heif.is_supported("image.heic"):
     heif_file = pillow_heif.open_heif("image.heic", convert_hdr_to_8bit=False)
+    print("image size:", heif_file.size)
     print("image mode:", heif_file.mode)
     print("image data length:", len(heif_file.data))
     print("image data stride:", heif_file.stride)
-    print("image mode:", heif_file.mode)
 ```
 
 ### Get decoded image data as a Numpy array
@@ -112,7 +112,6 @@ pillow_heif.register_avif_opener()
   - [Using HeifFile](https://pillow-heif.readthedocs.io/en/latest/heif-file.html)
   - [Image modes](https://pillow-heif.readthedocs.io/en/latest/image-modes.html)
   - [Options](https://pillow-heif.readthedocs.io/en/latest/options.html)
-  - [Encoding](https://pillow-heif.readthedocs.io/en/latest/encoding.html)
 - [Examples](https://github.com/bigcat88/pillow_heif/tree/master/examples)
 - [Contribute](https://github.com/bigcat88/pillow_heif/blob/master/.github/CONTRIBUTING.md)
   - [Discussions](https://github.com/bigcat88/pillow_heif/discussions)
