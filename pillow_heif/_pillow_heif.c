@@ -673,7 +673,7 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit, int bgr_m
     }
     ctx_image->width = heif_image_handle_get_width(handle);
     ctx_image->height = heif_image_handle_get_height(handle);
-    strcpy(ctx_image->mode, "RGB");
+    strcpy(ctx_image->mode, bgr_mode ? "BGR" : "RGB");
     int stride = ctx_image->width * 3;
     ctx_image->alpha = heif_image_handle_has_alpha_channel(handle);
     if (ctx_image->alpha) {
