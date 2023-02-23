@@ -153,7 +153,7 @@ jobs:
           { "docker_file": "manylinux_armv7l_wheels", "name": "manylinux" },
           { "docker_file": "musllinux_armv7l_wheels", "name": "musllinux" },
         ]
-        v: ["3.8"]
+        v: ["3.10"]
     name: Pi-Heif • ARMv7l • ${{ matrix.i['name'] }}
     runs-on: ubuntu-20.04
     env:
