@@ -12,15 +12,9 @@ if __name__ == "__main__":
     print("Number of images:", len([i for i in ImageSequence.Iterator(heif_pillow)]))
     print("Information about each image:")
     for image in ImageSequence.Iterator(heif_pillow):
-        print("Number of thumbnails:", len(image.info["thumbnails"]))
-        print("\tThumbnails:")
-        for thumbnail in image.info["thumbnails"]:
-            print("\t\tMode:", thumbnail.mode)
-            print("\t\tSize:", thumbnail.size)
-            print("\t\tData size:", len(thumbnail.data))
-            print("")
         print("\tMode:", image.mode)
         print("\tSize:", image.size)
+        print("\tThumbnails:", [t for t in image.info["thumbnails"]])
         print("\tData size:", len(image.tobytes()))
         if image.info.get("icc_profile", None) is not None:
             if len(image.info["icc_profile"]):

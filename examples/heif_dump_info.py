@@ -12,19 +12,15 @@ if __name__ == "__main__":
     print("Mime:", pillow_heif.get_file_mimetype(file))
     heif_file = pillow_heif.open_heif(file, convert_hdr_to_8bit=False)
     print("Number of images:", len(heif_file))
-    print("Number of thumbnails:", len(list(heif_file.thumbnails_all())))
     print("Information about each image:")
     for image in heif_file:
         print("\tMode:", image.mode)
-        print("\tDepth:", image.bit_depth)
+        print("\tDepth:", image.info["bit_depth"])
         print("\tAlpha:", image.has_alpha)
         print("\tSize:", image.size)
         print("\tData size:", len(image.data))
-        __imagine_stride = image.size[0] * 3 if image.mode == "RGB" else image.size[0] * 4
-        if image.bit_depth > 8:
-            __imagine_stride *= 2
-        print("\tImaginable Stride:", __imagine_stride)
-        print("\tReal Stride:", image.stride)
+        print("\tStride:", image.stride)
+        print("\tThumbnails:", [t for t in image.info["thumbnails"]])
         if image.info.get("icc_profile", None) is not None:
             if len(image.info["icc_profile"]):
                 icc_profile = BytesIO(image.info["icc_profile"])
@@ -52,17 +48,4 @@ if __name__ == "__main__":
                 print("\t\tType:", block["type"])
                 print("\t\tcontent_type:", block["content_type"])
                 print("\t\tData length:", len(block["data"]))
-        print("\tThumbnails:")
-        for thumbnail in image.thumbnails:
-            print("\t\tMode:", thumbnail.mode)
-            print("\t\tDepth:", thumbnail.bit_depth)
-            print("\t\tAlpha:", thumbnail.has_alpha)
-            print("\t\tSize:", thumbnail.size)
-            __imagine_stride = thumbnail.size[0] * 3 if thumbnail.mode == "RGB" else thumbnail.size[0] * 4
-            if thumbnail.bit_depth > 8:
-                __imagine_stride *= 2
-            print("\t\tImaginable Stride:", __imagine_stride)
-            print("\t\tReal Stride:", thumbnail.stride)
-            print("\t\tData size:", len(thumbnail.data))
-            print("")
         print("")
