@@ -1,4 +1,5 @@
 import sys
+from enum import IntEnum
 from os import path
 from subprocess import run
 from time import perf_counter
@@ -6,53 +7,52 @@ from time import perf_counter
 import matplotlib.pyplot as plt
 from cpuinfo import get_cpu_info
 
-VERSIONS = ["0.1.6", "0.1.11", "0.2.1", "0.2.5", "0.3.2", "0.4.0", "0.5.1", "0.6.0", "0.7.0", "0.7.2", "0.8.0", "0.9.0"]
+
+class OperationType(IntEnum):
+    PILLOW_LOAD = 0
+    BGR_NUMPY = 1
+
+
+VERSIONS = ["0.5.1", "0.6.1", "0.7.2", "0.8.0", "0.9.3", "0.10.0"]
 N_ITER_SMALL = 100
 N_ITER_LARGE = 50
 
 
-def measure_decode(image, n_iterations, decode_threads=4):
+def measure_decode(image, n_iterations, operation_type: int):
     measure_file = path.join(path.dirname(path.abspath(__file__)), "measure_decode.py")
-    cmd = f"{sys.executable} {measure_file} {n_iterations} {image} {decode_threads}".split()
+    cmd = f"{sys.executable} {measure_file} {n_iterations} {image} {operation_type}".split()
     start_time = perf_counter()
     run(cmd, check=True)
     total_time = perf_counter() - start_time
     return total_time / n_iterations
 
 
-def plot_large_by_threads(clr, n_threads):
-    plt.plot(
-        "0.9.0",
-        measure_decode("image_large.heic", N_ITER_LARGE, decode_threads=n_threads),
-        color=clr,
-        label=f"n_threads={n_threads}",
-        marker="x",
-    )
-
-
 if __name__ == "__main__":
     tests_images_path = path.join(path.dirname(path.dirname(path.abspath(__file__))), "tests/images/heif_other")
-    arrow_image_path = path.join(tests_images_path, "arrow.heic")
     cat_image_path = path.join(tests_images_path, "cat.hif")
-    arrow_image_results = []
-    cat_image_results = []
-    small_image_results = []
-    large_image_results = []
+    pug_image_path = path.join(tests_images_path, "pug.heic")
+    large_image_path = "image_large.heic"
+    cat_image_pillow_results = []
+    cat_image_bgr_numpy_results = []
+    pug_image_pillow_results = []
+    pug_image_bgr_numpy_results = []
+    large_image_pillow_results = []
+    large_image_bgr_numpy_results = []
     for i, v in enumerate(VERSIONS):
         run(f"{sys.executable} -m pip install pillow-heif=={v}".split(), check=True)
-        arrow_image_results.append(measure_decode(arrow_image_path, N_ITER_SMALL))
-        cat_image_results.append(measure_decode(cat_image_path, N_ITER_SMALL))
-        small_image_results.append(measure_decode("image_small.heic", N_ITER_SMALL))
-        large_image_results.append(measure_decode("image_large.heic", N_ITER_LARGE))
+        cat_image_pillow_results.append(measure_decode(cat_image_path, N_ITER_SMALL, OperationType.PILLOW_LOAD))
+        cat_image_bgr_numpy_results.append(measure_decode(cat_image_path, N_ITER_SMALL, OperationType.BGR_NUMPY))
+        pug_image_pillow_results.append(measure_decode(pug_image_path, N_ITER_SMALL, OperationType.PILLOW_LOAD))
+        pug_image_bgr_numpy_results.append(measure_decode(pug_image_path, N_ITER_SMALL, OperationType.BGR_NUMPY))
+        large_image_pillow_results.append(measure_decode(large_image_path, N_ITER_LARGE, OperationType.PILLOW_LOAD))
+        large_image_bgr_numpy_results.append(measure_decode(large_image_path, N_ITER_LARGE, OperationType.BGR_NUMPY))
     fig, ax = plt.subplots()
-    ax.plot(VERSIONS, arrow_image_results, label="arrow image")
-    ax.plot(VERSIONS, cat_image_results, label="cat image")
-    ax.plot(VERSIONS, small_image_results, label="small image")
-    ax.plot(VERSIONS, large_image_results, label="large image")
-    colour = plt.gca().lines[-1].get_color()
-    plot_large_by_threads(colour, 1)
-    plot_large_by_threads(colour, 2)
-    plot_large_by_threads(colour, 8)
+    ax.plot(VERSIONS, cat_image_pillow_results, label="cat image(pillow)")
+    ax.plot(VERSIONS, cat_image_bgr_numpy_results, label="cat image(bgr;16, numpy)")
+    ax.plot(VERSIONS, pug_image_pillow_results, label="pug image(pillow)")
+    ax.plot(VERSIONS, pug_image_bgr_numpy_results, label="pug image(bgr, numpy)")
+    ax.plot(VERSIONS, large_image_pillow_results, label="large image(pillow)")
+    ax.plot(VERSIONS, large_image_bgr_numpy_results, label="large image(bgr, numpy)")
     plt.ylabel("time to decode(s)")
     if sys.platform.lower() == "darwin":
         _os = "macOS"
