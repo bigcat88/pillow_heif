@@ -218,15 +218,17 @@ def build_libs() -> str:
     try:
         if not tool_check_version("cmake", "3.13.4"):
             raise ValueError("Can not find `cmake` with version >=3.13.4")
-        if not check_install_nasm("2.15.05"):
-            raise ValueError("Can not find/install `nasm` with version >=2.15.05")
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:
+                if not check_install_nasm("2.15.05"):
+                    raise ValueError("Can not find/install `nasm` with version >=2.15.05")
                 build_lib_linux(LIBX265_URL, "x265", _is_musllinux)
         else:
             print("x265 already installed.")
         if not is_library_installed("aom"):
             if not PH_LIGHT_VERSION:
+                if not check_install_nasm("2.15.05"):
+                    raise ValueError("Can not find/install `nasm` with version >=2.15.05")
                 build_lib_linux(LIBAOM_URL, "aom", _is_musllinux)
         else:
             print("aom already installed.")
