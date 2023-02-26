@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [x.x.x - 2023-xx-xx]
+
+### Added
+
+- Windows PyPy wheels.
+
 ## [0.10.0 - 2023-02-24]
 
 Reworked version with native C extension.
