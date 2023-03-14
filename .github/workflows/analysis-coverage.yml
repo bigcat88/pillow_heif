@@ -8,6 +8,7 @@ on:
       - 'tests/**'
       - 'setup.py'
       - 'pyproject.toml'
+      - '.pre-commit-config.yaml'
   push:
     branches: [master]
     paths:
@@ -16,6 +17,7 @@ on:
       - 'tests/**'
       - 'setup.py'
       - 'pyproject.toml'
+      - '.pre-commit-config.yaml'
   workflow_dispatch:
 
 jobs:
@@ -26,12 +28,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install from source
-        run: python3 -m pip install .
+        run: python3 -m pip install ".[dev]" wheel
 
       - name: Run Analysis
-        run: |
-          python3 -m pip install wheel pylint
-          python3 -m pylint "setup.py" "pillow_heif/" -sn
+        run: python3 -m pylint "setup.py" "pillow_heif/"
 
   coverage-linux:
     runs-on: ubuntu-22.04
