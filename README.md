@@ -66,9 +66,9 @@ heif_file.save("RGBA_10bit.heic", quality=-1)
 ```python3
 import numpy as np
 import cv2
-import pi_heif
+import pillow_heif
 
-heif_file = pi_heif.open_heif("image.heic", convert_hdr_to_8bit=False, bgr_mode=True)
+heif_file = pillow_heif.open_heif("image.heic", convert_hdr_to_8bit=False, bgr_mode=True)
 np_array = np.asarray(heif_file)
 cv2.imwrite("image.png", np_array)
 ```
