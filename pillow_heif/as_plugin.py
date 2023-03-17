@@ -8,6 +8,7 @@ from warnings import warn
 
 from _pillow_heif import lib_info
 from PIL import Image, ImageFile, ImageSequence
+from PIL import __version__ as pil_version
 
 from . import options
 from .constants import HeifCompressionFormat
@@ -50,7 +51,11 @@ class _LibHeifImageFile(ImageFile.ImageFile):
             self.load_prepare()
             frame_heif = self.heif_file[self.tell()]
             try:
-                self.frombytes(bytes(frame_heif.data), "raw", (frame_heif.mode, frame_heif.stride))
+                if pil_version[:2] not in ("8.",) and pil_version[:4] not in ("9.0.", "9.1.", "9.2.", "9.3.", "9.4."):
+                    data = frame_heif.data
+                else:
+                    data = bytes(frame_heif.data)
+                self.frombytes(data, "raw", (frame_heif.mode, frame_heif.stride))
             except EOFError:
                 if not ImageFile.LOAD_TRUNCATED_IMAGES:
                     raise
