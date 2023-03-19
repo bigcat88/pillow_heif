@@ -48,17 +48,20 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
     def load(self):
         if self.heif_file:
-            self.load_prepare()
             frame_heif = self.heif_file[self.tell()]
             try:
                 if pil_version[:2] not in ("8.",) and pil_version[:4] not in ("9.0.", "9.1.", "9.2.", "9.3.", "9.4."):
                     data = frame_heif.data
                 else:
                     data = bytes(frame_heif.data)
+                # Size of Image can change during decoding
+                self._size = frame_heif.size  # noqa
+                self.load_prepare()
                 self.frombytes(data, "raw", (frame_heif.mode, frame_heif.stride))
             except EOFError:
                 if not ImageFile.LOAD_TRUNCATED_IMAGES:
                     raise
+                self.load_prepare()
             # In any case, we close `fp`, since the input data bytes are held by the `heif_file` class.
             if self.fp and getattr(self, "_exclusive_fp", False) and hasattr(self.fp, "close"):
                 self.fp.close()

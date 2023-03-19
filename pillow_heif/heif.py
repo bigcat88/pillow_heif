@@ -32,7 +32,10 @@ class HeifImage:
     """Class represents one image in a :py:class:`~pillow_heif.HeifFile`"""
 
     size: tuple
-    """Width and height of the image."""
+    """Width and height of the image.
+
+    .. note:: In rare cases, it may change during decoding. See:
+        `ispe does not match the decoded image dimensions <https://github.com/strukturag/libheif/issues/784>`_"""
 
     mode: str
     """A string which defines the type and depth of a pixel in the image:
@@ -77,11 +80,12 @@ class HeifImage:
     def __array_interface__(self):
         """Numpy array interface support"""
 
+        _data = self.data
         shape: Tuple[Any, ...] = (self.size[1], self.size[0])
         if MODE_INFO[self.mode][0] > 1:
             shape += (MODE_INFO[self.mode][0],)
         typestr = "|u1" if self.mode.find(";16") == -1 else "<u2"
-        return {"shape": shape, "typestr": typestr, "version": 3, "data": self.data}
+        return {"shape": shape, "typestr": typestr, "version": 3, "data": _data}
 
     @property
     def data(self):
@@ -89,8 +93,7 @@ class HeifImage:
 
         :returns: ``bytes`` of the decoded image."""
 
-        if not self._data:
-            self._data = self._c_image.data
+        self._load_if_not()
         return self._data
 
     @property
@@ -101,6 +104,7 @@ class HeifImage:
 
         :returns: An Int value indicating the image stride after decoding."""
 
+        self._load_if_not()
         return self._c_image.stride
 
     @property
@@ -129,10 +133,11 @@ class HeifImage:
 
         :returns: :external:py:class:`~PIL.Image.Image` class created from an image."""
 
+        _data = bytes(self.data)  # later, when min Pillow version will be 9.5.0, to remove `bytes` conversion
         image = Image.frombytes(
             self.mode,  # noqa
             self.size,
-            bytes(self.data),
+            _data,
             "raw",
             self.mode,
             self.stride,
@@ -140,6 +145,11 @@ class HeifImage:
         image.info = self.info.copy()
         image.info["original_orientation"] = set_orientation(image.info)
         return image
+
+    def _load_if_not(self) -> None:
+        if not self._data:
+            self._data = self._c_image.data
+            self.size, _ = self._c_image.size_mode
 
 
 class HeifFile:
@@ -326,10 +336,11 @@ class HeifFile:
 
         :returns: :py:class:`~pillow_heif.HeifImage` added object."""
 
+        _data = image.data
         added_image = self.add_frombytes(
             image.mode,
             image.size,
-            image.data,
+            _data,
             stride=image.stride,
         )
         added_image.info = deepcopy(image.info)
