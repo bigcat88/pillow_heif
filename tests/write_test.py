@@ -437,3 +437,35 @@ def test_encode_function_not_enough_data(mode):
     buf = BytesIO()
     with pytest.raises(ValueError):
         pillow_heif.encode(mode, (128, 128), b"123456", buf)
+
+
+@pytest.mark.parametrize(
+    "image_path",
+    (
+        "images/heif_special/L_8__29(255)x100.heif",
+        "images/heif_special/L_8__29x100(255).heif",
+        "images/heif_special/L_8__29x100(100x29).heif",
+    ),
+)
+def test_invalid_ispe_stride(image_path):
+    im = pillow_heif.read_heif(image_path)
+    buf = BytesIO()
+    pillow_heif.encode(im.mode, im.size, im.data, buf)
+    im = pillow_heif.open_heif(buf)
+    assert im.size == (29, 100)
+
+
+@pytest.mark.parametrize(
+    "image_path",
+    (
+        "images/heif_special/L_8__29(255)x100.heif",
+        "images/heif_special/L_8__29x100(255).heif",
+        "images/heif_special/L_8__29x100(100x29).heif",
+    ),
+)
+def test_invalid_ispe_stride_pillow(image_path):
+    im = Image.open(image_path)
+    buf = BytesIO()
+    im.save(buf, format="HEIF")
+    im = Image.open(buf)
+    assert im.size == (29, 100)

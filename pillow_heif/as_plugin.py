@@ -28,7 +28,7 @@ from .misc import (
 class _LibHeifImageFile(ImageFile.ImageFile):
     """Base class with all functionality for ``HeifImageFile`` and ``AvifImageFile`` classes."""
 
-    heif_file: Union[HeifFile, None]
+    _heif_file: Union[HeifFile, None]
     _close_exclusive_fp_after_loading = True
 
     def __init__(self, *args, **kwargs):
@@ -37,18 +37,18 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
     def _open(self):
         try:
-            heif_file = HeifFile(self.fp, convert_hdr_to_8bit=True, postprocess=False)
+            _heif_file = HeifFile(self.fp, convert_hdr_to_8bit=True, postprocess=False)
         except (OSError, ValueError, SyntaxError, RuntimeError, EOFError) as exception:
             raise SyntaxError(str(exception)) from None
-        self.custom_mimetype = heif_file.mimetype
-        self.heif_file = heif_file
-        self.__frame = heif_file.primary_index
+        self.custom_mimetype = _heif_file.mimetype
+        self._heif_file = _heif_file
+        self.__frame = _heif_file.primary_index
         self._init_from_heif_file(self.__frame)
         self.tile = []
 
     def load(self):
-        if self.heif_file:
-            frame_heif = self.heif_file[self.tell()]
+        if self._heif_file:
+            frame_heif = self._heif_file[self.tell()]
             try:
                 if pil_version[:2] not in ("8.",) and pil_version[:4] not in ("9.0.", "9.1.", "9.2.", "9.3.", "9.4."):
                     data = frame_heif.data
@@ -62,12 +62,12 @@ class _LibHeifImageFile(ImageFile.ImageFile):
                 if not ImageFile.LOAD_TRUNCATED_IMAGES:
                     raise
                 self.load_prepare()
-            # In any case, we close `fp`, since the input data bytes are held by the `heif_file` class.
+            # In any case, we close `fp`, since the input data bytes are held by the `HeifFile` class.
             if self.fp and getattr(self, "_exclusive_fp", False) and hasattr(self.fp, "close"):
                 self.fp.close()
             self.fp = None
             if not self.is_animated:
-                self.heif_file = None
+                self._heif_file = None
         return super().load()
 
     def getxmp(self) -> dict:
@@ -103,7 +103,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
         :returns: Frame number, starting with 0."""
 
-        return len(self.heif_file) if self.heif_file else 1
+        return len(self._heif_file) if self._heif_file else 1
 
     @property
     def is_animated(self) -> bool:
@@ -117,10 +117,10 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         return self.tell() != frame
 
     def _init_from_heif_file(self, img_index: int) -> None:
-        if self.heif_file:
-            self._size = self.heif_file[img_index].size
-            self.mode = self.heif_file[img_index].mode
-            self.info = self.heif_file[img_index].info
+        if self._heif_file:
+            self._size = self._heif_file[img_index].size
+            self.mode = self._heif_file[img_index].mode
+            self.info = self._heif_file[img_index].info
             self.info["original_orientation"] = set_orientation(self.info)
 
 

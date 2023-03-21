@@ -129,14 +129,14 @@ def test_pillow_inputs(img_path):
 
 def test_pillow_after_load():
     img = Image.open(Path("images/heif/RGBA_10__29x100.heif"))
-    assert getattr(img, "heif_file") is not None
+    assert getattr(img, "_heif_file") is not None
     for i in range(3):
         img.load()
         collect()
         assert not getattr(img, "is_animated")
         assert getattr(img, "n_frames") == 1
         assert not img.info["thumbnails"]
-        assert getattr(img, "heif_file") is None
+        assert getattr(img, "_heif_file") is None
         assert len(ImageSequence.Iterator(img)[0].tobytes())
     img = Image.open(Path("images/heif/zPug_3.heic"))
     for i in range(3):
@@ -144,7 +144,7 @@ def test_pillow_after_load():
         assert getattr(img, "is_animated")
         assert getattr(img, "n_frames") == 3
         assert len(img.info["thumbnails"]) == 0 if i else 1
-        assert getattr(img, "heif_file") is not None
+        assert getattr(img, "_heif_file") is not None
         assert len(ImageSequence.Iterator(img)[0].info["thumbnails"]) == 2
         assert len(ImageSequence.Iterator(img)[1].info["thumbnails"]) == 1
         assert len(ImageSequence.Iterator(img)[2].info["thumbnails"]) == 0
@@ -221,7 +221,7 @@ def test_heif_read_images(image_path):
 def test_pillow_read_images(image_path):
     pillow_image = Image.open(image_path)
     assert getattr(pillow_image, "fp") is not None
-    assert getattr(pillow_image, "heif_file") is not None
+    assert getattr(pillow_image, "_heif_file") is not None
     pillow_image.verify()
     images_count = len(list(ImageSequence.Iterator(pillow_image)))
     for i, image in enumerate(ImageSequence.Iterator(pillow_image)):
@@ -234,9 +234,9 @@ def test_pillow_read_images(image_path):
         assert isinstance(image.getxmp(), dict)
     assert getattr(pillow_image, "fp") is None
     if images_count > 1:
-        assert getattr(pillow_image, "heif_file") is not None
+        assert getattr(pillow_image, "_heif_file") is not None
     else:
-        assert getattr(pillow_image, "heif_file") is None
+        assert getattr(pillow_image, "_heif_file") is None
         # Testing here one more time, just for sure, that missing `heif_file` does not affect anything.
         collect()
         assert pillow_image.tobytes()

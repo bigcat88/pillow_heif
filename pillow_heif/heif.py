@@ -80,12 +80,12 @@ class HeifImage:
     def __array_interface__(self):
         """Numpy array interface support"""
 
-        _data = self.data
+        self.load()
         shape: Tuple[Any, ...] = (self.size[1], self.size[0])
         if MODE_INFO[self.mode][0] > 1:
             shape += (MODE_INFO[self.mode][0],)
         typestr = "|u1" if self.mode.find(";16") == -1 else "<u2"
-        return {"shape": shape, "typestr": typestr, "version": 3, "data": _data}
+        return {"shape": shape, "typestr": typestr, "version": 3, "data": self.data}
 
     @property
     def data(self):
@@ -93,7 +93,7 @@ class HeifImage:
 
         :returns: ``bytes`` of the decoded image."""
 
-        self._load_if_not()
+        self.load()
         return self._data
 
     @property
@@ -104,7 +104,7 @@ class HeifImage:
 
         :returns: An Int value indicating the image stride after decoding."""
 
-        self._load_if_not()
+        self.load()
         return self._c_image.stride
 
     @property
@@ -133,11 +133,11 @@ class HeifImage:
 
         :returns: :external:py:class:`~PIL.Image.Image` class created from an image."""
 
-        _data = bytes(self.data)  # later, when min Pillow version will be 9.5.0, to remove `bytes` conversion
+        self.load()
         image = Image.frombytes(
             self.mode,  # noqa
             self.size,
-            _data,
+            bytes(self.data),
             "raw",
             self.mode,
             self.stride,
@@ -146,7 +146,12 @@ class HeifImage:
         image.info["original_orientation"] = set_orientation(image.info)
         return image
 
-    def _load_if_not(self) -> None:
+    def load(self) -> None:
+        """Method to decode image.
+
+        .. note:: In normal cases you should not call this method directly,
+            when reading `data` or `stride` property of image will be loaded automatically."""
+
         if not self._data:
             self._data = self._c_image.data
             self.size, _ = self._c_image.size_mode
@@ -336,11 +341,11 @@ class HeifFile:
 
         :returns: :py:class:`~pillow_heif.HeifImage` added object."""
 
-        _data = image.data
+        image.load()
         added_image = self.add_frombytes(
             image.mode,
             image.size,
-            _data,
+            image.data,
             stride=image.stride,
         )
         added_image.info = deepcopy(image.info)
@@ -363,6 +368,7 @@ class HeifFile:
         _img = _pil_to_supported_mode(image)
         if original_orientation is not None and original_orientation != 1:
             _img = _rotate_pil(_img, original_orientation)
+        _img.load()
         added_image = self.add_frombytes(
             _img.mode,
             _img.size,
@@ -438,7 +444,7 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
 
     ret = open_heif(fp, convert_hdr_to_8bit, bgr_mode, **kwargs)
     for img in ret:
-        _ = img.data  # this will decode image
+        img.load()
     return ret
 
 
@@ -466,6 +472,7 @@ def _encode_images(images: List[HeifImage], fp, **kwargs) -> None:
     primary_index = _get_primary_index(images_to_save, kwargs.get("primary_index", None))
     ctx_write = CtxEncode(compression_format, **kwargs)
     for i, img in enumerate(images_to_save):
+        img.load()
         _info = img.info.copy()
         _info["primary"] = False
         if i == primary_index:
