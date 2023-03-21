@@ -32,3 +32,20 @@ def test_numpy_array(im_size: Tuple, mode):
     heif_array = np.asarray(heif_file[0])
     assert np.array_equal(pil_array, heif_array)
     assert np.array_equal(pil_array, np.asarray(heif_file))
+
+
+@pytest.mark.parametrize(
+    "im_path",
+    (
+        "images/heif_special/L_8__29(255)x100.heif",
+        "images/heif_special/L_8__29x100(255).heif",
+        "images/heif_special/L_8__128(64)x128(64).heif",
+        "images/heif_special/L_8__29x100(100x29).heif",
+    ),
+)
+@pytest.mark.parametrize("bgr_mode", (False, True))
+def test_numpy_array_invalid_ispe(im_path, bgr_mode):
+    heif_file = pillow_heif.open_heif(im_path, bgr_mode)
+    old_size = heif_file.size
+    np.asarray(heif_file)
+    assert old_size != heif_file.size

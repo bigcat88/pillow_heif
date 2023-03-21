@@ -21,7 +21,7 @@ pillow_heif.register_heif_opener()
 def perform_open_save(iterations, image_path):
     for _ in range(iterations):
         image = Image.open(image_path)
-        assert getattr(image, "heif_file") is not None
+        assert getattr(image, "_heif_file") is not None
         if helpers.hevc_enc():
             out_buf = BytesIO()
             image.save(out_buf, quality=20, format="HEIF", save_all=True)

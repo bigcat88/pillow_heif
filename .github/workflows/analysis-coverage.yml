@@ -176,11 +176,27 @@ jobs:
         with:
           python-version: '3.9'
 
+#     ATTENTION! Check this when new release of libheif or libaom will be published.
+#     Currently, there is some bug in `libheif 1.15.1` or in `libaom 3.6.0`, so we test with libheif `1.14.2`
+#     https://github.com/strukturag/libheif/issues/788
+#
+#      - uses: msys2/setup-msys2@v2
+#        with:
+#          location: C:/temp
+#          install: >-
+#            mingw-w64-x86_64-libheif
       - uses: msys2/setup-msys2@v2
         with:
           location: C:/temp
           install: >-
-            mingw-w64-x86_64-libheif
+            mingw-w64-x86_64-binutils
+
+      - name: Build libheif and dependencies
+        shell: msys2 {0}
+        run: |
+          cd libheif/windows/mingw-w64-libheif
+          makepkg-mingw --syncdeps --noconfirm -f
+          pacman -U mingw-w64-x86_64-libheif-*-any.pkg.tar.zst --noconfirm
 
 #     In release or building from source we do not build `dav1d`,`rav1e` and `libSvtAv1Enc` libraries.
 #     Here we just test working with original package from MSYS.

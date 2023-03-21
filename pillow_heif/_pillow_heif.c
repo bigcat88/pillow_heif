@@ -655,6 +655,15 @@ static struct PyMethodDef _CtxWrite_methods[] = {
 
 /* =========== CtxImage ======== */
 
+int get_stride(CtxImageObject *ctx_image) {
+    int stride = ctx_image->width * 3;
+    if (ctx_image->alpha)
+        stride = ctx_image->width * 4;
+    if ((ctx_image->bits > 8) && (!ctx_image->hdr_to_8bit))
+        stride = stride * 2;
+    return stride;
+}
+
 static void _CtxImage_destructor(CtxImageObject* self) {
     if (self->heif_image)
         heif_image_release(self->heif_image);
@@ -674,27 +683,21 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit, int bgr_m
     ctx_image->width = heif_image_handle_get_width(handle);
     ctx_image->height = heif_image_handle_get_height(handle);
     strcpy(ctx_image->mode, bgr_mode ? "BGR" : "RGB");
-    int stride = ctx_image->width * 3;
     ctx_image->alpha = heif_image_handle_has_alpha_channel(handle);
-    if (ctx_image->alpha) {
+    if (ctx_image->alpha)
         strcat(ctx_image->mode, heif_image_handle_is_premultiplied_alpha(handle) ? "a" : "A");
-        stride = ctx_image->width * 4;
-    }
-    int bits_per_pxl = heif_image_handle_get_luma_bits_per_pixel(handle);
-    if ((bits_per_pxl > 8) && (!hdr_to_8bit)) {
+    ctx_image->bits = heif_image_handle_get_luma_bits_per_pixel(handle);
+    if ((ctx_image->bits > 8) && (!hdr_to_8bit))
         strcat(ctx_image->mode, ";16");
-        stride = stride * 2;
-    }
-    ctx_image->bits = bits_per_pxl;
     ctx_image->hdr_to_8bit = hdr_to_8bit;
     ctx_image->bgr_mode = bgr_mode;
     ctx_image->handle = handle;
     ctx_image->heif_image = NULL;
     ctx_image->data = NULL;
     ctx_image->postprocess = postprocess;
-    ctx_image->stride = stride;
     ctx_image->primary = primary;
     ctx_image->file_bytes = file_bytes;
+    ctx_image->stride = get_stride(ctx_image);
     Py_INCREF(file_bytes);
     return (PyObject*)ctx_image;
 }
@@ -875,21 +878,14 @@ int decode_image(CtxImageObject* self) {
         return 0;
     }
 
-    int decoded_width = heif_image_get_primary_width(self->heif_image);
-    int decoded_height = heif_image_get_primary_height(self->heif_image);
-    if ((self->width > decoded_width) || (self->height > decoded_height)) {
-        heif_image_release(self->heif_image);
-        self->heif_image = NULL;
-        PyErr_Format(PyExc_ValueError,
-                    "corrupted image(dimensions in header: (%d, %d), decoded dimensions: (%d, %d)",
-                    self->width, self->height, decoded_width, decoded_height);
-        return 0;
-    }
+    self->width = heif_image_get_primary_width(self->heif_image);
+    self->height = heif_image_get_primary_height(self->heif_image);
 
     if (!self->postprocess) {
         self->stride = stride;
         return 1;
     }
+    self->stride = get_stride(self);
 
     if ((self->bgr_mode) || (self->stride != stride) || ((self->bits > 8) && (!self->hdr_to_8bit))) {
         int invalid_mode = 0;
@@ -1036,7 +1032,7 @@ int decode_image(CtxImageObject* self) {
 }
 
 static PyObject* _CtxImage_stride(CtxImageObject* self, void* closure) {
-    if ((!self->postprocess) && (!self->data))
+    if (!self->data)
         if (!decode_image(self))
             return NULL;
     return PyLong_FromSsize_t(self->stride);
