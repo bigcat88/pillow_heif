@@ -233,6 +233,8 @@ def __options_update(**kwargs):
             options.SAVE_HDR_TO_12_BIT = v
         elif k == "decode_threads":
             options.DECODE_THREADS = v
+        elif k == "allow_incorrect_headers":
+            options.ALLOW_INCORRECT_HEADERS = v
         else:
             warn(f"Unknown option: {k}")
 
