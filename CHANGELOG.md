@@ -1,11 +1,12 @@
 All notable changes to this project will be documented in this file.
 
-## [0.10.1 - 2023-0x-xx]
+## [0.10.1 - 2023-04-03]
 
 ### Added
 
 - Windows PyPy wheels.
 - Faster image loading implementation with Pillow `9.5.0`
+- `options.ALLOW_INCORRECT_HEADERS` option to allow loading files with invalid `ispe` header. Thanks to @Soooda #86
 
 ## [0.10.0 - 2023-02-24]
 

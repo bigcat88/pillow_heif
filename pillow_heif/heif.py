@@ -32,10 +32,7 @@ class HeifImage:
     """Class represents one image in a :py:class:`~pillow_heif.HeifFile`"""
 
     size: tuple
-    """Width and height of the image.
-
-    .. note:: In rare cases, it may change during decoding. See:
-        `ispe does not match the decoded image dimensions <https://github.com/strukturag/libheif/issues/784>`_"""
+    """Width and height of the image."""
 
     mode: str
     """A string which defines the type and depth of a pixel in the image:
@@ -183,7 +180,10 @@ class HeifFile:
         else:
             fp_bytes = _get_bytes(fp)
             mimetype = get_file_mimetype(fp_bytes)
-            images = load_file(fp_bytes, options.DECODE_THREADS, convert_hdr_to_8bit, bgr_mode, postprocess)
+            reload_size: bool = kwargs.get("reload_size", options.ALLOW_INCORRECT_HEADERS)
+            images = load_file(
+                fp_bytes, options.DECODE_THREADS, convert_hdr_to_8bit, bgr_mode, postprocess, reload_size
+            )
         self.mimetype = mimetype
         self._images: List[HeifImage] = [HeifImage(i) for i in images if i is not None]
         self.primary_index = 0
@@ -442,7 +442,7 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :exception RuntimeError: some other error.
     :exception OSError: out of memory."""
 
-    ret = open_heif(fp, convert_hdr_to_8bit, bgr_mode, **kwargs)
+    ret = open_heif(fp, convert_hdr_to_8bit, bgr_mode, reload_size=True, **kwargs)
     for img in ret:
         img.load()
     return ret

@@ -32,3 +32,13 @@ SAVE_HDR_TO_12_BIT = False
 """Should 16 bit images be saved to 12 bit instead of 10 bit``
 
 When use pillow_heif as a plugin you can set it with: `register_*_opener(save_to_12bit=True)`"""
+
+
+ALLOW_INCORRECT_HEADERS = False
+"""Can or not the ``size`` of image in header differ from decoded one.
+
+.. note:: If enabled, ``Image.size`` can change after loading for images where it is invalid in header.
+
+To learn more read: `here <https://github.com/strukturag/libheif/issues/784>`_
+
+When use pillow_heif as a plugin you can set it with: `register_*_opener(allow_incorrect_headers=True)`"""

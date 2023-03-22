@@ -463,6 +463,7 @@ def test_invalid_ispe_stride(image_path):
         "images/heif_special/L_8__29x100(100x29).heif",
     ),
 )
+@mock.patch("pillow_heif.options.ALLOW_INCORRECT_HEADERS", True)
 def test_invalid_ispe_stride_pillow(image_path):
     im = Image.open(image_path)
     buf = BytesIO()

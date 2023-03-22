@@ -352,27 +352,27 @@ def test_hdr_read_avif(im_path, original_path):
     helpers.compare_hashes([im_path, original_path], hash_size=16)
 
 
-def test_invalid_ispe():
-    im = Image.open("images/heif_special/L_8__29(255)x100.heif")
-    assert im.size == (255, 100)
+@pytest.mark.parametrize(
+    "image_path",
+    (
+        "images/heif_special/L_8__29(255)x100.heif",
+        "images/heif_special/L_8__29x100(255).heif",
+        "images/heif_special/L_8__29x100(100x29).heif",
+    ),
+)
+def test_invalid_ispe_fail(image_path):
+    im = Image.open(image_path)
+    with pytest.raises(ValueError):
+        im.load()
+
+
+@pytest.mark.parametrize(
+    "image_path",
+    ("images/heif_special/L_8__128(64)x128(64).heif",),
+)
+def test_invalid_ispe_ok(image_path):
+    im = Image.open(image_path)
     im.load()
-    assert im.size == (29, 100)
-    assert len(im.tobytes("raw")) == 29 * 100 * 3
-    im = Image.open("images/heif_special/L_8__29x100(255).heif")
-    assert im.size == (29, 255)
-    im.load()
-    assert im.size == (29, 100)
-    assert len(im.tobytes("raw")) == 29 * 100 * 3
-    im = Image.open("images/heif_special/L_8__128(64)x128(64).heif")
-    assert im.size == (64, 64)
-    im.load()
-    assert im.size == (128, 128)
-    assert len(im.tobytes("raw")) == 128 * 128 * 3
-    im = Image.open("images/heif_special/L_8__29x100(100x29).heif")
-    assert im.size == (100, 29)
-    im.load()
-    assert im.size == (29, 100)
-    assert len(im.tobytes("raw")) == 29 * 100 * 3
 
 
 @pytest.mark.parametrize(
@@ -384,6 +384,22 @@ def test_invalid_ispe():
         "images/heif_special/L_8__29x100(100x29).heif",
     ),
 )
+@mock.patch("pillow_heif.options.ALLOW_INCORRECT_HEADERS", True)
+def test_invalid_ispe_allow(image_path):
+    im = Image.open(image_path)
+    im.load()
+
+
+@pytest.mark.parametrize(
+    "image_path",
+    (
+        "images/heif_special/L_8__29(255)x100.heif",
+        "images/heif_special/L_8__29x100(255).heif",
+        "images/heif_special/L_8__128(64)x128(64).heif",
+        "images/heif_special/L_8__29x100(100x29).heif",
+    ),
+)
+@mock.patch("pillow_heif.options.ALLOW_INCORRECT_HEADERS", True)
 def test_invalid_ispe_stride(image_path):
     im = pillow_heif.open_heif(image_path)
     stride = im.stride
