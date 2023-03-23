@@ -890,7 +890,8 @@ int decode_image(CtxImageObject* self) {
         heif_image_release(self->heif_image);
         self->heif_image = NULL;
         PyErr_Format(PyExc_ValueError,
-                    "corrupted image(dimensions in header: (%d, %d), decoded dimensions: (%d, %d)",
+                    "corrupted image(dimensions in header: (%d, %d), decoded dimensions: (%d, %d)). "
+                    "Set ALLOW_INCORRECT_HEADERS to True if you need to load it.",
                     self->width, self->height, decoded_width, decoded_height);
         return 0;
     }
