@@ -32,7 +32,7 @@ extern "C" {
 #include <stdint.h>
 
 //#include <libheif/heif_version.h>
-#define LIBHEIF_NUMERIC_VERSION ((1<<24) | (15<<16) | (1<<8) | 0)
+#define LIBHEIF_NUMERIC_VERSION ((1<<24) | (15<<16) | (2<<8) | 0)
 
 // API versions table
 //
@@ -283,6 +283,10 @@ enum heif_suberror_code
   // --- Encoding_error ---
 
   heif_suberror_Cannot_write_output_data = 5000,
+
+  heif_suberror_Encoder_initialization = 5001,
+  heif_suberror_Encoder_encoding = 5002,
+  heif_suberror_Encoder_cleanup = 5003,
 
 
   // --- Plugin loading error ---

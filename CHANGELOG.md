@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 - Faster image loading implementation with Pillow `9.5.0`
 - `options.ALLOW_INCORRECT_HEADERS` option to allow loading files with invalid `ispe` header. Thanks to @Soooda #86
 
+### Changed
+
+- `libheif` updated from `1.14.2` to `1.15.2`
+
 ## [0.10.0 - 2023-02-24]
 
 Reworked version with native C extension.
