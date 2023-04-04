@@ -17,7 +17,7 @@ if __name__ == "__main__":
             im.load()
     elif int(sys.argv[3]) == BGR_NUMPY:
         for i in range(int(sys.argv[1])):
-            if pillow_heif.__version__ in ("0.10.0",):
+            if pillow_heif.__version__.startswith("0.1"):
                 im = pillow_heif.open_heif(sys.argv[2], bgr_mode=True, convert_hdr_to_8bit=False)
             else:
                 im = pillow_heif.open_heif(sys.argv[2], convert_hdr_to_8bit=False)

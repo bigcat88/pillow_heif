@@ -13,7 +13,7 @@ class OperationType(IntEnum):
     BGR_NUMPY = 1
 
 
-VERSIONS = ["0.5.1", "0.6.1", "0.7.2", "0.8.0", "0.9.3", "0.10.0"]
+VERSIONS = ["0.5.1", "0.6.1", "0.7.2", "0.8.0", "0.9.3", "0.10.1"]
 N_ITER_SMALL = 100
 N_ITER_LARGE = 50
 
@@ -62,4 +62,4 @@ if __name__ == "__main__":
         _os = "Linux"
     plt.xlabel(f"{_os} - {get_cpu_info()['brand_raw']}")
     ax.legend()
-    plt.savefig(f"results_decode_{_os}.png")
+    plt.savefig(f"results_decode_{_os}.png", dpi=200)
