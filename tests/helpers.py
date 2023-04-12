@@ -56,7 +56,8 @@ def compare_hashes(pillow_images: list, hash_size=16, max_difference=0):
         if isinstance(pillow_image, (str, Path, BytesIO)):
             pillow_image = Image.open(pillow_image)
         pillow_image = ImageOps.exif_transpose(pillow_image)
-        pillow_image = pillow_image.convert("L").resize((hash_size + 1, hash_size), Image.ANTIALIAS)
+        # Image.Resampling.LANCZOS = 1
+        pillow_image = pillow_image.convert("L").resize((hash_size + 1, hash_size), 1)
         pixels = np.asarray(pillow_image)  # noqa
         diff = pixels[:, 1:] > pixels[:, :-1]
         image_hash = diff.flatten()  # noqa
