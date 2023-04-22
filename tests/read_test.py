@@ -1,5 +1,6 @@
 import builtins
 import os
+from copy import deepcopy
 from gc import collect
 from io import BytesIO
 from pathlib import Path
@@ -28,6 +29,12 @@ def test_read_heif():
     heif_file = pillow_heif.read_heif(Path("images/heif/zPug_3.heic"))
     for im in heif_file:
         assert im._data
+
+
+def test_native_deepcopy_pillow():
+    im = Image.open(Path("images/heif/zPug_3.heic"))
+    im_deepcopy = deepcopy(im)
+    im_deepcopy.load()
 
 
 def test_bgr_mode_with_disabled_postprocess():

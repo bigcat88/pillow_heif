@@ -28,7 +28,7 @@ from .misc import (
 class _LibHeifImageFile(ImageFile.ImageFile):
     """Base class with all functionality for ``HeifImageFile`` and ``AvifImageFile`` classes."""
 
-    _heif_file: Union[HeifFile, None]
+    _heif_file: Union[HeifFile, None] = None
     _close_exclusive_fp_after_loading = True
 
     def __init__(self, *args, **kwargs):
