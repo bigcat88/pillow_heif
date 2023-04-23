@@ -1,10 +1,12 @@
 All notable changes to this project will be documented in this file.
 
-## [0.11.0 - 2023-0x-xx]
+## [0.1x.x - 2023-0x-xx]
 
 ### Fixed
 
-- deepcopy support for HeifImageFile
+- (Pillow) `deepcopy` support for HeifImageFile and AvifImageFile
+- (macOS, arm64) `libde265`(HEIF decoder) now has the same version as in other builds(`1.0.8`->`1.0.11`)
+- (macOS, arm64) `libaom`(AVIF) now has the same version as in other builds(`3.4.0`->`3.6.0`)
 
 ## [0.10.1 - 2023-04-03]
 
