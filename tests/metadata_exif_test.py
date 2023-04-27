@@ -190,3 +190,9 @@ def test_exif_as_class():
     assert exif[258] == 8
     assert exif[40963] == 455
     assert exif[305] == "exif test"
+
+
+def test_xiaomi_exif():
+    im = Image.open("images/heif_special/xiaomi.heic")
+    im.getexif()
+    im.load()
