@@ -1,10 +1,14 @@
 All notable changes to this project will be documented in this file.
 
-## [0.1x.x - 2023-0x-xx]
+## [0.11.0 - 2023-04-30]
+
+### Changed
+
+- EXIF raw data in info["exif"] is now skipping first 6 bytes(`Exif\x00\x00`). Like in Pillow for WEBP.
 
 ### Fixed
 
-- Exception during EXIF parsing for some Xiaomi images. Thanks to @mxsleo #92
+- EXIF parsing(Xiaomi images and possible others). Thanks to @mxsleo #92
 - (Pillow) `deepcopy` support for HeifImageFile and AvifImageFile
 - (macOS, arm64) `libde265`(HEIF decoder) now has the same version as in other builds(`1.0.8`->`1.0.11`)
 - (macOS, arm64) `libaom`(AVIF) now has the same version as in other builds(`3.4.0`->`3.6.0`)
