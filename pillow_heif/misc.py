@@ -63,7 +63,9 @@ def set_orientation(info: dict) -> Optional[int]:
     if info.get("exif", None):
         try:
             tif_tag = info["exif"]
+            skipped_exif00 = False
             if tif_tag.startswith(b"Exif\x00\x00"):
+                skipped_exif00 = True
                 tif_tag = tif_tag[6:]
             endian_mark = "<" if tif_tag[0:2] == b"\x49\x49" else ">"
             pointer = unpack(endian_mark + "L", tif_tag[4:8])[0]
@@ -77,7 +79,9 @@ def set_orientation(info: dict) -> Optional[int]:
                 _original_orientation = unpack(endian_mark + "H", value[0:2])[0]
                 if _original_orientation != 1:
                     original_orientation = _original_orientation
-                    p_value = 6 + pointer + 8
+                    p_value = pointer + 8
+                    if skipped_exif00:
+                        p_value += 6
                     new_orientation = pack(endian_mark + "H", 1)
                     info["exif"] = info["exif"][:p_value] + new_orientation + info["exif"][p_value + 2 :]
                     break
@@ -154,10 +158,11 @@ def _retrieve_exif(metadata: List[dict]) -> Optional[bytes]:
     for i, md_block in enumerate(metadata):
         if md_block["type"] == "Exif":
             _purge.append(i)
-            if md_block["data"][:4] == b"\x00\x00\x00\n":  # Xiaomi EXIF start
-                _data = md_block["data"][8:]  # skip `\0\0\0\n` +  TIFF header -> total 8 bytes
-            else:
-                _data = md_block["data"][4:]  # skip TIFF header, first 4 bytes
+            skip_size = int.from_bytes(md_block["data"][:4], byteorder="big", signed=False)
+            skip_size += 4  # size of skip offset itself
+            if len(md_block["data"]) - skip_size <= 4:  # bad EXIF data, skip first 4 bytes
+                skip_size = 4
+            _data = md_block["data"][skip_size:]
             if not _result and _data:
                 _result = _data
     for i in reversed(_purge):

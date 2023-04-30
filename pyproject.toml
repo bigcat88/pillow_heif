@@ -30,8 +30,8 @@ profile = "black"
 master.py-version = "3.7"
 master.extension-pkg-allow-list = ["_pillow_heif"]
 design.max-attributes = 8
-design.max-branches = 14
-design.max-locals = 16
+design.max-branches = 16
+design.max-locals = 18
 design.max-returns = 8
 basic.good-names = [
     "a", "b", "c", "d", "e", "f", "i", "j", "k", "v",
