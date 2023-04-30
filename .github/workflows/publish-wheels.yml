@@ -46,9 +46,13 @@ jobs:
           name: wheels_pi_heif
           path: wheelhouse_pi_heif
 
-      - name: Publish Pillow-Heif
+      - name: Install twine
         run: |
           python3 -m pip install twine
+          python3 -m pip install urllib3==1.26.15
+
+      - name: Publish Pillow-Heif
+        run: |
           python3 -m twine upload --skip-existing wheelhouse_pillow_heif/*.whl
           python3 -m twine upload --skip-existing wheelhouse_pillow_heif/*tar.gz
         env:
@@ -57,7 +61,6 @@ jobs:
 
       - name: Publish Pi-Heif
         run: |
-          python3 -m pip install twine
           python3 -m twine upload --skip-existing wheelhouse_pi_heif/*.whl
           python3 -m twine upload --skip-existing wheelhouse_pi_heif/*tar.gz
         env:
