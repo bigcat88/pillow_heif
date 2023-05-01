@@ -393,7 +393,8 @@ class HeifFile:
     def __getstate__(self):
         im_desc = []
         for im in self._images:
-            im_desc.append([im.mode, im.size, bytes(im.data), im.info])
+            im_data = bytes(im.data)
+            im_desc.append([im.mode, im.size, im_data, im.info])
         return [self.primary_index, self.mimetype, im_desc]
 
     def __setstate__(self, state):

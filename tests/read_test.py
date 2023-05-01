@@ -47,7 +47,10 @@ def test_native_copy_heif(img_path):
     assert im_heif._images != im_heif_copy._images
 
 
-@pytest.mark.parametrize("img_path", ("images/heif/zPug_3.heic", "images/heif_other/arrow.heic"))
+@pytest.mark.parametrize(
+    "img_path", ("images/heif/zPug_3.heic", "images/heif_other/arrow.heic", "images/heif_special/guitar_cw90.hif")
+)
+@mock.patch("pillow_heif.options.ALLOW_INCORRECT_HEADERS", True)
 def test_native_deepcopy_heif(img_path):
     im_heif = pillow_heif.open_heif(Path(img_path))
     im_heif_deepcopy = deepcopy(im_heif)
@@ -66,6 +69,7 @@ def test_native_copy_pillow(img_path):
     helpers.assert_image_equal(im, im_copy)
 
 
+# TO-DO: with Pillow 10 add `guitar_cw90.hif` to test here.
 @pytest.mark.parametrize("img_path", ("images/heif/zPug_3.heic", "images/heif_other/arrow.heic"))
 def test_native_deepcopy_pillow(img_path):
     im = Image.open(Path(img_path))
