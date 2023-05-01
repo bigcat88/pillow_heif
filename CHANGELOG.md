@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [0.1x.xx - 2023-0x-xx]
+
+### Fixed
+
+- (Heif) `deepcopy` support for HeifFile class.
+
 ## [0.11.0 - 2023-04-30]
 
 ### Changed

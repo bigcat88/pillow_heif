@@ -94,6 +94,11 @@ def compare_heif_files_fields(
     if isinstance(heif1, HeifFile):
         for i, image in enumerate(heif1):
             compare_images_fields(image, heif2[i])
+        if isinstance(heif2, HeifFile):
+            if "primary_index" not in ignore:
+                assert heif1.primary_index == heif2.primary_index
+            if "mimetype" not in ignore:
+                assert heif1.mimetype == heif2.mimetype
     else:
         compare_images_fields(heif1, heif2)
 

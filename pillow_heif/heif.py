@@ -2,7 +2,7 @@
 Functions and classes for heif images to read and write.
 """
 
-from copy import deepcopy
+from copy import copy, deepcopy
 from io import SEEK_SET
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -389,6 +389,29 @@ class HeifFile:
         """Returns the primary image as a numpy array."""
 
         return self._images[self.primary_index].__array_interface__
+
+    def __getstate__(self):
+        im_desc = []
+        for im in self._images:
+            im_desc.append([im.mode, im.size, bytes(im.data), im.info])
+        return [self.primary_index, self.mimetype, im_desc]
+
+    def __setstate__(self, state):
+        self.__init__()
+        self.primary_index, self.mimetype, images = state
+        for im_desc in images:
+            im_mode, im_size, im_data, im_info = im_desc
+            added_image = self.add_frombytes(im_mode, im_size, im_data)
+            added_image.info = im_info
+
+    def __copy(self):
+        _im_copy = HeifFile()
+        _im_copy._images = copy(self._images)  # pylint: disable=protected-access
+        _im_copy.mimetype = self.mimetype
+        _im_copy.primary_index = self.primary_index
+        return _im_copy
+
+    __copy__ = __copy
 
 
 def is_supported(fp) -> bool:
