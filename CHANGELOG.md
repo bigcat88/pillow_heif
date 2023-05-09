@@ -1,9 +1,12 @@
 All notable changes to this project will be documented in this file.
 
-## [0.1x.xx - 2023-0x-xx]
+## [0.11.1 - 2023-05-10]
+
+This release is fully compatible with `0.10.x` versions.
 
 ### Fixed
 
+- Revert EXIF changes from `0.11.0` - raw data again can begin with `Exif\x00\x00`. Thanks to @fabbaum #93
 - (Heif) `deepcopy` support for HeifFile class.
 
 ## [0.11.0 - 2023-04-30]

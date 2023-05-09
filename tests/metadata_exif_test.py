@@ -53,6 +53,31 @@ def test_exif_from_pillow(im_format, save_format):
     assert exif[0x010E] == exif_desc_value
 
 
+@pytest.mark.parametrize(
+    "img",
+    (
+        "images/heif_other/arrow.heic",
+        "images/heif_other/cat.hif",
+        "images/heif_other/pug.heic",
+        "images/heif_special/xiaomi.heic",
+    ),
+)
+@pytest.mark.parametrize("im_format", ("JPEG", "PNG", "WEBP"))
+def test_exif_from_heif_to_pillow(img, im_format):
+    heif_file = pillow_heif.open_heif(img)
+    out_pillow = BytesIO()
+    heif_exif_bytes = heif_file.info["exif"]
+    if img == "images/heif_special/xiaomi.heic" and im_format == "JPEG":  # JPEG do not support EXIF bigger 65k
+        return
+    Image.linear_gradient("L").save(out_pillow, format=im_format, exif=heif_exif_bytes)
+    im = Image.open(out_pillow)
+    pillow_exif = im.getexif()
+    im.close()
+    heif_exif = Image.Exif()
+    heif_exif.load(heif_exif_bytes)
+    assert pillow_exif == heif_exif
+
+
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 def test_pillow_exif_add_remove():
     exif_desc_value = "this is a desc"
