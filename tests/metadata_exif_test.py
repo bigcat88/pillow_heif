@@ -234,7 +234,7 @@ def test_data_before_exif():
     out_im.seek(0)
     assert out_im.read().find(b"hidden data ") != -1  # checking that this was saved
     assert im.getexif() == exif
-    assert im.info["exif"] == exif_bytes[6:]  # skipping b`Exif\x00\x00` that `exif.tobytes()` returns.
+    assert im.info["exif"] == exif_bytes
 
 
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
@@ -244,4 +244,4 @@ def test_empty_exif():
     helpers.gradient_rgb().save(out_im, format="HEIF", exif=exif.tobytes())
     im = Image.open(out_im)
     assert im.getexif() == exif
-    assert im.info["exif"] == exif.tobytes()[6:]
+    assert im.info["exif"] == exif.tobytes()
