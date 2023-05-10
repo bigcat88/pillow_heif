@@ -15,6 +15,7 @@ wheel_macos_arm_task:
 
   install_pre_requirements_script:
     - brew update
+    - brew install libheif
     - brew install python@3.10
     - ln -s python3 /opt/homebrew/opt/python@3.10/bin/python
   install_cibuildwheel_script:
@@ -41,6 +42,7 @@ wheel_pi_heif_macos_arm_task:
 
   install_pre_requirements_script:
     - brew update
+    - brew install libheif
     - brew install python@3.10
     - ln -s python3 /opt/homebrew/opt/python@3.10/bin/python
   install_cibuildwheel_script:

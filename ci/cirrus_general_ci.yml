@@ -15,6 +15,7 @@ test_src_build_full_macos_arm_task:
 
   install_libheif_script:
     - brew update
+    - brew install libheif
     - brew uninstall --force --ignore-dependencies imagemagick libheif
     - brew install --formula ./libheif/macos/libheif.rb
   install_pillow_heif_script:
@@ -45,6 +46,7 @@ test_src_build_lite_macos_arm_task:
     - python3 .github/transform_to-pi_heif.py
   install_libheif_script:
     - brew update
+    - brew install libheif
     - brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom
     - brew install --formula ./libheif/macos/libheif.rb
   install_pi_heif_script:
