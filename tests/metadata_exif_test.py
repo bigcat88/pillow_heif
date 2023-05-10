@@ -53,6 +53,7 @@ def test_exif_from_pillow(im_format, save_format):
     assert exif[0x010E] == exif_desc_value
 
 
+@pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
 @pytest.mark.parametrize(
     "img",
     (
