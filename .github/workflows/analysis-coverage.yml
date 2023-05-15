@@ -135,13 +135,8 @@ jobs:
         with:
           python-version: '3.10'
 
-#      to remove `brew uninstall --force --ignore-dependencies imagemagick libheif` when libheif will be updated.
-#      https://github.com/strukturag/libheif/issues/788
       - name: Install from source
-        run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif
-          brew install --formula ./libheif/macos/libheif.rb
-          python3 -m pip -v install ".[dev]"
+        run: python3 -m pip -v install ".[dev]"
 
       - name: LibHeif info
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
@@ -176,20 +171,12 @@ jobs:
         with:
           python-version: '3.9'
 
-#     ATTENTION! Check this when new release of libheif or libaom will be published.
-#     Currently, there is some bug in `libheif 1.15.1` or in `libaom 3.6.0`, so we test with libheif `1.14.2`
-#     https://github.com/strukturag/libheif/issues/788
-#
-#      - uses: msys2/setup-msys2@v2
-#        with:
-#          location: C:/temp
-#          install: >-
-#            mingw-w64-x86_64-libheif
       - uses: msys2/setup-msys2@v2
         with:
           location: C:/temp
           install: >-
             mingw-w64-x86_64-binutils
+            mingw-w64-x86_64-libheif
 
       - name: Build libheif and dependencies
         shell: msys2 {0}
