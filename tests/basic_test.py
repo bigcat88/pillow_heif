@@ -15,7 +15,16 @@ def test_libheif_info():
     info = pillow_heif.libheif_info()
     for key in ("HEIF", "AVIF"):
         assert key in info.keys()
-    assert pillow_heif.libheif_version() in ("1.12.0", "1.13.0", "1.14.0", "1.14.1", "1.14.2", "1.15.1", "1.15.2")
+    assert pillow_heif.libheif_version() in (
+        "1.12.0",
+        "1.13.0",
+        "1.14.0",
+        "1.14.1",
+        "1.14.2",
+        "1.15.1",
+        "1.15.2",
+        "1.16.1",
+    )
 
 
 @pytest.mark.skipif(helpers.aom(), reason="Only when AVIF support missing.")
