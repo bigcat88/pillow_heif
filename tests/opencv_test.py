@@ -35,18 +35,24 @@ def test_open_bgr_mode(img, expected_mode):
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("enc_bits", (10, 12))
-def test_save_bgr_16bit_to_10_12_bit(enc_bits):
+@pytest.mark.parametrize(
+    "img",
+    (
+        "images/non_heif/RGB_16__29x100.png",
+        "images/non_heif/RGB_16__128x128.png",
+    ),
+)
+def test_save_bgr_16bit_to_10_12_bit(enc_bits, img):
     try:
         options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
-        image_path = "images/non_heif/RGB_16__29x100.png"
-        cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+        cv_img = cv2.imread(img, cv2.IMREAD_UNCHANGED)
         assert cv_img.shape[2] == 3  # 3 channels(BGR)
         heif_file = from_bytes(mode="BGR;16", size=(cv_img.shape[1], cv_img.shape[0]), data=bytes(cv_img))
         out_heic = BytesIO()
         heif_file.save(out_heic, quality=-1)
         heif_file = open_heif(out_heic, convert_hdr_to_8bit=False)
         assert heif_file.info["bit_depth"] == enc_bits
-        png_pillow = Image.open(Path(image_path))
+        png_pillow = Image.open(Path(img))
         heif_pillow = Image.open(out_heic)
         compare_hashes([png_pillow, heif_pillow], hash_size=8)
     finally:
@@ -55,18 +61,24 @@ def test_save_bgr_16bit_to_10_12_bit(enc_bits):
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("enc_bits", (10, 12))
-def test_save_bgra_16bit_to_10_12_bit(enc_bits):
+@pytest.mark.parametrize(
+    "img",
+    (
+        "images/non_heif/RGBA_16__29x100.png",
+        "images/non_heif/RGBA_16__128x128.png",
+    ),
+)
+def test_save_bgra_16bit_to_10_12_bit(enc_bits, img):
     try:
         options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
-        image_path = "images/non_heif/RGBA_16__29x100.png"
-        cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+        cv_img = cv2.imread(img, cv2.IMREAD_UNCHANGED)
         assert cv_img.shape[2] == 4  # 4 channels(BGRA)
         heif_file = from_bytes(mode="BGRA;16", size=(cv_img.shape[1], cv_img.shape[0]), data=bytes(cv_img))
         out_heic = BytesIO()
         heif_file.save(out_heic, quality=-1)
         heif_file = open_heif(out_heic, convert_hdr_to_8bit=False)
         assert heif_file.info["bit_depth"] == enc_bits
-        png_pillow = Image.open(Path(image_path))
+        png_pillow = Image.open(Path(img))
         heif_pillow = Image.open(out_heic)
         compare_hashes([png_pillow, heif_pillow], hash_size=8, max_difference=1)
     finally:
@@ -74,29 +86,41 @@ def test_save_bgra_16bit_to_10_12_bit(enc_bits):
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-def test_save_bgr_8bit_color_mode():
-    image_path = "images/non_heif/RGB_8__29x100.png"
-    cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+@pytest.mark.parametrize(
+    "img",
+    (
+        "images/non_heif/RGB_8__29x100.png",
+        "images/non_heif/RGB_8__128x128.png",
+    ),
+)
+def test_save_bgr_8bit_color_mode(img):
+    cv_img = cv2.imread(img, cv2.IMREAD_UNCHANGED)
     assert cv_img.shape[2] == 3  # 3 channels(BGR)
     heif_file = from_bytes(mode="BGR", size=(cv_img.shape[1], cv_img.shape[0]), data=bytes(cv_img))
     out_heic = BytesIO()
     heif_file.save(out_heic, quality=-1)
     assert open_heif(out_heic, convert_hdr_to_8bit=False).info["bit_depth"] == 8
-    png_pillow = Image.open(image_path)
+    png_pillow = Image.open(img)
     heif_pillow = Image.open(out_heic)
     compare_hashes([png_pillow, heif_pillow], hash_size=8)
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-def test_save_bgra_8bit_color_mode():
-    image_path = "images/non_heif/RGBA_8__29x100.png"
-    cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+@pytest.mark.parametrize(
+    "img",
+    (
+        "images/non_heif/RGBA_8__29x100.png",
+        "images/non_heif/RGBA_8__128x128.png",
+    ),
+)
+def test_save_bgra_8bit_color_mode(img):
+    cv_img = cv2.imread(img, cv2.IMREAD_UNCHANGED)
     assert cv_img.shape[2] == 4  # 4 channels(BGRA)
     heif_file = from_bytes(mode="BGRA", size=(cv_img.shape[1], cv_img.shape[0]), data=bytes(cv_img))
     out_heic = BytesIO()
     heif_file.save(out_heic, quality=-1)
     assert open_heif(out_heic, convert_hdr_to_8bit=False).info["bit_depth"] == 8
-    png_pillow = Image.open(image_path)
+    png_pillow = Image.open(img)
     heif_pillow = Image.open(out_heic)
     compare_hashes([png_pillow, heif_pillow], hash_size=8)
 
