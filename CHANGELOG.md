@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [0.12.0 - 2023-0x-xx]
+
+## Fixed
+
+- (Heif) HeifFile class created with `from_bytes` function with `stride` argument correctly can be translated to numpy array.
+
 ## [0.11.1 - 2023-05-10]
 
 This release is fully compatible with `0.10.x` versions.

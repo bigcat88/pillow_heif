@@ -78,10 +78,15 @@ class HeifImage:
         """Numpy array interface support"""
 
         self.load()
-        shape: Tuple[Any, ...] = (self.size[1], self.size[0])
+        width = int(self.stride / MODE_INFO[self.mode][0])
+        if MODE_INFO[self.mode][1] <= 8:
+            typestr = "|u1"
+        else:
+            width = int(width / 2)
+            typestr = "<u2"
+        shape: Tuple[Any, ...] = (self.size[1], width)
         if MODE_INFO[self.mode][0] > 1:
             shape += (MODE_INFO[self.mode][0],)
-        typestr = "|u1" if MODE_INFO[self.mode][1] <= 8 else "<u2"
         return {"shape": shape, "typestr": typestr, "version": 3, "data": self.data}
 
     @property

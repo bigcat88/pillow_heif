@@ -56,3 +56,11 @@ def test_numpy_array_invalid_ispe(im_path, bgr_mode):
         im.load()
         pil_array = np.asarray(im)
         assert np.array_equal(pil_array, heif_array)
+
+
+def test_array_with_stride_data():
+    im_data = np.asarray(helpers.gradient_rgb())
+    im = pillow_heif.from_bytes("RGB", (128, 256), bytes(im_data), stride=256 * 3)
+    np.testing.assert_array_equal(im_data, im)
+    im_data = im_data[:, :128, :]
+    np.testing.assert_array_equal(im_data, im.to_pillow())
