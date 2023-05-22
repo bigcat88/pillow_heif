@@ -439,8 +439,6 @@ def test_encode_function_with_stride(mode):
     buf = BytesIO()
     pillow_heif.encode(im.mode, (257, im.size[1]), im.tobytes(), buf, quality=-1, stride=512 * len(mode))
     im = im.crop((0, 0, 257, 512))
-    im.show()
-    pillow_heif.open_heif(buf).to_pillow().show()
     helpers.compare_hashes([buf, im], hash_size=32)
 
 
