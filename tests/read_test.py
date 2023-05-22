@@ -79,11 +79,6 @@ def test_native_deepcopy_pillow(img_path):
     helpers.assert_image_equal(im, im_deepcopy)
 
 
-def test_bgr_mode_with_disabled_postprocess():
-    with pytest.raises(ValueError):
-        pillow_heif.open_heif(Path("images/heif/RGB_8__29x100.heif"), bgr_mode=True, postprocess=False)
-
-
 def test_add_empty_from_pillow():
     im = Image.new(mode="L", size=(1, 0))
     heif = pillow_heif.HeifFile()

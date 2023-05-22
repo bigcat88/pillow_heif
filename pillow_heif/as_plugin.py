@@ -37,7 +37,9 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
     def _open(self):
         try:
-            _heif_file = HeifFile(self.fp, convert_hdr_to_8bit=True, postprocess=False)
+            # when Pillow starts supporting 16-bit images:
+            # set `convert_hdr_to_8bit` to False and `convert_hdr_to_8bit` to True
+            _heif_file = HeifFile(self.fp, convert_hdr_to_8bit=True, remove_stride=False)
         except (OSError, ValueError, SyntaxError, RuntimeError, EOFError) as exception:
             raise SyntaxError(str(exception)) from None
         self.custom_mimetype = _heif_file.mimetype

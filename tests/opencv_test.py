@@ -17,22 +17,6 @@ cv2 = pytest.importorskip("cv2", reason="OpenCV not installed")
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
-@pytest.mark.parametrize(
-    "img,expected_mode",
-    (
-        ("images/heif/RGB_8__29x100.heif", "BGR"),
-        ("images/heif/RGB_10__29x100.heif", "BGR;16"),
-        ("images/heif/RGB_12__29x100.heif", "BGR;16"),
-        ("images/heif/RGBA_8__29x100.heif", "BGRA"),
-        ("images/heif/RGBA_10__29x100.heif", "BGRA;16"),
-        ("images/heif/RGBA_12__29x100.heif", "BGRA;16"),
-    ),
-)
-def test_open_bgr_mode(img, expected_mode):
-    im = open_heif(img, convert_hdr_to_8bit=False, bgr_mode=True)
-    assert im.mode == expected_mode
-
-
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("enc_bits", (10, 12))
 @pytest.mark.parametrize(

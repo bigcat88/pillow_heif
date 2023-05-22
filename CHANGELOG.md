@@ -2,6 +2,10 @@ All notable changes to this project will be documented in this file.
 
 ## [0.12.0 - 2023-0x-xx]
 
+## Added
+
+- (Heif) restored lost ability after `0.9.x` versions to open HDR images in 10/12 bit. #96
+
 ## Fixed
 
 - (Heif) `encode` function with `stride` argument correctly saves image.

@@ -173,9 +173,8 @@ class HeifFile:
         `ValueError`, `EOFError`, `SyntaxError`, `RuntimeError`, `OSError`"""
 
     def __init__(self, fp=None, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs):
-        postprocess: bool = kwargs.get("postprocess", True)
-        if bgr_mode and not postprocess:
-            raise ValueError("BGR mode does not work when post-processing is disabled.")
+        remove_stride: bool = kwargs.get("remove_stride", True)
+        hdr_to_16bit: bool = kwargs.get("hdr_to_16bit", True)
         if hasattr(fp, "seek"):
             fp.seek(0, SEEK_SET)
 
@@ -187,7 +186,13 @@ class HeifFile:
             mimetype = get_file_mimetype(fp_bytes)
             reload_size: bool = kwargs.get("reload_size", options.ALLOW_INCORRECT_HEADERS)
             images = load_file(
-                fp_bytes, options.DECODE_THREADS, convert_hdr_to_8bit, bgr_mode, postprocess, reload_size
+                fp_bytes,
+                options.DECODE_THREADS,
+                convert_hdr_to_8bit,
+                bgr_mode,
+                remove_stride,
+                hdr_to_16bit,
+                reload_size,
             )
         self.mimetype = mimetype
         self._images: List[HeifImage] = [HeifImage(i) for i in images if i is not None]

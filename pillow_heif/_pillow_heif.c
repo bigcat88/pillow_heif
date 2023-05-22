@@ -2,6 +2,7 @@
 
 #include "Python.h"
 #include "libheif/heif.h"
+#include "_ph_postprocess.h"
 
 /* =========== Common stuff ======== */
 
@@ -68,18 +69,19 @@ typedef struct {
     PyObject_HEAD
     int width;                              // size[0];
     int height;                             // size[1];
-    int bits;                               // on of: 8, 10, 12.
-    int alpha;                              // on of: 0, 1.
-    char mode[8];                           // one of: RGB, RGBA, RGBa, RGB;16, RGBA;16, RGBa;16
-    int primary;                            // on of: 0, 1.
+    int bits;                               // one of: 8, 10, 12.
+    int alpha;                              // one of: 0, 1.
+    char mode[8];                           // one of: RGB, RGBA, RGBa, BGR, BGRA, BGRa + Optional[;10/12/16]
+    int primary;                            // one of: 0, 1.
     int hdr_to_8bit;                        // private. decode option.
     int bgr_mode;                           // private. decode option.
-    int postprocess;                        // private. decode option.
+    int remove_stride;                      // private. decode option.
+    int hdr_to_16bit;                       // private. decode option.
     int reload_size;                        // private. decode option.
     struct heif_image_handle *handle;       // private
     struct heif_image *heif_image;          // private
     uint8_t *data;                          // pointer to data after decoding
-    int stride;                             // time when it get filled depends on `postprocess` value
+    int stride;                             // time when it get filled depends on `remove_stride` value
     PyObject *file_bytes;                   // private
 } CtxImageObject;
 
@@ -211,6 +213,27 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                 }
                 in += stride_in;
                 out += stride_out;
+            }
+        else if ((depth_in == depth) && (!with_alpha))
+            for (int i = 0; i < height; i++) {
+                for (int i2 = 0; i2 < width; i2++) {
+                    out_word[i2 * 3 + 0] = in_word[i2 * 3 + 2];
+                    out_word[i2 * 3 + 1] = in_word[i2 * 3 + 1];
+                    out_word[i2 * 3 + 2] = in_word[i2 * 3 + 0];
+                }
+                in_word += stride_in / 2;
+                out_word += stride_out / 2;
+            }
+        else if ((depth_in == depth) && (with_alpha))
+            for (int i = 0; i < height; i++) {
+                for (int i2 = 0; i2 < width; i2++) {
+                    out_word[i2 * 4 + 0] = in_word[i2 * 4 + 2];
+                    out_word[i2 * 4 + 1] = in_word[i2 * 4 + 1];
+                    out_word[i2 * 4 + 2] = in_word[i2 * 4 + 0];
+                    out_word[i2 * 4 + 3] = in_word[i2 * 4 + 3];
+                }
+                in_word += stride_in / 2;
+                out_word += stride_out / 2;
             }
         else if ((depth_in == 16) && (depth == 10) && (!with_alpha))
             for (int i = 0; i < height; i++) {
@@ -680,7 +703,8 @@ static void _CtxImage_destructor(CtxImageObject* self) {
     PyObject_Del(self);
 }
 
-PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit, int bgr_mode, int postprocess,
+PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
+                    int bgr_mode, int remove_stride, int hdr_to_16bit,
                     int reload_size, int primary, PyObject* file_bytes) {
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
@@ -694,14 +718,24 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit, int bgr_m
     if (ctx_image->alpha)
         strcat(ctx_image->mode, heif_image_handle_is_premultiplied_alpha(handle) ? "a" : "A");
     ctx_image->bits = heif_image_handle_get_luma_bits_per_pixel(handle);
-    if ((ctx_image->bits > 8) && (!hdr_to_8bit))
-        strcat(ctx_image->mode, ";16");
+    if ((ctx_image->bits > 8) && (!hdr_to_8bit)) {
+        if (hdr_to_16bit) {
+            strcat(ctx_image->mode, ";16");
+        }
+        else if (ctx_image->bits == 10) {
+            strcat(ctx_image->mode, ";10");
+        }
+        else {
+            strcat(ctx_image->mode, ";12");
+        }
+    }
     ctx_image->hdr_to_8bit = hdr_to_8bit;
     ctx_image->bgr_mode = bgr_mode;
     ctx_image->handle = handle;
     ctx_image->heif_image = NULL;
     ctx_image->data = NULL;
-    ctx_image->postprocess = postprocess;
+    ctx_image->remove_stride = remove_stride;
+    ctx_image->hdr_to_16bit = hdr_to_16bit;
     ctx_image->reload_size = reload_size;
     ctx_image->primary = primary;
     ctx_image->file_bytes = file_bytes;
@@ -862,15 +896,33 @@ static PyObject* _CtxImage_thumbnails(CtxImageObject* self, void* closure) {
 
 int decode_image(CtxImageObject* self) {
     struct heif_error error;
+    int chroma, channels, bytes_in_cc;
 
     Py_BEGIN_ALLOW_THREADS
     struct heif_decoding_options *decode_options = heif_decoding_options_alloc();
     decode_options->convert_hdr_to_8bit = self->hdr_to_8bit;
-    int chroma;
-    if ((self->bits == 8) || (self->hdr_to_8bit))
-        chroma = self->alpha ? heif_chroma_interleaved_RGBA : heif_chroma_interleaved_RGB;
-    else
-        chroma = self->alpha ? heif_chroma_interleaved_RRGGBBAA_LE : heif_chroma_interleaved_RRGGBB_LE;
+    if ((self->bits == 8) || (self->hdr_to_8bit)) {
+        bytes_in_cc = 1;
+        if (self->alpha) {
+            chroma = heif_chroma_interleaved_RGBA;
+            channels = 4;
+        }
+        else {
+            chroma = heif_chroma_interleaved_RGB;
+            channels = 3;
+        }
+    }
+    else {
+        bytes_in_cc = 2;
+        if (self->alpha) {
+            chroma = heif_chroma_interleaved_RRGGBBAA_LE;
+            channels = 4;
+        }
+        else {
+            chroma = heif_chroma_interleaved_RRGGBB_LE;
+            channels = 3;
+        }
+    }
     error = heif_decode_image(self->handle, &self->heif_image, heif_colorspace_RGB, chroma, decode_options);
     heif_decoding_options_free(decode_options);
     Py_END_ALLOW_THREADS
@@ -897,157 +949,31 @@ int decode_image(CtxImageObject* self) {
         self->heif_image = NULL;
         PyErr_Format(PyExc_ValueError,
                     "corrupted image(dimensions in header: (%d, %d), decoded dimensions: (%d, %d)). "
-                    "Set ALLOW_INCORRECT_HEADERS to True if you need to load it.",
+                    "Set ALLOW_INCORRECT_HEADERS to True if you need to load them.",
                     self->width, self->height, decoded_width, decoded_height);
         return 0;
     }
 
-    if (!self->postprocess) {
-        self->stride = stride;
-        return 1;
-    }
-    self->stride = get_stride(self);
+    self->stride = self->remove_stride ? get_stride(self) : stride;
 
-    if ((self->bgr_mode) || (self->stride != stride) || ((self->bits > 8) && (!self->hdr_to_8bit))) {
-        int invalid_mode = 0;
-        Py_BEGIN_ALLOW_THREADS
-        if ((self->hdr_to_8bit) || (self->bits == 8)) {
-            uint8_t *in = (uint8_t*)self->data;
-            uint8_t *out = (uint8_t*)self->data;
-            if (!self->bgr_mode)    // just remove stride
-                for (int i = 0; i < self->height; i++) {
-                    memmove(out, in, self->stride); // possible will change to memcpy and set -D_FORTIFY_SOURCE=0
-                    in += stride;
-                    out += self->stride;
-                }
-            else {                  // remove stride && convert to BGR(A)
-                uint8_t tmp;
-                if (!self->alpha)
-                    for (int i = 0; i < self->height; i++) {
-                        for (int i2 = 0; i2 < self->width; i2++) {
-                            tmp = in[i2 * 3 + 0];
-                            out[i2 * 3 + 0] = in[i2 * 3 + 2];
-                            out[i2 * 3 + 1] = in[i2 * 3 + 1];
-                            out[i2 * 3 + 2] = tmp;
-                        }
-                        in += stride;
-                        out += self->stride;
-                    }
-                else
-                    for (int i = 0; i < self->height; i++) {
-                        for (int i2 = 0; i2 < self->width; i2++) {
-                            tmp = in[i2 * 4 + 0];
-                            out[i2 * 4 + 0] = in[i2 * 4 + 2];
-                            out[i2 * 4 + 1] = in[i2 * 4 + 1];
-                            out[i2 * 4 + 2] = tmp;
-                            out[i2 * 4 + 3] = in[i2 * 4 + 3];
-                        }
-                        in += stride;
-                        out += self->stride;
-                    }
-            }
-        }
-        else {
-            uint16_t *in = (uint16_t*)self->data;
-            uint16_t *out = (uint16_t*)self->data;
-            uint16_t tmp;
-            if ((self->bits == 10) && (self->alpha) && (!self->bgr_mode))
-                for (int i = 0; i < self->height; i++) {
-                    for (int i2 = 0; i2 < self->width; i2++) {
-                        out[i2 * 4 + 0] = in[i2 * 4 + 0] << 6;
-                        out[i2 * 4 + 1] = in[i2 * 4 + 1] << 6;
-                        out[i2 * 4 + 2] = in[i2 * 4 + 2] << 6;
-                        out[i2 * 4 + 3] = in[i2 * 4 + 3] << 6;
-                    }
-                    in += stride / 2;
-                    out += self->stride / 2;
-                }
-            else if ((self->bits == 10) && (self->alpha) && (self->bgr_mode))
-                for (int i = 0; i < self->height; i++) {
-                    for (int i2 = 0; i2 < self->width; i2++) {
-                        tmp = in[i2 * 4 + 0];
-                        out[i2 * 4 + 0] = in[i2 * 4 + 2] << 6;
-                        out[i2 * 4 + 1] = in[i2 * 4 + 1] << 6;
-                        out[i2 * 4 + 2] = tmp << 6;
-                        out[i2 * 4 + 3] = in[i2 * 4 + 3] << 6;
-                    }
-                    in += stride / 2;
-                    out += self->stride / 2;
-                }
-            else if ((self->bits == 10) && (!self->alpha) && (!self->bgr_mode))
-                for (int i = 0; i < self->height; i++) {
-                    for (int i2 = 0; i2 < self->width; i2++) {
-                        out[i2 * 3 + 0] = in[i2 * 3 + 0] << 6;
-                        out[i2 * 3 + 1] = in[i2 * 3 + 1] << 6;
-                        out[i2 * 3 + 2] = in[i2 * 3 + 2] << 6;
-                    }
-                    in += stride / 2;
-                    out += self->stride / 2;
-                }
-            else if ((self->bits == 10) && (!self->alpha) && (self->bgr_mode))
-                for (int i = 0; i < self->height; i++) {
-                    for (int i2 = 0; i2 < self->width; i2++) {
-                        tmp = in[i2 * 3 + 0];
-                        out[i2 * 3 + 0] = in[i2 * 3 + 2] << 6;
-                        out[i2 * 3 + 1] = in[i2 * 3 + 1] << 6;
-                        out[i2 * 3 + 2] = tmp << 6;
-                    }
-                    in += stride / 2;
-                    out += self->stride / 2;
-                }
-            else if ((self->bits == 12) && (self->alpha) && (!self->bgr_mode))
-                for (int i = 0; i < self->height; i++) {
-                    for (int i2 = 0; i2 < self->width; i2++) {
-                        out[i2 * 4 + 0] = in[i2 * 4 + 0] << 4;
-                        out[i2 * 4 + 1] = in[i2 * 4 + 1] << 4;
-                        out[i2 * 4 + 2] = in[i2 * 4 + 2] << 4;
-                        out[i2 * 4 + 3] = in[i2 * 4 + 3] << 4;
-                    }
-                    in += stride / 2;
-                    out += self->stride / 2;
-                }
-            else if ((self->bits == 12) && (self->alpha) && (self->bgr_mode)) {
-                for (int i = 0; i < self->height; i++) {
-                    for (int i2 = 0; i2 < self->width; i2++) {
-                        tmp = in[i2 * 4 + 0];
-                        out[i2 * 4 + 0] = in[i2 * 4 + 2] << 4;
-                        out[i2 * 4 + 1] = in[i2 * 4 + 1] << 4;
-                        out[i2 * 4 + 2] = tmp << 4;
-                        out[i2 * 4 + 3] = in[i2 * 4 + 3] << 4;
-                    }
-                    in += stride / 2;
-                    out += self->stride / 2;
-                }
-            }
-            else if ((self->bits == 12) && (!self->alpha) && (!self->bgr_mode))
-                for (int i = 0; i < self->height; i++) {
-                    for (int i2 = 0; i2 < self->width; i2++) {
-                        out[i2 * 3 + 0] = in[i2 * 3 + 0] << 4;
-                        out[i2 * 3 + 1] = in[i2 * 3 + 1] << 4;
-                        out[i2 * 3 + 2] = in[i2 * 3 + 2] << 4;
-                    }
-                    in += stride / 2;
-                    out += self->stride / 2;
-                }
-            else if ((self->bits == 12) && (!self->alpha) && (self->bgr_mode))
-                for (int i = 0; i < self->height; i++) {
-                    for (int i2 = 0; i2 < self->width; i2++) {
-                        tmp = in[i2 * 3 + 0];
-                        out[i2 * 3 + 0] = in[i2 * 3 + 2] << 4;
-                        out[i2 * 3 + 1] = in[i2 * 3 + 1] << 4;
-                        out[i2 * 3 + 2] = tmp << 4;
-                    }
-                    in += stride / 2;
-                    out += self->stride / 2;
-                }
-            else
-                invalid_mode = 1;
-        }
-        Py_END_ALLOW_THREADS
-        if (invalid_mode) {
-            PyErr_SetString(PyExc_ValueError, "invalid plane mode value");
-            return 0;
-        }
+    int remove_stride = ((self->remove_stride) && (self->stride != stride));
+    int shift_size = ((self->hdr_to_16bit) && (self->bits > 8) && (!self->hdr_to_8bit)) ? 16 - self->bits : 0;
+
+    if ((self->bgr_mode) && (!remove_stride))
+        postprocess__bgr(self->width, self->height, self->data, stride,
+                         bytes_in_cc, channels, shift_size);
+    else if ((self->bgr_mode) && (remove_stride))
+        postprocess__bgr_stride(self->width, self->height, self->data, stride, self->stride,
+                                bytes_in_cc, channels, shift_size);
+    else if ((!self->bgr_mode) && (!remove_stride))
+        postprocess(self->width, self->height, self->data, stride,
+                    bytes_in_cc, channels, shift_size);
+    else if ((!self->bgr_mode) && (remove_stride))
+        postprocess__stride(self->width, self->height, self->data, stride, self->stride,
+                            bytes_in_cc, channels, shift_size);
+    else {
+        PyErr_SetString(PyExc_ValueError, "internal error, invalid postprocess condition");
+        return 0;
     }
     return 1;
 }
@@ -1121,16 +1047,17 @@ static PyObject* _CtxWrite(PyObject* self, PyObject* args) {
 }
 
 static PyObject* _load_file(PyObject* self, PyObject* args) {
-    int hdr_to_8bit, threads_count, bgr_mode, postprocess, reload_size;
+    int hdr_to_8bit, threads_count, bgr_mode, remove_stride, hdr_to_16bit, reload_size;
     PyObject *heif_bytes;
 
     if (!PyArg_ParseTuple(args,
-                          "Oiiiii",
+                          "Oiiiiii",
                           &heif_bytes,
                           &threads_count,
                           &hdr_to_8bit,
                           &bgr_mode,
-                          &postprocess,
+                          &remove_stride,
+                          &hdr_to_16bit,
                           &reload_size))
         return NULL;
 
@@ -1180,7 +1107,8 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
         if (error.code == heif_error_Ok)
             PyList_SET_ITEM(images_list,
                             i,
-                            _CtxImage(handle, hdr_to_8bit, bgr_mode, postprocess, reload_size, primary, heif_bytes));
+                            _CtxImage(handle, hdr_to_8bit,
+                                    bgr_mode, remove_stride, hdr_to_16bit, reload_size, primary, heif_bytes));
         else {
             Py_INCREF(Py_None);
             PyList_SET_ITEM(images_list, i, Py_None);

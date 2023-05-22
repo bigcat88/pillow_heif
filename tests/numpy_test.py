@@ -59,7 +59,7 @@ def test_numpy_array_invalid_ispe(im_path, bgr_mode):
 
 
 @pytest.mark.parametrize("mode", ("L", "LA", "RGB", "RGBA"))
-def test_rgb_array_with_custom_stride(mode):
+def test_from_bytes_array_with_custom_stride(mode):
     im_data = np.asarray(helpers.gradient_rgb().convert(mode=mode))
     im = pillow_heif.from_bytes(mode, (127, 256), bytes(im_data), stride=256 * len(mode))
     np.testing.assert_array_equal(im_data, im)
@@ -68,3 +68,36 @@ def test_rgb_array_with_custom_stride(mode):
     buf = BytesIO()
     im.save(buf, quality=-1, chroma=444)
     helpers.compare_hashes([Image.open(buf), Image.fromarray(im_data)], hash_size=32)
+
+
+@pytest.mark.parametrize(
+    "img",
+    (
+        "images/heif/RGB_10__29x100.heif",
+        "images/heif/RGB_12__29x100.heif",
+        "images/heif/RGBA_10__29x100.heif",
+        "images/heif/RGBA_12__29x100.heif",
+    ),
+)
+def test_numpy_disable_hdr16bit(img):
+    heif_file = pillow_heif.open_heif(img, convert_hdr_to_8bit=False, hdr_to_16bit=False)
+    heif_array = np.asarray(heif_file)
+    assert heif_array.dtype == np.uint16
+    assert heif_array.shape == (100, 29, 4 if heif_file.has_alpha else 3)
+
+
+@pytest.mark.parametrize(
+    "img",
+    (
+        "images/heif/RGB_8__29x100.heif",
+        "images/heif/RGB_10__29x100.heif",
+        "images/heif/RGB_12__29x100.heif",
+        "images/heif/RGBA_8__29x100.heif",
+        "images/heif/RGBA_10__29x100.heif",
+        "images/heif/RGBA_12__29x100.heif",
+    ),
+)
+def test_numpy_disable_stride_removal(img):
+    heif_file = pillow_heif.open_heif(img, convert_hdr_to_8bit=False, remove_stride=False)
+    heif_array = np.asarray(heif_file)
+    assert heif_array.shape == (100, 64, 4 if heif_file.has_alpha else 3)
