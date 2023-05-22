@@ -507,7 +507,8 @@ def _encode_images(images: List[HeifImage], fp, **kwargs) -> None:
         if i == primary_index:
             _info.update(**kwargs)
             _info["primary"] = True
-        ctx_write.add_image(img.size, img.mode, img.data, **_info)
+        _info.pop("stride", 0)
+        ctx_write.add_image(img.size, img.mode, img.data, **_info, stride=img.stride)
     ctx_write.save(fp)
 
 

@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Fixed
 
-- (Heif) HeifFile class created with `from_bytes` function with `stride` argument correctly can be translated to numpy array.
+- (Heif) `encode` function with `stride` argument correctly saves image.
+- (Heif) HeifFile class created with `from_bytes` function with `stride` argument respect `stride` value during save.
+- (Heif) HeifFile class created with `from_bytes` function with `stride` argument can correctly translate to numpy array.
 
 ## [0.11.1 - 2023-05-10]
 

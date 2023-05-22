@@ -97,25 +97,27 @@ static void _CtxWriteImage_destructor(CtxWriteImageObject* self) {
 
 static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* args) {
     /* (size), depth: int, depth_in: int, data: bytes, bgr_mode: int */
-    int width, height, depth, depth_in, stride, stride_in, bgr_mode;
+    int width, height, depth, depth_in, stride_out, stride_in, real_stride, bgr_mode;
     Py_buffer buffer;
     uint8_t* plane_data;
 
-    if (!PyArg_ParseTuple(args, "(ii)iiy*i", &width, &height, &depth, &depth_in, &buffer, &bgr_mode))
+    if (!PyArg_ParseTuple(args, "(ii)iiy*ii", &width, &height, &depth, &depth_in, &buffer, &bgr_mode, &stride_in))
         return NULL;
 
     int with_alpha = 0;
     if ((self->chroma == heif_chroma_interleaved_RGBA) || (self->chroma == heif_chroma_interleaved_RRGGBBAA_LE)) {
-        stride_in = width * 4;
+        real_stride = width * 4;
         with_alpha = 1;
     }
     else
-        stride_in = width * 3;
+        real_stride = width * 3;
     if (depth > 8)
-        stride_in = stride_in * 2;
-    if (stride_in * height != buffer.len) {
+        real_stride = real_stride * 2;
+    if (stride_in == 0)
+        stride_in = real_stride;
+    if (stride_in * height > buffer.len) {
         PyBuffer_Release(&buffer);
-        PyErr_SetString(PyExc_ValueError, "image plane size does not match data size");
+        PyErr_SetString(PyExc_ValueError, "image plane does not contain enough data");
         return NULL;
     }
 
@@ -124,7 +126,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
         return NULL;
     }
 
-    plane_data = heif_image_get_plane(self->image, heif_channel_interleaved, &stride);
+    plane_data = heif_image_get_plane(self->image, heif_channel_interleaved, &stride_out);
     if (!plane_data) {
         PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_RuntimeError, "heif_image_get_plane failed");
@@ -138,11 +140,11 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
     uint16_t *out_word = (uint16_t *)plane_data;
     uint16_t *in_word = (uint16_t *)buffer.buf;
     if (!bgr_mode) {
-        if ((depth_in == depth) && (stride_in == stride))
-            memcpy(out, in, stride * height);
-        else if ((depth_in == depth) && (stride_in != stride))
+        if ((depth_in == depth) && (stride_in == stride_out))
+            memcpy(out, in, stride_out * height);
+        else if ((depth_in == depth) && (stride_in != stride_out))
             for (int i = 0; i < height; i++)
-                memcpy(out + stride * i, in + stride_in * i, stride_in);
+                memcpy(out + stride_out * i, in + stride_in * i, real_stride);
         else if ((depth_in == 16) && (depth == 12) && (!with_alpha))
             for (int i = 0; i < height; i++) {
                 for (int i2 = 0; i2 < width; i2++) {
@@ -151,7 +153,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                     out_word[i2 * 3 + 2] = in_word[i2 * 3 + 2] >> 4;
                 }
                 in_word += stride_in / 2;
-                out_word += stride / 2;
+                out_word += stride_out / 2;
             }
         else if ((depth_in == 16) && (depth == 12) && (with_alpha))
             for (int i = 0; i < height; i++) {
@@ -162,7 +164,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                     out_word[i2 * 4 + 3] = in_word[i2 * 4 + 3] >> 4;
                 }
                 in_word += stride_in / 2;
-                out_word += stride / 2;
+                out_word += stride_out / 2;
             }
         else if ((depth_in == 16) && (depth == 10) && (!with_alpha))
             for (int i = 0; i < height; i++) {
@@ -172,7 +174,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                     out_word[i2 * 3 + 2] = in_word[i2 * 3 + 2] >> 6;
                 }
                 in_word += stride_in / 2;
-                out_word += stride / 2;
+                out_word += stride_out / 2;
             }
         else if ((depth_in == 16) && (depth == 10) && (with_alpha))
             for (int i = 0; i < height; i++) {
@@ -183,13 +185,13 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                     out_word[i2 * 4 + 3] = in_word[i2 * 4 + 3] >> 6;
                 }
                 in_word += stride_in / 2;
-                out_word += stride / 2;
+                out_word += stride_out / 2;
             }
         else
             invalid_mode = 1;
     }
     else {
-        if ((depth_in == 8) && (depth == 8) && (!with_alpha))
+        if ((depth <= 8) && (depth_in == depth) && (!with_alpha))
             for (int i = 0; i < height; i++) {
                 for (int i2 = 0; i2 < width; i2++) {
                     out[i2 * 3 + 0] = in[i2 * 3 + 2];
@@ -197,9 +199,9 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                     out[i2 * 3 + 2] = in[i2 * 3 + 0];
                 }
                 in += stride_in;
-                out += stride;
+                out += stride_out;
             }
-        else if ((depth_in == 8) &&(depth == 8) && (with_alpha))
+        else if ((depth <= 8) && (depth_in == depth) && (with_alpha))
             for (int i = 0; i < height; i++) {
                 for (int i2 = 0; i2 < width; i2++) {
                     out[i2 * 4 + 0] = in[i2 * 4 + 2];
@@ -208,7 +210,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                     out[i2 * 4 + 3] = in[i2 * 4 + 3];
                 }
                 in += stride_in;
-                out += stride;
+                out += stride_out;
             }
         else if ((depth_in == 16) && (depth == 10) && (!with_alpha))
             for (int i = 0; i < height; i++) {
@@ -218,7 +220,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                     out_word[i2 * 3 + 2] = in_word[i2 * 3 + 0] >> 6;
                 }
                 in_word += stride_in / 2;
-                out_word += stride / 2;
+                out_word += stride_out / 2;
             }
         else if ((depth_in == 16) && (depth == 10) && (with_alpha))
             for (int i = 0; i < height; i++) {
@@ -229,7 +231,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                     out_word[i2 * 4 + 3] = in_word[i2 * 4 + 3] >> 6;
                 }
                 in_word += stride_in / 2;
-                out_word += stride / 2;
+                out_word += stride_out / 2;
             }
         else if ((depth_in == 16) && (depth == 12) && (!with_alpha))
             for (int i = 0; i < height; i++) {
@@ -239,7 +241,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                     out_word[i2 * 3 + 2] = in_word[i2 * 3 + 0] >> 4;
                 }
                 in_word += stride_in / 2;
-                out_word += stride / 2;
+                out_word += stride_out / 2;
             }
         else if ((depth_in == 16) && (depth == 12) && (with_alpha))
             for (int i = 0; i < height; i++) {
@@ -250,7 +252,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
                     out_word[i2 * 4 + 3] = in_word[i2 * 4 + 3] >> 4;
                 }
                 in_word += stride_in / 2;
-                out_word += stride / 2;
+                out_word += stride_out / 2;
             }
         else
             invalid_mode = 1;
@@ -266,19 +268,21 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
 
 static PyObject* _CtxWriteImage_add_plane_la(CtxWriteImageObject* self, PyObject* args) {
     /* (size), depth: int, depth_in: int, data: bytes */
-    int width, height, depth, depth_in, stride_y, stride_alpha, stride_in;
+    int width, height, depth, depth_in, stride_y, stride_alpha, stride_in, real_stride;
     Py_buffer buffer;
     uint8_t *plane_data_y, *plane_data_alpha;
 
-    if (!PyArg_ParseTuple(args, "(ii)iiy*", &width, &height, &depth, &depth_in, &buffer))
+    if (!PyArg_ParseTuple(args, "(ii)iiy*i", &width, &height, &depth, &depth_in, &buffer, &stride_in))
         return NULL;
 
-    stride_in = width * 2;
+    real_stride = width * 2;
     if (depth > 8)
-        stride_in = stride_in * 2;
-    if (stride_in * height != buffer.len) {
+        real_stride = real_stride * 2;
+    if (stride_in == 0)
+        stride_in = real_stride;
+    if (stride_in * height > buffer.len) {
         PyBuffer_Release(&buffer);
-        PyErr_SetString(PyExc_ValueError, "image plane size does not match data size");
+        PyErr_SetString(PyExc_ValueError, "image plane does not contain enough data");
         return NULL;
     }
 
@@ -311,7 +315,7 @@ static PyObject* _CtxWriteImage_add_plane_la(CtxWriteImageObject* self, PyObject
     uint16_t *out_word_y = (uint16_t *)plane_data_y;
     uint16_t *out_word_alpha = (uint16_t *)plane_data_alpha;
     uint16_t *in_word = (uint16_t *)buffer.buf;
-    if ((depth_in == depth) && (depth == 8)) {
+    if ((depth_in == depth) && (depth <= 8)) {
         uint8_t *out_y = plane_data_y;
         uint8_t *out_alpha = plane_data_alpha;
         uint8_t *in = buffer.buf;
@@ -369,19 +373,21 @@ static PyObject* _CtxWriteImage_add_plane_la(CtxWriteImageObject* self, PyObject
 
 static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject* args) {
     /* (size), depth: int, depth_in: int, data: bytes */
-    int width, height, depth, depth_in, stride, stride_in;
+    int width, height, depth, depth_in, stride_out, stride_in, real_stride;
     Py_buffer buffer;
     uint8_t *plane_data;
 
-    if (!PyArg_ParseTuple(args, "(ii)iiy*", &width, &height, &depth, &depth_in, &buffer))
+    if (!PyArg_ParseTuple(args, "(ii)iiy*i", &width, &height, &depth, &depth_in, &buffer, &stride_in))
         return NULL;
 
-    stride_in = width;
+    real_stride = width;
     if (depth > 8)
-        stride_in = stride_in * 2;
-    if (stride_in * height != buffer.len) {
+        real_stride = real_stride * 2;
+    if (stride_in == 0)
+        stride_in = real_stride;
+    if (stride_in * height > buffer.len) {
         PyBuffer_Release(&buffer);
-        PyErr_SetString(PyExc_ValueError, "image plane size does not match data size");
+        PyErr_SetString(PyExc_ValueError, "image plane does not contain enough data");
         return NULL;
     }
 
@@ -390,7 +396,7 @@ static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject*
         return NULL;
     }
 
-    plane_data = heif_image_get_plane(self->image, heif_channel_Y, &stride);
+    plane_data = heif_image_get_plane(self->image, heif_channel_Y, &stride_out);
     if (!plane_data) {
         PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_RuntimeError, "heif_image_get_plane(Y) failed");
@@ -403,24 +409,24 @@ static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject*
     uint8_t *in = buffer.buf;
     uint16_t *out_word = (uint16_t *)plane_data;
     uint16_t *in_word = (uint16_t *)buffer.buf;
-    if ((depth_in == depth) && (stride_in == stride))
-        memcpy(out, in, stride * height);
-    else if ((depth_in == depth) && (stride_in != stride))
+    if ((depth_in == depth) && (stride_in == stride_out))
+        memcpy(out, in, stride_out * height);
+    else if ((depth_in == depth) && (stride_in != stride_out))
         for (int i = 0; i < height; i++)
-            memcpy(out + stride * i, in + stride_in * i, stride_in);
+            memcpy(out + stride_out * i, in + stride_in * i, real_stride);
     else if ((depth_in == 16) && (depth == 10))
         for (int i = 0; i < height; i++) {
             for (int i2 = 0; i2 < width; i2++)
                 out_word[i2] = in_word[i2] >> 6;
             in_word += stride_in / 2;
-            out_word += stride / 2;
+            out_word += stride_out / 2;
         }
     else if ((depth_in == 16) && (depth == 12))
         for (int i = 0; i < height; i++) {
             for (int i2 = 0; i2 < width; i2++)
                 out_word[i2] = in_word[i2] >> 4;
             in_word += stride_in / 2;
-            out_word += stride / 2;
+            out_word += stride_out / 2;
         }
     else
         invalid_mode = 1;

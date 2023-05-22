@@ -58,9 +58,13 @@ def test_numpy_array_invalid_ispe(im_path, bgr_mode):
         assert np.array_equal(pil_array, heif_array)
 
 
-def test_array_with_stride_data():
-    im_data = np.asarray(helpers.gradient_rgb())
-    im = pillow_heif.from_bytes("RGB", (128, 256), bytes(im_data), stride=256 * 3)
+@pytest.mark.parametrize("mode", ("L", "LA", "RGB", "RGBA"))
+def test_rgb_array_with_custom_stride(mode):
+    im_data = np.asarray(helpers.gradient_rgb().convert(mode=mode))
+    im = pillow_heif.from_bytes(mode, (127, 256), bytes(im_data), stride=256 * len(mode))
     np.testing.assert_array_equal(im_data, im)
-    im_data = im_data[:, :128, :]
+    im_data = im_data[:, :127]
     np.testing.assert_array_equal(im_data, im.to_pillow())
+    buf = BytesIO()
+    im.save(buf, quality=-1, chroma=444)
+    helpers.compare_hashes([Image.open(buf), Image.fromarray(im_data)], hash_size=32)

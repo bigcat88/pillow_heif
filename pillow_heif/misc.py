@@ -319,11 +319,11 @@ class CtxEncode:
         im_out = self.ctx_write.create_image(size, MODE_INFO[mode][2], MODE_INFO[mode][3], premultiplied_alpha)
         # image data
         if MODE_INFO[mode][0] == 1:
-            im_out.add_plane_l(size, bit_depth_out, bit_depth_in, data)
+            im_out.add_plane_l(size, bit_depth_out, bit_depth_in, data, kwargs.get("stride", 0))
         elif MODE_INFO[mode][0] == 2:
-            im_out.add_plane_la(size, bit_depth_out, bit_depth_in, data)
+            im_out.add_plane_la(size, bit_depth_out, bit_depth_in, data, kwargs.get("stride", 0))
         else:
-            im_out.add_plane(size, bit_depth_out, bit_depth_in, data, mode.find("BGR") != -1)
+            im_out.add_plane(size, bit_depth_out, bit_depth_in, data, mode.find("BGR") != -1, kwargs.get("stride", 0))
         # color profile
         __icc_profile = kwargs.get("icc_profile", None)
         if __icc_profile is not None:

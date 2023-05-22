@@ -432,6 +432,18 @@ def test_encode_function(mode, size: tuple):
     helpers.compare_hashes([buf, im])
 
 
+@pytest.mark.parametrize("mode", ("L", "LA", "RGB", "RGBA"))
+def test_encode_function_with_stride(mode):
+    im = Image.effect_mandelbrot((512, 512), (-3, -2.5, 2, 2.5), 100)
+    im = im.convert(mode)
+    buf = BytesIO()
+    pillow_heif.encode(im.mode, (257, im.size[1]), im.tobytes(), buf, quality=-1, stride=512 * len(mode))
+    im = im.crop((0, 0, 257, 512))
+    im.show()
+    pillow_heif.open_heif(buf).to_pillow().show()
+    helpers.compare_hashes([buf, im], hash_size=32)
+
+
 @pytest.mark.parametrize("mode", ("L", "LA", "RGB", "RGBA", "L;16", "LA;16", "RGB;16", "RGBA;16"))
 def test_encode_function_not_enough_data(mode):
     buf = BytesIO()
