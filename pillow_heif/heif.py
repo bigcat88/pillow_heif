@@ -81,7 +81,7 @@ class HeifImage:
         shape: Tuple[Any, ...] = (self.size[1], self.size[0])
         if MODE_INFO[self.mode][0] > 1:
             shape += (MODE_INFO[self.mode][0],)
-        typestr = "|u1" if self.mode.find(";16") == -1 else "<u2"
+        typestr = "|u1" if MODE_INFO[self.mode][1] <= 8 else "<u2"
         return {"shape": shape, "typestr": typestr, "version": 3, "data": self.data}
 
     @property
