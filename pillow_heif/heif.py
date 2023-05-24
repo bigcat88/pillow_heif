@@ -173,8 +173,6 @@ class HeifFile:
         `ValueError`, `EOFError`, `SyntaxError`, `RuntimeError`, `OSError`"""
 
     def __init__(self, fp=None, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs):
-        remove_stride: bool = kwargs.get("remove_stride", True)
-        hdr_to_16bit: bool = kwargs.get("hdr_to_16bit", True)
         if hasattr(fp, "seek"):
             fp.seek(0, SEEK_SET)
 
@@ -184,15 +182,14 @@ class HeifFile:
         else:
             fp_bytes = _get_bytes(fp)
             mimetype = get_file_mimetype(fp_bytes)
-            reload_size: bool = kwargs.get("reload_size", options.ALLOW_INCORRECT_HEADERS)
             images = load_file(
                 fp_bytes,
                 options.DECODE_THREADS,
                 convert_hdr_to_8bit,
                 bgr_mode,
-                remove_stride,
-                hdr_to_16bit,
-                reload_size,
+                kwargs.get("remove_stride", True),
+                kwargs.get("hdr_to_16bit", True),
+                kwargs.get("reload_size", options.ALLOW_INCORRECT_HEADERS),
             )
         self.mimetype = mimetype
         self._images: List[HeifImage] = [HeifImage(i) for i in images if i is not None]
@@ -447,6 +444,8 @@ def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
         be converted to 8 bit images during loading. Otherwise, they will open in 16 bit mode.
     :param bgr_mode: Boolean indicating should be `RGB(A)` images be opened in `BGR(A)` mode.
+    :param kwargs: **hdr_to_16bit** a boolean, indicating that 10/12 bit image should open in 16 bit mode.
+        Default = **True**
 
     :returns: :py:class:`~pillow_heif.HeifFile` object.
     :exception ValueError: invalid input data.
@@ -468,6 +467,8 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
         be converted to 8 bit images during loading. Otherwise, they will open in 16 bit mode.
     :param bgr_mode: Boolean indicating should be `RGB(A)` images be opened in `BGR(A)` mode.
+    :param kwargs: **hdr_to_16bit** a boolean, indicating that 10/12 bit image should open in 16 bit mode.
+        Default = **True**
 
     :returns: :py:class:`~pillow_heif.HeifFile` object.
     :exception ValueError: invalid input data.
@@ -476,7 +477,7 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :exception RuntimeError: some other error.
     :exception OSError: out of memory."""
 
-    ret = open_heif(fp, convert_hdr_to_8bit, bgr_mode, reload_size=True, **kwargs)
+    ret = HeifFile(fp, convert_hdr_to_8bit, bgr_mode, reload_size=True, **kwargs)
     for img in ret:
         img.load()
     return ret
