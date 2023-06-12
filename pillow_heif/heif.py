@@ -6,7 +6,6 @@ from copy import copy, deepcopy
 from io import SEEK_SET
 from typing import Any, Dict, List, Optional, Tuple
 
-from _pillow_heif import lib_info, load_file
 from PIL import Image
 
 from . import options
@@ -26,6 +25,13 @@ from .misc import (
     get_file_mimetype,
     set_orientation,
 )
+
+try:
+    import _pillow_heif
+except ImportError as ex:
+    from ._deffered_error import DeferredError
+
+    _pillow_heif = DeferredError(ex)
 
 
 class HeifImage:
@@ -182,7 +188,7 @@ class HeifFile:
         else:
             fp_bytes = _get_bytes(fp)
             mimetype = get_file_mimetype(fp_bytes)
-            images = load_file(
+            images = _pillow_heif.load_file(
                 fp_bytes,
                 options.DECODE_THREADS,
                 convert_hdr_to_8bit,
@@ -497,7 +503,7 @@ def encode(mode: str, size: tuple, data, fp, **kwargs) -> None:
 def _encode_images(images: List[HeifImage], fp, **kwargs) -> None:
     compression = kwargs.get("format", "HEIF")
     compression_format = HeifCompressionFormat.AV1 if compression == "AVIF" else HeifCompressionFormat.HEVC
-    if not lib_info[compression]:
+    if not _pillow_heif.lib_info[compression]:
         raise RuntimeError(f"No {compression} encoder found.")
     images_to_save: List[HeifImage] = images + kwargs.get("append_images", [])
     if not kwargs.get("save_all", True):
