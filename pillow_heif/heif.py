@@ -442,9 +442,10 @@ def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
 
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
-        be converted to 8 bit images during loading. Otherwise, they will open in 16 bit mode.
+        be converted to 8 bit images during decoding. Otherwise, they will open in 16 bit mode.
     :param bgr_mode: Boolean indicating should be `RGB(A)` images be opened in `BGR(A)` mode.
-    :param kwargs: **hdr_to_16bit** a boolean, indicating that 10/12 bit image should open in 16 bit mode.
+    :param kwargs: **hdr_to_16bit** a boolean value indicating that 10/12-bit image data
+        should be converted to 16-bit mode during decoding. `Has lower priority then convert_hdr_to_8bit`!
         Default = **True**
 
     :returns: :py:class:`~pillow_heif.HeifFile` object.
@@ -465,9 +466,10 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
 
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
-        be converted to 8 bit images during loading. Otherwise, they will open in 16 bit mode.
+        be converted to 8 bit images during decoding. Otherwise, they will open in 16 bit mode.
     :param bgr_mode: Boolean indicating should be `RGB(A)` images be opened in `BGR(A)` mode.
-    :param kwargs: **hdr_to_16bit** a boolean, indicating that 10/12 bit image should open in 16 bit mode.
+    :param kwargs: **hdr_to_16bit** a boolean value indicating that 10/12-bit image data
+        should be converted to 16-bit mode during decoding. `Has lower priority then convert_hdr_to_8bit`!
         Default = **True**
 
     :returns: :py:class:`~pillow_heif.HeifFile` object.
