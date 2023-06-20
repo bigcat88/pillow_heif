@@ -9,6 +9,13 @@ line-length = 120
 target-versions = ["py37"]
 preview = true
 
+[tool.ruff]
+line-length = 120
+target-version = "py38"
+
+[tool.ruff.per-file-ignores]
+"pillow_heif/__init__.py" = ["F401"]
+
 [tool.isort]
 profile = "black"
 
@@ -57,13 +64,6 @@ messages_control.disable = [
     "missing-function-docstring",
     "line-too-long",
 ]
-
-[tool.ruff]
-line-length = 120
-target-version = "py38"
-
-[tool.ruff.per-file-ignores]
-"pillow_heif/__init__.py" = ["F401"]
 
 [tool.cibuildwheel]
 build-verbosity = "2"
