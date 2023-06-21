@@ -9,11 +9,22 @@ class Libheif < Formula
   # Set current revision from what it was taken plus 10
   revision 10
 
+  depends_on "cmake" => :build
   depends_on "pkg-config" => :build
   depends_on "libde265"
 
   def install
-    system "./configure", *std_configure_args, "--disable-silent-rules"
-    system "make", "install"
+    args = %W[
+      -DWITH_RAV1E=OFF
+      -DWITH_DAV1D=OFF
+      -DWITH_SvtEnc=OFF
+      -DWITH_AOM=OFF
+      -DWITH_X265=OFF
+      -DENABLE_PLUGIN_LOADING=OFF
+      -DCMAKE_INSTALL_RPATH=#{rpath}
+    ]
+    system "cmake", "-S", ".", "-B", "build", *args, *std_cmake_args
+    system "cmake", "--build", "build"
+    system "cmake", "--install", "build"
   end
 end

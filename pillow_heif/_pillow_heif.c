@@ -1169,6 +1169,10 @@ static int setup_module(PyObject* m) {
     if (PyType_Ready(&CtxImage_Type) < 0)
         return -1;
 
+    #if LIBHEIF_HAVE_VERSION(1,14,0)
+        heif_init(NULL);
+    #endif
+
     const struct heif_encoder_descriptor* encoder_descriptor;
     const char* x265_version = "";
     if (heif_context_get_encoder_descriptors(NULL, heif_compression_HEVC, NULL, &encoder_descriptor, 1))
