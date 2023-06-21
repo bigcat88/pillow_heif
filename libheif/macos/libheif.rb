@@ -9,6 +9,7 @@ class Libheif < Formula
   # Set current revision from what it was taken plus 10
   revision 10
 
+  depends_on "cmake" => :build
   depends_on "pkg-config" => :build
   depends_on "aom"
   depends_on "jpeg-turbo"
@@ -18,8 +19,16 @@ class Libheif < Formula
   depends_on "x265"
 
   def install
-    system "./configure", *std_configure_args, "--disable-silent-rules"
-    system "make", "install"
+    args = %W[
+      -DWITH_RAV1E=OFF
+      -DWITH_DAV1D=OFF
+      -DWITH_SvtEnc=OFF
+      -DENABLE_PLUGIN_LOADING=OFF
+      -DCMAKE_INSTALL_RPATH=#{rpath}
+    ]
+    system "cmake", "-S", ".", "-B", "build", *args, *std_cmake_args
+    system "cmake", "--build", "build"
+    system "cmake", "--install", "build"
     pkgshare.install "examples/example.heic"
     pkgshare.install "examples/example.avif"
   end
