@@ -13,12 +13,19 @@ from pathlib import Path
 from struct import pack, unpack
 from typing import List, Optional
 
-from _pillow_heif import CtxWrite
 from PIL import Image
 from PIL import __version__ as pil_version
 
 from . import options
 from .constants import HeifChroma, HeifColorspace, HeifCompressionFormat
+
+try:
+    import _pillow_heif
+except ImportError as ex:
+    from ._deffered_error import DeferredError
+
+    _pillow_heif = DeferredError(ex)
+
 
 MODE_INFO = {
     # name -> [channels, bits per pixel channel, colorspace, chroma]
@@ -298,7 +305,7 @@ def _get_primary_index(some_iterator, primary_index: Optional[int]) -> int:
 class CtxEncode:
     def __init__(self, compression_format: HeifCompressionFormat, **kwargs):
         quality = kwargs.get("quality", options.QUALITY)
-        self.ctx_write = CtxWrite(compression_format, -2 if quality is None else quality)
+        self.ctx_write = _pillow_heif.CtxWrite(compression_format, -2 if quality is None else quality)
         enc_params = kwargs.get("enc_params", {})
         chroma = kwargs.get("chroma", None)
         if chroma:

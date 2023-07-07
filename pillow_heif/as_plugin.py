@@ -6,7 +6,6 @@ from itertools import chain
 from typing import Union
 from warnings import warn
 
-from _pillow_heif import lib_info
 from PIL import Image, ImageFile, ImageSequence
 from PIL import __version__ as pil_version
 
@@ -23,6 +22,13 @@ from .misc import (
     _xmp_from_pillow,
     set_orientation,
 )
+
+try:
+    import _pillow_heif
+except ImportError as ex:
+    from ._deffered_error import DeferredError
+
+    _pillow_heif = DeferredError(ex)
 
 
 class _LibHeifImageFile(ImageFile.ImageFile):
@@ -169,7 +175,7 @@ def register_heif_opener(**kwargs) -> None:
 
     __options_update(**kwargs)
     Image.register_open(HeifImageFile.format, HeifImageFile, _is_supported_heif)
-    if lib_info["HEIF"]:
+    if _pillow_heif.lib_info["HEIF"]:
         Image.register_save(HeifImageFile.format, _save_heif)
         Image.register_save_all(HeifImageFile.format, _save_all_heif)
     extensions = [".heic", ".heics", ".heif", ".heifs", ".hif"]
@@ -210,7 +216,7 @@ def register_avif_opener(**kwargs) -> None:
     :param kwargs: dictionary with values to set in options. See: :ref:`options`.
     """
 
-    if not lib_info["AVIF"]:
+    if not _pillow_heif.lib_info["AVIF"]:
         warn("This version of `pillow-heif` was built without AVIF support.")
         return
     __options_update(**kwargs)

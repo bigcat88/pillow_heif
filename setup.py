@@ -137,8 +137,11 @@ class PillowHeifBuildExt(build_ext):
                 paths.append(subdir)
 
 
-setup(
-    version=get_version(),
-    cmdclass={"build_ext": PillowHeifBuildExt},
-    ext_modules=[Extension("_pillow_heif", ["pillow_heif/_pillow_heif.c"])],
-)
+if getenv("READTHEDOCS", "False") == "True":
+    setup(version=get_version())
+else:
+    setup(
+        version=get_version(),
+        cmdclass={"build_ext": PillowHeifBuildExt},
+        ext_modules=[Extension("_pillow_heif", ["pillow_heif/_pillow_heif.c"])],
+    )

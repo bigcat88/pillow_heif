@@ -300,3 +300,32 @@ jobs:
 
       - name: Perform tests
         run: sudo -H PH_LIGHT_ACTION=1 EXP_PH_LIBHEIF_VERSION="" python3 -m pytest -rs
+
+  coverage-import-error:
+    runs-on: macos-12
+    name: Coverage(ImportError)
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install from source
+        run: |
+          python3 -m pip -v install .
+          python3 -m pip install pytest coverage
+
+      - name: Generate coverage report
+        run: coverage run -m pytest -rs tests/import_error_test.py && coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_macos_imp_err
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true

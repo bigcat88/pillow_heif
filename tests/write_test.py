@@ -94,7 +94,7 @@ def test_pillow_save_one_all():
 
 
 def test_heif_no_encoder():
-    with mock.patch.dict("pillow_heif.heif.lib_info", {"libheif": "1.14.2", "HEIF": "", "AVIF": ""}):
+    with mock.patch.dict("pillow_heif.heif._pillow_heif.lib_info", {"libheif": "1.14.2", "HEIF": "", "AVIF": ""}):
         im_heif = pillow_heif.from_pillow(Image.new("L", (64, 64)))
         out_buffer = BytesIO()
         with pytest.raises(RuntimeError):

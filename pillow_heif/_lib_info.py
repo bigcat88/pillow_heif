@@ -2,13 +2,18 @@
 Functions to get versions of underlying libraries.
 """
 
-from _pillow_heif import lib_info
+try:
+    import _pillow_heif
+except ImportError as ex:
+    from ._deffered_error import DeferredError
+
+    _pillow_heif = DeferredError(ex)
 
 
 def libheif_version() -> str:
     """Returns ``libheif`` version."""
 
-    return lib_info["libheif"]
+    return _pillow_heif.lib_info["libheif"]
 
 
 def libheif_info() -> dict:
@@ -20,4 +25,4 @@ def libheif_info() -> dict:
      'AVIF': 'AOMedia Project AV1 Encoder 3.5.0'
     }"""
 
-    return lib_info
+    return _pillow_heif.lib_info
