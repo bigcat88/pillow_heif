@@ -15,7 +15,7 @@ jobs:
         ref: ${{ github.ref }}
         check-name: 'macosx • aarch64 • Cirrus'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        wait-interval: 30
+        wait-interval: 60
 
     - name: Download artifacts
       run: |
@@ -64,7 +64,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.11.4
+          python3 -m pip install cibuildwheel==2.12.3
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-* cp311-* pp38-* pp39-*"
@@ -92,7 +92,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.11.4
+          python3 -m pip install cibuildwheel==2.12.3
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: "*-macosx_x86_64"
@@ -150,7 +150,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.11.4
+          python3 -m pip install cibuildwheel==2.12.3
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
@@ -209,7 +209,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.11.4
+          python3 -m pip install cibuildwheel==2.12.3
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
@@ -266,7 +266,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.11.4
+          python3 -m pip install cibuildwheel==2.12.3
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('pp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}

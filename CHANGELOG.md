@@ -8,8 +8,13 @@ This release is fully compatible with `0.10.x+` versions.
 
 - (Heif) restored lost ability after `0.9.x` versions to open HDR images in 10/12 bit. #96
 
+### Changed
+
+- `libde265`(HEIF decoder) updated from 1.0.11 to 1.0.12 version. [changelog](https://github.com/strukturag/libde265/releases/tag/v1.0.12)
+
 ## Fixed
 
+- Building from source when using `apt-repository ppa:strukturag/libheif`
 - (Heif) `encode` function with `stride` argument correctly saves image.
 - (Heif) HeifFile class created with `from_bytes` function with `stride` argument respect `stride` value during save.
 - (Heif) HeifFile class created with `from_bytes` function with `stride` argument can correctly translate to numpy array.

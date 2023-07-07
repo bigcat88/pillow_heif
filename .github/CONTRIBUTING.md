@@ -24,4 +24,4 @@ Please send a pull request to the `master` branch.  Feel free to ask questions [
 
 ## Security vulnerabilities
 
-Please see our [security policy](https://github.com/bigcat88/pillow_heif/blob/master/SECURITY.md).
+Please see our [security policy](https://github.com/bigcat88/pillow_heif/blob/master/.github/SECURITY.md).
