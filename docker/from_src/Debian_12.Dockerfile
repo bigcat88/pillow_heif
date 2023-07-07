@@ -1,9 +1,8 @@
-FROM ubuntu:jammy as base
+FROM debian:bullseye-slim as base
 
 RUN \
   apt-get -qq update && \
   apt-get -y -q install \
-    curl \
     python3-pip \
     libfribidi-dev \
     libharfbuzz-dev \
@@ -14,14 +13,15 @@ RUN \
     git \
     cmake \
     nasm \
+    wget \
     libde265-dev \
-    libaom-dev
+    libx265-dev
 
 RUN \
   python3 -m pip install --upgrade pip
 
 RUN \
-  python3 -m pip install Pillow==9.3.0
+  python3 -m pip install Pillow==9.2.0
 
 FROM base as build_test
 
@@ -32,6 +32,7 @@ RUN \
     python3 -m pip install -v "pillow_heif/.[tests]"; \
   else \
     python3 -m pip install -v "pillow_heif/.[tests-min]"; \
+    export PH_TESTS_NO_HEVC_ENC=1; \
   fi && \
   echo "**** Build Done ****" && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \

@@ -1,27 +1,16 @@
-FROM ubuntu:jammy as base
+FROM alpine:3.18 as base
 
 RUN \
-  apt-get -qq update && \
-  apt-get -y -q install \
-    curl \
-    python3-pip \
-    libfribidi-dev \
-    libharfbuzz-dev \
-    libjpeg-dev \
-    liblcms2-dev \
-    libffi-dev \
-    libtool \
-    git \
-    cmake \
-    nasm \
-    libde265-dev \
-    libaom-dev
+  apk add --no-cache \
+    python3-dev \
+    py3-pip \
+    alpine-sdk \
+    libheif-dev \
+    py3-numpy \
+    py3-pillow
 
 RUN \
   python3 -m pip install --upgrade pip
-
-RUN \
-  python3 -m pip install Pillow==9.3.0
 
 FROM base as build_test
 
