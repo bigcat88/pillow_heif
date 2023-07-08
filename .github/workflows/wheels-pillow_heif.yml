@@ -67,7 +67,7 @@ jobs:
           python3 -m pip install cibuildwheel==2.12.3
           python3 -m cibuildwheel
         env:
-          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-* cp311-* pp38-* pp39-*"
+          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-* cp311-* pp39-*"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.MSYS2_PREFIX }}/bin"
           CIBW_ENVIRONMENT_WINDOWS: PH_FULL_ACTION=1
@@ -198,6 +198,12 @@ jobs:
         run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
+
+      - name: 32-bit manylinux preparations
+        if: matrix.cibw_buildlinux == 'manylinux'
+        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
+        env:
+          OS_PACKAGES: "libjpeg-turbo-devel lcms2-devel"
 
       - uses: actions/cache@v3
         with:

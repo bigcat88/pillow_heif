@@ -77,7 +77,7 @@ test-command = "pytest -rs {project}"
 [tool.cibuildwheel.macos]
 before-all = [
     "brew install libjpeg little-cms2",
-    "brew uninstall --force --ignore-dependencies libheif",
+    "brew uninstall --force --ignore-dependencies libheif aom",
     "brew install --formula {project}/libheif/macos/libheif.rb",
     "HOMEBREW_PREFIX=$(brew --prefix)",
     "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib",
@@ -91,6 +91,9 @@ test-command = "pytest -rs {project}"
 test-skip = "cp38-macosx_arm64"
 
 [tool.cibuildwheel.windows]
-before-build = "pip install delvewheel"
+before-build = [
+    "pip install delvewheel",
+    "pip install --prefer-binary pillow",
+]
 test-extras = "tests"
 test-command = "pytest -rs {project}"
