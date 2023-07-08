@@ -3,8 +3,8 @@
 class Libheif < Formula
   desc "ISO/IEC 23008-12:2017 HEIF file format decoder and encoder"
   homepage "https://www.libde265.org/"
-  url "https://github.com/strukturag/libheif/releases/download/v1.15.2/libheif-1.15.2.tar.gz"
-  sha256 "7a4c6077f45180926583e2087571371bdd9cb21b6e6fada85a6fbd544f26a0e2"
+  url "https://github.com/strukturag/libheif/releases/download/v1.16.2/libheif-1.16.2.tar.gz"
+  sha256 "7f97e4205c0bd9f9b8560536c8bd2e841d1c9a6d610401eb3eb87ed9cdfe78ea"
   license "LGPL-3.0-only"
   # Set current revision from what it was taken plus 10
   revision 10
@@ -23,6 +23,7 @@ class Libheif < Formula
       -DWITH_RAV1E=OFF
       -DWITH_DAV1D=OFF
       -DWITH_SvtEnc=OFF
+      -DWITH_LIBSHARPYUV=OFF
       -DENABLE_PLUGIN_LOADING=OFF
       -DCMAKE_INSTALL_RPATH=#{rpath}
     ]

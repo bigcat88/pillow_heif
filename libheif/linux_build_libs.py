@@ -4,6 +4,7 @@ from platform import machine
 from re import IGNORECASE, MULTILINE, match, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
 
+# 1
 BUILD_DIR = environ.get("BUILD_DIR", "/tmp/ph_build_stuff")
 INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
@@ -11,7 +12,7 @@ PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/get/0b75c44c10e605fe9e9ebed58f04a46271131827.tar.gz"
 LIBAOM_URL = "https://aomedia.googlesource.com/aom/+archive/v3.5.0.tar.gz"
 LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.0.12/libde265-1.0.12.tar.gz"
-LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.15.2/libheif-1.15.2.tar.gz"
+LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.16.2/libheif-1.16.2.tar.gz"
 
 
 def download_file(url: str, out_path: str) -> bool:
@@ -190,7 +191,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             if name == "libheif":
                 cmake_args += (
                     "-DWITH_EXAMPLES=OFF -DWITH_RAV1E=OFF -DWITH_DAV1D=OFF -DWITH_SvtEnc=OFF"
-                    " -DENABLE_PLUGIN_LOADING=OFF".split()
+                    " -DWITH_LIBSHARPYUV=OFF -DENABLE_PLUGIN_LOADING=OFF".split()
                 )
                 _hide_build_process = False
                 if musl:
