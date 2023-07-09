@@ -1,6 +1,7 @@
 import sys
 from io import BytesIO
 from os import path
+from time import perf_counter
 
 from PIL import Image
 
@@ -34,7 +35,10 @@ if __name__ == "__main__":
         img = LA_IMAGE
     else:
         img = L_IMAGE
+    start_time = perf_counter()
     for i in range(int(sys.argv[1])):
         buf = BytesIO()
         img.save(buf, format="HEIF")
+    total_time = perf_counter() - start_time
+    print(total_time)
     sys.exit(0)

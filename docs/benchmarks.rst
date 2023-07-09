@@ -12,14 +12,32 @@ cat.hif - 2832x4240 = 12MP, 10 bit image, with Exif and IPTC data.
 
 image_large.heic - 6000x8000 = 48MP, with Exif and IPTC data.
 
-.. image:: ../benchmarks/results_decode_Windows.png
+Pillow load
+^^^^^^^^^^^
 
-.. image:: ../benchmarks/results_decode_Linux.png
+.. image:: ../benchmarks/results_decode_pillow_load_Windows.png
 
-.. image:: ../benchmarks/results_decode_macOS.png
+.. image:: ../benchmarks/results_decode_pillow_load_Linux.png
 
-.. note:: in some cases decode speed is a bit slower compared to previous version, it will be fixed with new release of
-    `Pillow <https://github.com/python-pillow/Pillow/issues/6933>`_
+.. image:: ../benchmarks/results_decode_pillow_load_macOS.png
+
+Numpy BGR
+^^^^^^^^^
+
+.. image:: ../benchmarks/results_decode_numpy_bgr_Windows.png
+
+.. image:: ../benchmarks/results_decode_numpy_bgr_Linux.png
+
+.. image:: ../benchmarks/results_decode_numpy_bgr_macOS.png
+
+Numpy RGB
+^^^^^^^^^
+
+.. image:: ../benchmarks/results_decode_numpy_rgb_Linux.png
+
+.. image:: ../benchmarks/results_decode_numpy_rgb_Windows.png
+
+.. image:: ../benchmarks/results_decode_numpy_rgb_macOS.png
 
 Encode benchmarks
 -----------------
