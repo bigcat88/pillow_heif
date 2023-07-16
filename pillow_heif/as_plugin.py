@@ -58,7 +58,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         if self._heif_file:
             frame_heif = self._heif_file[self.tell()]
             try:
-                if pil_version[:2] not in ("8.",) and pil_version[:4] not in ("9.0.", "9.1.", "9.2.", "9.3.", "9.4."):
+                if pil_version[:4] not in ("9.1.", "9.2.", "9.3.", "9.4."):
                     data = frame_heif.data
                 else:
                     data = bytes(frame_heif.data)

@@ -219,7 +219,7 @@ def _exif_from_pillow(img: Image.Image) -> Optional[bytes]:
     if "exif" in img.info:
         return img.info["exif"]
     if hasattr(img, "getexif"):
-        if pil_version[:2] not in ("8.",) and pil_version[:4] not in ("9.0.", "9.1."):
+        if pil_version[:4] not in ("9.1.",):
             exif = img.getexif()
             if exif:
                 return exif.tobytes()

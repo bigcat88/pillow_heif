@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - The license for the project itself has been changed to "BSD-3-Clause" since "Apache 2.0" is not compatible with the "x265" encoder. #111
+- Minimum required `Pillow` version increased from `8.4.0` to `9.1.1`
 
 ## [0.12.0 - 2023-07-08]
 

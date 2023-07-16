@@ -52,7 +52,7 @@ jobs:
 
       - name: Install from source
         run: |
-          python3 -m pip install pillow==8.4.0
+          python3 -m pip install pillow==9.5.0
           python3 -m pip -v install ".[dev]"
 
       - name: LibHeif info
@@ -247,7 +247,7 @@ jobs:
 
       - name: Install from source
         run: |
-          sudo -H python3 -m pip install pillow==9.0.1 pytest defusedxml packaging numpy coverage
+          sudo -H python3 -m pip install pillow==9.3.0 pytest defusedxml packaging numpy coverage
           sudo -H PH_LIGHT_ACTION=1 python3 -m pip -v install --no-build-isolation .
 
       - name: LibHeif info
