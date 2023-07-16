@@ -23,7 +23,7 @@ jobs:
       fail-fast: true
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
-        cibw_arch: [ "aarch64", "i686", "x86_64" ]
+        cibw_arch: [ "aarch64", "x86_64" ]
     name: ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
     runs-on: ubuntu-20.04
     env:
@@ -39,19 +39,7 @@ jobs:
           platforms: arm64
 
       - name: Install cibuildwheel & twine
-        run: python3 -m pip install twine cibuildwheel==2.12.3
-
-      - name: 32-bit musllinux preparations
-        if: matrix.cibw_buildlinux == 'musllinux' && matrix.cibw_arch == 'i686'
-        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
-
-      - name: 32-bit manylinux preparations
-        if: matrix.cibw_buildlinux == 'manylinux' && matrix.cibw_arch == 'i686'
-        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "libjpeg-turbo-devel lcms2-devel"
+        run: python3 -m pip install twine cibuildwheel==2.14.1
 
       - uses: actions/cache@v3
         with:
@@ -66,8 +54,7 @@ jobs:
         env:
           CIBW_BUILD: ${{ format('cp38-{0}*', matrix.cibw_buildlinux) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
-          CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
-          CIBW_ENVIRONMENT_LINUX: BUILD_DIR=/host${{ env.BUILD_DIR }}
+          CIBW_ENVIRONMENT_LINUX: BUILD_DIR=/host${{ env.BUILD_DIR }} PH_FULL_ACTION=1
           CIBW_TEST_COMMAND: "python3 -c 'import pillow_heif; print(pillow_heif.libheif_info())'"
           CIBW_TEST_EXTRAS: ""
           CIBW_BUILD_VERBOSITY: 1
@@ -111,7 +98,7 @@ jobs:
           platforms: arm64
 
       - name: Install cibuildwheel & twine
-        run: python3 -m pip install twine cibuildwheel==2.12.3
+        run: python3 -m pip install twine cibuildwheel==2.14.1
 
       - name: 32-bit musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux' && matrix.cibw_arch == 'i686'
