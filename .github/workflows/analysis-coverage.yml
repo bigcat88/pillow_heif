@@ -35,13 +35,13 @@ jobs:
 
   coverage-linux:
     runs-on: ubuntu-22.04
-    name: Coverage(Linux)
+    name: Coverage(Linux) • 🐍3.12
 
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.12.0-beta.4'
 
       - name: Prepare system
         run: |
@@ -50,16 +50,16 @@ jobs:
           sudo apt update
           sudo apt -y install libheif-dev
 
-      - name: Install from source
+      - name: Install from source  # when 3.12 get released will return `install ".[dev]"`
         run: |
           python3 -m pip install pillow==9.5.0
-          python3 -m pip -v install ".[dev]"
+          python3 -m pip -v install ".[tests-min]" coverage
 
       - name: LibHeif info
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: coverage run -m pytest -rs && coverage xml && coverage html
+        run: coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
@@ -78,7 +78,7 @@ jobs:
 
   coverage-linux-pillow-dev:
     runs-on: ubuntu-22.04
-    name: Coverage(Linux, Pillow-dev)
+    name: Coverage(Linux, Pillow-dev) • 🐍3.11
 
     steps:
       - uses: actions/checkout@v3
@@ -104,7 +104,7 @@ jobs:
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: coverage run -m pytest -rs && coverage xml && coverage html
+        run: coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
@@ -123,7 +123,7 @@ jobs:
 
   coverage-macos:
     runs-on: macos-12
-    name: Coverage(macOS)
+    name: Coverage(macOS) • 🐍3.10
     env:
       TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
 
@@ -134,13 +134,14 @@ jobs:
           python-version: '3.10'
 
       - name: Install from source
-        run: python3 -m pip -v install ".[dev]"
+        run: |
+          python3 -m pip -v install ".[dev]"
 
       - name: LibHeif info
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: coverage run -m pytest -rs && coverage xml && coverage html
+        run: coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
@@ -159,7 +160,7 @@ jobs:
 
   coverage-windows:
     runs-on: windows-2022
-    name: Coverage(Windows)
+    name: Coverage(Windows) • 🐍3.9
     env:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
 
@@ -210,7 +211,7 @@ jobs:
         run: python -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: coverage run -m pytest -rs && coverage xml && coverage html
+        run: coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
@@ -229,7 +230,7 @@ jobs:
 
   coverage-pi-heif:
     runs-on: ubuntu-22.04
-    name: Pi-Heif Coverage(Linux)
+    name: Pi-Heif Coverage(Linux) • 🐍3.8
 
     steps:
       - uses: actions/checkout@v3
@@ -238,7 +239,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.7'
+          python-version: '3.8'
 
       - name: Prepare system
         run: |
@@ -254,7 +255,7 @@ jobs:
         run: sudo -H python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: sudo -H coverage run -m pytest -rs && coverage xml && coverage html
+        run: sudo -H coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
@@ -273,7 +274,7 @@ jobs:
 
   test-pi-heif:
     runs-on: ubuntu-22.04
-    name: Pi-Heif Test(Linux)
+    name: Pi-Heif Test(Linux) • 🐍3.8
 
     steps:
       - uses: actions/checkout@v3
@@ -284,7 +285,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.7'
+          python-version: '3.8'
 
       - name: Prepare system
         run: |
@@ -300,7 +301,7 @@ jobs:
         run: sudo -H python3 -c "import pi_heif; print(pi_heif.libheif_info())"
 
       - name: Perform tests
-        run: sudo -H PH_LIGHT_ACTION=1 EXP_PH_LIBHEIF_VERSION="" python3 -m pytest -rs
+        run: sudo -H PH_LIGHT_ACTION=1 EXP_PH_LIBHEIF_VERSION="" python3 -m pytest
 
   coverage-import-error:
     runs-on: macos-12
@@ -314,7 +315,7 @@ jobs:
           python3 -m pip install pytest coverage
 
       - name: Generate coverage report
-        run: coverage run -m pytest -rs tests/import_error_test.py && coverage xml && coverage html
+        run: coverage run -m pytest tests/import_error_test.py && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
