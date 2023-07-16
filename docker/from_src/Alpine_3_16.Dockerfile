@@ -1,4 +1,4 @@
-FROM alpine:3.15 as base
+FROM alpine:3.16 as base
 
 RUN \
   apk add --no-cache \
@@ -9,6 +9,7 @@ RUN \
     libffi-dev \
     cmake \
     nasm \
+    x265-dev \
     libde265-dev \
     py3-numpy \
     py3-pillow
