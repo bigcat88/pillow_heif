@@ -42,5 +42,5 @@ RUN \
   python3 -m pip install repaired_dist/*-cp$PTAG-*manylinux*.whl && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
   export PH_LIGHT_ACTION=1 && \
-  python3 -m pytest -rs && \
+  python3 -m pytest && \
   echo "**** Build Done ****"

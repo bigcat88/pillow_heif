@@ -328,7 +328,7 @@ jobs:
       - name: Test sdist
         run: |
           export PH_FULL_ACTION=1 TEST_DECODE_THREADS=0
-          python3 -m pytest -rs
+          python3 -m pytest
 
       - name: Upload sdist
         uses: actions/upload-artifact@v3

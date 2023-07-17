@@ -23,7 +23,7 @@ test_src_build_full_macos_arm_task:
   libheif_info_script:
     - python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
   perform_tests_script:
-    - python3 -m pytest -rs
+    - python3 -m pytest
 
 test_src_build_lite_macos_arm_task:
   only_if: "changesInclude(
@@ -54,4 +54,4 @@ test_src_build_lite_macos_arm_task:
   libheif_info_script:
     - python3 -c "import pi_heif; print(pi_heif.libheif_info())"
   perform_tests_script:
-    - python3 -m pytest -rs
+    - python3 -m pytest

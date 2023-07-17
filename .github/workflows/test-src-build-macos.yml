@@ -50,7 +50,7 @@ jobs:
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Perform tests
-        run: python3 -m pytest -rs
+        run: python3 -m pytest
 
   lite_macos_11:
     name: macOS:11-x86_64(Pi-Heif)
@@ -79,4 +79,4 @@ jobs:
         run: python3 -c "import pi_heif; print(pi_heif.libheif_info())"
 
       - name: Perform tests
-        run: python3 -m pytest -rs
+        run: python3 -m pytest

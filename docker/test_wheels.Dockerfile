@@ -17,6 +17,6 @@ COPY . /pillow_heif
 
 ARG TEST_TYPE
 RUN $TEST_TYPE && \
-    python3 -m pytest -rs -v pillow_heif/. && \
+    python3 -m pytest -v pillow_heif/. && \
     echo "**** Test Done ****" && \
     python3 -m pip show pillow_heif

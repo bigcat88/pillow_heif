@@ -28,5 +28,5 @@ RUN \
   fi && \
   echo "**** Build Done ****" && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \
-  pytest -rs pillow_heif && \
+  pytest pillow_heif && \
   echo "**** Test Done ****"

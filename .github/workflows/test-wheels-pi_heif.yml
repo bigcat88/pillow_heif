@@ -100,7 +100,7 @@ jobs:
       - name: Test wheel
         run: |
           python3 .github/transform_to-pi_heif.py
-          cd .. && python3 -m pytest -rs pillow_heif
+          cd .. && python3 -m pytest pillow_heif
 
   macos-wheels:
     name: macOS • 11 • ${{ matrix.python-version }}
@@ -131,7 +131,7 @@ jobs:
           export TEST_DECODE_THREADS=0
           python3 .github/transform_to-pi_heif.py
           export PH_LIGHT_ACTION=1
-          cd .. && python3 -m pytest -rs pillow_heif
+          cd .. && python3 -m pytest pillow_heif
 
   manylinux-wheels:
     name: Ubuntu-Focal • ${{ matrix.python-version }}
@@ -161,7 +161,7 @@ jobs:
         run: |
           python3 .github/transform_to-pi_heif.py
           export PH_LIGHT_ACTION=1
-          cd .. && python3 -m pytest -rs pillow_heif
+          cd .. && python3 -m pytest pillow_heif
 
   macos-projects-together:
     name: macOS • Together • ${{ matrix.python-version }}
@@ -192,11 +192,11 @@ jobs:
         run: |
           export TEST_DECODE_THREADS=0
           export PH_FULL_ACTION=1
-          cd .. && python3 -m pytest -rs pillow_heif
+          cd .. && python3 -m pytest pillow_heif
           export PH_FULL_ACTION=0 && cd pillow_heif
           python3 .github/transform_to-pi_heif.py
           export PH_LIGHT_ACTION=1
-          cd .. && python3 -m pytest -rs pillow_heif
+          cd .. && python3 -m pytest pillow_heif
 
   linux-projects-together:
     name: Linux • Together • ${{ matrix.python-version }}
@@ -226,8 +226,8 @@ jobs:
       - name: Test wheels
         run: |
           export PH_FULL_ACTION=1
-          cd .. && python3 -m pytest -rs pillow_heif
+          cd .. && python3 -m pytest pillow_heif
           export PH_FULL_ACTION=0 && cd pillow_heif
           python3 .github/transform_to-pi_heif.py
           export PH_LIGHT_ACTION=1
-          cd .. && python3 -m pytest -rs pillow_heif
+          cd .. && python3 -m pytest pillow_heif

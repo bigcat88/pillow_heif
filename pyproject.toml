@@ -27,6 +27,7 @@ testpaths = [
 filterwarnings = [
     "ignore::DeprecationWarning",
 ]
+addopts = "-rs --color=yes"
 
 [tool.coverage.run]
 cover_pylib = true
@@ -72,7 +73,7 @@ skip = ["cp36-*", "pp37-*", "cp37-musllinux*"]
 
 [tool.cibuildwheel.linux]
 test-extras = "tests"
-test-command = "pytest -rs {project}"
+test-command = "pytest {project}"
 
 [tool.cibuildwheel.macos]
 before-all = [
@@ -87,7 +88,7 @@ repair-wheel-command = [
   "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}",
 ]
 test-extras = "tests"
-test-command = "pytest -rs {project}"
+test-command = "pytest {project}"
 test-skip = "cp38-macosx_arm64"
 
 [tool.cibuildwheel.windows]
@@ -96,4 +97,4 @@ before-build = [
     "pip install --prefer-binary pillow",
 ]
 test-extras = "tests"
-test-command = "pytest -rs {project}"
+test-command = "pytest {project}"
