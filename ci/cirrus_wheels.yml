@@ -7,10 +7,7 @@ wheel_macos_arm_task:
 
   env:
     PATH: /opt/homebrew/opt/python@3.10/bin:$PATH
-    CIBW_SKIP: 'pp* cp36-* cp37-*'
-    CIBW_BUILD: '*-macosx_arm64'
     CIBW_ARCHS: arm64
-    CIBW_PLATFORM: macos
     CIBW_ENVIRONMENT: 'MACOSX_DEPLOYMENT_TARGET=12.0 PH_FULL_ACTION=1'
 
   install_pre_requirements_script:
@@ -19,7 +16,7 @@ wheel_macos_arm_task:
     - brew install python@3.10
     - ln -s python3 /opt/homebrew/opt/python@3.10/bin/python
   install_cibuildwheel_script:
-    - python3 -m pip install cibuildwheel==2.12.3
+    - python3 -m pip install cibuildwheel==2.14.1
   run_cibuildwheel_script:
     - python3 -m cibuildwheel
   wheels_artifacts:
@@ -34,10 +31,7 @@ wheel_pi_heif_macos_arm_task:
 
   env:
     PATH: /opt/homebrew/opt/python@3.10/bin:$PATH
-    CIBW_SKIP: 'pp* cp36-* cp37-*'
-    CIBW_BUILD: '*-macosx_arm64'
     CIBW_ARCHS: arm64
-    CIBW_PLATFORM: macos
     CIBW_ENVIRONMENT: 'MACOSX_DEPLOYMENT_TARGET=12.0 PH_LIGHT_ACTION=1'
 
   install_pre_requirements_script:
@@ -46,7 +40,7 @@ wheel_pi_heif_macos_arm_task:
     - brew install python@3.10
     - ln -s python3 /opt/homebrew/opt/python@3.10/bin/python
   install_cibuildwheel_script:
-    - python3 -m pip install cibuildwheel==2.12.3
+    - python3 -m pip install cibuildwheel==2.14.1
   transform_to_pi_heif_script:
     - cp -r -v ./pi-heif/* .
     - python3 .github/transform_to-pi_heif.py
