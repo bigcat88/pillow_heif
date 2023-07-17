@@ -3,6 +3,7 @@ name: Wheels test • Pi-Heif
 on:
   release:
     types: [ published ]
+  workflow_dispatch:
 
 jobs:
   docker-tests:
@@ -75,8 +76,9 @@ jobs:
     name: Windows • 2019 • ${{ matrix.python-version }}
     runs-on: windows-2019
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
     env:
       PH_LIGHT_ACTION: 1
 
@@ -94,7 +96,7 @@ jobs:
 
       - name: Preparations
         run: |
-          python3 -m pip install pytest pillow numpy pympler defusedxml
+          python3 -m pip install pytest pillow packaging defusedxml
           python3 -m pip install --only-binary=:all: pi-heif
 
       - name: Test wheel
@@ -106,8 +108,9 @@ jobs:
     name: macOS • 11 • ${{ matrix.python-version }}
     runs-on: macos-11
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["pypy-3.8", "pypy-3.9", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -123,7 +126,7 @@ jobs:
       - name: Preparations
         run: |
           brew install libjpeg little-cms2
-          python3 -m pip install pytest pillow numpy pympler defusedxml
+          python3 -m pip install pytest pillow packaging defusedxml
           python3 -m pip install --only-binary=:all: pi-heif
 
       - name: Test wheel
@@ -137,8 +140,9 @@ jobs:
     name: Ubuntu-Focal • ${{ matrix.python-version }}
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["pypy-3.8", "pypy-3.9", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -154,7 +158,7 @@ jobs:
       - name: Preparations
         run: |
           sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
-          python3 -m pip install pytest pillow numpy pympler defusedxml
+          python3 -m pip install pytest pillow packaging defusedxml
           python3 -m pip install --only-binary=:all: pi-heif
 
       - name: Test wheel
@@ -168,7 +172,7 @@ jobs:
     runs-on: macos-12
     strategy:
       matrix:
-        python-version: ["pypy-3.8", "3.8"]
+        python-version: ["pypy-3.9", "3.9"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -184,7 +188,7 @@ jobs:
       - name: Preparations
         run: |
           brew install libjpeg little-cms2
-          python3 -m pip install pytest pillow numpy pympler defusedxml
+          python3 -m pip install pytest pillow packaging defusedxml
           python3 -m pip install --only-binary=:all: pillow-heif
           python3 -m pip install --only-binary=:all: pi-heif
 
@@ -203,7 +207,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: ["pypy-3.8", "3.10"]
+        python-version: ["pypy-3.10", "3.10"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -219,7 +223,7 @@ jobs:
       - name: Preparations
         run: |
           sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
-          python3 -m pip install pytest pillow numpy pympler defusedxml
+          python3 -m pip install pytest pillow packaging defusedxml
           python3 -m pip install --only-binary=:all: pillow-heif
           python3 -m pip install --only-binary=:all: pi-heif
 

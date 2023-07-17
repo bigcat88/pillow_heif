@@ -6,7 +6,7 @@
 [![docs](https://readthedocs.org/projects/pillow-heif/badge/?version=latest)](https://pillow-heif.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/bigcat88/pillow_heif/branch/master/graph/badge.svg?token=JY64F2OL6V)](https://codecov.io/gh/bigcat88/pillow_heif)
 
-![PythonVersion](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
+![PythonVersion](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)
 ![impl](https://img.shields.io/pypi/implementation/pillow_heif)
 ![pypi](https://img.shields.io/pypi/v/pillow_heif.svg)
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pillow-heif)
@@ -122,7 +122,6 @@ pillow_heif.register_avif_opener()
 
 | **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
 |--------------------|:---------------:|:-----------------:|:-----------------:|:----------:|:----------:|
-| CPython 3.7        |        ✅        |        N/A        |         ✅         |    N/A     |     ✅      |
 | CPython 3.8        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.9        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
@@ -131,6 +130,6 @@ pillow_heif.register_avif_opener()
 | PyPy 3.8 v7.3      |        ✅        |        N/A        |         ✅         |    N/A     |     ✅      |
 | PyPy 3.9 v7.3      |        ✅        |        N/A        |         ✅         |    N/A     |     ✅      |
 
-&ast; **i686**, **x86_64**, **aarch64** wheels.
+&ast; **x86_64**, **aarch64** wheels.
 
 `ARMv7l`, `PyPy` 32-bit wheels are published only for [pi-heif](https://pypi.org/project/pi-heif/) from `0.10.0` version.

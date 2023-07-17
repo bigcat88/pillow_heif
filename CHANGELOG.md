@@ -1,11 +1,13 @@
 All notable changes to this project will be documented in this file.
 
-## [0.1x.x - 2023-0x-xx]
+## [0.13.0 - 2023-08-0x]
 
 ### Changed
 
 - The license for the project itself has been changed to "BSD-3-Clause" since "Apache 2.0" is not compatible with the "x265" encoder. #111
 - Minimum required `Pillow` version increased from `8.4.0` to `9.1.1`
+- Dropped `Python 3.7` support, `PyPy 3.8` wheels.
+- Dropped 32 bit wheels for `Pillow-Heif`. `Pi-Heif` still have 32-bit wheels.
 
 ## [0.12.0 - 2023-07-08]
 

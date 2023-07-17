@@ -1,12 +1,12 @@
 [build-system]
 requires = [
-  "setuptools>=42",
+  "setuptools>=67.8",
   "wheel",
 ]
 
 [tool.black]
 line-length = 120
-target-versions = ["py37"]
+target-versions = ["py38"]
 preview = true
 
 [tool.ruff]
@@ -48,7 +48,7 @@ warn_no_return = true
 strict_optional = true
 
 [tool.pylint]
-master.py-version = "3.7"
+master.py-version = "3.8"
 master.extension-pkg-allow-list = ["_pillow_heif"]
 design.max-attributes = 8
 design.max-branches = 16
@@ -69,7 +69,7 @@ messages_control.disable = [
 
 [tool.cibuildwheel]
 build-verbosity = "2"
-skip = ["cp36-*", "pp37-*", "cp37-musllinux*"]
+skip = ["cp36-* cp37-* pp37-* pp38-*"]
 
 [tool.cibuildwheel.linux]
 test-extras = "tests"

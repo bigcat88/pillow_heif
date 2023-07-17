@@ -3,6 +3,7 @@ name: Wheels test
 on:
   release:
     types: [ published ]
+  workflow_dispatch:
 
 jobs:
   docker-tests:
@@ -39,12 +40,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
 
       - name: Test type is Full
-        if: matrix.i['arch'] != 'arm/v7'
         run: echo TEST_TYPE="export PH_FULL_ACTION=1" >> $GITHUB_ENV
-
-      - name: Test type is Light
-        if: matrix.i['arch'] == 'arm/v7'
-        run: echo TEST_TYPE="export PH_LIGHT_ACTION=1" >> $GITHUB_ENV
 
       - name: Preparing debian
         if: matrix.i['os'] == 'debian' || matrix.i['os'] == 'ubuntu'
@@ -79,7 +75,7 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
     env:
       PH_FULL_ACTION: 1
 
@@ -97,7 +93,7 @@ jobs:
 
       - name: Preparations
         run: |
-          python3 -m pip install pytest pillow numpy pympler defusedxml
+          python3 -m pip install pytest pillow packaging defusedxml
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Test wheel
@@ -108,7 +104,7 @@ jobs:
     runs-on: macos-11
     strategy:
       matrix:
-        python-version: ["pypy-3.8", "pypy-3.9", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -124,7 +120,7 @@ jobs:
       - name: Preparations
         run: |
           brew install libjpeg little-cms2
-          python3 -m pip install pytest pillow numpy pympler defusedxml
+          python3 -m pip install pytest pillow packaging defusedxml
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Test wheel
@@ -138,7 +134,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: ["pypy-3.8", "pypy-3.9", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -154,7 +150,7 @@ jobs:
       - name: Preparations
         run: |
           sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
-          python3 -m pip install pytest pillow numpy pympler defusedxml
+          python3 -m pip install pytest pillow packaging defusedxml
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Test wheel
