@@ -18,10 +18,10 @@ jobs:
           { "os": "oraclelinux", "ver": "9", "arch": "amd64" },
           { "os": "oraclelinux", "ver": "9", "arch": "arm64" },
           { "os": "fedora", "ver": "37", "arch": "amd64" },
-          { "os": "debian", "ver": "10", "arch": "amd64" },
-          { "os": "debian", "ver": "10", "arch": "arm64" },
           { "os": "debian", "ver": "11", "arch": "amd64" },
           { "os": "debian", "ver": "11", "arch": "arm64" },
+          { "os": "debian", "ver": "12", "arch": "amd64" },
+          { "os": "debian", "ver": "12", "arch": "arm64" },
           { "os": "alpine", "ver": "3.16", "arch": "amd64" },
           { "os": "alpine", "ver": "3.16", "arch": "arm64" },
           { "os": "alpine", "ver": "3.17", "arch": "amd64" },
@@ -47,7 +47,7 @@ jobs:
         run: |
           echo PREPARE_CMD="apt update" >> $GITHUB_ENV
           echo INSTALL_CMD="apt install -y \
-            python3-minimal python3-distutils python3-pip python3-dev \
+            python3-minimal python3-distutils python3-pip python3-dev python3-venv \
             zlib1g-dev libjpeg62-turbo-dev liblcms2-dev libwebp-dev libfribidi-dev libharfbuzz-dev" >> $GITHUB_ENV
 
       - name: Preparing musli

@@ -127,9 +127,9 @@ pillow_heif.register_avif_opener()
 | CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.11       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.12       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
-| PyPy 3.8 v7.3      |        ✅        |        N/A        |         ✅         |    N/A     |     ✅      |
-| PyPy 3.9 v7.3      |        ✅        |        N/A        |         ✅         |    N/A     |     ✅      |
+| PyPy 3.9 v7.3      |        ✅        |         ✅         |         ✅         |    N/A     |     ✅      |
+| PyPy 3.10 v7.3     |        ✅        |         ✅         |         ✅         |    N/A     |     ✅      |
 
 &ast; **x86_64**, **aarch64** wheels.
 
-`ARMv7l`, `PyPy` 32-bit wheels are published only for [pi-heif](https://pypi.org/project/pi-heif/) from `0.10.0` version.
+`i686`, `ARMv7l`, `PyPy` 32-bit wheels are published only for [pi-heif](https://pypi.org/project/pi-heif/) from `0.13.0` version.
