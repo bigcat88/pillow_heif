@@ -458,6 +458,7 @@ def test_depth_image():
     im = Image.open("images/heif_other/pug.heic")
     assert len(im.info["depth_images"]) == 1
     depth_image = im.info["depth_images"][0]
+    assert str(depth_image) == "<HeifDepthImage 768x576 L>"
     assert isinstance(depth_image, pillow_heif.HeifDepthImage)
     helpers.compare_hashes([depth_image.to_pillow(), "images/non_heif/pug_depth.png"], hash_size=128)
     assert depth_image.info
