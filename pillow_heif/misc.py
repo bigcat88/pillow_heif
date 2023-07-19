@@ -382,6 +382,7 @@ class MimCImage:
         self.metadata: List[dict] = []
         self.color_profile = None
         self.thumbnails: List[int] = []
+        self.depth_image_list: List = []
         self.primary = False
 
     @property

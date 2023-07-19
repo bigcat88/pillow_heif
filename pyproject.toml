@@ -50,7 +50,7 @@ strict_optional = true
 [tool.pylint]
 master.py-version = "3.8"
 master.extension-pkg-allow-list = ["_pillow_heif"]
-design.max-attributes = 8
+design.max-attributes = 9
 design.max-branches = 16
 design.max-locals = 18
 design.max-returns = 8

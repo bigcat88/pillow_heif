@@ -1,10 +1,11 @@
 All notable changes to this project will be documented in this file.
 
-## [0.13.0 - 2023-08-0x]
+## [0.13.0 - 2023-08-05]
 
 ### Added
 
 - `Python 3.12`, `PyPy 3.10` wheels
+- `Depth Image` read support, they are available as list in `im.info["depth_images"]`
 
 ### Changed
 

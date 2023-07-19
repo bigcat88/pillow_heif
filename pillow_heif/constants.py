@@ -165,3 +165,16 @@ class HeifMatrixCoefficients(IntEnum):
     """Unknown"""
     ICTCP = 14
     """Unknown"""
+
+
+class HeifDepthRepresentationType(IntEnum):
+    """Possible values of ``HeifDepthImage.info['metadata']['representation_type']``"""
+
+    UNIFORM_INVERSE_Z = 0
+    """Unknown"""
+    UNIFORM_DISPARITY = 1
+    """Unknown"""
+    UNIFORM_Z = 2
+    """Unknown"""
+    NON_UNIFORM_DISPARITY = 3
+    """Unknown"""

@@ -14,10 +14,12 @@ from .as_plugin import (
 )
 from .constants import (
     HeifColorPrimaries,
+    HeifDepthRepresentationType,
     HeifMatrixCoefficients,
     HeifTransferCharacteristics,
 )
 from .heif import (
+    HeifDepthImage,
     HeifFile,
     HeifImage,
     encode,

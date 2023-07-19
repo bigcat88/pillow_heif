@@ -3,6 +3,7 @@ import sys
 from io import SEEK_END, BytesIO
 from platform import machine
 from time import perf_counter
+from unittest import mock
 
 import pytest
 from helpers import aom, create_heif, hevc_enc
@@ -111,3 +112,12 @@ def test_allow_incorrect_headers():
 def test_plugin_register_unknown_option():
     with pytest.warns(UserWarning, match="Unknown option: unknown_option"):
         register_heif_opener(unknown_option=12345)
+
+
+@mock.patch("pillow_heif.options.DEPTH_IMAGES", False)
+def test_depth_option():
+    register_heif_opener()
+    im = open_heif("images/heif_other/pug.heic")
+    assert not im.info["depth_images"]
+    im = Image.open("images/heif_other/pug.heic")
+    assert not im.info["depth_images"]

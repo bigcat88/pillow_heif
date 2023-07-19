@@ -15,6 +15,12 @@ THUMBNAILS = True
 When use pillow_heif as a plugin you can set it with: `register_*_opener(thumbnails=False)`"""
 
 
+DEPTH_IMAGES = True
+"""Option to enable/disable depth image support
+
+When use pillow_heif as a plugin you can set it with: `register_*_opener(depths=False)`"""
+
+
 QUALITY = None
 """Default encoding quality
 

@@ -11,3 +11,6 @@ Constants
 
 .. autoclass:: HeifMatrixCoefficients
     :members:
+
+.. autoclass:: HeifDepthRepresentationType
+    :members:
