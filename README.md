@@ -26,6 +26,7 @@ Features:
  * `EXIF`, `XMP`, `IPTC` read & write support.
  * Support of multiple images in one file and a `PrimaryImage` attribute.
  * Adding & removing `thumbnails`.
+ * Depth Images read support
  * Adding HEIF support to Pillow in one line of code as a plugin.
 
 Note: Here is a light version [pi-heif](https://pypi.org/project/pi-heif/) of this project without encoding capabilities.

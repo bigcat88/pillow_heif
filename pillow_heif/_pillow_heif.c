@@ -44,6 +44,12 @@ int __PyDict_SetItemString(PyObject *p, const char *key, PyObject *val) {
     return r;
 }
 
+enum ph_image_type
+{
+  PhHeifImage = 0,
+  PhHeifDepthImage = 2,
+};
+
 /* =========== Objects ======== */
 
 typedef struct {
@@ -67,25 +73,35 @@ static PyTypeObject CtxWrite_Type;
 
 typedef struct {
     PyObject_HEAD
-    int width;                              // size[0];
-    int height;                             // size[1];
-    int bits;                               // one of: 8, 10, 12.
-    int alpha;                              // one of: 0, 1.
-    char mode[8];                           // one of: RGB, RGBA, RGBa, BGR, BGRA, BGRa + Optional[;10/12/16]
-    int primary;                            // one of: 0, 1.
-    int hdr_to_8bit;                        // private. decode option.
-    int bgr_mode;                           // private. decode option.
-    int remove_stride;                      // private. decode option.
-    int hdr_to_16bit;                       // private. decode option.
-    int reload_size;                        // private. decode option.
-    struct heif_image_handle *handle;       // private
-    struct heif_image *heif_image;          // private
-    uint8_t *data;                          // pointer to data after decoding
-    int stride;                             // time when it get filled depends on `remove_stride` value
-    PyObject *file_bytes;                   // private
+    enum ph_image_type image_type;              // 0 - standard, 2 - depth image
+    int width;                                  // size[0];
+    int height;                                 // size[1];
+    int bits;                                   // one of: 8, 10, 12.
+    int alpha;                                  // one of: 0, 1.
+    char mode[8];                               // one of: RGB, RGBA, RGBa, BGR, BGRA, BGRa + Optional[;10/12/16]
+    int n_channels;                             // 1, 2, 3, 4.
+    int primary;                                // one of: 0, 1.
+    int hdr_to_8bit;                            // private. decode option.
+    int bgr_mode;                               // private. decode option.
+    int remove_stride;                          // private. decode option.
+    int hdr_to_16bit;                           // private. decode option.
+    int reload_size;                            // private. decode option.
+    struct heif_image_handle *handle;           // private
+    struct heif_image *heif_image;              // private
+    const struct heif_depth_representation_info* depth_metadata; // only for image_type == 2
+    uint8_t *data;                              // pointer to data after decoding
+    int stride;                                 // time when it get filled depends on `remove_stride` value
+    PyObject *file_bytes;                       // private
 } CtxImageObject;
 
 static PyTypeObject CtxImage_Type;
+
+int get_stride(CtxImageObject *ctx_image) {
+    int stride = ctx_image->width * ctx_image->n_channels;
+    if ((ctx_image->bits > 8) && (!ctx_image->hdr_to_8bit))
+        stride = stride * 2;
+    return stride;
+}
 
 /* =========== CtxWriteImage ======== */
 
@@ -683,22 +699,62 @@ static struct PyMethodDef _CtxWrite_methods[] = {
     {NULL, NULL}
 };
 
-/* =========== CtxImage ======== */
+/* =========== CtxDepthImage ======== */
 
-int get_stride(CtxImageObject *ctx_image) {
-    int stride = ctx_image->width * 3;
-    if (ctx_image->alpha)
-        stride = ctx_image->width * 4;
-    if ((ctx_image->bits > 8) && (!ctx_image->hdr_to_8bit))
-        stride = stride * 2;
-    return stride;
+PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id depth_image_id,
+                            int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
+    struct heif_image_handle* depth_handle;
+    if (check_error(heif_image_handle_get_depth_image_handle(main_handle, depth_image_id, &depth_handle))) {
+        RETURN_NONE
+    }
+    CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
+    if (!ctx_image) {
+        heif_image_handle_release(depth_handle);
+        RETURN_NONE
+    }
+    if (!heif_image_handle_get_depth_image_representation_info(main_handle, depth_image_id, &ctx_image->depth_metadata))
+        ctx_image->depth_metadata = NULL;
+    ctx_image->image_type = PhHeifDepthImage;
+    ctx_image->width = heif_image_handle_get_width(depth_handle);
+    ctx_image->height = heif_image_handle_get_height(depth_handle);
+    ctx_image->alpha = 0;
+    ctx_image->n_channels = 1;
+    ctx_image->bits = heif_image_handle_get_luma_bits_per_pixel(depth_handle);
+    strcpy(ctx_image->mode, "L");
+    if (ctx_image->bits > 8) {
+        if (hdr_to_16bit) {
+            strcpy(ctx_image->mode, "I;16");
+        }
+        else if (ctx_image->bits == 10) {
+            strcpy(ctx_image->mode, "I;10");
+        }
+        else {
+            strcpy(ctx_image->mode, "I;12");
+        }
+    }
+    ctx_image->hdr_to_8bit = 0;
+    ctx_image->bgr_mode = 0;
+    ctx_image->handle = depth_handle;
+    ctx_image->heif_image = NULL;
+    ctx_image->data = NULL;
+    ctx_image->remove_stride = remove_stride;
+    ctx_image->hdr_to_16bit = hdr_to_16bit;
+    ctx_image->reload_size = 1;
+    ctx_image->file_bytes = file_bytes;
+    ctx_image->stride = get_stride(ctx_image);
+    Py_INCREF(file_bytes);
+    return (PyObject*)ctx_image;
 }
+
+/* =========== CtxImage ======== */
 
 static void _CtxImage_destructor(CtxImageObject* self) {
     if (self->heif_image)
         heif_image_release(self->heif_image);
     if (self->handle)
         heif_image_handle_release(self->handle);
+    if (self->depth_metadata)
+        heif_depth_representation_info_free(self->depth_metadata);
     Py_DECREF(self->file_bytes);
     PyObject_Del(self);
 }
@@ -711,12 +767,17 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
         heif_image_handle_release(handle);
         RETURN_NONE
     }
+    ctx_image->depth_metadata = NULL;
+    ctx_image->image_type = PhHeifImage;
     ctx_image->width = heif_image_handle_get_width(handle);
     ctx_image->height = heif_image_handle_get_height(handle);
     strcpy(ctx_image->mode, bgr_mode ? "BGR" : "RGB");
     ctx_image->alpha = heif_image_handle_has_alpha_channel(handle);
-    if (ctx_image->alpha)
+    ctx_image->n_channels = 3;
+    if (ctx_image->alpha) {
         strcat(ctx_image->mode, heif_image_handle_is_premultiplied_alpha(handle) ? "a" : "A");
+        ctx_image->n_channels = 4;
+    }
     ctx_image->bits = heif_image_handle_get_luma_bits_per_pixel(handle);
     if ((ctx_image->bits > 8) && (!hdr_to_8bit)) {
         if (hdr_to_16bit) {
@@ -813,53 +874,84 @@ static PyObject* _CtxImage_color_profile(CtxImageObject* self, void* closure) {
 }
 
 static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
-    PyObject *meta_item_info;
-    const char *type, *content_type;
-    size_t size;
-    void* data;
-    struct heif_error error;
+    if (self->image_type == PhHeifImage) {
+        PyObject *meta_item_info;
+        const char *type, *content_type;
+        size_t size;
+        void* data;
+        struct heif_error error;
 
-    int n_metas = heif_image_handle_get_number_of_metadata_blocks(self->handle, NULL);
-    if (!n_metas)
-        return PyList_New(0);
+        int n_metas = heif_image_handle_get_number_of_metadata_blocks(self->handle, NULL);
+        if (!n_metas)
+            return PyList_New(0);
 
-    heif_item_id* meta_ids  = (heif_item_id*)malloc(n_metas * sizeof(heif_item_id));
-    if (!meta_ids) {
-        PyErr_SetString(PyExc_OSError, "Out of Memory");
-        return NULL;
-    }
-    n_metas = heif_image_handle_get_list_of_metadata_block_IDs(self->handle, NULL, meta_ids, n_metas);
-    PyObject* meta_list = PyList_New(n_metas);
-    if (!meta_list) {
-        free(meta_ids);
-        PyErr_SetString(PyExc_OSError, "Out of Memory");
-        return NULL;
-    }
+        heif_item_id* meta_ids  = (heif_item_id*)malloc(n_metas * sizeof(heif_item_id));
+        if (!meta_ids) {
+            PyErr_SetString(PyExc_OSError, "Out of Memory");
+            return NULL;
+        }
+        n_metas = heif_image_handle_get_list_of_metadata_block_IDs(self->handle, NULL, meta_ids, n_metas);
+        PyObject* meta_list = PyList_New(n_metas);
+        if (!meta_list) {
+            free(meta_ids);
+            PyErr_SetString(PyExc_OSError, "Out of Memory");
+            return NULL;
+        }
 
-    for (int i = 0; i < n_metas; i++) {
-        meta_item_info = NULL;
-        type = heif_image_handle_get_metadata_type(self->handle, meta_ids[i]);
-        content_type = heif_image_handle_get_metadata_content_type(self->handle, meta_ids[i]);
-        size = heif_image_handle_get_metadata_size(self->handle, meta_ids[i]);
-        data = malloc(size);
-        if (data) {
-            error = heif_image_handle_get_metadata(self->handle, meta_ids[i], data);
-            if (error.code == heif_error_Ok) {
-                meta_item_info = PyDict_New();
-                __PyDict_SetItemString(meta_item_info, "type", PyUnicode_FromString(type));
-                __PyDict_SetItemString(meta_item_info, "content_type", PyUnicode_FromString(content_type));
-                __PyDict_SetItemString(meta_item_info, "data", PyBytes_FromStringAndSize((char*)data, size));
+        for (int i = 0; i < n_metas; i++) {
+            meta_item_info = NULL;
+            type = heif_image_handle_get_metadata_type(self->handle, meta_ids[i]);
+            content_type = heif_image_handle_get_metadata_content_type(self->handle, meta_ids[i]);
+            size = heif_image_handle_get_metadata_size(self->handle, meta_ids[i]);
+            data = malloc(size);
+            if (data) {
+                error = heif_image_handle_get_metadata(self->handle, meta_ids[i], data);
+                if (error.code == heif_error_Ok) {
+                    meta_item_info = PyDict_New();
+                    __PyDict_SetItemString(meta_item_info, "type", PyUnicode_FromString(type));
+                    __PyDict_SetItemString(meta_item_info, "content_type", PyUnicode_FromString(content_type));
+                    __PyDict_SetItemString(meta_item_info, "data", PyBytes_FromStringAndSize((char*)data, size));
+                }
+                free(data);
             }
-            free(data);
+            if (!meta_item_info) {
+                meta_item_info = Py_None;
+                Py_INCREF(meta_item_info);
+            }
+            PyList_SET_ITEM(meta_list, i, meta_item_info);
         }
-        if (!meta_item_info) {
-            meta_item_info = Py_None;
-            Py_INCREF(meta_item_info);
-        }
-        PyList_SET_ITEM(meta_list, i, meta_item_info);
+        free(meta_ids);
+        return meta_list;
     }
-    free(meta_ids);
-    return meta_list;
+    else if (self->image_type == PhHeifDepthImage) {
+        PyObject* meta = PyDict_New();
+        if (!meta) {
+            RETURN_NONE
+        }
+        if (!self->depth_metadata)
+            return meta;
+
+        if (self->depth_metadata->has_z_near)
+            __PyDict_SetItemString(meta, "z_near", PyFloat_FromDouble(self->depth_metadata->z_near));
+        if (self->depth_metadata->has_z_far)
+            __PyDict_SetItemString(meta, "z_far", PyFloat_FromDouble(self->depth_metadata->z_far));
+        if (self->depth_metadata->has_d_min)
+            __PyDict_SetItemString(meta, "d_min", PyFloat_FromDouble(self->depth_metadata->d_min));
+        if (self->depth_metadata->has_d_max)
+            __PyDict_SetItemString(meta, "d_max", PyFloat_FromDouble(self->depth_metadata->d_max));
+
+        __PyDict_SetItemString(
+            meta, "representation_type", PyLong_FromUnsignedLong(self->depth_metadata->depth_representation_type));
+        __PyDict_SetItemString(
+            meta, "disparity_reference_view", PyLong_FromUnsignedLong(self->depth_metadata->disparity_reference_view));
+
+        __PyDict_SetItemString(
+            meta, "nonlinear_representation_model_size",
+            PyLong_FromUnsignedLong(self->depth_metadata->depth_nonlinear_representation_model_size));
+        // need an example file with this info. need info about depth_nonlinear_representation_model
+        return meta;
+    }
+    RETURN_NONE
 }
 
 static PyObject* _CtxImage_thumbnails(CtxImageObject* self, void* closure) {
@@ -896,41 +988,44 @@ static PyObject* _CtxImage_thumbnails(CtxImageObject* self, void* closure) {
 
 int decode_image(CtxImageObject* self) {
     struct heif_error error;
-    int chroma, channels, bytes_in_cc;
+    int bytes_in_cc;
+    enum heif_colorspace colorspace;
+    enum heif_chroma chroma;
+    enum heif_channel channel;
 
     Py_BEGIN_ALLOW_THREADS
     struct heif_decoding_options *decode_options = heif_decoding_options_alloc();
     decode_options->convert_hdr_to_8bit = self->hdr_to_8bit;
-    if ((self->bits == 8) || (self->hdr_to_8bit)) {
-        bytes_in_cc = 1;
-        if (self->alpha) {
-            chroma = heif_chroma_interleaved_RGBA;
-            channels = 4;
+    if (self->n_channels == 1) {
+        channel = heif_channel_Y;
+        colorspace = heif_colorspace_monochrome;
+        chroma = heif_chroma_monochrome;
+    }
+    else {
+        channel = heif_channel_interleaved;
+        colorspace = heif_colorspace_RGB;
+        if ((self->bits == 8) || (self->hdr_to_8bit)) {
+            chroma = self->alpha ? heif_chroma_interleaved_RGBA : heif_chroma_interleaved_RGB;
         }
         else {
-            chroma = heif_chroma_interleaved_RGB;
-            channels = 3;
+            chroma = self->alpha ? heif_chroma_interleaved_RRGGBBAA_LE : heif_chroma_interleaved_RRGGBB_LE;
         }
+    }
+    if ((self->bits == 8) || (self->hdr_to_8bit)) {
+        bytes_in_cc = 1;
     }
     else {
         bytes_in_cc = 2;
-        if (self->alpha) {
-            chroma = heif_chroma_interleaved_RRGGBBAA_LE;
-            channels = 4;
-        }
-        else {
-            chroma = heif_chroma_interleaved_RRGGBB_LE;
-            channels = 3;
-        }
     }
-    error = heif_decode_image(self->handle, &self->heif_image, heif_colorspace_RGB, chroma, decode_options);
+
+    error = heif_decode_image(self->handle, &self->heif_image, colorspace, chroma, decode_options);
     heif_decoding_options_free(decode_options);
     Py_END_ALLOW_THREADS
     if (check_error(error))
         return 0;
 
     int stride;
-    self->data = heif_image_get_plane(self->heif_image, heif_channel_interleaved, &stride);
+    self->data = heif_image_get_plane(self->heif_image, channel, &stride);
     if (!self->data) {
         heif_image_release(self->heif_image);
         self->heif_image = NULL;
@@ -961,16 +1056,16 @@ int decode_image(CtxImageObject* self) {
 
     if ((self->bgr_mode) && (!remove_stride))
         postprocess__bgr(self->width, self->height, self->data, stride,
-                         bytes_in_cc, channels, shift_size);
+                         bytes_in_cc, self->n_channels, shift_size);
     else if ((self->bgr_mode) && (remove_stride))
         postprocess__bgr_stride(self->width, self->height, self->data, stride, self->stride,
-                                bytes_in_cc, channels, shift_size);
+                                bytes_in_cc, self->n_channels, shift_size);
     else if ((!self->bgr_mode) && (!remove_stride))
         postprocess(self->width, self->height, self->data, stride,
-                    bytes_in_cc, channels, shift_size);
+                    bytes_in_cc, self->n_channels, shift_size);
     else if ((!self->bgr_mode) && (remove_stride))
         postprocess__stride(self->width, self->height, self->data, stride, self->stride,
-                            bytes_in_cc, channels, shift_size);
+                            bytes_in_cc, self->n_channels, shift_size);
     else {
         PyErr_SetString(PyExc_ValueError, "internal error, invalid postprocess condition");
         return 0;
@@ -992,6 +1087,32 @@ static PyObject* _CtxImage_data(CtxImageObject* self, void* closure) {
     return PyMemoryView_FromMemory((char*)self->data, self->stride * self->height, PyBUF_READ);
 }
 
+static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure) {
+    int n_images = heif_image_handle_get_number_of_depth_images(self->handle);
+    if (n_images == 0)
+        return PyList_New(0);
+    heif_item_id* images_ids = (heif_item_id*)malloc(n_images * sizeof(heif_item_id));
+    if (!images_ids)
+        return PyList_New(0);
+
+    n_images = heif_image_handle_get_list_of_depth_image_IDs(self->handle, images_ids, n_images);
+    PyObject* images_list = PyList_New(n_images);
+    if (!images_list) {
+        free(images_ids);
+        return PyList_New(0);
+    }
+
+    for (int i = 0; i < n_images; i++) {
+        PyList_SET_ITEM(images_list,
+                        i,
+                        _CtxDepthImage(
+                            self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->file_bytes
+                        ));
+    }
+    free(images_ids);
+    return images_list;
+}
+
 static struct PyGetSetDef _CtxImage_getseters[] = {
     {"size_mode", (getter)_CtxImage_size_mode, NULL, NULL, NULL},
     {"primary", (getter)_CtxImage_primary, NULL, NULL, NULL},
@@ -1001,6 +1122,7 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"thumbnails", (getter)_CtxImage_thumbnails, NULL, NULL, NULL},
     {"stride", (getter)_CtxImage_stride, NULL, NULL, NULL},
     {"data", (getter)_CtxImage_data, NULL, NULL, NULL},
+    {"depth_image_list", (getter)_CtxImage_depth_image_list, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}
 };
 

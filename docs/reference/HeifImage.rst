@@ -65,3 +65,26 @@ HeifImage object
             * `transfer_characteristics`: :py:class:`HeifTransferCharacteristics`
             * `matrix_coefficients`: :py:class:`HeifMatrixCoefficients`
             * `full_range_flag`: `bool`
+
+    .. py:attribute:: info["depth_images"]
+        :type: list
+
+        List of :py:class:`~pillow_heif.heif.HeifDepthImage` if any present for image.
+        Currently `libheif` does not support writing of them, only reading.
+
+.. autoclass:: pillow_heif.heif.BaseImage
+    :show-inheritance:
+    :inherited-members:
+    :members:
+
+.. autoclass:: pillow_heif.heif.HeifDepthImage
+    :show-inheritance:
+    :inherited-members:
+    :members:
+
+    .. py:attribute:: info["metadata"]
+        :type: dict
+
+        Represents `libheif` ``heif_depth_representation_info`` struct as a dictionary.
+
+        If someone have an example when this struct got filled let me know.

@@ -34,8 +34,8 @@ except ImportError as ex:
     _pillow_heif = DeferredError(ex)
 
 
-class HeifImage:
-    """Class represents one image in a :py:class:`~pillow_heif.HeifFile`"""
+class BaseImage:
+    """Base class for :py:class:`HeifImage` and :py:class:`HeifDepthImage`"""
 
     size: tuple
     """Width and height of the image."""
@@ -48,52 +48,8 @@ class HeifImage:
 
     def __init__(self, c_image):
         self.size, self.mode = c_image.size_mode
-        _metadata: List[dict] = c_image.metadata
-        _exif = _retrieve_exif(_metadata)
-        _xmp = _retrieve_xmp(_metadata)
-        _thumbnails: List[Optional[int]] = (
-            [i for i in c_image.thumbnails if i is not None] if options.THUMBNAILS else []
-        )
-        self.info = {
-            "primary": bool(c_image.primary),
-            "bit_depth": int(c_image.bit_depth),
-            "exif": _exif,
-            "xmp": _xmp,
-            "metadata": _metadata,
-            "thumbnails": _thumbnails,
-        }
-        _color_profile: Dict[str, Any] = c_image.color_profile
-        if _color_profile:
-            if _color_profile["type"] in ("rICC", "prof"):
-                self.info["icc_profile"] = _color_profile["data"]
-                self.info["icc_profile_type"] = _color_profile["type"]
-            else:
-                self.info["nclx_profile"] = _color_profile["data"]
         self._c_image = c_image
         self._data = None
-
-    def __repr__(self):
-        _bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
-        return (
-            f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
-            f"with {_bytes} image data and {len(self.info.get('thumbnails', []))} thumbnails>"
-        )
-
-    @property
-    def __array_interface__(self):
-        """Numpy array interface support"""
-
-        self.load()
-        width = int(self.stride / MODE_INFO[self.mode][0])
-        if MODE_INFO[self.mode][1] <= 8:
-            typestr = "|u1"
-        else:
-            width = int(width / 2)
-            typestr = "<u2"
-        shape: Tuple[Any, ...] = (self.size[1], width)
-        if MODE_INFO[self.mode][0] > 1:
-            shape += (MODE_INFO[self.mode][0],)
-        return {"shape": shape, "typestr": typestr, "version": 3, "data": self.data}
 
     @property
     def data(self):
@@ -114,6 +70,102 @@ class HeifImage:
 
         self.load()
         return self._c_image.stride
+
+    @property
+    def __array_interface__(self):
+        """Numpy array interface support"""
+
+        self.load()
+        width = int(self.stride / MODE_INFO[self.mode][0])
+        if MODE_INFO[self.mode][1] <= 8:
+            typestr = "|u1"
+        else:
+            width = int(width / 2)
+            typestr = "<u2"
+        shape: Tuple[Any, ...] = (self.size[1], width)
+        if MODE_INFO[self.mode][0] > 1:
+            shape += (MODE_INFO[self.mode][0],)
+        return {"shape": shape, "typestr": typestr, "version": 3, "data": self.data}
+
+    def to_pillow(self) -> Image.Image:
+        """Helper method to create :external:py:class:`~PIL.Image.Image`
+
+        :returns: :external:py:class:`~PIL.Image.Image` class created from an image."""
+
+        self.load()
+        image = Image.frombytes(
+            self.mode,  # noqa
+            self.size,
+            bytes(self.data),
+            "raw",
+            self.mode,
+            self.stride,
+        )
+        return image
+
+    def load(self) -> None:
+        """Method to decode image.
+
+        .. note:: In normal cases you should not call this method directly,
+            when reading `data` or `stride` property of image will be loaded automatically."""
+
+        if not self._data:
+            self._data = self._c_image.data
+            self.size, _ = self._c_image.size_mode
+
+
+class HeifDepthImage(BaseImage):
+    """Class represents one depth image for the :py:class:`~pillow_heif.HeifImage`"""
+
+    def __init__(self, c_image):
+        super().__init__(c_image)
+        _metadata: dict = c_image.metadata
+        self.info = {
+            "metadata": _metadata,
+        }
+
+    def __repr__(self):
+        _bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
+        return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
+
+
+class HeifImage(BaseImage):
+    """Class represents one image in a :py:class:`~pillow_heif.HeifFile`"""
+
+    def __init__(self, c_image):
+        super().__init__(c_image)
+        _metadata: List[dict] = c_image.metadata
+        _exif = _retrieve_exif(_metadata)
+        _xmp = _retrieve_xmp(_metadata)
+        _thumbnails: List[Optional[int]] = (
+            [i for i in c_image.thumbnails if i is not None] if options.THUMBNAILS else []
+        )
+        _depth_images: List[Optional[HeifDepthImage]] = (
+            [HeifDepthImage(i) for i in c_image.depth_image_list if i is not None] if options.DEPTH_IMAGES else []
+        )
+        self.info = {
+            "primary": bool(c_image.primary),
+            "bit_depth": int(c_image.bit_depth),
+            "exif": _exif,
+            "xmp": _xmp,
+            "metadata": _metadata,
+            "thumbnails": _thumbnails,
+            "depth_images": _depth_images,
+        }
+        _color_profile: Dict[str, Any] = c_image.color_profile
+        if _color_profile:
+            if _color_profile["type"] in ("rICC", "prof"):
+                self.info["icc_profile"] = _color_profile["data"]
+                self.info["icc_profile_type"] = _color_profile["type"]
+            else:
+                self.info["nclx_profile"] = _color_profile["data"]
+
+    def __repr__(self):
+        _bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
+        return (
+            f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
+            f"with {_bytes} image data and {len(self.info.get('thumbnails', []))} thumbnails>"
+        )
 
     @property
     def has_alpha(self):
@@ -141,28 +193,10 @@ class HeifImage:
 
         :returns: :external:py:class:`~PIL.Image.Image` class created from an image."""
 
-        self.load()
-        image = Image.frombytes(
-            self.mode,  # noqa
-            self.size,
-            bytes(self.data),
-            "raw",
-            self.mode,
-            self.stride,
-        )
+        image = super().to_pillow()
         image.info = self.info.copy()
         image.info["original_orientation"] = set_orientation(image.info)
         return image
-
-    def load(self) -> None:
-        """Method to decode image.
-
-        .. note:: In normal cases you should not call this method directly,
-            when reading `data` or `stride` property of image will be loaded automatically."""
-
-        if not self._data:
-            self._data = self._c_image.data
-            self.size, _ = self._c_image.size_mode
 
 
 class HeifFile:
@@ -449,6 +483,7 @@ def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
         be converted to 8 bit images during decoding. Otherwise, they will open in 16 bit mode.
+        ``Does not affect "depth images".``
     :param bgr_mode: Boolean indicating should be `RGB(A)` images be opened in `BGR(A)` mode.
     :param kwargs: **hdr_to_16bit** a boolean value indicating that 10/12-bit image data
         should be converted to 16-bit mode during decoding. `Has lower priority then convert_hdr_to_8bit`!
@@ -473,6 +508,7 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
         be converted to 8 bit images during decoding. Otherwise, they will open in 16 bit mode.
+        ``Does not affect "depth images".``
     :param bgr_mode: Boolean indicating should be `RGB(A)` images be opened in `BGR(A)` mode.
     :param kwargs: **hdr_to_16bit** a boolean value indicating that 10/12-bit image data
         should be converted to 16-bit mode during decoding. `Has lower priority then convert_hdr_to_8bit`!

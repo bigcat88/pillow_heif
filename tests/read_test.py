@@ -449,3 +449,22 @@ def test_invalid_ispe_stride(image_path):
     stride = im.stride
     _ = im.data
     assert stride == im.stride
+
+
+def test_depth_image():
+    im = pillow_heif.open_heif("images/heif_other/pug.heic")
+    assert len(im.info["depth_images"]) == 1
+    assert isinstance(im.info["depth_images"][0], pillow_heif.HeifDepthImage)
+    im = Image.open("images/heif_other/pug.heic")
+    assert len(im.info["depth_images"]) == 1
+    depth_image = im.info["depth_images"][0]
+    assert str(depth_image) == "<HeifDepthImage 768x576 L>"
+    assert isinstance(depth_image, pillow_heif.HeifDepthImage)
+    helpers.compare_hashes([depth_image.to_pillow(), "images/non_heif/pug_depth.png"], hash_size=128)
+    assert depth_image.info
+    assert depth_image.info["metadata"]
+    assert depth_image.info["metadata"]["d_min"] == 1.498046875
+    assert depth_image.info["metadata"]["d_max"] == 4.3828125
+    assert depth_image.info["metadata"]["representation_type"] == 1
+    assert depth_image.info["metadata"]["disparity_reference_view"] == 0
+    assert depth_image.info["metadata"]["nonlinear_representation_model_size"] == 0
