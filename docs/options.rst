@@ -5,6 +5,7 @@ Options
 
 .. autodata:: pillow_heif.options.DECODE_THREADS
 .. autodata:: pillow_heif.options.THUMBNAILS
+.. autodata:: pillow_heif.options.DEPTH_IMAGES
 .. autodata:: pillow_heif.options.QUALITY
 .. autodata:: pillow_heif.options.SAVE_HDR_TO_12_BIT
 .. autodata:: pillow_heif.options.ALLOW_INCORRECT_HEADERS
