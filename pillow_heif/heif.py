@@ -128,6 +128,15 @@ class HeifDepthImage(BaseImage):
         _bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
 
+    def to_pillow(self) -> Image.Image:
+        """Helper method to create :external:py:class:`~PIL.Image.Image`
+
+        :returns: :external:py:class:`~PIL.Image.Image` class created from an image."""
+
+        image = super().to_pillow()
+        image.info = self.info.copy()
+        return image
+
 
 class HeifImage(BaseImage):
     """Class represents one image in a :py:class:`~pillow_heif.HeifFile`"""

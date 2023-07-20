@@ -460,7 +460,8 @@ def test_depth_image():
     depth_image = im.info["depth_images"][0]
     assert str(depth_image) == "<HeifDepthImage 768x576 L>"
     assert isinstance(depth_image, pillow_heif.HeifDepthImage)
-    helpers.compare_hashes([depth_image.to_pillow(), "images/non_heif/pug_depth.png"], hash_size=128)
+    im_pil = depth_image.to_pillow()
+    helpers.compare_hashes([im_pil, "images/non_heif/pug_depth.png"], hash_size=128)
     assert depth_image.info
     assert depth_image.info["metadata"]
     assert depth_image.info["metadata"]["d_min"] == 1.498046875
@@ -468,3 +469,4 @@ def test_depth_image():
     assert depth_image.info["metadata"]["representation_type"] == 1
     assert depth_image.info["metadata"]["disparity_reference_view"] == 0
     assert depth_image.info["metadata"]["nonlinear_representation_model_size"] == 0
+    assert im_pil.info == depth_image.info
