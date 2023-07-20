@@ -349,6 +349,8 @@ class HeifFile:
 
             ``format`` - string with encoder format name. Possible values: ``HEIF`` (default) or ``AVIF``.
 
+            ``save_nclx_profile`` - see :py:attr:`~pillow_heif.options.SAVE_NCLX_PROFILE`
+
         :param fp: A filename (string), pathlib.Path object or an object with `write` method.
 
         :returns: None"""

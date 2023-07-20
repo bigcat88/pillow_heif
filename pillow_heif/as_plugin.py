@@ -245,6 +245,8 @@ def __options_update(**kwargs):
             options.DECODE_THREADS = v
         elif k == "allow_incorrect_headers":
             options.ALLOW_INCORRECT_HEADERS = v
+        elif k == "save_nclx_profile":
+            options.SAVE_NCLX_PROFILE = v
         else:
             warn(f"Unknown option: {k}")
 

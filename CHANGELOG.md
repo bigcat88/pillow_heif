@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - `Python 3.12`, `PyPy 3.10` wheels
-- `Depth Image` read support, they are available as list in `im.info["depth_images"]`
+- `Depth Image` read support, they are available as list in `im.info["depth_images"]` #116
+- `options.SAVE_NCLX_PROFILE` - ability to save `nclx` profile to an image. #118 Thanks to @wiggin15
 
 ### Changed
 
@@ -87,7 +88,7 @@ Reworked version with native C extension.
 
 - Fixed Access Violation(all version was affected) when image size after decoding differs. #79
 
-## [0.9.3 - 2023-01-22]
+## [0.9.8 - 2023-01-22]
 
 ### Fixed
 

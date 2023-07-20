@@ -480,3 +480,30 @@ def test_invalid_ispe_stride_pillow(image_path):
     im.save(buf, format="HEIF")
     im = Image.open(buf)
     assert im.size == (29, 100)
+
+
+def test_nclx_profile_write():
+    im_rgb = helpers.gradient_rgb()
+    buf = BytesIO()
+    im_rgb.save(buf, format="HEIF", save_nclx_profile=False)
+    assert "nclx_profile" not in Image.open(buf).info
+    im_rgb.save(buf, format="HEIF", save_nclx_profile=True)
+    assert "nclx_profile" in Image.open(buf).info
+    try:
+        pillow_heif.options.SAVE_NCLX_PROFILE = True
+        im_rgb.save(buf, format="HEIF", save_nclx_profile=False)
+        assert "nclx_profile" not in Image.open(buf).info
+        im_rgb.save(buf, format="HEIF")
+        assert "nclx_profile" in Image.open(buf).info
+        im_rgb.info["nclx_profile"] = {
+            "color_primaries": 1,
+            "transfer_characteristics": 1,
+            "matrix_coefficients": 10,
+            "full_range_flag": 0,
+        }
+        im_rgb.save(buf, format="HEIF")
+        nclx_out = Image.open(buf).info["nclx_profile"]
+        for k in im_rgb.info["nclx_profile"]:
+            assert im_rgb.info["nclx_profile"][k] == nclx_out[k]
+    finally:
+        pillow_heif.options.SAVE_NCLX_PROFILE = False
