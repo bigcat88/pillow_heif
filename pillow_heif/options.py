@@ -54,6 +54,6 @@ SAVE_NCLX_PROFILE = False
 """Should be `nclx` profile saved or not.
 
 .. note:: macOS viewer ``does not support opening`` images with **nclx** profiles, so this is disabled by default.
-.. note:: `save_nclx_profile` specified during calling ``save`` has higher priority then this.
+.. note:: `save_nclx_profile` specified during calling ``save`` has higher priority than this.
 
 When use pillow_heif as a plugin you can set it with: `register_*_opener(save_nclx_profile=True)`"""

@@ -88,7 +88,7 @@ Reworked version with native C extension.
 
 - Fixed Access Violation(all version was affected) when image size after decoding differs. #79
 
-## [0.9.8 - 2023-01-22]
+## [0.9.3 - 2023-01-22]
 
 ### Fixed
 
