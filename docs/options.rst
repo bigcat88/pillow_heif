@@ -9,6 +9,7 @@ Options
 .. autodata:: pillow_heif.options.QUALITY
 .. autodata:: pillow_heif.options.SAVE_HDR_TO_12_BIT
 .. autodata:: pillow_heif.options.ALLOW_INCORRECT_HEADERS
+.. autodata:: pillow_heif.options.SAVE_NCLX_PROFILE
 
 Example of use
 """"""""""""""

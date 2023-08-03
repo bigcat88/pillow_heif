@@ -106,7 +106,7 @@ class BaseImage:
     def load(self) -> None:
         """Method to decode image.
 
-        .. note:: In normal cases you should not call this method directly,
+        .. note:: In normal cases, you should not call this method directly,
             when reading `data` or `stride` property of image will be loaded automatically."""
 
         if not self._data:
@@ -178,7 +178,7 @@ class HeifImage(BaseImage):
 
     @property
     def has_alpha(self):
-        """``True`` for images with ``alpha`` channel, ``False`` otherwise.
+        """``True`` for images with the ``alpha`` channel, ``False`` otherwise.
 
         :returns: "True" or "False" """
 
@@ -252,7 +252,7 @@ class HeifFile:
         """Points to :py:attr:`~pillow_heif.HeifImage.size` property of the
         primary :py:class:`~pillow_heif.HeifImage` in the container.
 
-        :exception IndexError: If there is no images."""
+        :exception IndexError: If there are no images."""
 
         return self._images[self.primary_index].size
 
@@ -261,7 +261,7 @@ class HeifFile:
         """Points to :py:attr:`~pillow_heif.HeifImage.mode` property of the
         primary :py:class:`~pillow_heif.HeifImage` in the container.
 
-        :exception IndexError: If there is no images."""
+        :exception IndexError: If there are no images."""
 
         return self._images[self.primary_index].mode
 
@@ -270,7 +270,7 @@ class HeifFile:
         """Points to :py:attr:`~pillow_heif.HeifImage.has_alpha` property of the
         primary :py:class:`~pillow_heif.HeifImage` in the container.
 
-        :exception IndexError: If there is no images."""
+        :exception IndexError: If there are no images."""
 
         return self._images[self.primary_index].has_alpha
 
@@ -279,7 +279,7 @@ class HeifFile:
         """Points to :py:attr:`~pillow_heif.HeifImage.premultiplied_alpha` property of the
         primary :py:class:`~pillow_heif.HeifImage` in the container.
 
-        :exception IndexError: If there is no images."""
+        :exception IndexError: If there are no images."""
 
         return self._images[self.primary_index].premultiplied_alpha
 
@@ -292,7 +292,7 @@ class HeifFile:
         """Points to :py:attr:`~pillow_heif.HeifImage.data` property of the
         primary :py:class:`~pillow_heif.HeifImage` in the container.
 
-        :exception IndexError: If there is no images."""
+        :exception IndexError: If there are no images."""
 
         return self._images[self.primary_index].data
 
@@ -301,7 +301,7 @@ class HeifFile:
         """Points to :py:attr:`~pillow_heif.HeifImage.stride` property of the
         primary :py:class:`~pillow_heif.HeifImage` in the container.
 
-        :exception IndexError: If there is no images."""
+        :exception IndexError: If there are no images."""
 
         return self._images[self.primary_index].stride
 
@@ -309,7 +309,7 @@ class HeifFile:
     def info(self):
         """Points to ``info`` dict of the primary :py:class:`~pillow_heif.HeifImage` in the container.
 
-        :exception IndexError: If there is no images."""
+        :exception IndexError: If there are no images."""
 
         return self._images[self.primary_index].info
 
@@ -324,13 +324,13 @@ class HeifFile:
         """Saves image(s) under the given fp.
 
         Keyword options can be used to provide additional instructions to the writer.
-        If a writer does not recognise an option, it is silently ignored.
+        If a writer does not recognize an option, it is silently ignored.
 
         Supported options:
-            ``save_all`` - boolean. Should all images from ``HeiFile`` be saved.
+            ``save_all`` - boolean. Should all images from ``HeiFile`` be saved?
             (default = ``True``)
 
-            ``append_images`` - do the same as in Pillow. Accepts list of ``HeifImage``
+            ``append_images`` - do the same as in Pillow. Accepts the list of ``HeifImage``
 
             .. note:: Appended images always will have ``info["primary"]=False``
 
@@ -348,6 +348,8 @@ class HeifFile:
             ``chroma`` - custom subsampling value. Possible values: ``444``, ``422`` or ``420`` (``x265`` default).
 
             ``format`` - string with encoder format name. Possible values: ``HEIF`` (default) or ``AVIF``.
+
+            ``save_nclx_profile`` - boolean, see :py:attr:`~pillow_heif.options.SAVE_NCLX_PROFILE`
 
         :param fp: A filename (string), pathlib.Path object or an object with `write` method.
 
@@ -478,7 +480,7 @@ def is_supported(fp) -> bool:
         The file object must implement ``file.read``, ``file.seek``, and ``file.tell`` methods,
         and be opened in binary mode.
 
-    :returns: A boolean indicating if object can be opened."""
+    :returns: A boolean indicating if the object can be opened."""
 
     __data = _get_bytes(fp, 12)
     if __data[4:8] != b"ftyp":
@@ -491,11 +493,11 @@ def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
 
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
-        be converted to 8 bit images during decoding. Otherwise, they will open in 16 bit mode.
+        be converted to 8-bit images during decoding. Otherwise, they will open in 16-bit mode.
         ``Does not affect "depth images".``
     :param bgr_mode: Boolean indicating should be `RGB(A)` images be opened in `BGR(A)` mode.
     :param kwargs: **hdr_to_16bit** a boolean value indicating that 10/12-bit image data
-        should be converted to 16-bit mode during decoding. `Has lower priority then convert_hdr_to_8bit`!
+        should be converted to 16-bit mode during decoding. `Has lower priority than convert_hdr_to_8bit`!
         Default = **True**
 
     :returns: :py:class:`~pillow_heif.HeifFile` object.
@@ -516,11 +518,11 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
 
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
-        be converted to 8 bit images during decoding. Otherwise, they will open in 16 bit mode.
+        be converted to 8-bit images during decoding. Otherwise, they will open in 16-bit mode.
         ``Does not affect "depth images".``
     :param bgr_mode: Boolean indicating should be `RGB(A)` images be opened in `BGR(A)` mode.
     :param kwargs: **hdr_to_16bit** a boolean value indicating that 10/12-bit image data
-        should be converted to 16-bit mode during decoding. `Has lower priority then convert_hdr_to_8bit`!
+        should be converted to 16-bit mode during decoding. `Has lower priority than convert_hdr_to_8bit`!
         Default = **True**
 
     :returns: :py:class:`~pillow_heif.HeifFile` object.

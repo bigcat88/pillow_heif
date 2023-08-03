@@ -27,18 +27,27 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 @pytest.mark.parametrize("register_opener", (register_avif_opener, register_heif_opener))
 def test_options_change_from_plugin_registering(register_opener):
     try:
-        register_opener(thumbnails=False, quality=69, save_to_12bit=True, decode_threads=3, depth_images=False)
+        register_opener(
+            thumbnails=False,
+            quality=69,
+            save_to_12bit=True,
+            decode_threads=3,
+            depth_images=False,
+            save_nclx_profile=True,
+        )
         assert not options.THUMBNAILS
         assert options.QUALITY == 69
         assert options.SAVE_HDR_TO_12_BIT
         assert options.DECODE_THREADS == 3
         assert options.DEPTH_IMAGES is False
+        assert options.SAVE_NCLX_PROFILE is True
     finally:
         options.THUMBNAILS = True
         options.QUALITY = None
         options.SAVE_HDR_TO_12_BIT = False
         options.DECODE_THREADS = 4
         options.DEPTH_IMAGES = True
+        options.SAVE_NCLX_PROFILE = False
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
