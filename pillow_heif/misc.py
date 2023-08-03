@@ -344,7 +344,9 @@ class CtxEncode:
                 ]
             )
         # encode
-        im_out.encode(self.ctx_write, kwargs.get("primary", False))
+        im_out.encode(
+            self.ctx_write, kwargs.get("primary", False), kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE)
+        )
         # adding metadata
         exif = kwargs.get("exif", None)
         if exif is not None:

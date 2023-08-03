@@ -518,15 +518,16 @@ static PyObject* _CtxWriteImage_set_nclx_profile(CtxWriteImageObject* self, PyOb
 static PyObject* _CtxWriteImage_encode(CtxWriteImageObject* self, PyObject* args) {
     /* ctx: CtxWriteObject, primary: int */
     CtxWriteObject* ctx_write;
-    int primary;
+    int primary, save_nclx;
     struct heif_error error;
     struct heif_encoding_options* options;
 
-    if (!PyArg_ParseTuple(args, "Oi", (PyObject*)&ctx_write, &primary))
+    if (!PyArg_ParseTuple(args, "Oii", (PyObject*)&ctx_write, &primary, &save_nclx))
         return NULL;
 
     Py_BEGIN_ALLOW_THREADS
     options = heif_encoding_options_alloc();
+    options->macOS_compatibility_workaround_no_nclx_profile = !save_nclx;
     error = heif_context_encode_image(ctx_write->ctx, self->image, ctx_write->encoder, options, &self->handle);
     heif_encoding_options_free(options);
     Py_END_ALLOW_THREADS
