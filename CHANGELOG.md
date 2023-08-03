@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - `Python 3.12`, `PyPy 3.10` wheels.
 - `Depth Image` read support, they are available as a list in `im.info["depth_images"]` #116
 - `options.SAVE_NCLX_PROFILE` - default `False` to be full compatible with previous versions, but in next versions may be changed to `True`. #118 Thanks to @wiggin15
+- Support for `Pillow 10.1.0`
 
 ### Changed
 

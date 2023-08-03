@@ -36,6 +36,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
     _heif_file: Union[HeifFile, None] = None
     _close_exclusive_fp_after_loading = True
+    _mode: str  # only for Pillow 10.1+
 
     def __init__(self, *args, **kwargs):
         self.__frame = 0
@@ -127,7 +128,11 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def _init_from_heif_file(self, img_index: int) -> None:
         if self._heif_file:
             self._size = self._heif_file[img_index].size
-            self.mode = self._heif_file[img_index].mode
+            if pil_version[:4] not in ("9.1.", "9.2.", "9.3.", "9.4.", "9.5.", "10.0"):
+                # starting from Pillow 10.1, `mode` is a readonly property.
+                self._mode = self._heif_file[img_index].mode
+            else:
+                self.mode = self._heif_file[img_index].mode
             self.info = self._heif_file[img_index].info
             self.info["original_orientation"] = set_orientation(self.info)
 
