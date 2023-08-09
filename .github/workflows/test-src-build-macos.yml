@@ -30,7 +30,7 @@ concurrency:
 jobs:
   full_macos_11:
     name: macOS:11-x86_64
-    runs-on: macos-11
+    runs-on: macos-13
     env:
       TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
       PH_FULL_ACTION: 1
@@ -54,7 +54,7 @@ jobs:
 
   lite_macos_11:
     name: macOS:11-x86_64(Pi-Heif)
-    runs-on: macos-11
+    runs-on: macos-13
     env:
       TEST_DECODE_THREADS: 0
       PH_LIGHT_ACTION: 1
