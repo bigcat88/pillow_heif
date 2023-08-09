@@ -25,7 +25,7 @@ jobs:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "aarch64", "x86_64" ]
     name: ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       KEY_HEAD: ${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
       BUILD_DIR: "/tmp/ph_build_stuff"
@@ -79,7 +79,7 @@ jobs:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "aarch64", "i686", "x86_64" ]
     name: Pi-Heif • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       KEY_HEAD: Pi-Heif-${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
       BUILD_DIR: "/tmp/ph_build_stuff"
@@ -154,7 +154,7 @@ jobs:
         ]
         v: ["3.10"]
     name: Pi-Heif • ARMv7l • ${{ matrix.i['name'] }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       KEY_HEAD: Pi-Heif-ARMv7l-${{ matrix.i['name'] }}
       BUILD_DIR: "./build_cache"
