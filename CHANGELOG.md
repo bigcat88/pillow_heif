@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [0.1x.x - 2023-0x-xx]
+
+### Fixed
+
+- When building from source, the installer additionally searches for `libheif` using `pkg-config`. #128
+
 ## [0.13.0 - 2023-08-09]
 
 ### Added
