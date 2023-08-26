@@ -55,3 +55,28 @@ test_src_build_lite_macos_arm_task:
     - python3 -c "import pi_heif; print(pi_heif.libheif_info())"
   perform_tests_script:
     - python3 -m pytest
+
+test_src_build_full_freebsd_task:
+  only_if: "changesInclude(
+    'ci/cirrus_general_ci.yml',
+    'setup.*',
+    'pyproject.toml')"
+
+  name: From FreeBSD / FreeBSD:13-amd64
+  freebsd_instance:
+    image_family: freebsd-13-2
+
+  env:
+    PH_FULL_ACTION: 1
+    EXP_PH_LIBHEIF_VERSION: ""
+
+  install_libheif_script:
+    - pkg install -y libheif gcc
+    - pkg install -y py39-pip
+    - pkg install -y py39-pillow
+  install_pillow_heif_script:
+    - python3 -m pip -v install ".[tests-min]"
+  libheif_info_script:
+    - python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+  perform_tests_script:
+    - python3 -m pytest
