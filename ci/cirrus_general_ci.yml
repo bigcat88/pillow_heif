@@ -62,7 +62,7 @@ test_src_build_full_freebsd_task:
     'setup.*',
     'pyproject.toml')"
 
-  name: From FreeBSD / FreeBSD:13-amd64
+  name: From source(FreeBSD) / FreeBSD:13-amd64
   freebsd_instance:
     image_family: freebsd-13-2
 
