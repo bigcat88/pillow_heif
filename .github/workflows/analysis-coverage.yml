@@ -26,7 +26,7 @@ jobs:
     name: Analysis
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install from source
         run: python3 -m pip install ".[dev]" wheel
 
@@ -38,7 +38,7 @@ jobs:
     name: Coverage(Linux) • 🐍3.12
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: '3.12-dev'
@@ -81,7 +81,7 @@ jobs:
     name: Coverage(Linux, Pillow-dev) • 🐍3.11
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
@@ -128,7 +128,7 @@ jobs:
       TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
@@ -165,7 +165,7 @@ jobs:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
@@ -233,7 +233,7 @@ jobs:
     name: Pi-Heif Coverage(Linux) • 🐍3.8
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Transform to Pi-Heif
         run: cp -r -v ./pi-heif/* .
 
@@ -277,7 +277,7 @@ jobs:
     name: Pi-Heif Test(Linux) • 🐍3.8
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
@@ -308,7 +308,7 @@ jobs:
     name: Coverage(ImportError)
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install from source
         run: |
           python3 -m pip -v install .

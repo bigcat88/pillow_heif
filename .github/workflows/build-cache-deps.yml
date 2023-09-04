@@ -31,7 +31,7 @@ jobs:
       BUILD_DIR: "/tmp/ph_build_stuff"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up QEMU
         if: matrix.cibw_arch == 'aarch64'
         uses: docker/setup-qemu-action@v2
@@ -85,7 +85,7 @@ jobs:
       BUILD_DIR: "/tmp/ph_build_stuff"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
@@ -160,7 +160,7 @@ jobs:
       BUILD_DIR: "./build_cache"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .

@@ -37,7 +37,7 @@ jobs:
       EXP_PH_LIBHEIF_VERSION: ""
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install libheif from formula
         run: |
           brew uninstall --force --ignore-dependencies imagemagick libheif
@@ -61,7 +61,7 @@ jobs:
       EXP_PH_LIBHEIF_VERSION: ""
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
