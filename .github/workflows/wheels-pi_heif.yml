@@ -142,7 +142,7 @@ jobs:
 
       - name: Set up QEMU
         if: matrix.cibw_arch == 'aarch64'
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
 
@@ -212,7 +212,7 @@ jobs:
 
       - name: Set up QEMU
         if: matrix.cibw_arch == 'aarch64'
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
 
@@ -275,7 +275,7 @@ jobs:
           python3 .github/transform_to-pi_heif.py
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
 
       - uses: actions/cache@v3
         with:
