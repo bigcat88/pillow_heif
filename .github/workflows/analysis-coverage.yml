@@ -69,7 +69,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
@@ -114,7 +114,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
@@ -151,7 +151,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
@@ -221,7 +221,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
@@ -265,7 +265,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
@@ -325,7 +325,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
