@@ -1,6 +1,4 @@
-"""
-Plugins for Pillow library.
-"""
+"""Plugins for the Pillow library."""
 
 from itertools import chain
 from typing import Union
@@ -82,8 +80,8 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def getxmp(self) -> dict:
         """Returns a dictionary containing the XMP tags. Requires ``defusedxml`` to be installed.
 
-        :returns: XMP tags in a dictionary."""
-
+        :returns: XMP tags in a dictionary.
+        """
         if self.info.get("xmp", None):
             xmp_data = self.info["xmp"].rsplit(b"\x00", 1)
             if xmp_data[0]:
@@ -96,9 +94,8 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         self.__frame = frame
         self._init_from_heif_file(frame)
         _exif = getattr(self, "_exif", None)  # Pillow 9.2+ do no reload exif between frames.
-        if _exif is not None:
-            if getattr(_exif, "_loaded", None):
-                _exif._loaded = False  # pylint: disable=protected-access
+        if _exif is not None and getattr(_exif, "_loaded", None):
+            _exif._loaded = False  # pylint: disable=protected-access
 
     def tell(self):
         return self.__frame
@@ -110,14 +107,13 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def n_frames(self) -> int:
         """Returns the number of available frames.
 
-        :returns: Frame number, starting with 0."""
-
+        :returns: Frame number, starting with 0.
+        """
         return len(self._heif_file) if self._heif_file else 1
 
     @property
     def is_animated(self) -> bool:
         """Returns ``True`` if this image contains more than one frame, or ``False`` otherwise."""
-
         return self.n_frames > 1
 
     def _seek_check(self, frame):
@@ -140,7 +136,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 class HeifImageFile(_LibHeifImageFile):
     """Pillow plugin class type for a HEIF image format."""
 
-    format = "HEIF"
+    format = "HEIF"  # noqa
     format_description = "HEIF container"
 
 
@@ -177,7 +173,6 @@ def register_heif_opener(**kwargs) -> None:
 
     :param kwargs: dictionary with values to set in options. See: :ref:`options`.
     """
-
     __options_update(**kwargs)
     Image.register_open(HeifImageFile.format, HeifImageFile, _is_supported_heif)
     if _pillow_heif.lib_info["HEIF"]:
@@ -191,7 +186,7 @@ def register_heif_opener(**kwargs) -> None:
 class AvifImageFile(_LibHeifImageFile):
     """Pillow plugin class type for an AVIF image format."""
 
-    format = "AVIF"
+    format = "AVIF"  # noqa
     format_description = "AVIF container"
 
 
@@ -220,9 +215,8 @@ def register_avif_opener(**kwargs) -> None:
 
     :param kwargs: dictionary with values to set in options. See: :ref:`options`.
     """
-
     if not _pillow_heif.lib_info["AVIF"]:
-        warn("This version of `pillow-heif` was built without AVIF support.")
+        warn("This version of `pillow-heif` was built without AVIF support.", stacklevel=1)
         return
     __options_update(**kwargs)
     Image.register_open(AvifImageFile.format, AvifImageFile, _is_supported_avif)
@@ -235,8 +229,7 @@ def register_avif_opener(**kwargs) -> None:
 
 
 def __options_update(**kwargs):
-    """Internal function to set options from `register_avif_opener` and `register_heif_opener`"""
-
+    """Internal function to set options from `register_avif_opener` and `register_heif_opener` methods."""
     for k, v in kwargs.items():
         if k == "thumbnails":
             options.THUMBNAILS = v
@@ -253,7 +246,7 @@ def __options_update(**kwargs):
         elif k == "save_nclx_profile":
             options.SAVE_NCLX_PROFILE = v
         else:
-            warn(f"Unknown option: {k}")
+            warn(f"Unknown option: {k}", stacklevel=1)
 
 
 def __save_one(im, fp, compression_format: HeifCompressionFormat):

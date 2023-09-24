@@ -1,6 +1,4 @@
-"""
-Import all possible stuff that can be used.
-"""
+"""Provide all possible stuff that can be used."""
 
 
 from . import options

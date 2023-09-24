@@ -89,7 +89,7 @@ def test_heif_info_changing(save_format):
     for i in range(3):
         im[i].info["xmp"] = xmp
         im[i].info["exif"] = exif.tobytes()
-        im[i].info["primary"] = False if i != 2 else True
+        im[i].info["primary"] = bool(i == 2)
     im.save(out_buf, format=save_format)
     im_out = pillow_heif.open_heif(out_buf)
     assert im_out.info["primary"]
@@ -136,7 +136,7 @@ def test_pillow_info_changing(save_format):
         im.seek(i)
         im.info["xmp"] = xmp
         im.info["exif"] = exif.tobytes()
-        im.info["primary"] = False if i != 2 else True
+        im.info["primary"] = bool(i == 2)
     im.save(out_buf, format=save_format, save_all=True)
     im_out = Image.open(out_buf)
     assert im_out.info["primary"]

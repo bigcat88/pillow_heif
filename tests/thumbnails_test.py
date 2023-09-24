@@ -64,7 +64,7 @@ def test_pillow_remove_thumbnails():
     ImageSequence.Iterator(im)[0].info.pop("thumbnails")
     ImageSequence.Iterator(im)[1].info.pop("thumbnails")
     im.save(buf, format="HEIF", save_all=True)
-    for i, img in enumerate(ImageSequence.Iterator(Image.open(buf))):
+    for _, img in enumerate(ImageSequence.Iterator(Image.open(buf))):
         assert len(img.info["thumbnails"]) == 0
 
 

@@ -9,12 +9,12 @@ if __name__ == "__main__":
     file = "../tests/images/heif_other/cat.hif"
     print("Dumping info for file:", file)
     heif_pillow = Image.open(file)
-    print("Number of images:", len([i for i in ImageSequence.Iterator(heif_pillow)]))
+    print("Number of images:", len(list(ImageSequence.Iterator(heif_pillow))))
     print("Information about each image:")
     for image in ImageSequence.Iterator(heif_pillow):
         print("\tMode:", image.mode)
         print("\tSize:", image.size)
-        print("\tThumbnails:", [t for t in image.info["thumbnails"]])
+        print("\tThumbnails:", list(image.info["thumbnails"]))
         print("\tData size:", len(image.tobytes()))
         if image.info.get("icc_profile", None) is not None:
             if len(image.info["icc_profile"]):

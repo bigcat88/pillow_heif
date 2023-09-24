@@ -91,7 +91,7 @@ def test_heif_corrupted_open(img_path):
     for input_type in [img_path.read_bytes(), BytesIO(img_path.read_bytes()), img_path, builtins.open(img_path, "rb")]:
         try:
             _ = pillow_heif.open_heif(input_type).data
-            assert False
+            raise AssertionError("Opening corrupted image should raise proper exception.")
         except ValueError as exception:
             assert str(exception).find("Invalid input") != -1
 
@@ -174,7 +174,7 @@ def test_pillow_inputs(img_path):
 def test_pillow_after_load():
     img = Image.open(Path("images/heif/RGBA_10__29x100.heif"))
     assert getattr(img, "_heif_file") is not None
-    for i in range(3):
+    for _ in range(3):
         img.load()
         collect()
         assert not getattr(img, "is_animated")

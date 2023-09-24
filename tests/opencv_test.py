@@ -30,7 +30,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 )
 def test_save_bgr_16bit_to_10_12_bit(enc_bits, img):
     try:
-        options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
+        options.SAVE_HDR_TO_12_BIT = bool(enc_bits == 12)
         cv_img = cv2.imread(img, cv2.IMREAD_UNCHANGED)
         assert cv_img.shape[2] == 3  # 3 channels(BGR)
         heif_file = from_bytes(mode="BGR;16", size=(cv_img.shape[1], cv_img.shape[0]), data=bytes(cv_img))
@@ -56,7 +56,7 @@ def test_save_bgr_16bit_to_10_12_bit(enc_bits, img):
 )
 def test_save_bgra_16bit_to_10_12_bit(enc_bits, img):
     try:
-        options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
+        options.SAVE_HDR_TO_12_BIT = bool(enc_bits == 12)
         cv_img = cv2.imread(img, cv2.IMREAD_UNCHANGED)
         assert cv_img.shape[2] == 4  # 4 channels(BGRA)
         heif_file = from_bytes(mode="BGRA;16", size=(cv_img.shape[1], cv_img.shape[0]), data=bytes(cv_img))
