@@ -36,7 +36,7 @@ if __name__ == "__main__":
     else:
         img = L_IMAGE
     start_time = perf_counter()
-    for i in range(int(sys.argv[1])):
+    for _ in range(int(sys.argv[1])):
         buf = BytesIO()
         img.save(buf, format="HEIF")
     total_time = perf_counter() - start_time

@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 # This test should be run in a separate interpreter, and needed mostly only for coverage.
-if not any([str(i).find("import_error_test") != -1 for i in sys.argv]):
+if not any([str(i).find("import_error_test") != -1 for i in sys.argv]):  # noqa
     pytest.skip(allow_module_level=True)
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Script to build wheel"""
+"""Script to build wheel."""
 import os
 import re
 import subprocess
@@ -17,6 +17,7 @@ from libheif import linux_build_libs
 
 
 def get_version():
+    """Returns version of the project."""
     version_file = "pillow_heif/_version.py"
     with open(version_file, encoding="utf-8") as f:
         exec(compile(f.read(), version_file, "exec"))  # pylint: disable=exec-used
@@ -24,6 +25,7 @@ def get_version():
 
 
 def _cmd_exists(cmd: str) -> bool:
+    """Checks if specified command exists on the machine."""
     if "PATH" not in os.environ:
         return False
     return any(os.access(os.path.join(path, cmd), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
@@ -62,9 +64,10 @@ def _pkg_config(name):
 
 
 class PillowHeifBuildExt(build_ext):
-    """This class is based on the Pillow setup method"""
+    """Class based on the Pillow setup method."""
 
-    def build_extensions(self):  # pylint: disable=too-many-branches disable=too-many-statements
+    def build_extensions(self):  # noqa pylint: disable=too-many-branches disable=too-many-statements
+        """Builds all required python binary extensions of the project."""
         if os.getenv("PRE_COMMIT"):
             return
 
@@ -129,7 +132,10 @@ class PillowHeifBuildExt(build_ext):
             include_path_prefix = os.getenv("MSYS2_PREFIX")
             if include_path_prefix is None:
                 include_path_prefix = "C:\\msys64\\mingw64"
-                warn(f"MSYS2_PREFIX environment variable is not set. Assuming `MSYS2_PREFIX={include_path_prefix}`")
+                warn(
+                    f"MSYS2_PREFIX environment variable is not set. Assuming `MSYS2_PREFIX={include_path_prefix}`",
+                    stacklevel=1,
+                )
 
             if not os.path.isdir(include_path_prefix):
                 raise ValueError("MSYS2 not found and `MSYS2_PREFIX` is not set or is invalid.")
@@ -142,7 +148,7 @@ class PillowHeifBuildExt(build_ext):
             if lib_export_file.is_file():
                 copy(lib_export_file, os.path.join(library_dir, "libheif.lib"))
             else:
-                warn("If you build this with MSYS2, you should not see this warning.")
+                warn("If you build this with MSYS2, you should not see this warning.", stacklevel=1)
 
             # on Windows, we include "root" of the project instead of MSYS2 directory.
             # Including MSYS2 directory leads to compilation errors, theirs `stdio.h` and other files are different.

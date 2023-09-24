@@ -1,5 +1,4 @@
-"""
-Different miscellaneous helper functions.
+"""Different miscellaneous helper functions.
 
 Mostly for internal use, so prototypes can change between versions.
 """
@@ -76,18 +75,19 @@ MODE_INFO = {
 
 def set_orientation(info: dict) -> Optional[int]:
     """Reset orientation in ``EXIF`` to ``1`` if any orientation present.
+
     Removes ``XMP`` orientation tag if it is present.
-    In Pillow plugin mode it called automatically for images.
-    When ``pillow_heif`` used in ``standalone`` mode, if you wish you can call it manually.
+    In Pillow plugin mode, it is called automatically for images.
+    When ``pillow_heif`` used in ``standalone`` mode, if you wish, you can call it manually.
 
     .. note:: If there is no orientation tag, this function will not add it and do nothing.
 
-        If both XMP and EXIF orientation tags present, EXIF orientation tag will be returned,
+        If both XMP and EXIF orientation tags are present, EXIF orientation tag will be returned,
         but both tags will be removed.
 
     :param info: `info` dictionary from :external:py:class:`~PIL.Image.Image` or :py:class:`~pillow_heif.HeifImage`.
-    :returns: Original orientation or None if it is absent."""
-
+    :returns: Original orientation or None if it is absent.
+    """
     original_orientation = None
     if info.get("exif", None):
         try:
@@ -142,7 +142,7 @@ def set_orientation(info: dict) -> Optional[int]:
 
 
 def get_file_mimetype(fp) -> str:
-    """Gets the MIME type of the HEIF(or AVIF) object.`
+    """Gets the MIME type of the HEIF(or AVIF) object.
 
     :param fp: A filename (string), pathlib.Path object, file object or bytes.
         The file object must implement ``file.read``, ``file.seek`` and ``file.tell`` methods,
@@ -150,7 +150,6 @@ def get_file_mimetype(fp) -> str:
     :returns: "image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence",
         "image/avif", "image/avif-sequence" or "".
     """
-
     heif_brand = _get_bytes(fp, 12)[8:]
     if heif_brand:
         if heif_brand == b"avif":
@@ -191,9 +190,8 @@ def _retrieve_exif(metadata: List[dict]) -> Optional[bytes]:
             skip_size += 4  # skip 4 bytes with offset
             if len(md_block["data"]) - skip_size <= 4:  # bad EXIF data, skip first 4 bytes
                 skip_size = 4
-            elif skip_size >= 6:
-                if md_block["data"][skip_size - 6 : skip_size] == b"Exif\x00\x00":
-                    skip_size -= 6
+            elif skip_size >= 6 and md_block["data"][skip_size - 6 : skip_size] == b"Exif\x00\x00":
+                skip_size -= 6
             _data = md_block["data"][skip_size:]
             if not _result and _data:
                 _result = _data
@@ -218,7 +216,7 @@ def _retrieve_xmp(metadata: List[dict]) -> Optional[bytes]:
 def _exif_from_pillow(img: Image.Image) -> Optional[bytes]:
     if "exif" in img.info:
         return img.info["exif"]
-    if hasattr(img, "getexif"):
+    if hasattr(img, "getexif"):  # noqa
         if pil_version[:4] not in ("9.1.",):
             exif = img.getexif()
             if exif:
@@ -263,7 +261,8 @@ def _pil_to_supported_mode(img: Image.Image) -> Image.Image:
 
 
 class Transpose(IntEnum):
-    # Temporary till we support old Pillows, remove this when minimum Pillow version will have this.
+    """Temporary workaround till we support old Pillows, remove this when a minimum Pillow version will have this."""
+
     FLIP_LEFT_RIGHT = 0
     FLIP_TOP_BOTTOM = 1
     ROTATE_90 = 2
@@ -303,6 +302,8 @@ def _get_primary_index(some_iterator, primary_index: Optional[int]) -> int:
 
 
 class CtxEncode:
+    """Encoder bindings from python to python C module."""
+
     def __init__(self, compression_format: HeifCompressionFormat, **kwargs):
         quality = kwargs.get("quality", options.QUALITY)
         self.ctx_write = _pillow_heif.CtxWrite(compression_format, -2 if quality is None else quality)
@@ -315,6 +316,7 @@ class CtxEncode:
             self.ctx_write.set_parameter(key, _value)
 
     def add_image(self, size: tuple, mode: str, data, **kwargs) -> None:
+        """Adds image to the encoder."""
         if size[0] <= 0 or size[1] <= 0:
             raise ValueError("Empty images are not supported.")
         bit_depth_in = MODE_INFO[mode][1]
@@ -364,6 +366,7 @@ class CtxEncode:
                 im_out.encode_thumbnail(self.ctx_write, thumb_box)
 
     def save(self, fp) -> None:
+        """Ask encoder to produce output based on previously added images."""
         data = self.ctx_write.finalize()
         if isinstance(fp, (str, Path)):
             with builtins.open(fp, "wb") as f:
@@ -376,6 +379,8 @@ class CtxEncode:
 
 @dataclass
 class MimCImage:
+    """Mimicry of the HeifImage class."""
+
     def __init__(self, mode: str, size: tuple, data: bytes, **kwargs):
         self.mode = mode
         self.size = size
@@ -389,8 +394,10 @@ class MimCImage:
 
     @property
     def size_mode(self):
+        """Mimicry of c_image property."""
         return self.size, self.mode
 
     @property
-    def bit_depth(self):
+    def bit_depth(self) -> int:
+        """Return bit-depth based on image mode."""
         return MODE_INFO[self.mode][1]

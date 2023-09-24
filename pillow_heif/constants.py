@@ -1,6 +1,4 @@
-"""
-Enums from LibHeif that are used.
-"""
+"""Enums from LibHeif that are used."""
 
 from enum import IntEnum
 
@@ -168,7 +166,7 @@ class HeifMatrixCoefficients(IntEnum):
 
 
 class HeifDepthRepresentationType(IntEnum):
-    """Possible values of ``HeifDepthImage.info['metadata']['representation_type']``"""
+    """Possible values of the ``HeifDepthImage.info['metadata']['representation_type']``."""
 
     UNIFORM_INVERSE_Z = 0
     """Unknown"""

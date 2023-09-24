@@ -20,7 +20,7 @@ if __name__ == "__main__":
         print("\tSize:", image.size)
         print("\tData size:", len(image.data))
         print("\tStride:", image.stride)
-        print("\tThumbnails:", [t for t in image.info["thumbnails"]])
+        print("\tThumbnails:", list(image.info["thumbnails"]))
         if image.info.get("icc_profile", None) is not None:
             if len(image.info["icc_profile"]):
                 icc_profile = BytesIO(image.info["icc_profile"])

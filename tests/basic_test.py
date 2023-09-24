@@ -14,7 +14,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 def test_libheif_info():
     info = pillow_heif.libheif_info()
     for key in ("HEIF", "AVIF"):
-        assert key in info.keys()
+        assert key in info
     assert pillow_heif.libheif_version() in (
         "1.12.0",
         "1.13.0",

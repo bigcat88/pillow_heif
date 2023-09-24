@@ -1,6 +1,4 @@
-"""
-Functions and classes for heif images to read and write.
-"""
+"""Functions and classes for heif images to read and write."""
 
 from copy import copy, deepcopy
 from io import SEEK_SET
@@ -35,7 +33,7 @@ except ImportError as ex:
 
 
 class BaseImage:
-    """Base class for :py:class:`HeifImage` and :py:class:`HeifDepthImage`"""
+    """Base class for :py:class:`HeifImage` and :py:class:`HeifDepthImage`."""
 
     size: tuple
     """Width and height of the image."""
@@ -55,26 +53,25 @@ class BaseImage:
     def data(self):
         """Decodes image and returns image data.
 
-        :returns: ``bytes`` of the decoded image."""
-
+        :returns: ``bytes`` of the decoded image.
+        """
         self.load()
         return self._data
 
     @property
-    def stride(self):
+    def stride(self) -> int:
         """Stride of the image.
 
         .. note:: from `0.10.0` version this value always will have width * sizeof pixel in default usage mode.
 
-        :returns: An Int value indicating the image stride after decoding."""
-
+        :returns: An Int value indicating the image stride after decoding.
+        """
         self.load()
         return self._c_image.stride
 
     @property
     def __array_interface__(self):
-        """Numpy array interface support"""
-
+        """Numpy array interface support."""
         self.load()
         width = int(self.stride / MODE_INFO[self.mode][0])
         if MODE_INFO[self.mode][1] <= 8:
@@ -88,10 +85,10 @@ class BaseImage:
         return {"shape": shape, "typestr": typestr, "version": 3, "data": self.data}
 
     def to_pillow(self) -> Image.Image:
-        """Helper method to create :external:py:class:`~PIL.Image.Image`
+        """Helper method to create :external:py:class:`~PIL.Image.Image` class.
 
-        :returns: :external:py:class:`~PIL.Image.Image` class created from an image."""
-
+        :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
+        """
         self.load()
         image = Image.frombytes(
             self.mode,  # noqa
@@ -107,15 +104,15 @@ class BaseImage:
         """Method to decode image.
 
         .. note:: In normal cases, you should not call this method directly,
-            when reading `data` or `stride` property of image will be loaded automatically."""
-
+            when reading `data` or `stride` property of image will be loaded automatically.
+        """
         if not self._data:
             self._data = self._c_image.data
             self.size, _ = self._c_image.size_mode
 
 
 class HeifDepthImage(BaseImage):
-    """Class represents one depth image for the :py:class:`~pillow_heif.HeifImage`"""
+    """Class representing the depth image associated with the :py:class:`~pillow_heif.HeifImage` class."""
 
     def __init__(self, c_image):
         super().__init__(c_image)
@@ -129,17 +126,17 @@ class HeifDepthImage(BaseImage):
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
 
     def to_pillow(self) -> Image.Image:
-        """Helper method to create :external:py:class:`~PIL.Image.Image`
+        """Helper method to create :external:py:class:`~PIL.Image.Image` class.
 
-        :returns: :external:py:class:`~PIL.Image.Image` class created from an image."""
-
+        :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
+        """
         image = super().to_pillow()
         image.info = self.info.copy()
         return image
 
 
 class HeifImage(BaseImage):
-    """Class represents one image in a :py:class:`~pillow_heif.HeifFile`"""
+    """One image in a :py:class:`~pillow_heif.HeifFile` container."""
 
     def __init__(self, c_image):
         super().__init__(c_image)
@@ -177,20 +174,14 @@ class HeifImage(BaseImage):
         )
 
     @property
-    def has_alpha(self):
-        """``True`` for images with the ``alpha`` channel, ``False`` otherwise.
-
-        :returns: "True" or "False" """
-
+    def has_alpha(self) -> bool:
+        """``True`` for images with the ``alpha`` channel, ``False`` otherwise."""
         return self.mode.split(sep=";")[0][-1] in ("A", "a")
 
     @property
-    def premultiplied_alpha(self):
-        """``True`` for images with ``premultiplied alpha`` channel, ``False`` otherwise.
-
-        :returns: "True" or "False" """
-
-        return self.mode.split(sep=";")[0][-1] == "a"
+    def premultiplied_alpha(self) -> bool:
+        """``True`` for images with ``premultiplied alpha`` channel, ``False`` otherwise."""
+        return bool(self.mode.split(sep=";")[0][-1] == "a")
 
     @premultiplied_alpha.setter
     def premultiplied_alpha(self, value: bool):
@@ -198,10 +189,10 @@ class HeifImage(BaseImage):
             self.mode = self.mode.replace("A" if value else "a", "a" if value else "A")
 
     def to_pillow(self) -> Image.Image:
-        """Helper method to create :external:py:class:`~PIL.Image.Image`
+        """Helper method to create :external:py:class:`~PIL.Image.Image` class.
 
-        :returns: :external:py:class:`~PIL.Image.Image` class created from an image."""
-
+        :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
+        """
         image = super().to_pillow()
         image.info = self.info.copy()
         image.info["original_orientation"] = set_orientation(image.info)
@@ -209,7 +200,7 @@ class HeifImage(BaseImage):
 
 
 class HeifFile:
-    """This class represents the :py:class:`~pillow_heif.HeifImage` classes container.
+    """Representation of the :py:class:`~pillow_heif.HeifImage` classes container.
 
     To create :py:class:`~pillow_heif.HeifFile` object, use the appropriate factory functions.
 
@@ -219,7 +210,8 @@ class HeifFile:
     * :py:func:`~pillow_heif.from_bytes`
 
     Exceptions that can be raised when working with methods:
-        `ValueError`, `EOFError`, `SyntaxError`, `RuntimeError`, `OSError`"""
+        `ValueError`, `EOFError`, `SyntaxError`, `RuntimeError`, `OSError`
+    """
 
     def __init__(self, fp=None, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs):
         if hasattr(fp, "seek"):
@@ -249,38 +241,34 @@ class HeifFile:
 
     @property
     def size(self):
-        """Points to :py:attr:`~pillow_heif.HeifImage.size` property of the
-        primary :py:class:`~pillow_heif.HeifImage` in the container.
+        """:attr:`~pillow_heif.HeifImage.size` property of the primary :class:`~pillow_heif.HeifImage`.
 
-        :exception IndexError: If there are no images."""
-
+        :exception IndexError: If there are no images.
+        """
         return self._images[self.primary_index].size
 
     @property
     def mode(self):
-        """Points to :py:attr:`~pillow_heif.HeifImage.mode` property of the
-        primary :py:class:`~pillow_heif.HeifImage` in the container.
+        """:attr:`~pillow_heif.HeifImage.mode` property of the primary :class:`~pillow_heif.HeifImage`.
 
-        :exception IndexError: If there are no images."""
-
+        :exception IndexError: If there are no images.
+        """
         return self._images[self.primary_index].mode
 
     @property
     def has_alpha(self):
-        """Points to :py:attr:`~pillow_heif.HeifImage.has_alpha` property of the
-        primary :py:class:`~pillow_heif.HeifImage` in the container.
+        """:attr:`~pillow_heif.HeifImage.has_alpha` property of the primary :class:`~pillow_heif.HeifImage`.
 
-        :exception IndexError: If there are no images."""
-
+        :exception IndexError: If there are no images.
+        """
         return self._images[self.primary_index].has_alpha
 
     @property
     def premultiplied_alpha(self):
-        """Points to :py:attr:`~pillow_heif.HeifImage.premultiplied_alpha` property of the
-        primary :py:class:`~pillow_heif.HeifImage` in the container.
+        """:attr:`~pillow_heif.HeifImage.premultiplied_alpha` property of the primary :class:`~pillow_heif.HeifImage`.
 
-        :exception IndexError: If there are no images."""
-
+        :exception IndexError: If there are no images.
+        """
         return self._images[self.primary_index].premultiplied_alpha
 
     @premultiplied_alpha.setter
@@ -289,35 +277,33 @@ class HeifFile:
 
     @property
     def data(self):
-        """Points to :py:attr:`~pillow_heif.HeifImage.data` property of the
-        primary :py:class:`~pillow_heif.HeifImage` in the container.
+        """:attr:`~pillow_heif.HeifImage.data` property of the primary :class:`~pillow_heif.HeifImage`.
 
-        :exception IndexError: If there are no images."""
-
+        :exception IndexError: If there are no images.
+        """
         return self._images[self.primary_index].data
 
     @property
     def stride(self):
-        """Points to :py:attr:`~pillow_heif.HeifImage.stride` property of the
-        primary :py:class:`~pillow_heif.HeifImage` in the container.
+        """:attr:`~pillow_heif.HeifImage.stride` property of the primary :class:`~pillow_heif.HeifImage`.
 
-        :exception IndexError: If there are no images."""
-
+        :exception IndexError: If there are no images.
+        """
         return self._images[self.primary_index].stride
 
     @property
     def info(self):
-        """Points to ``info`` dict of the primary :py:class:`~pillow_heif.HeifImage` in the container.
+        """`info`` dict of the primary :class:`~pillow_heif.HeifImage` in the container.
 
-        :exception IndexError: If there are no images."""
-
+        :exception IndexError: If there are no images.
+        """
         return self._images[self.primary_index].info
 
     def to_pillow(self) -> Image.Image:
-        """Helper method to create :external:py:class:`~PIL.Image.Image`
+        """Helper method to create Pillow :external:py:class:`~PIL.Image.Image`.
 
-        :returns: :external:py:class:`~PIL.Image.Image` class created from the primary image."""
-
+        :returns: :external:py:class:`~PIL.Image.Image` class created from the primary image.
+        """
         return self._images[self.primary_index].to_pillow()
 
     def save(self, fp, **kwargs) -> None:
@@ -352,9 +338,7 @@ class HeifFile:
             ``save_nclx_profile`` - boolean, see :py:attr:`~pillow_heif.options.SAVE_NCLX_PROFILE`
 
         :param fp: A filename (string), pathlib.Path object or an object with `write` method.
-
-        :returns: None"""
-
+        """
         _encode_images(self._images, fp, **kwargs)
 
     def __repr__(self):
@@ -364,8 +348,7 @@ class HeifFile:
         return len(self._images)
 
     def __iter__(self):
-        for _ in self._images:
-            yield _
+        yield from self._images
 
     def __getitem__(self, index):
         if index < 0 or index >= len(self._images):
@@ -386,8 +369,8 @@ class HeifFile:
         :param size: tuple with ``width`` and ``height`` of image.
         :param data: bytes object with raw image data.
 
-        :returns: :py:class:`~pillow_heif.HeifImage` added object."""
-
+        :returns: :py:class:`~pillow_heif.HeifImage` added object.
+        """
         added_image = HeifImage(MimCImage(mode, size, data, **kwargs))
         self._images.append(added_image)
         return added_image
@@ -397,8 +380,8 @@ class HeifFile:
 
         :param image: :py:class:`~pillow_heif.HeifImage` class to add from.
 
-        :returns: :py:class:`~pillow_heif.HeifImage` added object."""
-
+        :returns: :py:class:`~pillow_heif.HeifImage` added object.
+        """
         image.load()
         added_image = self.add_frombytes(
             image.mode,
@@ -415,8 +398,8 @@ class HeifFile:
 
         :param image: Pillow :external:py:class:`~PIL.Image.Image` class to add from.
 
-        :returns: :py:class:`~pillow_heif.HeifImage` added object."""
-
+        :returns: :py:class:`~pillow_heif.HeifImage` added object.
+        """
         if image.size[0] <= 0 or image.size[1] <= 0:
             raise ValueError("Empty images are not supported.")
         _info = image.info.copy()
@@ -445,7 +428,6 @@ class HeifFile:
     @property
     def __array_interface__(self):
         """Returns the primary image as a numpy array."""
-
         return self._images[self.primary_index].__array_interface__
 
     def __getstate__(self):
@@ -480,8 +462,8 @@ def is_supported(fp) -> bool:
         The file object must implement ``file.read``, ``file.seek``, and ``file.tell`` methods,
         and be opened in binary mode.
 
-    :returns: A boolean indicating if the object can be opened."""
-
+    :returns: A boolean indicating if the object can be opened.
+    """
     __data = _get_bytes(fp, 12)
     if __data[4:8] != b"ftyp":
         return False
@@ -505,8 +487,8 @@ def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :exception EOFError: corrupted image data.
     :exception SyntaxError: unsupported feature.
     :exception RuntimeError: some other error.
-    :exception OSError: out of memory."""
-
+    :exception OSError: out of memory.
+    """
     return HeifFile(fp, convert_hdr_to_8bit, bgr_mode, **kwargs)
 
 
@@ -530,8 +512,8 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :exception EOFError: corrupted image data.
     :exception SyntaxError: unsupported feature.
     :exception RuntimeError: some other error.
-    :exception OSError: out of memory."""
-
+    :exception OSError: out of memory.
+    """
     ret = HeifFile(fp, convert_hdr_to_8bit, bgr_mode, reload_size=True, **kwargs)
     for img in ret:
         img.load()
@@ -544,8 +526,8 @@ def encode(mode: str, size: tuple, data, fp, **kwargs) -> None:
     :param mode: `BGR(A);16`, `RGB(A);16`, LA;16`, `L;16`, `I;16L`, `BGR(A)`, `RGB(A)`, `LA`, `L`
     :param size: tuple with ``width`` and ``height`` of an image.
     :param data: bytes object with raw image data.
-    :param fp: A filename (string), pathlib.Path object or an object with ``write`` method."""
-
+    :param fp: A filename (string), pathlib.Path object or an object with ``write`` method.
+    """
     _encode_images([HeifImage(MimCImage(mode, size, data, **kwargs))], fp, **kwargs)
 
 
@@ -578,8 +560,8 @@ def from_pillow(pil_image: Image.Image) -> HeifFile:
 
     :param pil_image: Pillow :external:py:class:`~PIL.Image.Image` class.
 
-    :returns: New :py:class:`~pillow_heif.HeifFile` object."""
-
+    :returns: New :py:class:`~pillow_heif.HeifFile` object.
+    """
     _ = HeifFile()
     _.add_from_pillow(pil_image)
     return _
@@ -594,8 +576,8 @@ def from_bytes(mode: str, size: tuple, data, **kwargs) -> HeifFile:
     :param size: tuple with ``width`` and ``height`` of an image.
     :param data: bytes object with raw image data.
 
-    :returns: New :py:class:`~pillow_heif.HeifFile` object."""
-
+    :returns: New :py:class:`~pillow_heif.HeifFile` object.
+    """
     _ = HeifFile()
     _.add_frombytes(mode, size, data, **kwargs)
     return _

@@ -22,7 +22,7 @@ import pillow_heif  # noqa
 # -- Project information -----------------------------------------------------
 
 project = "pillow-heif"
-copyright = "2021-2022, Alexander Piskun and Contributors"
+copyright = "2021-2022, Alexander Piskun and Contributors"  # noqa
 author = "Alexander Piskun and Contributors"
 
 # The short X.Y version.

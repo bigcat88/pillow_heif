@@ -1,4 +1,4 @@
-# This script transform project to `pi-heif` in place. Should be used only with GA Actions.
+"""Script to transform the project to `pi-heif` in place. Should be used only with GA Actions."""
 
 import os
 
@@ -22,7 +22,7 @@ if __name__ == "__main__":
                 files_list += [os.path.join(dir_name, x)]
 
     for file_name in files_list:
-        with open(file_name, "r") as file:
+        with open(file_name) as file:
             data = file.read()
             modified_data = data.replace("pillow_heif", "pi_heif")
         if modified_data != data:

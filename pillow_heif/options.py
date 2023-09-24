@@ -1,6 +1,4 @@
-"""
-Options to change pillow_heif's runtime behaviour.
-"""
+"""Options to change pillow_heif's runtime behavior."""
 
 
 DECODE_THREADS = 4

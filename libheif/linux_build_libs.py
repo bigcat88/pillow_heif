@@ -1,3 +1,5 @@
+"""File containing code to build Linux libraries for LibHeif and the LibHeif itself."""
+
 import sys
 from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path, remove
 from platform import machine
@@ -42,7 +44,7 @@ def download_file(url: str, out_path: str) -> bool:
             n_download_clients -= 1
             break
     if not n_download_clients:
-        raise EnvironmentError("Both curl and wget cannot be found.")
+        raise OSError("Both curl and wget cannot be found.")
     return False
 
 
@@ -62,10 +64,7 @@ def tool_check_version(name: str, min_version: str) -> bool:
         _ = run([name, "--version"], stdout=PIPE, stderr=DEVNULL, check=True)
     except (CalledProcessError, FileNotFoundError):
         return False
-    if name == "nasm":
-        _regexp = r"version\s*(\d+(\.\d+){2})"
-    else:  # cmake
-        _regexp = r"(\d+(\.\d+){2})$"
+    _regexp = r"version\s*(\d+(\.\d+){2})" if name == "nasm" else r"(\d+(\.\d+){2})$"  # cmake
     m_groups = search(_regexp, _.stdout.decode("utf-8"), flags=MULTILINE + IGNORECASE)
     if m_groups is None:
         return False
@@ -146,7 +145,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                     run(f"patch -p 1 -i {patch_path}".split(), check=True)
             else:
                 download_extract_to(url, _lib_path)
-                if name == "libde265":
+                if name == "libde265":  # noqa
                     chdir(_lib_path)
                     # for patch in (
                     #     "libde265/CVE-2022-1253.patch",

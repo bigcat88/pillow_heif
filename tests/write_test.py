@@ -281,7 +281,7 @@ def test_YCbCr_color_mode():  # noqa
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 def test_I_color_modes_to_10_12_bit(enc_bits, save_format):  # noqa
     try:
-        pillow_heif.options.SAVE_HDR_TO_12_BIT = True if enc_bits == 12 else False
+        pillow_heif.options.SAVE_HDR_TO_12_BIT = bool(enc_bits == 12)
         src_pillow = Image.open(Path("images/non_heif/L_16__29x100.png"))
         assert src_pillow.mode == "I"
         for mode in ("I", "I;16", "I;16L"):

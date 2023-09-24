@@ -1,10 +1,8 @@
-"""
-DeferredError class taken from PIL._util.py file.
-"""
+"""DeferredError class taken from PIL._util.py file."""
 
 
 class DeferredError:  # pylint: disable=too-few-public-methods
-    """Allow failing import for doc purposes, as C module will be not build at `.readthedocs`"""
+    """Allows failing import for doc purposes, as C module will be not build during docs build."""
 
     def __init__(self, ex):
         self.ex = ex

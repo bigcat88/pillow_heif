@@ -36,7 +36,8 @@ def perform_open_save(iterations, image_path):
 def test_open_save_objects_leaks(image):
     from pympler import summary, tracker
 
-    image_file_data = BytesIO(open(image, mode="rb").read())
+    with open(image, mode="rb") as file:
+        image_file_data = BytesIO(file.read())
     perform_open_save(1, image_file_data)
     gc.collect()
     _summary1 = tracker.SummaryTracker().create_summary()
@@ -67,7 +68,8 @@ def test_open_to_numpy_mem_leaks():
     import numpy as np
 
     mem_limit = None
-    image_file_data = BytesIO(open(Path("images/heif/L_10__29x100.heif"), mode="rb").read())
+    with open(Path("images/heif/L_10__29x100.heif"), mode="rb") as file:
+        image_file_data = BytesIO(file.read())
     for i in range(1000):
         heif_file = pillow_heif.open_heif(image_file_data, convert_hdr_to_8bit=False)
         _array = np.asarray(heif_file[0])  # noqa
@@ -119,7 +121,8 @@ def test_metadata_leaks():
 @pytest.mark.skipif(machine().find("x86_64") == -1, reason="run only on x86_64")
 def test_pillow_plugin_leaks():
     mem_limit = None
-    image_file_data = BytesIO(open(Path("images/heif/zPug_3.heic"), mode="rb").read())
+    with open(Path("images/heif/zPug_3.heic"), mode="rb") as file:
+        image_file_data = BytesIO(file.read())
     for i in range(1000):
         im = Image.open(image_file_data)
         for frame in ImageSequence.Iterator(im):

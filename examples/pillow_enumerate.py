@@ -12,5 +12,5 @@ if __name__ == "__main__":
     pillow_heif.register_heif_opener()
     image_path = Path("images/heif_other/nokia/alpha.heic")
     img = Image.open(image_path)
-    for i, frame in enumerate(ImageSequence.Iterator(img)):
+    for i, _frame in enumerate(ImageSequence.Iterator(img)):
         img.show(title=f"Image index={i}")
