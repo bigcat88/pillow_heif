@@ -75,7 +75,7 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
+        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12"]
     env:
       PH_FULL_ACTION: 1
 
@@ -104,7 +104,7 @@ jobs:
     runs-on: macos-11
     strategy:
       matrix:
-        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
+        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -134,7 +134,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
+        python-version: ["pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - name: Delay, waiting Pypi to update.
