@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.12-dev'
+          python-version: '3.12'
 
       - name: Prepare system
         run: |
@@ -50,10 +50,10 @@ jobs:
           sudo apt update
           sudo apt -y install libheif-dev
 
-      - name: Install from source  # when 3.12 get released will return `install ".[dev]"`
+      - name: Install from source
         run: |
           python3 -m pip install pillow==9.5.0
-          python3 -m pip -v install ".[tests-min]" coverage
+          python3 -m pip -v install ".[dev]"
 
       - name: LibHeif info
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
