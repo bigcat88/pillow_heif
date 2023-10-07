@@ -35,7 +35,7 @@ if __name__ == "__main__":  # argv: OperationType
     cat_image_results = []
     pug_image_results = []
     large_image_results = []
-    for _, v in enumerate(VERSIONS):
+    for v in VERSIONS:
         run(f"{sys.executable} -m pip install pillow-heif=={v}".split(), check=True)
         cat_image_results.append(measure_decode(cat_image_path, N_ITER_SMALL, operation_type))
         pug_image_results.append(measure_decode(pug_image_path, N_ITER_SMALL, operation_type))

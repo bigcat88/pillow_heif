@@ -42,4 +42,4 @@ if __name__ == "__main__":
                 print("\t\tType:", block["type"])
                 print("\t\tcontent_type:", block["content_type"])
                 print("\t\tData length:", len(block["data"]))
-        print("")
+        print()

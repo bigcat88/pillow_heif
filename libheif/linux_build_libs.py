@@ -71,7 +71,7 @@ def tool_check_version(name: str, min_version: str) -> bool:
     current_version = tuple(map(int, str(m_groups.groups()[0]).split(".")))
     min_version = tuple(map(int, min_version.split(".")))
     if current_version >= min_version:
-        print(f"Tool {name} with version {str(m_groups.groups()[0])} satisfy requirements.", flush=True)
+        print(f"Tool {name} with version {m_groups.groups()[0]} satisfy requirements.", flush=True)
         return True
     return False
 
@@ -176,7 +176,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             run_print_if_error("make -j4".split())
             run("mv libx265.a ../libx265_main10.a".split(), check=True)
             chdir("../12bit")
-            run(["cmake"] + ["./../source", "-DMAIN12=ON"] + cmake_high_bits, check=True)
+            run(["cmake", "./../source", "-DMAIN12=ON", *cmake_high_bits], check=True)
             run_print_if_error("make -j4".split())
             run("mv libx265.a ../libx265_main12.a".split(), check=True)
             chdir("..")
@@ -195,7 +195,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                 _hide_build_process = False
                 if musl:
                     cmake_args += [f"-DCMAKE_INSTALL_LIBDIR={INSTALL_DIR_LIBS}/lib"]
-        run(["cmake"] + cmake_args, check=True)
+        run(["cmake", *cmake_args], check=True)
         print(f"{name} configured. building...", flush=True)
         if _hide_build_process:
             run_print_if_error("make -j4".split())

@@ -98,7 +98,7 @@ def setup(app):
 # GitHub repo for sphinx-issues
 issues_github_path = "bigcat88/pillow_heif"
 
-# 'short' – Suppress the leading module names of the typehints (ex. io.StringIO -> StringIO)
+# 'short' - Suppress the leading module names of the typehints (ex. io.StringIO -> StringIO)
 autodoc_typehints_format = "short"
 
 # Do not sort members by alphabet.
