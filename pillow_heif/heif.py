@@ -90,7 +90,7 @@ class BaseImage:
         :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
         """
         self.load()
-        image = Image.frombytes(
+        return Image.frombytes(
             self.mode,  # noqa
             self.size,
             bytes(self.data),
@@ -98,7 +98,6 @@ class BaseImage:
             self.mode,
             self.stride,
         )
-        return image
 
     def load(self) -> None:
         """Method to decode image.

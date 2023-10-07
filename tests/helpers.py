@@ -126,7 +126,9 @@ def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage], pillow: Imag
         compare_images_fields(heif, pillow)
 
 
-def create_heif(size: tuple = None, thumb_boxes: list = None, n_images=1, **kwargs) -> BytesIO:
+def create_heif(
+    size: Union[tuple, None] = None, thumb_boxes: Union[list, None] = None, n_images=1, **kwargs
+) -> BytesIO:
     if size is None:
         size = (512, 512)
     if thumb_boxes is None:

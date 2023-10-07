@@ -24,7 +24,7 @@ if __name__ == "__main__":
     la_image_results = []
     l_image_results = []
     pug_image_results = []
-    for _, v in enumerate(VERSIONS):
+    for v in VERSIONS:
         run(f"{sys.executable} -m pip install pillow-heif=={v}".split(), check=True)
         sleep(N_ITER)
         rgba_image_results.append(measure_encode("RGBA", N_ITER))
