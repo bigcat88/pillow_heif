@@ -93,7 +93,8 @@ jobs:
 
       - name: Preparations
         run: |
-          python3 -m pip install pytest pillow packaging defusedxml
+          python3 -m pip install --prefer-binary pillow
+          python3 -m pip install pytest packaging defusedxml
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Test wheel
@@ -120,7 +121,8 @@ jobs:
       - name: Preparations
         run: |
           brew install libjpeg little-cms2
-          python3 -m pip install pytest pillow packaging defusedxml
+          python3 -m pip install --prefer-binary pillow
+          python3 -m pip install pytest packaging defusedxml
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Test wheel
@@ -150,7 +152,8 @@ jobs:
       - name: Preparations
         run: |
           sudo apt update && sudo apt install libjpeg-dev liblcms2-dev
-          python3 -m pip install pytest pillow packaging defusedxml
+          python3 -m pip install --prefer-binary pillow
+          python3 -m pip install pytest packaging defusedxml
           python3 -m pip install --only-binary=:all: pillow_heif
 
       - name: Test wheel
