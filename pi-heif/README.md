@@ -6,6 +6,8 @@
 ![PythonVersion](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)
 ![impl](https://img.shields.io/pypi/implementation/pi_heif)
 ![pypi](https://img.shields.io/pypi/v/pi_heif.svg)
+[![Downloads](https://static.pepy.tech/personalized-badge/pi-heif?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pi-heif)
+[![Downloads](https://static.pepy.tech/personalized-badge/pi-heif?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads/Month)](https://pepy.tech/project/pi-heif)
 
 ![Mac OS](https://img.shields.io/badge/mac%20os-FCC624?style=for-the-badge&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
@@ -68,6 +70,7 @@ if pi_heif.is_supported("input.heic"):
 | CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.11       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
 | CPython 3.12       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
+| PyPy 3.8 v7.3      |        ✅        |         ✅         |         ✅         |    N/A     |     ✅      |
 | PyPy 3.9 v7.3      |        ✅        |         ✅         |         ✅         |    N/A     |     ✅      |
 | PyPy 3.10 v7.3     |        ✅        |         ✅         |         ✅         |    N/A     |     ✅      |
 
