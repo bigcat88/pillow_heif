@@ -39,7 +39,7 @@ jobs:
           platforms: arm64
 
       - name: Install cibuildwheel & twine
-        run: python3 -m pip install twine cibuildwheel==2.15.0
+        run: python3 -m pip install twine cibuildwheel==2.16.2
 
       - uses: actions/cache@v3
         with:
@@ -98,7 +98,7 @@ jobs:
           platforms: arm64
 
       - name: Install cibuildwheel & twine
-        run: python3 -m pip install twine cibuildwheel==2.15.0
+        run: python3 -m pip install twine cibuildwheel==2.16.2
 
       - name: 32-bit musllinux preparations
         if: matrix.cibw_buildlinux == 'musllinux' && matrix.cibw_arch == 'i686'

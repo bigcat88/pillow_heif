@@ -16,7 +16,7 @@ wheel_macos_arm_task:
     - brew install python@3.10
     - ln -s python3 /opt/homebrew/opt/python@3.10/bin/python
   install_cibuildwheel_script:
-    - python3 -m pip install cibuildwheel==2.15.0
+    - python3 -m pip install cibuildwheel==2.16.2
   run_cibuildwheel_script:
     - python3 -m cibuildwheel
   wheels_artifacts:
@@ -40,7 +40,7 @@ wheel_pi_heif_macos_arm_task:
     - brew install python@3.10
     - ln -s python3 /opt/homebrew/opt/python@3.10/bin/python
   install_cibuildwheel_script:
-    - python3 -m pip install cibuildwheel==2.15.0
+    - python3 -m pip install cibuildwheel==2.16.2
   transform_to_pi_heif_script:
     - cp -r -v ./pi-heif/* .
     - python3 .github/transform_to-pi_heif.py
