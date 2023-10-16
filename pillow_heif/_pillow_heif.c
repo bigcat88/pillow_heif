@@ -8,7 +8,7 @@
 
 #define RETURN_NONE Py_INCREF(Py_None); return Py_None;
 
-static struct heif_error heif_error_no = { .code = 0, .subcode = 0, .message = NULL };
+static struct heif_error heif_error_no = { .code = 0, .subcode = 0, .message = "" };
 
 int check_error(struct heif_error error) {
     if (error.code == heif_error_Ok) {
