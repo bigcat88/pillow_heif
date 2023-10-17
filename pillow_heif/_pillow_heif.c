@@ -57,6 +57,7 @@ typedef struct {
     enum heif_chroma chroma;
     struct heif_image* image;
     struct heif_image_handle* handle;
+    struct heif_color_profile_nclx* output_nclx_color_profile;
 } CtxWriteImageObject;
 
 static PyTypeObject CtxWriteImage_Type;
@@ -110,6 +111,8 @@ static void _CtxWriteImage_destructor(CtxWriteImageObject* self) {
         heif_image_handle_release(self->handle);
     if (self->image)
         heif_image_release(self->image);
+    if (self->output_nclx_color_profile)
+        heif_nclx_color_profile_free(self->output_nclx_color_profile);
     PyObject_Del(self);
 }
 
@@ -496,22 +499,17 @@ static PyObject* _CtxWriteImage_set_icc_profile(CtxWriteImageObject* self, PyObj
 
 static PyObject* _CtxWriteImage_set_nclx_profile(CtxWriteImageObject* self, PyObject* args) {
     /* color_primaries: int, transfer_characteristics: int, matrix_coefficients: int, full_range_flag: int */
-    struct heif_error error;
     int color_primaries, transfer_characteristics, matrix_coefficients, full_range_flag;
 
     if (!PyArg_ParseTuple(args, "iiii",
         &color_primaries, &transfer_characteristics, &matrix_coefficients, &full_range_flag))
         return NULL;
 
-    struct heif_color_profile_nclx* nclx_color_profile = heif_nclx_color_profile_alloc();
-    nclx_color_profile->color_primaries = color_primaries;
-    nclx_color_profile->transfer_characteristics = transfer_characteristics;
-    nclx_color_profile->matrix_coefficients = matrix_coefficients;
-    nclx_color_profile->full_range_flag = full_range_flag;
-    error = heif_image_set_nclx_color_profile(self->image, nclx_color_profile);
-    heif_nclx_color_profile_free(nclx_color_profile);
-    if (check_error(error))
-        return NULL;
+    self->output_nclx_color_profile = heif_nclx_color_profile_alloc();
+    self->output_nclx_color_profile->color_primaries = color_primaries;
+    self->output_nclx_color_profile->transfer_characteristics = transfer_characteristics;
+    self->output_nclx_color_profile->matrix_coefficients = matrix_coefficients;
+    self->output_nclx_color_profile->full_range_flag = full_range_flag;
     RETURN_NONE
 }
 
@@ -528,6 +526,10 @@ static PyObject* _CtxWriteImage_encode(CtxWriteImageObject* self, PyObject* args
     Py_BEGIN_ALLOW_THREADS
     options = heif_encoding_options_alloc();
     options->macOS_compatibility_workaround_no_nclx_profile = !save_nclx;
+    if (!self->output_nclx_color_profile && save_nclx)
+        self->output_nclx_color_profile = heif_nclx_color_profile_alloc();
+    if (self->output_nclx_color_profile)
+        options->output_nclx_profile = self->output_nclx_color_profile;
     error = heif_context_encode_image(ctx_write->ctx, self->image, ctx_write->encoder, options, &self->handle);
     heif_encoding_options_free(options);
     Py_END_ALLOW_THREADS
@@ -679,6 +681,7 @@ static PyObject* _CtxWriteImage_create(CtxWriteObject* self, PyObject* args) {
     ctx_write_image->chroma = chroma;
     ctx_write_image->image = image;
     ctx_write_image->handle = NULL;
+    ctx_write_image->output_nclx_color_profile = NULL;
     return (PyObject*)ctx_write_image;
 }
 

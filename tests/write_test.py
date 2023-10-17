@@ -7,6 +7,7 @@ from unittest import mock
 
 import helpers
 import pytest
+from packaging.version import parse as parse_version
 from PIL import Image, ImageSequence
 
 import pillow_heif
@@ -503,7 +504,9 @@ def test_nclx_profile_write():
         }
         im_rgb.save(buf, format="HEIF")
         nclx_out = Image.open(buf).info["nclx_profile"]
-        for k in im_rgb.info["nclx_profile"]:
-            assert im_rgb.info["nclx_profile"][k] == nclx_out[k]
+        if parse_version(pillow_heif.libheif_version()) >= parse_version("1.17.0"):
+            # in libheif 1.17.0 logic of this was corrected: https://github.com/strukturag/libheif/issues/995
+            for k in im_rgb.info["nclx_profile"]:
+                assert im_rgb.info["nclx_profile"][k] == nclx_out[k]
     finally:
         pillow_heif.options.SAVE_NCLX_PROFILE = False
