@@ -35,13 +35,13 @@ jobs:
 
   coverage-linux:
     runs-on: ubuntu-22.04
-    name: Coverage(Linux) • 🐍3.12
+    name: Coverage(Linux) • 🐍3.11
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: '3.11'
 
       - name: Prepare system
         run: |
@@ -78,13 +78,13 @@ jobs:
 
   coverage-linux-pillow-dev:
     runs-on: ubuntu-22.04
-    name: Coverage(Linux, Pillow-dev) • 🐍3.11
+    name: Coverage(Linux, Pillow-dev) • 🐍3.12
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Prepare system
         run: |
