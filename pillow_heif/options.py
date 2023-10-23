@@ -1,6 +1,5 @@
 """Options to change pillow_heif's runtime behavior."""
 
-
 DECODE_THREADS = 4
 """Maximum number of threads to use for decoding images(when it is possible)
 
