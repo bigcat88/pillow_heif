@@ -66,6 +66,10 @@ def test_pillow_primary_image(save_format):
 
 @pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.skipif(
+    pillow_heif.libheif_info().get("AVIF", "").find("v3.3.0") != -1,
+    reason="libheif 1.17.1 fails this test with this AOM version.",
+)
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 def test_heif_info_changing(save_format):
     xmp = b"LeagueOf"
@@ -111,6 +115,10 @@ def test_heif_info_changing(save_format):
 
 @pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.skipif(
+    pillow_heif.libheif_info().get("AVIF", "").find("v3.3.0") != -1,
+    reason="libheif 1.17.1 fails this test with this AOM version.",
+)
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 def test_pillow_info_changing(save_format):
     xmp = b"LeagueOf"
