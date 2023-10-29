@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: ["amd64", "arm64", "arm/v7"]
-        docker_file: ["Alpine_3_16", "Alpine_3_17", "Alpine_3_18", "Debian_11", "Debian_12", "Ubuntu_22_04"]
+        docker_file: ["Alpine_3_17", "Alpine_3_18", "Debian_11", "Debian_12", "Ubuntu_22_04"]
 
     steps:
       - uses: actions/checkout@v4
