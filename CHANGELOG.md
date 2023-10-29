@@ -2,9 +2,13 @@ All notable changes to this project will be documented in this file.
 
 ## [0.14.0 - 2023-11-xx]
 
+### Changed
+
+- Minimum supported Pillow version raised to `9.2.0`.
+
 ### Fixed
 
-- Support of libheif `1.17.0`. #156
+- Support of libheif `1.17.1`. #156
 
 ## [0.13.1 - 2023-10-15]
 

@@ -57,7 +57,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         if self._heif_file:
             frame_heif = self._heif_file[self.tell()]
             try:
-                if pil_version[:4] not in ("9.1.", "9.2.", "9.3.", "9.4."):
+                if pil_version[:4] not in ("9.2.", "9.3.", "9.4."):  # noqa: SIM108
                     data = frame_heif.data
                 else:
                     data = bytes(frame_heif.data)
@@ -124,7 +124,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def _init_from_heif_file(self, img_index: int) -> None:
         if self._heif_file:
             self._size = self._heif_file[img_index].size
-            if pil_version[:4] not in ("9.1.", "9.2.", "9.3.", "9.4.", "9.5.", "10.0"):
+            if pil_version[:4] not in ("9.2.", "9.3.", "9.4.", "9.5.", "10.0"):
                 # starting from Pillow 10.1, `mode` is a readonly property.
                 self._mode = self._heif_file[img_index].mode
             else:
@@ -194,12 +194,13 @@ def _is_supported_avif(fp) -> bool:
     magic = _get_bytes(fp, 12)
     if magic[4:8] != b"ftyp":
         return False
-    if magic[8:12] in (
-        b"avif",
-        # b"avis",
-    ):
-        return True
-    return False
+    return magic[8:12] == b"avif"
+    # if magic[8:12] in (
+    #     b"avif",
+    #     b"avis",
+    # ):
+    #     return True
+    # return False
 
 
 def _save_avif(im, fp, _filename):

@@ -13,7 +13,6 @@ from struct import pack, unpack
 from typing import List, Optional
 
 from PIL import Image
-from PIL import __version__ as pil_version
 
 from . import options
 from .constants import HeifChroma, HeifColorspace, HeifCompressionFormat
@@ -217,10 +216,9 @@ def _exif_from_pillow(img: Image.Image) -> Optional[bytes]:
     if "exif" in img.info:
         return img.info["exif"]
     if hasattr(img, "getexif"):  # noqa
-        if pil_version[:4] not in ("9.1.",):
-            exif = img.getexif()
-            if exif:
-                return exif.tobytes()
+        exif = img.getexif()
+        if exif:
+            return exif.tobytes()
     return None
 
 
