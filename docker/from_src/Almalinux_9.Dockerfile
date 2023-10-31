@@ -1,27 +1,14 @@
-FROM ubuntu:jammy as base
+FROM almalinux:9 as base
 
 RUN \
-  apt-get -qq update && \
-  apt-get -y -q install \
-    curl \
-    python3-pip \
-    libfribidi-dev \
-    libharfbuzz-dev \
-    libjpeg-dev \
-    liblcms2-dev \
-    libffi-dev \
-    libtool \
-    git \
-    cmake \
-    nasm \
-    libde265-dev \
-    libaom-dev
+  dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y && \
+  dnf makecache && \
+  dnf install -y python3 python3-devel python3-pip libheif-freeworld && \
+  dnf install -y libheif-devel && \
+  dnf groupinstall -y 'Development Tools'
 
 RUN \
   python3 -m pip install --upgrade pip
-
-RUN \
-  python3 -m pip install Pillow==9.3.0
 
 FROM base as build_test
 

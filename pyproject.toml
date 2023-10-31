@@ -99,7 +99,7 @@ before-test = [
 before-all = [
     "brew install libjpeg little-cms2",
     "brew uninstall --force --ignore-dependencies libheif aom",
-    "brew install --formula {project}/libheif/macos/libheif.rb",
+    "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install --formula {project}/libheif/macos/libheif.rb",
     "HOMEBREW_PREFIX=$(brew --prefix)",
     "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib",
 ]

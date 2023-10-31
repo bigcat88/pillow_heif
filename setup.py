@@ -13,7 +13,12 @@ from warnings import warn
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
-from libheif import linux_build_libs
+# pylint: disable=too-many-branches disable=too-many-statements disable=too-many-locals
+LIBHEIF_ROOT = None
+
+
+class RequiredDependencyException(Exception):
+    """Raised when no ``libheif`` is found."""
 
 
 def get_version():
@@ -41,9 +46,6 @@ def _pkg_config(name):
                 command_libs.append("--keep-system-libs")
                 command_cflags.append("--keep-system-cflags")
                 stderr = subprocess.DEVNULL
-            # if not DEBUG:
-            #     command_libs.append("--silence-errors")
-            #     command_cflags.append("--silence-errors")
             libs = re.split(
                 r"(^|\s+)-L",
                 subprocess.check_output(command_libs, stderr=stderr).decode("utf8").strip(),
@@ -65,7 +67,7 @@ def _pkg_config(name):
 class PillowHeifBuildExt(build_ext):
     """Class based on the Pillow setup method."""
 
-    def build_extensions(self):  # noqa pylint: disable=too-many-branches disable=too-many-statements
+    def build_extensions(self):  # noqa
         """Builds all required python binary extensions of the project."""
         if os.getenv("PRE_COMMIT"):
             return
@@ -77,32 +79,41 @@ class PillowHeifBuildExt(build_ext):
         if _cmd_exists(os.environ.get("PKG_CONFIG", "pkg-config")):
             pkg_config = _pkg_config
 
-        root = None
-        libheif_found = False
-        if pkg_config:
-            for lib_name in ("heif", "libheif"):
-                print(f"Looking for `{lib_name}` using pkg-config.")
-                root = pkg_config(lib_name)
-                if root:
-                    print(f"Found `{lib_name}` using pkg-config: {root}")
-                    libheif_found = True
-                    break
+        for root_name, lib_name in {
+            "LIBHEIF_ROOT": ("libheif", "heif"),
+        }.items():
+            root = globals()[root_name]
 
-        if isinstance(root, tuple):
-            lib_root, include_root = root
-        else:
-            lib_root = include_root = root
+            if root is None and root_name in os.environ:
+                prefix = os.environ[root_name]
+                root = (os.path.join(prefix, "lib"), os.path.join(prefix, "include"))
 
-        if lib_root is not None:
-            if not isinstance(lib_root, (tuple, list)):
-                lib_root = (lib_root,)
-            for lib_dir in lib_root:
-                self._add_directory(library_dirs, lib_dir)
-        if include_root is not None:
-            if not isinstance(include_root, (tuple, list)):
-                include_root = (include_root,)
-            for include_dir in include_root:
-                self._add_directory(include_dirs, include_dir)
+            if root is None and pkg_config:
+                if isinstance(lib_name, tuple):
+                    for lib_name2 in lib_name:
+                        print(f"Looking for `{lib_name2}` using pkg-config.")
+                        root = pkg_config(lib_name2)
+                        if root:
+                            break
+                else:
+                    print(f"Looking for `{lib_name}` using pkg-config.")
+                    root = pkg_config(lib_name)
+
+            if isinstance(root, tuple):
+                lib_root, include_root = root
+            else:
+                lib_root = include_root = root
+
+            if lib_root is not None:
+                if not isinstance(lib_root, (tuple, list)):
+                    lib_root = (lib_root,)
+                for lib_dir in lib_root:
+                    self._add_directory(library_dirs, lib_dir)
+            if include_root is not None:
+                if not isinstance(include_root, (tuple, list)):
+                    include_root = (include_root,)
+                for include_dir in include_root:
+                    self._add_directory(include_dirs, include_dir)
 
         # respect CFLAGS/CPPFLAGS/LDFLAGS
         for k in ("CFLAGS", "CPPFLAGS", "LDFLAGS"):
@@ -132,7 +143,7 @@ class PillowHeifBuildExt(build_ext):
             if include_path_prefix is None:
                 include_path_prefix = "C:\\msys64\\mingw64"
                 warn(
-                    f"MSYS2_PREFIX environment variable is not set. Assuming `MSYS2_PREFIX={include_path_prefix}`",
+                    f"MSYS2_PREFIX environment variable is not set. Assuming MSYS2_PREFIX={include_path_prefix}",
                     stacklevel=1,
                 )
 
@@ -140,7 +151,7 @@ class PillowHeifBuildExt(build_ext):
                 raise ValueError("MSYS2 not found and `MSYS2_PREFIX` is not set or is invalid.")
 
             library_dir = os.path.join(include_path_prefix, "lib")
-            # See comment a few lines below. We can't include MSYS2 directory before compiler directories :(
+            # See comment a few lines below. We can't include MSYS2 directory before compiler directories.
             # self._add_directory(include_dirs, path.join(include_path_prefix, "include"))
             self._add_directory(library_dirs, library_dir)
             lib_export_file = Path(os.path.join(library_dir, "libheif.dll.a"))
@@ -174,6 +185,11 @@ class PillowHeifBuildExt(build_ext):
             self._add_directory(library_dirs, "/opt/local/lib")
             self._add_directory(include_dirs, "/opt/local/include")
 
+            sdk_path = self._get_macos_sdk_path()
+            if sdk_path:
+                self._add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
+                self._add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
+
             self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-Ofast", "-Werror"])
         else:  # let's assume it's some kind of linux
             # this old code waiting for refactoring, when time comes.
@@ -184,15 +200,14 @@ class PillowHeifBuildExt(build_ext):
             self._add_directory(library_dirs, "/usr/lib")
             self._add_directory(library_dirs, "/lib")
 
-            if not libheif_found:
-                include_path_prefix = linux_build_libs.build_libs()  # this needs a rework in the future
-                self._add_directory(library_dirs, os.path.join(include_path_prefix, "lib"))
-                self._add_directory(include_dirs, os.path.join(include_path_prefix, "include"))
-
             self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-Ofast", "-Werror"])
 
         self.compiler.library_dirs = library_dirs + self.compiler.library_dirs
         self.compiler.include_dirs = include_dirs + self.compiler.include_dirs
+
+        heif_include = self._find_include_dir("libheif", "heif.h")
+        if not heif_include:
+            raise RequiredDependencyException("libheif")
 
         build_ext.build_extensions(self)
 
@@ -205,6 +220,21 @@ class PillowHeifBuildExt(build_ext):
                 if extra_link_args is not None:
                     extension.extra_link_args += extra_link_args
 
+    def _find_include_dir(self, dirname, include):
+        for directory in self.compiler.include_dirs:
+            print("Checking for include file %s in %s", (include, directory))
+            result_path = os.path.join(directory, include)
+            if os.path.isfile(result_path):
+                print("Found %s in %s", (include, directory))
+                return result_path
+            subdir = os.path.join(directory, dirname)
+            print("Checking for include file %s in %s", (include, subdir))
+            result_path = os.path.join(subdir, include)
+            if os.path.isfile(result_path):
+                print("Found %s in %s", (include, subdir))
+                return result_path
+        return ""
+
     @staticmethod
     def _add_directory(paths: List, subdir):
         if subdir:
@@ -212,12 +242,41 @@ class PillowHeifBuildExt(build_ext):
             if os.path.isdir(subdir) and subdir not in paths:
                 paths.append(subdir)
 
+    @staticmethod
+    def _get_macos_sdk_path():
+        try:
+            sdk_path = subprocess.check_output(["xcrun", "--show-sdk-path"]).strip().decode("latin1")
+        except Exception:  # noqa  # pylint: disable=broad-exception-caught
+            sdk_path = None
+        if (
+            not sdk_path
+            or sdk_path
+            == "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+        ):
+            commandlinetools_sdk_path = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+            if os.path.exists(commandlinetools_sdk_path):
+                sdk_path = commandlinetools_sdk_path
+        return sdk_path
 
-if os.getenv("READTHEDOCS", "False") == "True":
-    setup(version=get_version())
-else:
-    setup(
-        version=get_version(),
-        cmdclass={"build_ext": PillowHeifBuildExt},
-        ext_modules=[Extension("_pillow_heif", ["pillow_heif/_pillow_heif.c"])],
-    )
+
+try:
+    if os.getenv("READTHEDOCS", "False") == "True":
+        setup(version=get_version())
+    else:
+        setup(
+            version=get_version(),
+            cmdclass={"build_ext": PillowHeifBuildExt},
+            ext_modules=[Extension("_pillow_heif", ["pillow_heif/_pillow_heif.c"])],
+        )
+except RequiredDependencyException as err:
+    msg = f"""
+
+The headers or library files could not be found for {err},
+a required dependency when compiling Pillow-Heif from source.
+
+Please see the install instructions at:
+   https://pillow-heif.readthedocs.io/en/latest/installation.html
+
+"""
+    sys.stderr.write(msg)
+    raise RequiredDependencyException(msg) from None
