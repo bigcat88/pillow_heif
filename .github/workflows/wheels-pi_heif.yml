@@ -260,7 +260,7 @@ jobs:
         i: [
           { "docker_file": "manylinux_armv7l_wheels", "name": "manylinux" },
         ]
-        v: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        v: ["3.8", "3.9", "3.10", "3.11"]
         include:
           - v: "3.10"
             i: { "docker_file": "musllinux_armv7l_wheels", "name": "musllinux" }
