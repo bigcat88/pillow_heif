@@ -104,17 +104,6 @@ def is_musllinux() -> bool:
     return False
 
 
-def is_library_installed(name: str) -> bool:
-    if name.find("main") != -1 and name.find("reference") != -1:
-        raise Exception("`name` param can not contain `main` and `reference` substrings.")
-    _r = run(f"gcc -l{name}".split(), stdout=PIPE, stderr=STDOUT, check=False)
-    if _r.stdout:
-        _ = _r.stdout.decode("utf-8")
-        if _.find("main") != -1 and _.find("reference") != -1:
-            return True
-    return False
-
-
 def run_print_if_error(args) -> None:
     _ = run(args, stdout=PIPE, stderr=STDOUT, check=False)
     if _.returncode != 0:
@@ -122,7 +111,7 @@ def run_print_if_error(args) -> None:
         raise ChildProcessError(f"Failed: {args}")
 
 
-def build_lib_linux(url: str, name: str, musl: bool = False):
+def build_lib_linux(url: str, name: str):
     _lib_path = path.join(BUILD_DIR, name)
     if path.isdir(_lib_path):
         print(f"Cache found for {name}", flush=True)
@@ -139,7 +128,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             makedirs(_build_path)
             if name == "aom":
                 download_extract_to(url, path.join(_lib_path, "aom"), False)
-                if musl:
+                if is_musllinux():
                     patch_path = path.join(_linux_dir, "aom-musl/fix-stack-size-e53da0b-2.patch")
                     chdir(path.join(_lib_path, "aom"))
                     run(f"patch -p 1 -i {patch_path}".split(), check=True)
@@ -193,7 +182,7 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
                     " -DWITH_LIBSHARPYUV=OFF -DENABLE_PLUGIN_LOADING=OFF".split()
                 )
                 _hide_build_process = False
-                if musl:
+                if is_musllinux():
                     cmake_args += [f"-DCMAKE_INSTALL_LIBDIR={INSTALL_DIR_LIBS}/lib"]
         run(["cmake", *cmake_args], check=True)
         print(f"{name} configured. building...", flush=True)
@@ -203,40 +192,29 @@ def build_lib_linux(url: str, name: str, musl: bool = False):
             run("make -j4".split(), check=True)
         print(f"{name} build success.", flush=True)
     run("make install".split(), check=True)
-    if musl:
+    if is_musllinux():
         run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
     else:
         run("ldconfig", check=True)
 
 
-def build_libs() -> str:
-    _is_musllinux = is_musllinux()
-    if is_library_installed("heif") or is_library_installed("libheif"):
-        print("libheif is already present.")
-        return INSTALL_DIR_LIBS
+def build_libs() -> None:
     _original_dir = getcwd()
     try:
         if not tool_check_version("cmake", "3.13.4"):
             raise ValueError("Can not find `cmake` with version >=3.13.4")
-        if not is_library_installed("x265"):
-            if not PH_LIGHT_VERSION:
-                if not check_install_nasm("2.15.05"):
-                    raise ValueError("Can not find/install `nasm` with version >=2.15.05")
-                build_lib_linux(LIBX265_URL, "x265", _is_musllinux)
-        else:
-            print("x265 already installed.")
-        if not is_library_installed("aom"):
-            if not PH_LIGHT_VERSION:
-                if not check_install_nasm("2.15.05"):
-                    raise ValueError("Can not find/install `nasm` with version >=2.15.05")
-                build_lib_linux(LIBAOM_URL, "aom", _is_musllinux)
-        else:
-            print("aom already installed.")
-        if not is_library_installed("libde265") and not is_library_installed("de265"):
-            build_lib_linux(LIBDE265_URL, "libde265", _is_musllinux)
-        else:
-            print("libde265 already installed.")
-        build_lib_linux(LIBHEIF_URL, "libheif", _is_musllinux)
+        if not PH_LIGHT_VERSION:
+            if not check_install_nasm("2.15.05"):
+                raise ValueError("Can not find/install `nasm` with version >=2.15.05")
+            build_lib_linux(LIBX265_URL, "x265")
+            if not check_install_nasm("2.15.05"):
+                raise ValueError("Can not find/install `nasm` with version >=2.15.05")
+            build_lib_linux(LIBAOM_URL, "aom")
+        build_lib_linux(LIBDE265_URL, "libde265")
+        build_lib_linux(LIBHEIF_URL, "libheif")
     finally:
         chdir(_original_dir)
-    return INSTALL_DIR_LIBS
+
+
+if __name__ == "__main__":
+    build_libs()

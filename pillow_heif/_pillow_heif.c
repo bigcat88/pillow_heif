@@ -1194,9 +1194,7 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
         return NULL;
     }
 
-    #if LIBHEIF_HAVE_VERSION(1,13,0)
-        heif_context_set_max_decoding_threads(heif_ctx, threads_count);
-    #endif
+    heif_context_set_max_decoding_threads(heif_ctx, threads_count);
 
     heif_item_id primary_image_id;
     if (check_error(heif_context_get_primary_image_ID(heif_ctx, &primary_image_id))) {
@@ -1295,9 +1293,7 @@ static int setup_module(PyObject* m) {
     if (PyType_Ready(&CtxImage_Type) < 0)
         return -1;
 
-    #if LIBHEIF_HAVE_VERSION(1,14,0)
-        heif_init(NULL);
-    #endif
+    heif_init(NULL);
 
     const struct heif_encoder_descriptor* encoder_descriptor;
     const char* x265_version = "";

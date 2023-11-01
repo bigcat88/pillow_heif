@@ -24,8 +24,6 @@ jobs:
           { "os": "debian", "ver": "12", "arch": "amd64" },
           { "os": "debian", "ver": "12", "arch": "arm64" },
           { "os": "debian", "ver": "12", "arch": "arm/v7" },
-          { "os": "alpine", "ver": "3.16", "arch": "amd64" },
-          { "os": "alpine", "ver": "3.16", "arch": "arm64" },
           { "os": "alpine", "ver": "3.17", "arch": "amd64" },
           { "os": "alpine", "ver": "3.17", "arch": "arm64" },
           { "os": "alpine", "ver": "3.17", "arch": "arm/v7" },

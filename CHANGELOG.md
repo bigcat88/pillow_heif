@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Minimum supported Pillow version raised to `9.2.0`.
+- Linux: When building from source, `libheif` and other libraries are no longer try built automatically. #158
 
 ### Fixed
 

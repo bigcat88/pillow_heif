@@ -19,8 +19,6 @@ Wheels are present for most popular systems with help of `cibuildwheel <https://
 Building From Source
 --------------------
 
-    All **pillow-heif's** **PyPi** packages are build on GitHub Actions, so you can take a look at `it <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/publish-wheels.yml>`_.
-
 .. role:: bash(code)
    :language: bash
 
@@ -29,25 +27,27 @@ Linux
 
 .. note::
 
-    | For installing external libraries(if they are not present in system), you should run install with **root** privileges.
-    | See `build_libs.py <https://github.com/bigcat88/pillow_heif/blob/master/libheif/linux_build_libs.py>`_ for
-        additional info what will happen during installing from source...
     | Here is a
         `GH Action <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-linux.yml>`_
-        and in ``docker/from_src`` folder there are docker files for ``Debian``, ``Ubuntu`` and ``Alpine`` with examples
+        and in `docker/from_src <https://github.com/bigcat88/pillow_heif/blob/master/docker/from_src>`_ folder there are docker files for different Linuxes with examples
         how to build from source.
+    |
+    | **And of course you can build your own libheif library with your preferred encoders and decoders and use what you like.**
 
 There is many different ways how to build it from source. Main requirements are:
-    * ``libheif`` should be version >= ``1.12.0`` version.
+    * ``libheif`` should be version >= ``1.16.1`` version.
     * ``x265`` should support 10 - 12 bit encoding(if you want to save in that bitness)
     * ``aom`` should be >= ``3.3.0`` version
     * ``libde265`` should be >= ``1.0.8`` version
 
-On `Ubuntu 22.04`:
 
-| :bash:`sudo apt install -y libheif-dev`
+On `Ubuntu`:
 
-On `Alpine`:
+| :bash:`sudo add-apt-repository ppa:strukturag/libheif`
+| :bash:`sudo apt update`
+| :bash:`sudo apt -y install libheif-dev`
+
+On `Alpine 18+`:
 
 | :bash:`sudo apk add --no-cache libheif-dev`
 
@@ -59,7 +59,31 @@ or from within the uncompressed source directory::
 
     python3 -m pip install .
 
-If you have questions about build from sources you can ask them in discussions or create an issue.
+.. note::
+
+    Refer to `libheif repo <https://github.com/strukturag/libheif>`_ for additional information of how to build it with what features you want.
+
+*If you have questions about build from sources you can ask them in discussions or create an issue.*
+
+FreeBSD
+^^^^^^^
+
+`Action to test build on FreeBSD from source <https://github.com/bigcat88/pillow_heif/blob/master/ci/cirrus_general_ci.yml>`_
+
+Since Python itself does not support binary wheels for BSD systems, you should install libheif and then simply install Pillow-Heif from source.
+
+Install `libeheif` and `gcc`::
+
+    pkg install -y libheif gcc
+
+Install Python and Pillow::
+
+    pkg install -y py39-pip
+    pkg install -y py39-pillow
+
+Install Pillow-Heif::
+
+    python3 -m pip install .
 
 macOS
 ^^^^^

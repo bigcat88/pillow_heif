@@ -16,6 +16,7 @@ jobs:
         check-name: 'macosx • aarch64 • Cirrus'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         wait-interval: 60
+        allowed-conclusions: success
 
     - name: Download artifacts
       run: |
@@ -167,7 +168,9 @@ jobs:
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
-          CIBW_BEFORE_ALL_LINUX: ${{ env.INSTALL_OS_PACKAGES }}
+          CIBW_BEFORE_ALL_LINUX: |
+            ${{ env.INSTALL_OS_PACKAGES }}
+            python3 {package}/libheif/linux_build_libs.py
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR=/host${{ env.BUILD_DIR }} PH_FULL_ACTION=1
           CIBW_ENVIRONMENT_PASS_LINUX: PH_TESTS_NO_HEVC_ENC
 
@@ -229,7 +232,9 @@ jobs:
         env:
           CIBW_BUILD: ${{ format('pp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
-          CIBW_BEFORE_ALL_LINUX: "yum makecache && yum install -y libjpeg-turbo-devel lcms2-devel"
+          CIBW_BEFORE_ALL_LINUX: |
+            yum makecache && yum install -y libjpeg-turbo-devel lcms2-devel
+            python3 {package}/libheif/linux_build_libs.py
           CIBW_ENVIRONMENT_LINUX: BUILD_DIR=/host${{ env.BUILD_DIR }} PH_FULL_ACTION=1
           CIBW_ENVIRONMENT_PASS_LINUX: PH_TESTS_NO_HEVC_ENC
 

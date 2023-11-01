@@ -1,17 +1,11 @@
-FROM alpine:3.17 as base
+FROM fedora:38 as base
 
 RUN \
-  apk add --no-cache \
-    python3-dev \
-    py3-pip \
-    perl \
-    alpine-sdk \
-    libffi-dev \
-    cmake \
-    nasm \
-    aom-dev \
-    py3-numpy \
-    py3-pillow
+  dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm && \
+  dnf makecache && \
+  dnf install -y python3 python3-devel python3-pip libheif-freeworld && \
+  dnf install -y libheif-devel && \
+  dnf groupinstall -y 'Development Tools'
 
 RUN \
   python3 -m pip install --upgrade pip
