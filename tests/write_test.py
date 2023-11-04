@@ -411,6 +411,14 @@ def test_chroma_heif_encoding_8bit(chroma, diff_epsilon, im):
     im_out = Image.open(im_buf)
     im = im.convert(mode=im_out.mode)
     helpers.assert_image_similar(im, im_out, diff_epsilon)
+    im_buf_subsampling = BytesIO()
+    subsampling_map = {
+        444: "4:4:4",
+        422: "4:2:2",
+        420: "4:2:0",
+    }
+    im.save(im_buf_subsampling, format="HEIF", quality=-1, subsampling=subsampling_map[chroma])
+    assert im_buf.getbuffer().nbytes == im_buf_subsampling.getbuffer().nbytes  # results should be the same
 
 
 @pytest.mark.parametrize("chroma, diff_epsilon", ((420, 1.83), (422, 1.32), (444, 0.99)))
