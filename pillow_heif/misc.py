@@ -307,6 +307,14 @@ class CtxEncode:
         self.ctx_write = _pillow_heif.CtxWrite(compression_format, -2 if quality is None else quality)
         enc_params = kwargs.get("enc_params", {})
         chroma = kwargs.get("chroma", None)
+        subsampling = kwargs.get("subsampling", None)
+        if chroma is None and subsampling:
+            subsampling_map = {
+                "4:4:4": 444,
+                "4:2:2": 422,
+                "4:2:0": 420,
+            }
+            chroma = subsampling_map.get(subsampling, None)
         if chroma:
             enc_params["chroma"] = chroma
         for key, value in enc_params.items():
