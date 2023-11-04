@@ -212,7 +212,7 @@ def build_lib_linux(url: str, name: str):
 def build_libs() -> None:
     _original_dir = getcwd()
     try:
-        if not tool_check_version("cmake", "3.13.4"):
+        if not tool_check_version("cmake", "3.16.3"):
             raise ValueError("Can not find `cmake` with version >=3.16.3")
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:

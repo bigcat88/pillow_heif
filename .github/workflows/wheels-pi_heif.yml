@@ -260,11 +260,13 @@ jobs:
         i: [
           { "docker_file": "manylinux_armv7l_wheels", "name": "manylinux" },
         ]
-        v: ["3.8", "3.9", "3.10", "3.11"]
+        v: ["3.9", "3.10", "3.11", "3.12"]
         include:
           - v: "3.10"
             i: { "docker_file": "musllinux_armv7l_wheels", "name": "musllinux" }
           - v: "3.11"
+            i: { "docker_file": "musllinux_armv7l_wheels", "name": "musllinux" }
+          - v: "3.12"
             i: { "docker_file": "musllinux_armv7l_wheels", "name": "musllinux" }
     env:
       KEY_HEAD: Pi-Heif-ARMv7l-${{ matrix.i['name'] }}
