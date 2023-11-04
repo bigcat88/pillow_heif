@@ -1,6 +1,6 @@
 ARG PY_VERSION
 
-FROM python:$PY_VERSION-buster
+FROM python:$PY_VERSION-bullseye
 
 COPY . /
 
@@ -38,7 +38,7 @@ RUN \
   echo "**** Repairing wheel ****" && \
   PTAG=$(echo $PY_VERSION | tr -d '.' | tr -d '"') && \
   python3 -m pip install auditwheel && \
-  python3 -m auditwheel repair -w repaired_dist/ dist_manylinux/*-cp$PTAG-*.whl --plat manylinux_2_28_armv7l && \
+  python3 -m auditwheel repair -w repaired_dist/ dist_manylinux/*-cp$PTAG-*.whl --plat manylinux_2_31_armv7l && \
   echo "**** Testing wheel ****" && \
   python3 -m pip install repaired_dist/*-cp$PTAG-*manylinux*.whl && \
   python3 -c "import pillow_heif; print(pillow_heif.libheif_info())" && \

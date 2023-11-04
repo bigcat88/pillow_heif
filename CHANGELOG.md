@@ -2,14 +2,19 @@ All notable changes to this project will be documented in this file.
 
 ## [0.14.0 - 2023-11-xx]
 
+### Added
+
+- Pi-Heif: Python3.12 32-bit `armv7` wheels. #160
+
 ### Changed
 
 - Minimum supported Pillow version raised to `9.2.0`.
 - Linux: When building from source, `libheif` and other libraries are no longer try built automatically. #158
+- Pi-Heif: As last libheif version `1.17.3` requires minimum `cmake>=3.16.3` dropped Debian `10 armv7` wheels. #160
 
 ### Fixed
 
-- Support of libheif `1.17.1`. #156
+- Support of libheif `1.17.x`. #156
 
 ## [0.13.1 - 2023-10-15]
 
