@@ -4,8 +4,8 @@
 _realname=libheif
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.16.2
-pkgrel=2
+pkgver=1.17.3
+pkgrel=1
 pkgdesc="HEIF image decoder/encoder library and tools (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
@@ -20,7 +20,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-libde265"
          "${MINGW_PACKAGE_PREFIX}-x265")
 source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('7f97e4205c0bd9f9b8560536c8bd2e841d1c9a6d610401eb3eb87ed9cdfe78ea')
+sha256sums=('8d5b6292e7931324f81f871f250ecbb9f874aa3c66b4f6f35ceb0bf3163b53ea')
 
 build() {
   mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
@@ -40,6 +40,10 @@ build() {
       -DWITH_SvtEnc=OFF \
       -DWITH_LIBSHARPYUV=OFF \
       -DENABLE_PLUGIN_LOADING=OFF \
+      -DWITH_JPEG_DECODER=OFF \
+      -DWITH_JPEG_ENCODER=OFF \
+      -DWITH_OpenJPEG_DECODER=OFF \
+      -DWITH_OpenJPEG_ENCODER=OFF \
       -DX265_CFLAGS="-DX265_API_IMPORTS" \
       ../${_realname}-${pkgver}
 
