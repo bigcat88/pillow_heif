@@ -1,10 +1,10 @@
-# https://github.com/Homebrew/homebrew-core/blob/master/Formula/libheif.rb
+# https://github.com/Homebrew/homebrew-core/blob/master/Formula/lib/libheif.rb
 
 class Libheif < Formula
   desc "ISO/IEC 23008-12:2017 HEIF file format decoder and encoder"
   homepage "https://www.libde265.org/"
-  url "https://github.com/strukturag/libheif/releases/download/v1.16.2/libheif-1.16.2.tar.gz"
-  sha256 "7f97e4205c0bd9f9b8560536c8bd2e841d1c9a6d610401eb3eb87ed9cdfe78ea"
+  url "https://github.com/strukturag/libheif/releases/download/v1.17.3/libheif-1.17.3.tar.gz"
+  sha256 "8d5b6292e7931324f81f871f250ecbb9f874aa3c66b4f6f35ceb0bf3163b53ea"
   license "LGPL-3.0-only"
   # Set current revision from what it was taken plus 10
   revision 10
@@ -22,6 +22,10 @@ class Libheif < Formula
       -DWITH_X265=OFF
       -DWITH_LIBSHARPYUV=OFF
       -DENABLE_PLUGIN_LOADING=OFF
+      -DWITH_JPEG_DECODER=OFF
+      -DWITH_JPEG_ENCODER=OFF
+      -DWITH_OpenJPEG_DECODER=OFF
+      -DWITH_OpenJPEG_ENCODER=OFF
       -DCMAKE_INSTALL_RPATH=#{rpath}
     ]
     system "cmake", "-S", ".", "-B", "build", *args, *std_cmake_args
