@@ -71,6 +71,12 @@ MODE_INFO = {
     "L": (1, 8, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME),
 }
 
+SUBSAMPLING_CHROMA_MAP = {
+    "4:4:4": 444,
+    "4:2:2": 422,
+    "4:2:0": 420,
+}
+
 
 def set_orientation(info: dict) -> Optional[int]:
     """Reset orientation in ``EXIF`` to ``1`` if any orientation present.
@@ -307,14 +313,8 @@ class CtxEncode:
         self.ctx_write = _pillow_heif.CtxWrite(compression_format, -2 if quality is None else quality)
         enc_params = kwargs.get("enc_params", {})
         chroma = kwargs.get("chroma", None)
-        subsampling = kwargs.get("subsampling", None)
-        if chroma is None and subsampling:
-            subsampling_map = {
-                "4:4:4": 444,
-                "4:2:2": 422,
-                "4:2:0": 420,
-            }
-            chroma = subsampling_map.get(subsampling, None)
+        if chroma is None and "subsampling" in kwargs:
+            chroma = SUBSAMPLING_CHROMA_MAP.get(kwargs["subsampling"], None)
         if chroma:
             enc_params["chroma"] = chroma
         for key, value in enc_params.items():
