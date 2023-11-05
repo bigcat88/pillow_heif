@@ -332,6 +332,8 @@ class HeifFile:
 
             ``chroma`` - custom subsampling value. Possible values: ``444``, ``422`` or ``420`` (``x265`` default).
 
+            ``subsampling`` - synonym for *chroma*. Format is string, compatible with Pillow: ``x:x:x``, e.g. '4:4:4'.
+
             ``format`` - string with encoder format name. Possible values: ``HEIF`` (default) or ``AVIF``.
 
             ``save_nclx_profile`` - boolean, see :py:attr:`~pillow_heif.options.SAVE_NCLX_PROFILE`

@@ -16,8 +16,6 @@ def test_libheif_info():
     for key in ("HEIF", "AVIF"):
         assert key in info
     assert pillow_heif.libheif_version() in (
-        "1.12.0",
-        "1.13.0",
         "1.14.0",
         "1.14.1",
         "1.14.2",
@@ -26,6 +24,7 @@ def test_libheif_info():
         "1.16.1",
         "1.16.2",
         "1.17.1",
+        "1.17.3",
     )
 
 

@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Synonym for `chroma` encoder parameter: `subsampling`(usage is the same as in Pillow JPEG). #161
+- Synonym for `chroma` encoder parameter: `subsampling`(usage is the same as in Pillow JPEG). #161 #165
 - Pi-Heif: Python3.12 32-bit `armv7` wheels. #160
 
 ### Changed
