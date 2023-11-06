@@ -73,7 +73,7 @@ test_src_build_full_freebsd_task:
   install_libheif_script:
     - pkg install -y libheif gcc
     - pkg install -y py39-pip
-    - pkg install -y py39-pillow
+    - pkg install -y py39-pillow py39-numpy
   install_pillow_heif_script:
     - python3 -m pip -v install ".[tests-min]"
   libheif_info_script:
