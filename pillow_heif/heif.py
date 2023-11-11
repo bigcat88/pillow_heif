@@ -14,6 +14,7 @@ from .misc import (
     MimCImage,
     _exif_from_pillow,
     _get_bytes,
+    _get_orientation_for_encoder,
     _get_primary_index,
     _pil_to_supported_mode,
     _retrieve_exif,
@@ -552,7 +553,14 @@ def _encode_images(images: List[HeifImage], fp, **kwargs) -> None:
             _info.update(**kwargs)
             _info["primary"] = True
         _info.pop("stride", 0)
-        ctx_write.add_image(img.size, img.mode, img.data, **_info, stride=img.stride)
+        ctx_write.add_image(
+            img.size,
+            img.mode,
+            img.data,
+            image_orientation=_get_orientation_for_encoder(_info),
+            **_info,
+            stride=img.stride,
+        )
     ctx_write.save(fp)
 
 

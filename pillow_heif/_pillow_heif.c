@@ -44,10 +44,9 @@ int __PyDict_SetItemString(PyObject *p, const char *key, PyObject *val) {
     return r;
 }
 
-enum ph_image_type
-{
-  PhHeifImage = 0,
-  PhHeifDepthImage = 2,
+enum ph_image_type {
+    PhHeifImage = 0,
+    PhHeifDepthImage = 2,
 };
 
 /* =========== Objects ======== */
@@ -516,11 +515,11 @@ static PyObject* _CtxWriteImage_set_nclx_profile(CtxWriteImageObject* self, PyOb
 static PyObject* _CtxWriteImage_encode(CtxWriteImageObject* self, PyObject* args) {
     /* ctx: CtxWriteObject, primary: int */
     CtxWriteObject* ctx_write;
-    int primary, save_nclx;
+    int primary, save_nclx, image_orientation;
     struct heif_error error;
     struct heif_encoding_options* options;
 
-    if (!PyArg_ParseTuple(args, "Oii", (PyObject*)&ctx_write, &primary, &save_nclx))
+    if (!PyArg_ParseTuple(args, "Oiii", (PyObject*)&ctx_write, &primary, &save_nclx, &image_orientation))
         return NULL;
 
     Py_BEGIN_ALLOW_THREADS
@@ -530,6 +529,7 @@ static PyObject* _CtxWriteImage_encode(CtxWriteImageObject* self, PyObject* args
         self->output_nclx_color_profile = heif_nclx_color_profile_alloc();
     if (self->output_nclx_color_profile)
         options->output_nclx_profile = self->output_nclx_color_profile;
+    options->image_orientation = image_orientation;
     error = heif_context_encode_image(ctx_write->ctx, self->image, ctx_write->encoder, options, &self->handle);
     heif_encoding_options_free(options);
     Py_END_ALLOW_THREADS
@@ -596,13 +596,14 @@ static PyObject* _CtxWriteImage_encode_thumbnail(CtxWriteImageObject* self, PyOb
     struct heif_image_handle* thumb_handle;
     struct heif_encoding_options* options;
     CtxWriteObject* ctx_write;
-    int thumb_box;
+    int thumb_box, image_orientation;
 
-    if (!PyArg_ParseTuple(args, "Oi", (PyObject*)&ctx_write, &thumb_box))
+    if (!PyArg_ParseTuple(args, "Oii", (PyObject*)&ctx_write, &thumb_box, &image_orientation))
         return NULL;
 
     Py_BEGIN_ALLOW_THREADS
     options = heif_encoding_options_alloc();
+    options->image_orientation = image_orientation;
     error = heif_context_encode_thumbnail(
         ctx_write->ctx,
         self->image,

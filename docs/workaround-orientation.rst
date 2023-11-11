@@ -34,6 +34,8 @@ but if there are two images and second does not have exif orientation tag, they 
 As we do not have an own soothsayer to say in which image editor will be image opened and
 will app rotate image or not based on Exif TAG, we comes to next chapter...
 
+*Updated(October 2023): last macOS Sonoma(14.0) changed it's behaviour and do not rotate `HEIF` images based on Exif TAG.*
+
 Q. So is there a decision?
 """"""""""""""""""""""""""
 
@@ -41,8 +43,11 @@ The best one and simplest solution is to
 `remove it <https://github.com/strukturag/libheif/issues/219#issuecomment-638110043>`_.
 
 So we set ``orientation`` to ``1`` in
-:py:meth:`~pillow_heif.HeifFile.add_from_pillow` (or during encoding `Pillow.Image`) to remove EXIF/XMP orientation tag
+:py:meth:`~pillow_heif.HeifFile.add_from_pillow` to remove EXIF/XMP orientation tag
 and rotate the image according to the removed tag.
+
+.. note:: *Updated(November 2023, pillow_heif>=1.14.0, PillowPlugin mode):
+    Image rotation value during encoding will be not removed from EXIF, and in addition will be set in HEIF header.*
 
 That allow us to properly handle situations when JPEG or PNG with orientation get encoded to HEIF.
 
