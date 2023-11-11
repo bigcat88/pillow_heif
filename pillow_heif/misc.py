@@ -15,7 +15,7 @@ from typing import List, Optional
 from PIL import Image
 
 from . import options
-from .constants import HeifChroma, HeifColorspace, HeifCompressionFormat
+from .constants import HeifChannel, HeifChroma, HeifColorspace, HeifCompressionFormat
 
 try:
     import _pillow_heif
@@ -69,6 +69,7 @@ MODE_INFO = {
     "LA": (2, 8, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME),
     "La": (2, 8, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME),
     "L": (1, 8, HeifColorspace.MONOCHROME, HeifChroma.MONOCHROME),
+    "YCbCr": (3, 8, HeifColorspace.YCBCR, HeifChroma.CHROMA_444),
 }
 
 SUBSAMPLING_CHROMA_MAP = {
@@ -265,6 +266,7 @@ def _xmp_from_pillow(img: Image.Image) -> Optional[bytes]:
 
 
 def _pil_to_supported_mode(img: Image.Image) -> Image.Image:
+    # We support "YCbCr" for encoding in Pillow plugin mode and do not call this function.
     if img.mode == "P":
         mode = "RGBA" if img.info.get("transparency") else "RGB"
         img = img.convert(mode=mode)
@@ -274,7 +276,7 @@ def _pil_to_supported_mode(img: Image.Image) -> Image.Image:
         img = img.convert(mode="L")
     elif img.mode == "CMYK":
         img = img.convert(mode="RGBA")
-    elif img.mode == "YCbCr":  # note: libheif supports native `YCbCr`.
+    elif img.mode == "YCbCr":
         img = img.convert(mode="RGB")
     return img
 
@@ -349,11 +351,23 @@ class CtxEncode:
         im_out = self.ctx_write.create_image(size, MODE_INFO[mode][2], MODE_INFO[mode][3], premultiplied_alpha)
         # image data
         if MODE_INFO[mode][0] == 1:
-            im_out.add_plane_l(size, bit_depth_out, bit_depth_in, data, kwargs.get("stride", 0))
+            im_out.add_plane_l(size, bit_depth_out, bit_depth_in, data, kwargs.get("stride", 0), HeifChannel.CHANNEL_Y)
         elif MODE_INFO[mode][0] == 2:
             im_out.add_plane_la(size, bit_depth_out, bit_depth_in, data, kwargs.get("stride", 0))
         else:
             im_out.add_plane(size, bit_depth_out, bit_depth_in, data, mode.find("BGR") != -1, kwargs.get("stride", 0))
+        self._finish_add_image(im_out, size, **kwargs)
+
+    def add_image_ycbcr(self, img: Image.Image, **kwargs) -> None:
+        """Adds image in `YCbCR` mode to the encoder."""
+        # creating image
+        im_out = self.ctx_write.create_image(img.size, MODE_INFO[img.mode][2], MODE_INFO[img.mode][3], 0)
+        # image data
+        for i in (HeifChannel.CHANNEL_Y, HeifChannel.CHANNEL_CB, HeifChannel.CHANNEL_CR):
+            im_out.add_plane_l(img.size, 8, 8, bytes(img.getdata(i)), kwargs.get("stride", 0), i)
+        self._finish_add_image(im_out, img.size, **kwargs)
+
+    def _finish_add_image(self, im_out, size: tuple, **kwargs):
         # color profile
         __icc_profile = kwargs.get("icc_profile", None)
         if __icc_profile is not None:

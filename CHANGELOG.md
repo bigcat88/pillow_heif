@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - Synonym for `chroma` encoder parameter: `subsampling`(usage is the same as in Pillow JPEG). #161 #165
 - Passing `image_orientation` value to libheif, instead of manually rotating image according to EXIF before encoding. #168
+- Pillow plugin: support for images in `YCbCr` mode for saving without converting to `RGB`. #169
 - Pi-Heif: Python3.12 32-bit `armv7` wheels. #160
 
 ### Changed

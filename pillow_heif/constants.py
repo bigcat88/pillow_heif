@@ -176,3 +176,24 @@ class HeifDepthRepresentationType(IntEnum):
     """Unknown"""
     NON_UNIFORM_DISPARITY = 3
     """Unknown"""
+
+
+class HeifChannel(IntEnum):
+    """Internal libheif values, used in ``CtxEncode``."""
+
+    CHANNEL_Y = 0
+    """Monochrome or YCbCR"""
+    CHANNEL_CB = 1
+    """Only for YCbCR"""
+    CHANNEL_CR = 2
+    """Only for YCbCR"""
+    CHANNEL_R = 3
+    """RGB or RGBA"""
+    CHANNEL_G = 4
+    """RGB or RGBA"""
+    CHANNEL_B = 5
+    """RGB or RGBA"""
+    CHANNEL_ALPHA = 6
+    """Monochrome or RGBA"""
+    CHANNEL_INTERLEAVED = 10
+    """RGB or RGBA"""
