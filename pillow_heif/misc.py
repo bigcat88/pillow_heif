@@ -93,6 +93,40 @@ def set_orientation(info: dict) -> Optional[int]:
     :param info: `info` dictionary from :external:py:class:`~PIL.Image.Image` or :py:class:`~pillow_heif.HeifImage`.
     :returns: Original orientation or None if it is absent.
     """
+    return _get_orientation(info, True)
+
+
+def _get_orientation_for_encoder(info: dict) -> int:
+    image_orientation = _get_orientation(info, False)
+    return 1 if image_orientation is None else image_orientation
+
+
+def _get_orientation_xmp(info: dict, exif_orientation: Optional[int], reset: bool = False) -> Optional[int]:
+    xmp_orientation = 1
+    if info.get("xmp", None):
+        xmp_data = info["xmp"].rsplit(b"\x00", 1)
+        if xmp_data[0]:
+            decoded_xmp_data = None
+            for encoding in ("utf-8", "latin1"):
+                try:
+                    decoded_xmp_data = xmp_data[0].decode(encoding)
+                    break
+                except Exception:  # noqa # pylint: disable=broad-except
+                    pass
+            if decoded_xmp_data:
+                match = re.search(r'tiff:Orientation(="|>)([0-9])', decoded_xmp_data)
+                if match:
+                    xmp_orientation = int(match[2])
+                    if reset:
+                        decoded_xmp_data = re.sub(r'tiff:Orientation="([0-9])"', "", decoded_xmp_data)
+                        decoded_xmp_data = re.sub(r"<tiff:Orientation>([0-9])</tiff:Orientation>", "", decoded_xmp_data)
+                # should encode in "utf-8" anyway, as `defusedxml` do not work with `latin1` encoding.
+                if encoding != "utf-8" or xmp_orientation != 1:
+                    info["xmp"] = b"".join([decoded_xmp_data.encode("utf-8"), b"\x00" if len(xmp_data) > 1 else b""])
+    return xmp_orientation if exif_orientation is None and xmp_orientation != 1 else None
+
+
+def _get_orientation(info: dict, reset: bool = False) -> Optional[int]:
     original_orientation = None
     if info.get("exif", None):
         try:
@@ -113,6 +147,8 @@ def set_orientation(info: dict) -> Optional[int]:
                 _original_orientation = unpack(endian_mark + "H", value[0:2])[0]
                 if _original_orientation != 1:
                     original_orientation = _original_orientation
+                    if not reset:
+                        break
                     p_value = pointer + 8
                     if skipped_exif00:
                         p_value += 6
@@ -121,29 +157,8 @@ def set_orientation(info: dict) -> Optional[int]:
                     break
         except Exception:  # noqa # pylint: disable=broad-except
             pass
-    if info.get("xmp", None):
-        xmp_data = info["xmp"].rsplit(b"\x00", 1)
-        if xmp_data[0]:
-            decoded_xmp_data = None
-            for encoding in ("utf-8", "latin1"):
-                try:
-                    decoded_xmp_data = xmp_data[0].decode(encoding)
-                    break
-                except Exception:  # noqa # pylint: disable=broad-except
-                    pass
-            if decoded_xmp_data:
-                _original_orientation = 1
-                match = re.search(r'tiff:Orientation(="|>)([0-9])', decoded_xmp_data)
-                if match:
-                    _original_orientation = int(match[2])
-                    if original_orientation is None and _original_orientation != 1:
-                        original_orientation = _original_orientation
-                    decoded_xmp_data = re.sub(r'tiff:Orientation="([0-9])"', "", decoded_xmp_data)
-                    decoded_xmp_data = re.sub(r"<tiff:Orientation>([0-9])</tiff:Orientation>", "", decoded_xmp_data)
-                # should encode in "utf-8" anyway, as `defusedxml` do not work with `latin1` encoding.
-                if encoding != "utf-8" or _original_orientation != 1:
-                    info["xmp"] = b"".join([decoded_xmp_data.encode("utf-8"), b"\x00" if len(xmp_data) > 1 else b""])
-    return original_orientation
+    xmp_orientation = _get_orientation_xmp(info, original_orientation, reset=reset)
+    return xmp_orientation if xmp_orientation else original_orientation
 
 
 def get_file_mimetype(fp) -> str:
@@ -352,8 +367,12 @@ class CtxEncode:
                 ]
             )
         # encode
+        image_orientation = kwargs.get("image_orientation", 1)
         im_out.encode(
-            self.ctx_write, kwargs.get("primary", False), kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE)
+            self.ctx_write,
+            kwargs.get("primary", False),
+            kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE),
+            image_orientation,
         )
         # adding metadata
         exif = kwargs.get("exif", None)
@@ -369,7 +388,7 @@ class CtxEncode:
         # adding thumbnails
         for thumb_box in kwargs.get("thumbnails", []):
             if max(size) > thumb_box > 3:
-                im_out.encode_thumbnail(self.ctx_write, thumb_box)
+                im_out.encode_thumbnail(self.ctx_write, thumb_box, image_orientation)
 
     def save(self, fp) -> None:
         """Ask encoder to produce output based on previously added images."""

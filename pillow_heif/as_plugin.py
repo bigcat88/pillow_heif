@@ -14,9 +14,9 @@ from .misc import (
     CtxEncode,
     _exif_from_pillow,
     _get_bytes,
+    _get_orientation_for_encoder,
     _get_primary_index,
     _pil_to_supported_mode,
-    _rotate_pil,
     _xmp_from_pillow,
     set_orientation,
 )
@@ -279,8 +279,5 @@ def _pil_encode_image(ctx: CtxEncode, img: Image.Image, primary: bool, **kwargs)
     if primary:
         _info.update(**kwargs)
     _info["primary"] = primary
-    original_orientation = set_orientation(_info)
     _img = _pil_to_supported_mode(img)
-    if original_orientation is not None and original_orientation != 1:
-        _img = _rotate_pil(_img, original_orientation)
-    ctx.add_image(_img.size, _img.mode, _img.tobytes(), **_info)
+    ctx.add_image(_img.size, _img.mode, _img.tobytes(), image_orientation=_get_orientation_for_encoder(_info), **_info)
