@@ -270,7 +270,7 @@ def __save_all(im, fp, compression_format: HeifCompressionFormat):
     ctx_write.save(fp)
 
 
-def _pil_encode_image(ctx: CtxEncode, img: Image.Image, primary: bool, **kwargs):
+def _pil_encode_image(ctx: CtxEncode, img: Image.Image, primary: bool, **kwargs) -> None:
     if img.size[0] <= 0 or img.size[1] <= 0:
         raise ValueError("Empty images are not supported.")
     _info = img.info.copy()
@@ -279,5 +279,10 @@ def _pil_encode_image(ctx: CtxEncode, img: Image.Image, primary: bool, **kwargs)
     if primary:
         _info.update(**kwargs)
     _info["primary"] = primary
-    _img = _pil_to_supported_mode(img)
-    ctx.add_image(_img.size, _img.mode, _img.tobytes(), image_orientation=_get_orientation_for_encoder(_info), **_info)
+    if img.mode == "YCbCr":
+        ctx.add_image_ycbcr(img, image_orientation=_get_orientation_for_encoder(_info), **_info)
+    else:
+        _img = _pil_to_supported_mode(img)
+        ctx.add_image(
+            _img.size, _img.mode, _img.tobytes(), image_orientation=_get_orientation_for_encoder(_info), **_info
+        )

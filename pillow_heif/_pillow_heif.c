@@ -414,11 +414,11 @@ static PyObject* _CtxWriteImage_add_plane_la(CtxWriteImageObject* self, PyObject
 
 static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject* args) {
     /* (size), depth: int, depth_in: int, data: bytes */
-    int width, height, depth, depth_in, stride_out, stride_in, real_stride;
+    int width, height, depth, depth_in, stride_out, stride_in, real_stride, target_heif_channel;
     Py_buffer buffer;
     uint8_t *plane_data;
 
-    if (!PyArg_ParseTuple(args, "(ii)iiy*i", &width, &height, &depth, &depth_in, &buffer, &stride_in))
+    if (!PyArg_ParseTuple(args, "(ii)iiy*ii", &width, &height, &depth, &depth_in, &buffer, &stride_in, &target_heif_channel))
         return NULL;
 
     real_stride = width;
@@ -432,12 +432,12 @@ static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject*
         return NULL;
     }
 
-    if (check_error(heif_image_add_plane(self->image, heif_channel_Y, width, height, depth))) {
+    if (check_error(heif_image_add_plane(self->image, target_heif_channel, width, height, depth))) {
         PyBuffer_Release(&buffer);
         return NULL;
     }
 
-    plane_data = heif_image_get_plane(self->image, heif_channel_Y, &stride_out);
+    plane_data = heif_image_get_plane(self->image, target_heif_channel, &stride_out);
     if (!plane_data) {
         PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_RuntimeError, "heif_image_get_plane(Y) failed");

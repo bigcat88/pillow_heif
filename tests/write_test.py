@@ -268,14 +268,39 @@ def test_CMYK_color_mode():  # noqa
     helpers.compare_hashes([im, im_heif], hash_size=16)
 
 
-def test_YCbCr_color_mode():  # noqa
+@pytest.mark.parametrize("subsampling, expected_max_difference", (("4:4:4", 0.0004), ("4:2:2", 0.11), ("4:2:0", 1.33)))
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_YCbCr_color_mode(
+    save_format,
+    subsampling,
+    expected_max_difference,
+):
+    im_original = helpers.gradient_rgb()
+    buf_jpeg = BytesIO()
+    im_original.save(buf_jpeg, format="JPEG", subsampling=subsampling, quality=-1)
+    im_jpeg = Image.open(buf_jpeg)
+    im_jpeg.draft("YCbCr", im_jpeg.size)
+    im_jpeg.load()
+    assert im_jpeg.mode == "YCbCr"
+    buf_heif = BytesIO()
+    im_jpeg.save(buf_heif, format=save_format, subsampling=subsampling, quality=-1)
+    im_heif = Image.open(buf_heif)
+    assert im_heif.mode == "RGB"
+    helpers.assert_image_similar(Image.open(buf_jpeg), im_heif, expected_max_difference)
+
+
+def test_heif_YCbCr_color_mode():  # noqa
+    # we support YCbCr for PIL only.
+    # in this test case, the image will be converted to "RGB" during "from_pillow".
     im = helpers.gradient_rgb().convert("YCbCr")
     assert im.mode == "YCbCr"
-    out_heif = BytesIO()
-    im.save(out_heif, format="HEIF", quality=-1)
-    im_heif = Image.open(out_heif)
+    im_heif = pillow_heif.from_pillow(im)
     assert im_heif.mode == "RGB"
-    helpers.compare_hashes([im, im_heif], hash_size=16)
+    out_heif = BytesIO()
+    im_heif.save(out_heif, format="HEIF", quality=-1)
+    im_out = Image.open(out_heif)
+    assert im_out.mode == "RGB"
+    helpers.compare_hashes([im, im_out], hash_size=32)
 
 
 @pytest.mark.parametrize("enc_bits", (10, 12))
