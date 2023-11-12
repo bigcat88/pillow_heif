@@ -289,6 +289,20 @@ def test_YCbCr_color_mode(
     helpers.assert_image_similar(Image.open(buf_jpeg), im_heif, expected_max_difference)
 
 
+def test_heif_YCbCr_color_mode():  # noqa
+    # we support YCbCr for PIL only.
+    # in this test case, the image will be converted to "RGB" during "from_pillow".
+    im = helpers.gradient_rgb().convert("YCbCr")
+    assert im.mode == "YCbCr"
+    im_heif = pillow_heif.from_pillow(im)
+    assert im_heif.mode == "RGB"
+    out_heif = BytesIO()
+    im_heif.save(out_heif, format="HEIF", quality=-1)
+    im_out = Image.open(out_heif)
+    assert im_out.mode == "RGB"
+    helpers.compare_hashes([im, im_out], hash_size=32)
+
+
 @pytest.mark.parametrize("enc_bits", (10, 12))
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 def test_I_color_modes_to_10_12_bit(enc_bits, save_format):  # noqa
