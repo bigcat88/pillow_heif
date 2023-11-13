@@ -374,12 +374,10 @@ class CtxEncode:
             im_out.set_icc_profile(kwargs.get("icc_profile_type", "prof"), __icc_profile)
         elif kwargs.get("nclx_profile", None):
             nclx_profile = kwargs["nclx_profile"]
-            im_out.set_nclx_profile(
-                *[
-                    nclx_profile[i]
-                    for i in ("color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag")
-                ]
-            )
+            im_out.set_nclx_profile(*[
+                nclx_profile[i]
+                for i in ("color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag")
+            ])
         # encode
         image_orientation = kwargs.get("image_orientation", 1)
         im_out.encode(
