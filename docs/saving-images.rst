@@ -125,7 +125,7 @@ Edit NCLX profile in `image.info`:
 
         buf = BytesIO()
         im.info["nclx_profile"]["matrix_coefficients"] = 0  # code assumes that image has already "nclx_profile"
-        im.info["nclx_profile"]["color_primaries"] = 0
+        im.info["nclx_profile"]["color_primaries"] = 1
         im.save(buf, format="HEIF")
 
     Under the hood it is much complex, as second way will change the **input** NCLX profile.
