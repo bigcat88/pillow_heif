@@ -368,14 +368,14 @@ class CtxEncode:
         self._finish_add_image(im_out, img.size, **kwargs)
 
     def _finish_add_image(self, im_out, size: tuple, **kwargs):
-        # color profile
+        # set ICC color profile
         __icc_profile = kwargs.get("icc_profile", None)
         if __icc_profile is not None:
             im_out.set_icc_profile(kwargs.get("icc_profile_type", "prof"), __icc_profile)
-        elif kwargs.get("nclx_profile", None):
-            nclx_profile = kwargs["nclx_profile"]
+        # set NCLX color profile
+        if kwargs.get("nclx_profile", None):
             im_out.set_nclx_profile(*[
-                nclx_profile[i]
+                kwargs["nclx_profile"][i]
                 for i in ("color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag")
             ])
         # encode
@@ -384,6 +384,10 @@ class CtxEncode:
             self.ctx_write,
             kwargs.get("primary", False),
             kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE),
+            kwargs.get("color_primaries", -1),
+            kwargs.get("transfer_characteristics", -1),
+            kwargs.get("matrix_coefficients", -1),
+            kwargs.get("full_range_flag", -1),
             image_orientation,
         )
         # adding metadata

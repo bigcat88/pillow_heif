@@ -88,12 +88,12 @@ def test_open_to_numpy_mem_leaks():
 def test_color_profile_leaks(im, cp_type):
     mem_limit = None
     heif_file = pillow_heif.open_heif(Path(im), convert_hdr_to_8bit=False)
-    for i in range(1000):
+    for i in range(1200):
         _nclx = heif_file[0]._c_image.color_profile  # noqa
         _nclx = None  # noqa
         gc.collect()
         mem = _get_mem_usage()
-        if i < 100:
+        if i < 200:
             mem_limit = mem + 2
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations. Color profile type:{cp_type}"

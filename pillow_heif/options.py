@@ -47,14 +47,13 @@ To learn more read: `here <https://github.com/strukturag/libheif/issues/784>`_
 When use pillow_heif as a plugin you can set it with: `register_*_opener(allow_incorrect_headers=True)`"""
 
 
-SAVE_NCLX_PROFILE = False
+SAVE_NCLX_PROFILE = True
 """Should be ``nclx`` profile saved or not.
 
-Default for all previous versions was NOT TO save `nclx` profile,
+Default for all previous versions(pillow_heif<0.14.0) was NOT TO save `nclx` profile,
 due to an old bug in Apple software refusing to open images with `nclx` profiles.
 Apple has already fixed this and there is no longer a need to not save the default profile.
-Currently to be compatible in behaviour with previous versions, still is ``False`` by default.
 
 .. note:: `save_nclx_profile` specified during calling ``save`` has higher priority than this.
 
-When use pillow_heif as a plugin you can unset it with: `register_*_opener(save_nclx_profile=True)`"""
+When use pillow_heif as a plugin you can unset it with: `register_*_opener(save_nclx_profile=False)`"""
