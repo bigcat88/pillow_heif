@@ -98,4 +98,66 @@ Method ``save`` supports ``primary_index`` parameter, that accepts ``index of im
 
 Specifying ``primary_index`` during ``save`` has highest priority.
 
+NCLX color profile
+""""""""""""""""""
+
+By default, since version **0.14.0**, if the image already had an NCLX color profile, it will be saved during encoding.
+
+.. note:: If you need old behaviour and for some reason do not need `NCLX` profile be saved you can set global option ``SAVE_NCLX_PROFILE`` to ``False``.
+
+To change it, you can specify your values for NCLX color conversion for ``save`` operation in two ways.
+
+Set `output` NCLX profile:
+
+    .. note:: Avalaible only from **0.14.0** version.
+
+    .. code-block:: python
+
+        buf = BytesIO()
+        im.save(buf, format="HEIF", matrix_coefficients=0, color_primaries=1)
+
+    In this case the default output NCLX profile will be created, and values you provide in such way,
+    will replace the values from default output profile.
+
+Edit NCLX profile in `image.info`:
+
+    .. code-block:: python
+
+        buf = BytesIO()
+        im.info["nclx_profile"]["matrix_coefficients"] = 0  # code assumes that image has already "nclx_profile"
+        im.info["nclx_profile"]["color_primaries"] = 0
+        im.save(buf, format="HEIF")
+
+    Under the hood it is much complex, as second way will change the **input** NCLX profile.
+
+The preferable way is to specify new NCLX values during ``save``.
+
+Here is additional info, from the **libheif repo** with relevant information:
+
+https://github.com/strukturag/libheif/discussions/931
+https://github.com/strukturag/libheif/issues/995
+
+Lossless encoding
+"""""""""""""""""
+
+.. note:: Parameter ``matrix_coefficients`` avalaible only from **0.14.0** version.
+
+Although the HEIF format is not intended for lossless encoding, it is possible with some encoders that support it.
+
+You need to specify ``matrix_coefficients=0``
+(which will tell **libheif** to perform the conversion in the RGB color space) and chrome subsampling equal to "4:4:4".
+
+.. code-block:: python
+
+    im_rgb = Image.merge(
+        "RGB",
+        [
+            Image.linear_gradient(mode="L"),
+            Image.linear_gradient(mode="L").transpose(Image.ROTATE_90),
+            Image.linear_gradient(mode="L").transpose(Image.ROTATE_180),
+        ],
+    )
+    buf = BytesIO()
+    im_rgb.save(buf, format="HEIF", quality=-1, chroma=444, matrix_coefficients=0)
+
 That's all.
