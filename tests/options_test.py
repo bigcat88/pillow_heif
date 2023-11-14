@@ -33,21 +33,21 @@ def test_options_change_from_plugin_registering(register_opener):
             save_to_12bit=True,
             decode_threads=3,
             depth_images=False,
-            save_nclx_profile=True,
+            save_nclx_profile=False,
         )
         assert not options.THUMBNAILS
         assert options.QUALITY == 69
         assert options.SAVE_HDR_TO_12_BIT
         assert options.DECODE_THREADS == 3
         assert options.DEPTH_IMAGES is False
-        assert options.SAVE_NCLX_PROFILE is True
+        assert options.SAVE_NCLX_PROFILE is False
     finally:
         options.THUMBNAILS = True
         options.QUALITY = None
         options.SAVE_HDR_TO_12_BIT = False
         options.DECODE_THREADS = 4
         options.DEPTH_IMAGES = True
-        options.SAVE_NCLX_PROFILE = False
+        options.SAVE_NCLX_PROFILE = True
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")

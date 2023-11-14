@@ -17,6 +17,9 @@ pytest.importorskip("numpy", reason="NumPy not installed")
 if not helpers.hevc_enc() or not helpers.aom():
     pytest.skip("No HEIF or AVIF support.", allow_module_level=True)
 
+if parse_version(pillow_heif.libheif_version()) < parse_version("1.17.3"):
+    pytest.skip("Requires libheif 1.17.3+", allow_module_level=True)
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 pillow_heif.register_avif_opener()
 pillow_heif.register_heif_opener()
@@ -144,6 +147,7 @@ def test_hif_file():
     heif_file1.save(out_buf, quality=80)
     heif_file2 = pillow_heif.open_heif(out_buf)
     assert heif_file2.info["bit_depth"] == 8
+    assert heif_file1.info["nclx_profile"] == heif_file2.info["nclx_profile"]
     helpers.compare_heif_files_fields(heif_file1, heif_file2, ignore=["bit_depth"])
     helpers.compare_hashes([hif_path, out_buf], hash_size=16)
 
@@ -519,27 +523,58 @@ def test_invalid_ispe_stride_pillow(image_path):
 def test_nclx_profile_write():
     im_rgb = helpers.gradient_rgb()
     buf = BytesIO()
+    # no NCLX profile stored
     im_rgb.save(buf, format="HEIF", save_nclx_profile=False)
     assert "nclx_profile" not in Image.open(buf).info
+    # no NCLX profile stored as Image has no one.
     im_rgb.save(buf, format="HEIF", save_nclx_profile=True)
-    assert "nclx_profile" in Image.open(buf).info
+    assert "nclx_profile" not in Image.open(buf).info
+    # specify NCLX for the image, color profile should be stored
+    nclx_profile = {
+        "color_primaries": 4,
+        "transfer_characteristics": 4,
+        "matrix_coefficients": 0,
+        "full_range_flag": 1,
+    }
+    im_rgb.info["nclx_profile"] = nclx_profile
+    im_rgb.save(buf, format="HEIF", save_nclx_profile=True)
+    nclx_out = Image.open(buf).info["nclx_profile"]
+    for k in nclx_profile:
+        assert nclx_profile[k] == nclx_out[k]
     try:
-        pillow_heif.options.SAVE_NCLX_PROFILE = True
-        im_rgb.save(buf, format="HEIF", save_nclx_profile=False)
-        assert "nclx_profile" not in Image.open(buf).info
+        pillow_heif.options.SAVE_NCLX_PROFILE = False
         im_rgb.save(buf, format="HEIF")
-        assert "nclx_profile" in Image.open(buf).info
-        im_rgb.info["nclx_profile"] = {
+        assert "nclx_profile" not in Image.open(buf).info
+        im_rgb.save(buf, format="HEIF", save_nclx_profile=True)
+        nclx_out = Image.open(buf).info["nclx_profile"]
+        for k in nclx_profile:
+            assert nclx_profile[k] == nclx_out[k]
+        # here we set the “output” color profile, even if the image has one, it will be overridden.
+        nclx_profile = {
             "color_primaries": 1,
             "transfer_characteristics": 1,
             "matrix_coefficients": 10,
             "full_range_flag": 0,
         }
-        im_rgb.save(buf, format="HEIF")
+        im_rgb.save(buf, format="HEIF", **nclx_profile, save_nclx_profile=True)
         nclx_out = Image.open(buf).info["nclx_profile"]
-        if parse_version(pillow_heif.libheif_version()) >= parse_version("1.17.0"):
-            # in libheif 1.17.0 logic of this was corrected: https://github.com/strukturag/libheif/issues/995
-            for k in im_rgb.info["nclx_profile"]:
-                assert im_rgb.info["nclx_profile"][k] == nclx_out[k]
+        for k in nclx_profile:
+            assert nclx_profile[k] == nclx_out[k]
     finally:
-        pillow_heif.options.SAVE_NCLX_PROFILE = False
+        pillow_heif.options.SAVE_NCLX_PROFILE = True
+
+
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_lossless_encoding_rgb(save_format):
+    im_rgb = helpers.gradient_rgb()
+    buf = BytesIO()
+    im_rgb.save(buf, format=save_format, quality=-1, chroma=444, matrix_coefficients=0)
+    helpers.assert_image_equal(im_rgb, Image.open(buf))
+
+
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_lossless_encoding_rgba(save_format):
+    im_rgb = helpers.gradient_rgba()
+    buf = BytesIO()
+    im_rgb.save(buf, format=save_format, quality=-1, chroma=444, matrix_coefficients=0)
+    helpers.assert_image_equal(im_rgb, Image.open(buf))

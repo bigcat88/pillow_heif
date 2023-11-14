@@ -339,6 +339,14 @@ class HeifFile:
 
             ``save_nclx_profile`` - boolean, see :py:attr:`~pillow_heif.options.SAVE_NCLX_PROFILE`
 
+            ``matrix_coefficients`` - int, nclx profile: color conversion matrix coefficients, default=6 (see h.273)
+
+            ``color_primaries`` - int, nclx profile: color primaries (see h.273)
+
+            ``transfer_characteristic`` - int, nclx profile: transfer characteristics (see h.273)
+
+            ``full_range_flag`` - nclx profile: full range flag, default: 1
+
         :param fp: A filename (string), pathlib.Path object or an object with `write` method.
         """
         _encode_images(self._images, fp, **kwargs)

@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Libheif updated from `1.16.2` to `1.17.3` version. #166
+- `NCLX` color profile - was reworked, updated docs, see PR for more info. #171
 - Minimum supported Pillow version raised to `9.2.0`.
 - Linux: When building from source, `libheif` and other libraries are no longer try built automatically. #158
 - Pi-Heif: As last libheif version `1.17.3` requires minimum `cmake>=3.16.3` dropped Debian `10 armv7` wheels. #160
