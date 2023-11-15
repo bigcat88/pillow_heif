@@ -43,6 +43,8 @@ jobs:
           - arch: "arm/v7"
             docker_file: "Debian_12"
           - arch: "amd64"
+            docker_file: "Archlinux"
+          - arch: "amd64"
             docker_file: "Fedora_39"
 
     steps:
