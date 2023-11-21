@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [0.14.0 - 2023-11-xx]
+## [0.14.0 - 2023-12-0x]
 
 ### Added
 
@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Minimum supported Pillow version raised to `9.2.0`.
 - Linux: When building from source, `libheif` and other libraries are no longer try built automatically. #158
 - Pi-Heif: As last libheif version `1.17.3` requires minimum `cmake>=3.16.3` dropped Debian `10 armv7` wheels. #160
+- libde265 updated from `1.0.12` to `1.0.13`. [changelog](https://github.com/strukturag/libde265/releases/tag/v1.0.13)
 
 ### Fixed
 
