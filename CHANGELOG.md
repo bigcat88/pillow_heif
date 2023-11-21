@@ -11,11 +11,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Libheif updated from `1.16.2` to `1.17.3` version. #166
+- Libheif updated from `1.16.2` to `1.17.4` version. #166 #175
 - `NCLX` color profile - was reworked, updated docs, see PR for more info. #171
 - Minimum supported Pillow version raised to `9.2.0`.
 - Linux: When building from source, `libheif` and other libraries are no longer try built automatically. #158
-- Pi-Heif: As last libheif version `1.17.3` requires minimum `cmake>=3.16.3` dropped Debian `10 armv7` wheels. #160
+- Pi-Heif: As last libheif version requires minimum `cmake>=3.16.3` dropped Debian `10 armv7` wheels. #160
 - libde265 updated from `1.0.12` to `1.0.13`. [changelog](https://github.com/strukturag/libde265/releases/tag/v1.0.13)
 
 ### Fixed
