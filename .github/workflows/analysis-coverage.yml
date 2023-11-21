@@ -135,7 +135,6 @@ jobs:
 
       - name: Install from source
         run: |
-          brew update && brew upgrade libheif
           python3 -m pip -v install ".[dev]"
 
       - name: LibHeif info
