@@ -549,7 +549,7 @@ def test_nclx_profile_write():
         nclx_out = Image.open(buf).info["nclx_profile"]
         for k in nclx_profile:
             assert nclx_profile[k] == nclx_out[k]
-        # here we set the “output” color profile, even if the image has one, it will be overridden.
+        # here we set the "output" color profile, even if the image has one, it will be overridden.
         nclx_profile = {
             "color_primaries": 1,
             "transfer_characteristics": 1,
