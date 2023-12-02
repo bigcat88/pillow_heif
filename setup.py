@@ -15,6 +15,7 @@ from setuptools.command.build_ext import build_ext
 
 # pylint: disable=too-many-branches disable=too-many-statements disable=too-many-locals
 LIBHEIF_ROOT = None
+PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
 
 
 class RequiredDependencyException(Exception):
@@ -165,9 +166,12 @@ class PillowHeifBuildExt(build_ext):
             # ATTENTION: If someone knows how without hacks include MSYS2 directory as last directory in list - help!
             self.compiler.include_dirs.append(os.path.dirname(os.path.abspath(__file__)))
 
-            self._update_extension(
-                "_pillow_heif", ["libheif"], extra_compile_args=["/d2FH4-", "/WX"], extra_link_args=["/WX"]
-            )
+            if PLATFORM_MINGW:
+                self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-Ofast", "-Werror"])
+            else:
+                self._update_extension(
+                    "_pillow_heif", ["libheif"], extra_compile_args=["/d2FH4-", "/WX"], extra_link_args=["/WX"]
+                )
         elif sys.platform.lower() == "darwin":
             try:  # if Homebrew is installed, use its lib and include directories
                 homebrew_prefix = subprocess.check_output(["brew", "--prefix"]).strip().decode("latin1")
@@ -267,6 +271,7 @@ try:
             version=get_version(),
             cmdclass={"build_ext": PillowHeifBuildExt},
             ext_modules=[Extension("_pillow_heif", ["pillow_heif/_pillow_heif.c"])],
+            zip_safe=not PLATFORM_MINGW,
         )
 except RequiredDependencyException as err:
     msg = f"""
