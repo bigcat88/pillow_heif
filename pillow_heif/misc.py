@@ -104,7 +104,7 @@ def _get_orientation_for_encoder(info: dict) -> int:
 
 def _get_orientation_xmp(info: dict, exif_orientation: Optional[int], reset: bool = False) -> Optional[int]:
     xmp_orientation = 1
-    if info.get("xmp", None):
+    if info.get("xmp"):
         xmp_data = info["xmp"].rsplit(b"\x00", 1)
         if xmp_data[0]:
             decoded_xmp_data = None
@@ -129,7 +129,7 @@ def _get_orientation_xmp(info: dict, exif_orientation: Optional[int], reset: boo
 
 def _get_orientation(info: dict, reset: bool = False) -> Optional[int]:
     original_orientation = None
-    if info.get("exif", None):
+    if info.get("exif"):
         try:
             tif_tag = info["exif"]
             skipped_exif00 = False
