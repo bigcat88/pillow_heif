@@ -1,5 +1,12 @@
 All notable changes to this project will be documented in this file.
 
+## [0.1x.x - 2024-0x-xx]
+
+### Changed
+
+- libde265 updated from `1.0.14` to `1.0.15`. [changelog](https://github.com/strukturag/libde265/releases/tag/v1.0.15)
+- libheif updated from `1.17.5` to `1.17.6`. [changelog](https://github.com/strukturag/libheif/releases/tag/v1.17.6)
+
 ## [0.14.0 - 2023-12-02]
 
 ### Added
