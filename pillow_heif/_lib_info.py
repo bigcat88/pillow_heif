@@ -1,5 +1,7 @@
 """Functions to get versions of underlying libraries."""
 
+import typing
+
 try:
     import _pillow_heif
 except ImportError as ex:
@@ -10,18 +12,27 @@ except ImportError as ex:
 
 def libheif_version() -> str:
     """Returns ``libheif`` version."""
-    return _pillow_heif.lib_info["libheif"]
+    return _pillow_heif.get_lib_info()["libheif"]
 
 
-def libheif_info() -> dict:
+def libheif_info() -> dict[str, typing.Union[str, dict[str, str]]]:
     """Returns a dictionary with version information.
 
-    The keys `libheif`, `HEIF`, `AVIF` are always present, but values for `HEIF`/`AVIF` can be empty.
+    The keys `libheif`, `HEIF`, `AVIF`, `encoders`, `decoders` are always present, but values for all except
+    `libheif` can be empty.
 
     {
-        'libheif': '1.14.2',
+        'libheif': '1.15.2',
         'HEIF': 'x265 HEVC encoder (3.4+31-6722fce1f)',
-        'AVIF': 'AOMedia Project AV1 Encoder 3.5.0'
+        'AVIF': 'AOMedia Project AV1 Encoder 3.5.0',
+        'encoders': {
+            'encoder1_id': 'encoder1_full_name',
+            'encoder2_id': 'encoder2_full_name',
+        },
+        'decoders': {
+            'decoder1_id': 'decoder1_full_name',
+            'decoder2_id': 'decoder2_full_name',
+        },
     }
     """
-    return _pillow_heif.lib_info
+    return _pillow_heif.get_lib_info()
