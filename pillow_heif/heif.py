@@ -544,7 +544,7 @@ def encode(mode: str, size: tuple, data, fp, **kwargs) -> None:
 def _encode_images(images: List[HeifImage], fp, **kwargs) -> None:
     compression = kwargs.get("format", "HEIF")
     compression_format = HeifCompressionFormat.AV1 if compression == "AVIF" else HeifCompressionFormat.HEVC
-    if not _pillow_heif.lib_info[compression]:
+    if not _pillow_heif.get_lib_info()[compression]:
         raise RuntimeError(f"No {compression} encoder found.")
     images_to_save: List[HeifImage] = images + kwargs.get("append_images", [])
     if not kwargs.get("save_all", True):
