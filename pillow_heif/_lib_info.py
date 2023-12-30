@@ -1,7 +1,5 @@
 """Functions to get versions of underlying libraries."""
 
-import typing
-
 try:
     import _pillow_heif
 except ImportError as ex:
@@ -15,7 +13,7 @@ def libheif_version() -> str:
     return _pillow_heif.get_lib_info()["libheif"]
 
 
-def libheif_info() -> dict[str, typing.Union[str, dict[str, str]]]:
+def libheif_info() -> dict:
     """Returns a dictionary with version information.
 
     The keys `libheif`, `HEIF`, `AVIF`, `encoders`, `decoders` are always present, but values for all except
