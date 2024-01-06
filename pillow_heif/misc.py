@@ -327,7 +327,11 @@ class CtxEncode:
 
     def __init__(self, compression_format: HeifCompressionFormat, **kwargs):
         quality = kwargs.get("quality", options.QUALITY)
-        self.ctx_write = _pillow_heif.CtxWrite(compression_format, -2 if quality is None else quality)
+        self.ctx_write = _pillow_heif.CtxWrite(
+            compression_format,
+            -2 if quality is None else quality,
+            options.PREFERRED_ENCODER.get("HEIF" if compression_format == HeifCompressionFormat.HEVC else "AVIF", ""),
+        )
         enc_params = kwargs.get("enc_params", {})
         chroma = kwargs.get("chroma", None)
         if chroma is None and "subsampling" in kwargs:
