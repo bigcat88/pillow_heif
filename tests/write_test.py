@@ -589,10 +589,8 @@ def test_invalid_encoder():
     try:
         pillow_heif.options.PREFERRED_ENCODER["AVIF"] = "invalid_id"
         pillow_heif.options.PREFERRED_ENCODER["HEIF"] = "invalid_id"
-        with pytest.raises(RuntimeError):
-            im_rgb.save(buf, format="AVIF")
-        with pytest.raises(RuntimeError):
-            im_rgb.save(buf, format="HEIF")
+        im_rgb.save(buf, format="AVIF")
+        im_rgb.save(buf, format="HEIF")
     finally:
         pillow_heif.options.PREFERRED_ENCODER["AVIF"] = ""
         pillow_heif.options.PREFERRED_ENCODER["HEIF"] = ""

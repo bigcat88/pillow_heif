@@ -246,6 +246,10 @@ def __options_update(**kwargs):
             options.ALLOW_INCORRECT_HEADERS = v
         elif k == "save_nclx_profile":
             options.SAVE_NCLX_PROFILE = v
+        elif k == "preferred_encoder":
+            options.PREFERRED_ENCODER = v
+        elif k == "preferred_decoder":
+            options.PREFERRED_DECODER = v
         else:
             warn(f"Unknown option: {k}", stacklevel=1)
 

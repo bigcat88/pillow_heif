@@ -63,4 +63,23 @@ PREFERRED_ENCODER = {
     "AVIF": "",
     "HEIF": "",
 }
-"""Use the specified encoder for format. You can get the available encoders IDs using ``libheif_info()`` function."""
+"""Use the specified encoder for format.
+
+You can get the available encoders IDs using ``libheif_info()`` function.
+
+When use pillow_heif as a plugin you can set this option with ``preferred_encoder`` key.
+
+.. note:: If the specified encoder is missing, the option will be ignored."""
+
+
+PREFERRED_DECODER = {
+    "AVIF": "",
+    "HEIF": "",
+}
+"""Use the specified decoder for format.
+
+You can get the available decoders IDs using ``libheif_info()`` function.
+
+When use pillow_heif as a plugin you can set this option with ``preferred_decoder`` key.
+
+.. note:: If the specified decoder is missing, the option will be ignored."""

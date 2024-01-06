@@ -89,6 +89,7 @@ typedef struct {
     int remove_stride;                          // private. decode option.
     int hdr_to_16bit;                           // private. decode option.
     int reload_size;                            // private. decode option.
+    char decoder_id[64];                        // private. decode option. optional
     struct heif_image_handle *handle;           // private
     struct heif_image *heif_image;              // private
     const struct heif_depth_representation_info* depth_metadata; // only for image_type == 2
@@ -793,7 +794,8 @@ static void _CtxImage_destructor(CtxImageObject* self) {
 
 PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
                     int bgr_mode, int remove_stride, int hdr_to_16bit,
-                    int reload_size, int primary, PyObject* file_bytes) {
+                    int reload_size, int primary, PyObject* file_bytes,
+                    const char *decoder_id) {
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(handle);
@@ -833,6 +835,7 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
     ctx_image->primary = primary;
     ctx_image->file_bytes = file_bytes;
     ctx_image->stride = get_stride(ctx_image);
+    strcpy(ctx_image->decoder_id, decoder_id);
     Py_INCREF(file_bytes);
     return (PyObject*)ctx_image;
 }
@@ -1050,6 +1053,9 @@ int decode_image(CtxImageObject* self) {
         bytes_in_cc = 2;
     }
 
+    if (strlen(self->decoder_id) > 0) {
+        decode_options->decoder_id = self->decoder_id;
+    }
     error = heif_decode_image(self->handle, &self->heif_image, colorspace, chroma, decode_options);
     heif_decoding_options_free(decode_options);
     Py_END_ALLOW_THREADS
@@ -1172,11 +1178,9 @@ static PyObject* _CtxWrite(PyObject* self, PyObject* args) {
         return NULL;
 
     struct heif_context* ctx = heif_context_alloc();
-    if (strlen(encoder_id) > 0) {
-        if (heif_get_encoder_descriptors(heif_compression_undefined, encoder_id, encoders, 1) != 1) {
-            PyErr_SetString(PyExc_RuntimeError, "could not find encoder with provided ID");
-            return NULL;
-        }
+    if ((strlen(encoder_id) > 0) &&
+        (heif_get_encoder_descriptors(heif_compression_undefined, encoder_id, encoders, 1) == 1)
+        ) {
         error = heif_context_get_encoder(ctx, encoders[0], &encoder);
     }
     else {
@@ -1215,16 +1219,18 @@ static PyObject* _CtxWrite(PyObject* self, PyObject* args) {
 static PyObject* _load_file(PyObject* self, PyObject* args) {
     int hdr_to_8bit, threads_count, bgr_mode, remove_stride, hdr_to_16bit, reload_size;
     PyObject *heif_bytes;
+    const char *decoder_id;
 
     if (!PyArg_ParseTuple(args,
-                          "Oiiiiii",
+                          "Oiiiiiis",
                           &heif_bytes,
                           &threads_count,
                           &hdr_to_8bit,
                           &bgr_mode,
                           &remove_stride,
                           &hdr_to_16bit,
-                          &reload_size))
+                          &reload_size,
+                          &decoder_id))
         return NULL;
 
     struct heif_context* heif_ctx = heif_context_alloc();
@@ -1272,7 +1278,8 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
             PyList_SET_ITEM(images_list,
                             i,
                             _CtxImage(handle, hdr_to_8bit,
-                                    bgr_mode, remove_stride, hdr_to_16bit, reload_size, primary, heif_bytes));
+                                    bgr_mode, remove_stride, hdr_to_16bit, reload_size, primary, heif_bytes,
+                                    decoder_id));
         else {
             Py_INCREF(Py_None);
             PyList_SET_ITEM(images_list, i, Py_None);
