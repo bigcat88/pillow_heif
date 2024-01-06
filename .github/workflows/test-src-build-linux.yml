@@ -36,10 +36,10 @@ jobs:
       fail-fast: false
       matrix:
         arch: ["amd64", "arm64"]
-        docker_file: ["Alpine_3_17", "Alpine_3_18", "Almalinux_9", "Debian_12"]
+        docker_file: ["Alpine_3_18", "Alpine_3_19", "Almalinux_9", "Debian_12"]
         include:
           - arch: "arm/v7"
-            docker_file: "Alpine_3_18"
+            docker_file: "Alpine_3_19"
           - arch: "arm/v7"
             docker_file: "Debian_12"
           - arch: "amd64"
