@@ -223,6 +223,12 @@ class HeifFile:
         else:
             fp_bytes = _get_bytes(fp)
             mimetype = get_file_mimetype(fp_bytes)
+            if mimetype.find("avif") != -1:
+                preferred_decoder = options.PREFERRED_DECODER.get("AVIF", "")
+            elif mimetype.find("heic") != -1 or mimetype.find("heif") != -1:
+                preferred_decoder = options.PREFERRED_DECODER.get("HEIF", "")
+            else:
+                preferred_decoder = ""
             images = _pillow_heif.load_file(
                 fp_bytes,
                 options.DECODE_THREADS,
@@ -231,6 +237,7 @@ class HeifFile:
                 kwargs.get("remove_stride", True),
                 kwargs.get("hdr_to_16bit", True),
                 kwargs.get("reload_size", options.ALLOW_INCORRECT_HEADERS),
+                preferred_decoder,
             )
         self.mimetype = mimetype
         self._images: List[HeifImage] = [HeifImage(i) for i in images if i is not None]

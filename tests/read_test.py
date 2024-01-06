@@ -470,3 +470,20 @@ def test_depth_image():
     assert depth_image.info["metadata"]["disparity_reference_view"] == 0
     assert depth_image.info["metadata"]["nonlinear_representation_model_size"] == 0
     assert im_pil.info == depth_image.info
+
+
+def test_invalid_decoder():
+    try:
+        pillow_heif.options.PREFERRED_DECODER["HEIF"] = "invalid_id"
+        Image.open("images/heif/RGB_8__128x128.heif").load()
+    finally:
+        pillow_heif.options.PREFERRED_DECODER["HEIF"] = ""
+
+
+@pytest.mark.skipif("dav1d" not in pillow_heif.libheif_info()["decoders"], reason="Requires DAV1D AVIF decoder.")
+def test_dav1d_decoder():
+    try:
+        pillow_heif.options.PREFERRED_DECODER["AVIF"] = "dav1d"
+        Image.open("images/heif/RGB_8__128x128.avif").load()
+    finally:
+        pillow_heif.options.PREFERRED_DECODER["AVIF"] = ""
