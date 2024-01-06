@@ -1161,16 +1161,28 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
 /* =========== Functions ======== */
 
 static PyObject* _CtxWrite(PyObject* self, PyObject* args) {
-    /* compression_format: int, quality: int */
+    /* compression_format: int, quality: int, encoder_id: str */
     struct heif_encoder* encoder;
     struct heif_error error;
     int compression_format, quality;
+    const char *encoder_id;
+    const struct heif_encoder_descriptor* encoders[1];
 
-    if (!PyArg_ParseTuple(args, "ii", &compression_format, &quality))
+    if (!PyArg_ParseTuple(args, "iis", &compression_format, &quality, &encoder_id))
         return NULL;
 
     struct heif_context* ctx = heif_context_alloc();
-    error = heif_context_get_encoder_for_format(ctx, compression_format, &encoder);
+    if (strlen(encoder_id) > 0) {
+        if (heif_get_encoder_descriptors(heif_compression_undefined, encoder_id, encoders, 1) != 1) {
+            PyErr_SetString(PyExc_RuntimeError, "could not find encoder with provided ID");
+            return NULL;
+        }
+        error = heif_context_get_encoder(ctx, encoders[0], &encoder);
+    }
+    else {
+        error = heif_context_get_encoder_for_format(ctx, compression_format, &encoder);
+    }
+
     if (check_error(error)) {
         heif_context_free(ctx);
         return NULL;

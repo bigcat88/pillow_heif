@@ -57,3 +57,10 @@ Apple has already fixed this and there is no longer a need to not save the defau
 .. note:: `save_nclx_profile` specified during calling ``save`` has higher priority than this.
 
 When use pillow_heif as a plugin you can unset it with: `register_*_opener(save_nclx_profile=False)`"""
+
+
+PREFERRED_ENCODER = {
+    "AVIF": "",
+    "HEIF": "",
+}
+"""Use the specified encoder for format. You can get the available encoders IDs using ``libheif_info()`` function."""

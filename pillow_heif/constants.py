@@ -49,19 +49,23 @@ class HeifCompressionFormat(IntEnum):
     UNDEFINED = 0
     """The compression format is not defined."""
     HEVC = 1
-    """The compression format is HEVC."""
+    """Equivalent to H.265."""
     AVC = 2
-    """The compression format is AVC."""
+    """Equivalent to H.264. Defined in ISO/IEC 14496-10."""
     JPEG = 3
-    """The compression format is JPEG."""
+    """JPEG compression. Defined in ISO/IEC 10918-1."""
     AV1 = 4
-    """The compression format is AV1."""
+    """AV1 compression, used for AVIF images."""
     VVC = 5
-    """The compression format is VVC."""
+    """Equivalent to H.266. Defined in ISO/IEC 23090-3."""
     EVC = 6
-    """The compression format is EVC."""
+    """Equivalent to H.266. Defined in ISO/IEC 23094-1."""
     JPEG2000 = 7
     """The compression format is JPEG200 ISO/IEC 15444-16:2021"""
+    UNCOMPRESSED = 8
+    """Defined in ISO/IEC 23001-17:2023 (Final Draft International Standard)."""
+    MASK = 9
+    """Mask image encoding. See ISO/IEC 23008-12:2022 Section 6.10.2"""
 
 
 class HeifColorPrimaries(IntEnum):

@@ -581,3 +581,54 @@ def test_lossless_encoding_rgba(save_format):
     buf = BytesIO()
     im_rgb.save(buf, format=save_format, quality=-1, chroma=444, matrix_coefficients=0)
     helpers.assert_image_equal(im_rgb, Image.open(buf))
+
+
+def test_invalid_encoder():
+    im_rgb = helpers.gradient_rgba()
+    buf = BytesIO()
+    try:
+        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = "invalid_id"
+        pillow_heif.options.PREFERRED_ENCODER["HEIF"] = "invalid_id"
+        with pytest.raises(RuntimeError):
+            im_rgb.save(buf, format="AVIF")
+        with pytest.raises(RuntimeError):
+            im_rgb.save(buf, format="HEIF")
+    finally:
+        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = ""
+        pillow_heif.options.PREFERRED_ENCODER["HEIF"] = ""
+
+
+@pytest.mark.skipif("svt" not in pillow_heif.libheif_info()["encoders"], reason="Requires SVT AVIF encoder.")
+@pytest.mark.skipif("aom" not in pillow_heif.libheif_info()["encoders"], reason="Requires AOM AVIF encoder.")
+def test_svt_encoder():
+    im_rgb = helpers.gradient_rgb()
+    buf_aom = BytesIO()
+    im_rgb.save(buf_aom, format="AVIF")
+    buf_svt = BytesIO()
+    try:
+        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = "svt"
+        im_rgb.save(buf_svt, format="AVIF")
+    finally:
+        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = ""
+    aom_img_data = Image.open(buf_aom).tobytes()
+    svt_image_data = Image.open(buf_svt).tobytes()
+    # print(f"AOM size: {len(aom_img_data)} , SVT size: {len(svt_image_data)}", )
+    assert aom_img_data != svt_image_data  # Suppose that: different decoders by default will have different results
+
+
+@pytest.mark.skipif("rav1e" not in pillow_heif.libheif_info()["encoders"], reason="Requires RAV1E AVIF encoder.")
+@pytest.mark.skipif("aom" not in pillow_heif.libheif_info()["encoders"], reason="Requires AOM AVIF encoder.")
+def test_rav1e_encoder():
+    im_rgb = helpers.gradient_rgb()
+    buf_aom = BytesIO()
+    im_rgb.save(buf_aom, format="AVIF")
+    buf_rav1e = BytesIO()
+    try:
+        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = "rav1e"
+        im_rgb.save(buf_rav1e, format="AVIF")
+    finally:
+        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = ""
+    aom_img_data = Image.open(buf_aom).tobytes()
+    rav1e_image_data = Image.open(buf_rav1e).tobytes()
+    # print(f"AOM size: {len(aom_img_data)} , RAV1E size: {len(rav1e_image_data)}", )
+    assert aom_img_data != rav1e_image_data  # Suppose that: different decoders by default will have different results
