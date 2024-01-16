@@ -72,9 +72,12 @@ FreeBSD
 
 Since Python itself does not support binary wheels for BSD systems, you should install libheif and then simply install Pillow-Heif from source.
 
-Install `libeheif` and `gcc`::
+Install `gcc`, `cmake`, `aom` and `x265`::
 
-    pkg install -y libheif gcc
+    - pkg install -y gcc cmake aom x265
+    - pkg install -y py39-pip
+    - pkg install -y py39-pillow py39-numpy
+    - python3 libheif/linux_build_libs.py
 
 Install Python and Pillow::
 
