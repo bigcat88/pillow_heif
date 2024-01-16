@@ -195,6 +195,8 @@ jobs:
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libdav1d-7.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libkvazaar-7.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libcryptopp.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjpeg-8.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjp2-7.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/zlib1.dll $site_packages/

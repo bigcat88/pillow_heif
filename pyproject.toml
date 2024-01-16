@@ -57,7 +57,7 @@ extend-ignore = ["D107", "D105", "D203", "D213", "D401", "E203", "I001", "RUF100
 "setup.py" = ["S"]
 
 [tool.ruff.extend-per-file-ignores]
-"benchmarks/**/*.py" = ["D", "S603"]
+"benchmarks/**/*.py" = ["D", "S404", "S603"]
 "docs/**/*.py" = ["D"]
 "examples/**/*.py" = ["D", "PERF"]
 "libheif/**/*.py" = ["D", "PERF", "S"]
