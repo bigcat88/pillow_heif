@@ -62,18 +62,19 @@ test_src_build_full_freebsd_task:
     'setup.*',
     'pyproject.toml')"
 
-  name: From source(FreeBSD) / FreeBSD:13-amd64
+  name: From source(FreeBSD) / FreeBSD:14-amd64
   freebsd_instance:
-    image_family: freebsd-13-2
+    image_family: freebsd-14-0
 
   env:
     PH_FULL_ACTION: 1
     EXP_PH_LIBHEIF_VERSION: ""
 
   install_libheif_script:
-    - pkg install -y libheif gcc
+    - pkg install -y gcc cmake aom x265
     - pkg install -y py39-pip
     - pkg install -y py39-pillow py39-numpy
+    - python3 libheif/linux_build_libs.py
   install_pillow_heif_script:
     - python3 -m pip -v install ".[tests-min]"
   libheif_info_script:
