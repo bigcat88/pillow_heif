@@ -145,7 +145,7 @@ jobs:
         env:
           OS_PACKAGES: "libjpeg-turbo-devel lcms2-devel"
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ${{ env.BUILD_DIR }}
           key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
@@ -209,7 +209,7 @@ jobs:
         with:
           platforms: arm64
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ${{ env.BUILD_DIR }}
           key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
