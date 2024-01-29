@@ -22,9 +22,7 @@ def get_xmp_with_orientation(orientation: int, style=1) -> str:
         '  <rdf:Description rdf:about=""\n'
         '    xmlns:exif="http://ns.adobe.com/exif/1.0/"\n'
         '    xmlns:tiff="http://ns.adobe.com/tiff/1.0/"\n'
-        '   tiff:Orientation="'
-        + str(orientation)
-        + '"/>\n </rdf:RDF>\n</x:xmpmeta>\n<?xpacket end="r"?>'
+        '   tiff:Orientation="' + str(orientation) + '"/>\n </rdf:RDF>\n</x:xmpmeta>\n<?xpacket end="r"?>'
     )
     xmp_2 = (
         '<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
