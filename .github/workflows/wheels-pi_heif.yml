@@ -25,7 +25,7 @@ jobs:
         unzip wheels.zip
 
     - name: Upload built wheels
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: wheels_pi_heif
         path: wheelhouse/*.whl
@@ -85,7 +85,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels_pi_heif
           path: wheelhouse/*.whl
@@ -116,7 +116,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels_pi_heif
           path: wheelhouse/*.whl
@@ -185,7 +185,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels_pi_heif
           path: wheelhouse/*.whl
@@ -243,7 +243,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels_pi_heif
           path: wheelhouse/*.whl
@@ -307,7 +307,7 @@ jobs:
           python3 -m twine check ./repaired_dist/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels_pi_heif
           path: ./repaired_dist/*.whl
@@ -354,7 +354,7 @@ jobs:
           python3 -m pytest
 
       - name: Upload sdist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels_pi_heif
           path: wheelhouse/*.tar.gz

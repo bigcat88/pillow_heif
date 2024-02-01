@@ -62,7 +62,7 @@ jobs:
         run: coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage_linux
           path: ./htmlcov
@@ -107,7 +107,7 @@ jobs:
         run: coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage_linux_dev
           path: ./htmlcov
@@ -144,7 +144,7 @@ jobs:
         run: coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage_macos
           path: ./htmlcov
@@ -213,7 +213,7 @@ jobs:
         run: coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage_windows
           path: ./htmlcov
@@ -258,7 +258,7 @@ jobs:
         run: sudo -H coverage run -m pytest && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage_light_macos
           path: ./htmlcov
@@ -319,7 +319,7 @@ jobs:
         run: coverage run -m pytest tests/import_error_test.py && coverage xml && coverage html
 
       - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage_macos_imp_err
           path: ./htmlcov
