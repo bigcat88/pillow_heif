@@ -126,3 +126,10 @@ def test_light_build():
     expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.17.6")
     if expected_version:
         assert info["libheif"] == expected_version
+
+
+@pytest.mark.skipif(not os.getenv("TEST_PLUGIN_LOAD"), reason="Only when plugins present")
+def test_load_plugin():
+    pillow_heif.load_plugin(os.environ["TEST_PLUGIN_LOAD"])
+    with pytest.raises(RuntimeError):
+        pillow_heif.load_plugin("invalid path")

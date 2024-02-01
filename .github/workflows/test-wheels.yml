@@ -99,8 +99,8 @@ jobs:
         run: cd .. && python3 -m pytest pillow_heif
 
   macos-wheels:
-    name: macOS • 11 • ${{ matrix.python-version }}
-    runs-on: macos-11
+    name: macOS • 12 • ${{ matrix.python-version }}
+    runs-on: macos-12
     strategy:
       matrix:
         python-version: ["pypy-3.8", "pypy-3.9", "pypy-3.10", "3.8", "3.9", "3.10", "3.11", "3.12"]

@@ -26,4 +26,4 @@ from .heif import (
     open_heif,
     read_heif,
 )
-from .misc import get_file_mimetype, set_orientation
+from .misc import get_file_mimetype, load_plugin, set_orientation
