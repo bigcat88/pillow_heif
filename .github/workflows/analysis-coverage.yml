@@ -59,7 +59,9 @@ jobs:
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: coverage run -m pytest && coverage xml && coverage html
+        run: |
+          TEST_PLUGIN_LOAD="$(whereis libheif | awk '{print $2}')/plugins/libheif-x265.so" coverage run -m pytest
+          coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3
@@ -104,7 +106,9 @@ jobs:
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
       - name: Generate coverage report
-        run: coverage run -m pytest && coverage xml && coverage html
+        run: |
+          TEST_PLUGIN_LOAD="$(whereis libheif | awk '{print $2}')/plugins/libheif-x265.so" coverage run -m pytest
+          coverage xml && coverage html
 
       - name: HTML coverage to artifacts
         uses: actions/upload-artifact@v3

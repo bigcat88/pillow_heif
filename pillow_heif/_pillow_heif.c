@@ -1328,12 +1328,39 @@ static PyObject* _get_lib_info(PyObject* self) {
     return lib_info_dict;
 }
 
+static PyObject* _load_plugins(PyObject* self, PyObject* args) {
+    const char *plugins_directory;
+    if (!PyArg_ParseTuple(args, "s", &plugins_directory))
+        return NULL;
+
+    struct heif_error error = heif_load_plugins(plugins_directory, NULL, NULL, 0);
+    if (check_error(error)) {
+        return NULL;
+    }
+    RETURN_NONE
+}
+
+static PyObject* _load_plugin(PyObject* self, PyObject* args) {
+    const char *plugin_path;
+    if (!PyArg_ParseTuple(args, "s", &plugin_path))
+        return NULL;
+
+    const struct heif_plugin_info* info = NULL;
+    struct heif_error error = heif_load_plugin(plugin_path, &info);
+    if (check_error(error)) {
+        return NULL;
+    }
+    RETURN_NONE
+}
+
 /* =========== Module =========== */
 
 static PyMethodDef heifMethods[] = {
     {"CtxWrite", (PyCFunction)_CtxWrite, METH_VARARGS},
     {"load_file", (PyCFunction)_load_file, METH_VARARGS},
     {"get_lib_info", (PyCFunction)_get_lib_info, METH_NOARGS},
+    {"load_plugins", (PyCFunction)_load_plugins, METH_VARARGS},
+    {"load_plugin", (PyCFunction)_load_plugin, METH_VARARGS},
     {NULL, NULL}
 };
 

@@ -10,7 +10,7 @@ from enum import IntEnum
 from math import ceil
 from pathlib import Path
 from struct import pack, unpack
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from PIL import Image
 
@@ -446,3 +446,8 @@ class MimCImage:
     def bit_depth(self) -> int:
         """Return bit-depth based on image mode."""
         return MODE_INFO[self.mode][1]
+
+
+def load_plugin(plugin_path: Union[str, Path]) -> None:
+    """Load specified LibHeif plugin."""
+    _pillow_heif.load_plugin(plugin_path)

@@ -189,8 +189,29 @@ def build_lib_linux(url: str, name: str):
             cmake_args += ["-DCMAKE_BUILD_TYPE=Release"]
             if name == "libheif":
                 cmake_args += (
-                    "-DWITH_EXAMPLES=OFF -DWITH_RAV1E=OFF -DWITH_DAV1D=OFF -DWITH_SvtEnc=OFF"
-                    " -DWITH_LIBSHARPYUV=OFF -DENABLE_PLUGIN_LOADING=OFF".split()
+                    "-DWITH_LIBDE265=ON "
+                    "-DWITH_LIBDE265_PLUGIN=OFF "
+                    "-DWITH_X265=ON "
+                    "-DWITH_X265_PLUGIN=OFF "
+                    "-DWITH_AOM_DECODER=ON "
+                    "-DWITH_AOM_DECODER_PLUGIN=OFF "
+                    "-DWITH_AOM_ENCODER=ON "
+                    "-DWITH_AOM_ENCODER_PLUGIN=OFF "
+                    "-DWITH_RAV1E=OFF "
+                    "-DWITH_RAV1E_PLUGIN=OFF "
+                    "-DWITH_DAV1D=OFF "
+                    "-DWITH_DAV1D_PLUGIN=OFF "
+                    "-DWITH_SvtEnc=OFF "
+                    "-DWITH_SvtEnc_PLUGIN=OFF "
+                    "-DWITH_KVAZAAR=OFF "
+                    "-DWITH_KVAZAAR_PLUGIN=OFF "
+                    "-DWITH_JPEG_DECODER=OFF "
+                    "-DWITH_JPEG_ENCODER=OFF "
+                    "-DWITH_OpenJPEG_DECODER=OFF "
+                    "-DWITH_OpenJPEG_ENCODER=OFF "
+                    "-DENABLE_PLUGIN_LOADING=ON "
+                    "-DWITH_LIBSHARPYUV=OFF "
+                    "-DWITH_EXAMPLES=OFF".split()
                 )
                 _hide_build_process = False
                 if is_musllinux():
