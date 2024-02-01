@@ -89,7 +89,7 @@ jobs:
 
   wheels_macos:
     name: macosx • x86_64
-    runs-on: macos-11
+    runs-on: macos-12
 
     steps:
       - uses: actions/checkout@v4
@@ -100,6 +100,7 @@ jobs:
         env:
           CIBW_ARCHS: "x86_64"
           CIBW_ENVIRONMENT_MACOS: PH_FULL_ACTION=1 TEST_DECODE_THREADS=0
+          MACOSX_DEPLOYMENT_TARGET: "10.10"
 
       - name: Check built wheels
         run: |
