@@ -1,13 +1,12 @@
 All notable changes to this project will be documented in this file.
 
-## [0.15.0 - 2024-02-02]
+## [0.15.0 - 2024-02-03]
 
 ### Added
 
 - `libheif_info` function: added `encoders` and `decoders` keys to the result, for future libheif plugins support. #189
 - `options.PREFERRED_ENCODER` - to use `encoder` different from the default one. #192
 - `options.PREFERRED_DECODER` - to use `decoder` different from the default one. #193
-- New `load_plugin` function. `ENABLE_PLUGIN_LOADING` option now is `ON` in the libheif configuration. #154
 
 ### Changed
 

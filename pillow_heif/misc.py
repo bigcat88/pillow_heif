@@ -448,6 +448,6 @@ class MimCImage:
         return MODE_INFO[self.mode][1]
 
 
-def load_plugin(plugin_path: Union[str, Path]) -> None:
+def load_libheif_plugin(plugin_path: Union[str, Path]) -> None:
     """Load specified LibHeif plugin."""
     _pillow_heif.load_plugin(plugin_path)

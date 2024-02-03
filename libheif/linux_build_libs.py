@@ -209,7 +209,7 @@ def build_lib_linux(url: str, name: str):
                     "-DWITH_JPEG_ENCODER=OFF "
                     "-DWITH_OpenJPEG_DECODER=OFF "
                     "-DWITH_OpenJPEG_ENCODER=OFF "
-                    "-DENABLE_PLUGIN_LOADING=ON "
+                    "-DENABLE_PLUGIN_LOADING=OFF "
                     "-DWITH_LIBSHARPYUV=OFF "
                     "-DWITH_EXAMPLES=OFF".split()
                 )

@@ -130,6 +130,6 @@ def test_light_build():
 
 @pytest.mark.skipif(not os.getenv("TEST_PLUGIN_LOAD"), reason="Only when plugins present")
 def test_load_plugin():
-    pillow_heif.load_plugin(os.environ["TEST_PLUGIN_LOAD"])
+    pillow_heif.load_libheif_plugin(os.environ["TEST_PLUGIN_LOAD"])
     with pytest.raises(RuntimeError):
-        pillow_heif.load_plugin("invalid path")
+        pillow_heif.load_libheif_plugin("invalid path")
