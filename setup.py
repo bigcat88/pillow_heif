@@ -156,8 +156,10 @@ class PillowHeifBuildExt(build_ext):
             # self._add_directory(include_dirs, path.join(include_path_prefix, "include"))
             self._add_directory(library_dirs, library_dir)
             lib_export_file = Path(os.path.join(library_dir, "libheif.dll.a"))
-            if lib_export_file.is_file():
-                copy(lib_export_file, os.path.join(library_dir, "libheif.lib"))
+            lib_lib_file = Path(os.path.join(library_dir, "libheif.lib"))
+            if lib_export_file.is_file() and not lib_lib_file.is_file():
+                print(f"Copying {lib_export_file} to {lib_lib_file}")
+                copy(lib_export_file, lib_lib_file)
             else:
                 warn("If you build this with MSYS2, you should not see this warning.", stacklevel=1)
 
@@ -226,16 +228,16 @@ class PillowHeifBuildExt(build_ext):
 
     def _find_include_dir(self, dirname, include):
         for directory in self.compiler.include_dirs:
-            print("Checking for include file %s in %s", (include, directory))
+            print(f"Checking for include file '{include}' in '{directory}'")
             result_path = os.path.join(directory, include)
             if os.path.isfile(result_path):
-                print("Found %s in %s", (include, directory))
+                print(f"Found '{include}' in '{directory}'")
                 return result_path
             subdir = os.path.join(directory, dirname)
-            print("Checking for include file %s in %s", (include, subdir))
+            print(f"Checking for include file '{include}' in '{subdir}'")
             result_path = os.path.join(subdir, include)
             if os.path.isfile(result_path):
-                print("Found %s in %s", (include, subdir))
+                print(f"Found '{include}' in '{subdir}'")
                 return result_path
         return ""
 
