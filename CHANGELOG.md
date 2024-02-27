@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [0.16.0 - 2024-02-2x]
+
+### Changed
+
+- `subsampling` parameter for encoding has higher  priority then `chroma`.
+
 ## [0.15.0 - 2024-02-03]
 
 ### Added
