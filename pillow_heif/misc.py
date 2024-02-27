@@ -78,6 +78,20 @@ SUBSAMPLING_CHROMA_MAP = {
     "4:2:0": 420,
 }
 
+LIBHEIF_CHROMA_MAP = {
+    1: 420,
+    2: 422,
+    3: 444,
+}
+
+
+def save_colorspace_chroma(c_image, info: dict) -> None:
+    """Converts `chroma` value from `c_image` to useful values and stores them in ``info`` dict."""
+    # Saving of `colorspace` was removed, as currently is not clear where to use that value.
+    chroma = LIBHEIF_CHROMA_MAP.get(c_image.chroma, None)
+    if chroma is not None:
+        info["chroma"] = chroma
+
 
 def set_orientation(info: dict) -> Optional[int]:
     """Reset orientation in ``EXIF`` to ``1`` if any orientation present.
@@ -440,6 +454,8 @@ class MimCImage:
         self.thumbnails: List[int] = []
         self.depth_image_list: List = []
         self.primary = False
+        self.chroma = HeifChroma.UNDEFINED.value
+        self.colorspace = HeifColorspace.UNDEFINED.value
 
     @property
     def size_mode(self):

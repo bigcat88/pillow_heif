@@ -240,7 +240,7 @@ def test_L_color_mode(save_format):  # noqa
     out_heif = BytesIO()
     im.save(out_heif, format=save_format, quality=-1)
     im_heif = Image.open(out_heif)
-    assert im_heif.mode == "RGB"
+    assert im_heif.mode == "L"
     helpers.compare_hashes([im, im_heif], hash_size=32)
 
 
@@ -261,7 +261,7 @@ def test_1_color_mode():
     out_heif = BytesIO()
     im.save(out_heif, format="HEIF", quality=-1)
     im_heif = Image.open(out_heif)
-    assert im_heif.mode == "RGB"
+    assert im_heif.mode == "L"
     helpers.compare_hashes([im, im_heif], hash_size=16)
 
 
@@ -581,6 +581,17 @@ def test_lossless_encoding_rgba(save_format):
     buf = BytesIO()
     im_rgb.save(buf, format=save_format, quality=-1, chroma=444, matrix_coefficients=0)
     helpers.assert_image_equal(im_rgb, Image.open(buf))
+
+
+def test_input_chroma_value():
+    im = Image.open(Path("images/heif_other/RGB_8_chroma444.heif"))
+    assert im.info["chroma"] == 444
+    im = pillow_heif.open_heif(Path("images/heif_other/RGB_8_chroma444.heif"))
+    assert im.info["chroma"] == 444
+    im = Image.open(Path("images/heif_other/pug.heic"))
+    assert im.info["chroma"] == 420
+    im = pillow_heif.open_heif(Path("images/heif_other/pug.heic"))
+    assert im.info["chroma"] == 420
 
 
 def test_invalid_encoder():

@@ -81,9 +81,11 @@ typedef struct {
     int height;                                 // size[1];
     int bits;                                   // one of: 8, 10, 12.
     int alpha;                                  // one of: 0, 1.
-    char mode[8];                               // one of: RGB, RGBA, RGBa, BGR, BGRA, BGRa + Optional[;10/12/16]
+    char mode[8];                               // one of: L, RGB, RGBA, RGBa, BGR, BGRA, BGRa + Optional[;10/12/16]
     int n_channels;                             // 1, 2, 3, 4.
     int primary;                                // one of: 0, 1.
+    enum heif_colorspace colorspace;
+    enum heif_chroma chroma;
     int hdr_to_8bit;                            // private. decode option.
     int bgr_mode;                               // private. decode option.
     int remove_stride;                          // private. decode option.
@@ -767,6 +769,8 @@ PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id dep
     }
     ctx_image->hdr_to_8bit = 0;
     ctx_image->bgr_mode = 0;
+    ctx_image->colorspace = heif_colorspace_monochrome;
+    ctx_image->chroma = heif_chroma_monochrome;
     ctx_image->handle = depth_handle;
     ctx_image->heif_image = NULL;
     ctx_image->data = NULL;
@@ -795,7 +799,9 @@ static void _CtxImage_destructor(CtxImageObject* self) {
 PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
                     int bgr_mode, int remove_stride, int hdr_to_16bit,
                     int reload_size, int primary, PyObject* file_bytes,
-                    const char *decoder_id) {
+                    const char *decoder_id,
+                    enum heif_colorspace colorspace, enum heif_chroma chroma
+                    ) {
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(handle);
@@ -805,23 +811,41 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
     ctx_image->image_type = PhHeifImage;
     ctx_image->width = heif_image_handle_get_width(handle);
     ctx_image->height = heif_image_handle_get_height(handle);
-    strcpy(ctx_image->mode, bgr_mode ? "BGR" : "RGB");
     ctx_image->alpha = heif_image_handle_has_alpha_channel(handle);
-    ctx_image->n_channels = 3;
-    if (ctx_image->alpha) {
-        strcat(ctx_image->mode, heif_image_handle_is_premultiplied_alpha(handle) ? "a" : "A");
-        ctx_image->n_channels = 4;
-    }
     ctx_image->bits = heif_image_handle_get_luma_bits_per_pixel(handle);
-    if ((ctx_image->bits > 8) && (!hdr_to_8bit)) {
-        if (hdr_to_16bit) {
-            strcat(ctx_image->mode, ";16");
+    if ((chroma == heif_chroma_monochrome) && (colorspace == heif_colorspace_monochrome) && (!ctx_image->alpha)) {
+        strcpy(ctx_image->mode, "L");
+        if (ctx_image->bits > 8) {
+            if (hdr_to_16bit) {
+                strcpy(ctx_image->mode, "I;16");
+            }
+            else if (ctx_image->bits == 10) {
+                strcpy(ctx_image->mode, "I;10");
+            }
+            else {
+                strcpy(ctx_image->mode, "I;12");
+            }
         }
-        else if (ctx_image->bits == 10) {
-            strcat(ctx_image->mode, ";10");
+        ctx_image->n_channels = 1;
+        bgr_mode = 0;
+        hdr_to_8bit = 0;
+    } else {
+        strcpy(ctx_image->mode, bgr_mode ? "BGR" : "RGB");
+        ctx_image->n_channels = 3;
+        if (ctx_image->alpha) {
+            strcat(ctx_image->mode, heif_image_handle_is_premultiplied_alpha(handle) ? "a" : "A");
+            ctx_image->n_channels += 1;
         }
-        else {
-            strcat(ctx_image->mode, ";12");
+        if ((ctx_image->bits > 8) && (!hdr_to_8bit)) {
+            if (hdr_to_16bit) {
+                strcat(ctx_image->mode, ";16");
+            }
+            else if (ctx_image->bits == 10) {
+                strcat(ctx_image->mode, ";10");
+            }
+            else {
+                strcat(ctx_image->mode, ";12");
+            }
         }
     }
     ctx_image->hdr_to_8bit = hdr_to_8bit;
@@ -833,6 +857,8 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
     ctx_image->hdr_to_16bit = hdr_to_16bit;
     ctx_image->reload_size = reload_size;
     ctx_image->primary = primary;
+    ctx_image->colorspace = colorspace;
+    ctx_image->chroma = chroma;
     ctx_image->file_bytes = file_bytes;
     ctx_image->stride = get_stride(ctx_image);
     strcpy(ctx_image->decoder_id, decoder_id);
@@ -850,6 +876,14 @@ static PyObject* _CtxImage_primary(CtxImageObject* self, void* closure) {
 
 static PyObject* _CtxImage_bit_depth(CtxImageObject* self, void* closure) {
     return Py_BuildValue("i", self->bits);
+}
+
+static PyObject* _CtxImage_colorspace(CtxImageObject* self, void* closure) {
+    return Py_BuildValue("i", self->colorspace);
+}
+
+static PyObject* _CtxImage_chroma(CtxImageObject* self, void* closure) {
+    return Py_BuildValue("i", self->chroma);
 }
 
 static PyObject* _CtxImage_color_profile(CtxImageObject* self, void* closure) {
@@ -1155,6 +1189,8 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"size_mode", (getter)_CtxImage_size_mode, NULL, NULL, NULL},
     {"primary", (getter)_CtxImage_primary, NULL, NULL, NULL},
     {"bit_depth", (getter)_CtxImage_bit_depth, NULL, NULL, NULL},
+    {"colorspace", (getter)_CtxImage_colorspace, NULL, NULL, NULL},
+    {"chroma", (getter)_CtxImage_chroma, NULL, NULL, NULL},
     {"color_profile", (getter)_CtxImage_color_profile, NULL, NULL, NULL},
     {"metadata", (getter)_CtxImage_metadata, NULL, NULL, NULL},
     {"thumbnails", (getter)_CtxImage_thumbnails, NULL, NULL, NULL},
@@ -1264,6 +1300,8 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
         return NULL;
     }
 
+    enum heif_colorspace colorspace;
+    enum heif_chroma chroma;
     struct heif_image_handle* handle;
     struct heif_error error;
     for (int i = 0; i < n_images; i++) {
@@ -1274,13 +1312,19 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
         }
         else
             error = heif_context_get_image_handle(heif_ctx, images_ids[i], &handle);
-        if (error.code == heif_error_Ok)
-            PyList_SET_ITEM(images_list,
-                            i,
-                            _CtxImage(handle, hdr_to_8bit,
+        if (error.code == heif_error_Ok) {
+            error = heif_image_handle_get_preferred_decoding_colorspace(handle, &colorspace, &chroma);
+            if (error.code == heif_error_Ok) {
+                PyList_SET_ITEM(images_list,
+                                i,
+                                _CtxImage(handle, hdr_to_8bit,
                                     bgr_mode, remove_stride, hdr_to_16bit, reload_size, primary, heif_bytes,
-                                    decoder_id));
-        else {
+                                    decoder_id, colorspace, chroma));
+            } else {
+                heif_image_handle_release(handle);
+            }
+        }
+        if (error.code != heif_error_Ok) {
             Py_INCREF(Py_None);
             PyList_SET_ITEM(images_list, i, Py_None);
         }

@@ -103,7 +103,7 @@ def test_color_profile_leaks(im, cp_type):
 @pytest.mark.skipif(machine().find("x86_64") == -1, reason="run only on x86_64")
 def test_metadata_leaks():
     mem_limit = None
-    heif_file = pillow_heif.open_heif(Path("images/heif_other/exif_xmp_iptc.heic"))
+    heif_file = pillow_heif.open_heif(Path("images/heif_other/L_exif_xmp_iptc.heic"))
     for i in range(1000):
         _metadata = heif_file[0]._c_image.metadata  # noqa
         _metadata = None  # noqa

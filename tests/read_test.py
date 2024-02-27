@@ -239,15 +239,33 @@ def test_heif_file_to_pillow():
     helpers.assert_image_equal(heif_file.to_pillow(), heif_file[1].to_pillow())
 
 
+def test_heif_zpug_image():
+    heif_file = pillow_heif.open_heif(Path("images/heif/zPug_3.heic"))
+    assert heif_file[0].mode == "RGB"
+    assert heif_file[0].stride >= heif_file[0].size[0] * 3
+    assert heif_file[1].mode == "L"
+    assert heif_file[1].stride >= heif_file[1].size[0] * 1
+    assert heif_file[2].mode == "RGB"
+    assert heif_file[2].stride >= heif_file[2].size[0] * 3
+
+
 @pytest.mark.parametrize("image_path", dataset.FULL_DATASET)
 def test_heif_read_images(image_path):
     def test_read_image(convert_hdr_to_8bit: bool) -> bool:
         heif_file = pillow_heif.open_heif(image_path, convert_hdr_to_8bit=convert_hdr_to_8bit)
         for image in heif_file:
             assert min(image.size) > 0
-            assumed_mode = "RGBA" if image.has_alpha else "RGB"
-            minimal_stride = image.size[0] * 4 if image.has_alpha else image.size[0] * 3
-            if image.info["bit_depth"] > 8 and not convert_hdr_to_8bit:
+            monochrome = str(image_path).find("L_") != -1
+            if monochrome:
+                assumed_mode = "I" if image.info["bit_depth"] > 8 else "L"
+                minimal_stride = image.size[0] * 1
+            elif not image.has_alpha:
+                assumed_mode = "RGB"
+                minimal_stride = image.size[0] * 3
+            else:
+                assumed_mode = "RGBA"
+                minimal_stride = image.size[0] * 4
+            if image.info["bit_depth"] > 8 and (monochrome or not convert_hdr_to_8bit):
                 assumed_mode += ";16"
                 minimal_stride *= 2
             assert image.mode == assumed_mode
@@ -256,9 +274,10 @@ def test_heif_read_images(image_path):
             assert len(image.data) == image.stride * image.size[1]
         return heif_file.info["bit_depth"] > 8
 
-    one_more = test_read_image(False)
-    if one_more:
-        test_read_image(True)
+    if str(image_path).find("zPug_3.heic") == -1:
+        one_more = test_read_image(False)
+        if one_more:
+            test_read_image(True)
 
 
 @pytest.mark.parametrize("image_path", dataset.FULL_DATASET)

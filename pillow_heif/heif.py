@@ -22,6 +22,7 @@ from .misc import (
     _rotate_pil,
     _xmp_from_pillow,
     get_file_mimetype,
+    save_colorspace_chroma,
     set_orientation,
 )
 
@@ -120,6 +121,7 @@ class HeifDepthImage(BaseImage):
         self.info = {
             "metadata": _metadata,
         }
+        save_colorspace_chroma(c_image, self.info)
 
     def __repr__(self):
         _bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
@@ -158,6 +160,7 @@ class HeifImage(BaseImage):
             "thumbnails": _thumbnails,
             "depth_images": _depth_images,
         }
+        save_colorspace_chroma(c_image, self.info)
         _color_profile: Dict[str, Any] = c_image.color_profile
         if _color_profile:
             if _color_profile["type"] in ("rICC", "prof"):
@@ -493,7 +496,7 @@ def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
         be converted to 8-bit images during decoding. Otherwise, they will open in 16-bit mode.
-        ``Does not affect "depth images".``
+        ``Does not affect "monochrome" or "depth images".``
     :param bgr_mode: Boolean indicating should be `RGB(A)` images be opened in `BGR(A)` mode.
     :param kwargs: **hdr_to_16bit** a boolean value indicating that 10/12-bit image data
         should be converted to 16-bit mode during decoding. `Has lower priority than convert_hdr_to_8bit`!
@@ -518,7 +521,7 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
         be converted to 8-bit images during decoding. Otherwise, they will open in 16-bit mode.
-        ``Does not affect "depth images".``
+        ``Does not affect "monochrome" or "depth images".``
     :param bgr_mode: Boolean indicating should be `RGB(A)` images be opened in `BGR(A)` mode.
     :param kwargs: **hdr_to_16bit** a boolean value indicating that 10/12-bit image data
         should be converted to 16-bit mode during decoding. `Has lower priority than convert_hdr_to_8bit`!
