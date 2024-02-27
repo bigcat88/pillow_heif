@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [0.16.0 - 2024-02-27]
+## [0.16.0 - 2024-04-02]
 
 This release contains breaking change for monochrome images.
 
