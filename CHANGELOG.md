@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- `subsampling` parameter for encoding has higher  priority then `chroma`.
+- `subsampling` parameter for encoding has higher  priority then `chroma`. #213
+- the minimum required `libehif` version is `1.17.0`. #214
 
 ## [0.15.0 - 2024-02-03]
 

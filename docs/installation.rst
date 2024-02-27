@@ -35,7 +35,7 @@ Linux
     | **And of course you can build your own libheif library with your preferred encoders and decoders and use what you like.**
 
 There is many different ways how to build it from source. Main requirements are:
-    * ``libheif`` should be version >= ``1.16.1`` version(recommended version is ``1.17.3`` or higher).
+    * ``libheif`` should be version >= ``1.17.0`` version(recommended version is ``1.17.3`` or higher).
     * ``x265`` should support 10 - 12 bit encoding(if you want to save in that bitness)
     * ``aom`` should be >= ``3.3.0`` version
     * ``libde265`` should be >= ``1.0.8`` version
