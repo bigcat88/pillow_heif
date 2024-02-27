@@ -333,9 +333,11 @@ class CtxEncode:
             options.PREFERRED_ENCODER.get("HEIF" if compression_format == HeifCompressionFormat.HEVC else "AVIF", ""),
         )
         enc_params = kwargs.get("enc_params", {})
-        chroma = kwargs.get("chroma", None)
-        if chroma is None and "subsampling" in kwargs:
+        chroma = None
+        if "subsampling" in kwargs:
             chroma = SUBSAMPLING_CHROMA_MAP.get(kwargs["subsampling"], None)
+        if chroma is None:
+            chroma = kwargs.get("chroma", None)
         if chroma:
             enc_params["chroma"] = chroma
         for key, value in enc_params.items():
