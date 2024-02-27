@@ -85,10 +85,10 @@ def test_is_supported_fails(img):
 
 def test_heif_str():
     str_img_nl_1 = "<HeifImage 64x64 RGB with no image data and 2 thumbnails>"
-    str_img_nl_2 = "<HeifImage 64x64 RGB with no image data and 1 thumbnails>"
+    str_img_nl_2 = "<HeifImage 64x64 L with no image data and 1 thumbnails>"
     str_img_nl_3 = "<HeifImage 96x64 RGB with no image data and 0 thumbnails>"
     str_img_l_1 = "<HeifImage 64x64 RGB with 12288 bytes image data and 2 thumbnails>"
-    str_img_l_2 = "<HeifImage 64x64 RGB with 12288 bytes image data and 1 thumbnails>"
+    str_img_l_2 = "<HeifImage 64x64 L with 4096 bytes image data and 1 thumbnails>"
     heif_file = pillow_heif.open_heif(Path("images/heif/zPug_3.heic"))
     assert str(heif_file) == f"<HeifFile with 3 images: ['{str_img_nl_1}', '{str_img_nl_2}', '{str_img_nl_3}']>"
     assert str(heif_file[0]) == str_img_nl_1

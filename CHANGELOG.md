@@ -1,9 +1,16 @@
 All notable changes to this project will be documented in this file.
 
-## [0.16.0 - 2024-02-2x]
+## [0.16.0 - 2024-04-02]
+
+This release contains breaking change for monochrome images.
+
+### Added
+
+- Monochrome images **without alpha** channel, will be opened in `L` or `I;16` mode instead of `RGB`. #215
 
 ### Changed
 
+- `convert_hdr_to_8bit` value now ignores `monochrome` images. #215
 - `subsampling` parameter for encoding has higher  priority then `chroma`. #213
 - the minimum required `libehif` version is `1.17.0`. #214
 
