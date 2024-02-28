@@ -2,10 +2,7 @@ from io import BytesIO
 
 import helpers
 import pytest
-from packaging.version import parse as parse_version
-from PIL import Image
-from PIL import __version__ as pil_version
-from PIL import features
+from PIL import Image, features
 
 import pillow_heif
 
@@ -16,7 +13,6 @@ pillow_heif.register_heif_opener()
 @pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
 @pytest.mark.skipif(not helpers.aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.skipif(parse_version(pil_version) < parse_version("9.2.0"), reason="Requires Pillow >= 9.2")
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 @pytest.mark.parametrize(
     "im_format",

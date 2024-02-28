@@ -30,9 +30,8 @@ pillow_heif.register_heif_opener()
 )
 def test_xmp_from_pillow(img_path, save_format):
     im = Image.open(Path(img_path))
-    if hasattr(im, "getxmp"):  # WebP do not have `getxmp` method(Pillow <=9.3.0)
-        xmp = im.getxmp()  # noqa
-        assert xmp["xmpmeta"]["RDF"]["Description"]["subject"]["Bag"]["li"] == "TestSubject"
+    xmp = im.getxmp()  # noqa
+    assert xmp["xmpmeta"]["RDF"]["Description"]["subject"]["Bag"]["li"] == "TestSubject"
     out_im_heif = BytesIO()
     im.save(out_im_heif, format=save_format)
     im_heif = Image.open(out_im_heif)
