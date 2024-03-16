@@ -95,7 +95,7 @@ class BaseImage:
         return Image.frombytes(
             self.mode,  # noqa
             self.size,
-            bytes(self.data),
+            self.data,
             "raw",
             self.mode,
             self.stride,
