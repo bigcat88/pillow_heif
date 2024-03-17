@@ -18,6 +18,9 @@ test_src_build_full_macos_arm_task:
     - brew install libheif
     - brew uninstall --force --ignore-dependencies imagemagick libheif
     - brew install --formula ./libheif/macos/libheif.rb
+  install_python_3_11:
+    - brew install python@3.11
+    - ln -s python3 /opt/homebrew/opt/python@3.11/bin/python
   install_pillow_heif_script:
     - python3 -m pip -v install --break-system-packages ".[dev]"
   libheif_info_script:
@@ -49,6 +52,9 @@ test_src_build_lite_macos_arm_task:
     - brew install libheif
     - brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom
     - brew install --formula ./libheif/macos/libheif.rb
+  install_python_3_11:
+    - brew install python@3.11
+    - ln -s python3 /opt/homebrew/opt/python@3.11/bin/python
   install_pi_heif_script:
     - python3 -m pip -v install --break-system-packages ".[tests]"
   libheif_info_script:
