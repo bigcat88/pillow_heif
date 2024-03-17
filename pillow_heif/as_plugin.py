@@ -56,11 +56,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         if self._heif_file:
             frame_heif = self._heif_file[self.tell()]
             try:
-                if pil_version[:4] not in ("9.2.", "9.3.", "9.4."):  # noqa: SIM108
-                    data = frame_heif.data
-                else:
-                    data = bytes(frame_heif.data)
-                # Size of Image can change during decoding
+                data = frame_heif.data  # Size of Image can change during decoding
                 self._size = frame_heif.size  # noqa
                 self.load_prepare()
                 self.frombytes(data, "raw", (frame_heif.mode, frame_heif.stride))
@@ -123,7 +119,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def _init_from_heif_file(self, img_index: int) -> None:
         if self._heif_file:
             self._size = self._heif_file[img_index].size
-            if pil_version[:4] not in ("9.2.", "9.3.", "9.4.", "9.5.", "10.0"):
+            if pil_version[:4] not in ("9.5.", "10.0"):
                 # starting from Pillow 10.1, `mode` is a readonly property.
                 self._mode = self._heif_file[img_index].mode
             else:

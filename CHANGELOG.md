@@ -12,7 +12,8 @@ This release contains breaking change for monochrome images.
 
 - `convert_hdr_to_8bit` value now ignores `monochrome` images. #215
 - `subsampling` parameter for encoding has higher  priority then `chroma`. #213
-- the minimum required `libehif` version is `1.17.0`. #214
+- Minimum required `libehif` version is `1.17.0`. #214
+- Minimum supported Pillow version raised to `9.5.0`. #216
 
 ## [0.15.0 - 2024-02-03]
 
