@@ -19,7 +19,7 @@ test_src_build_full_macos_arm_task:
     - brew uninstall --force --ignore-dependencies imagemagick libheif
     - brew install --formula ./libheif/macos/libheif.rb
   install_pillow_heif_script:
-    - python3 -m pip -v install ".[dev]"
+    - python3 -m pip -v install --break-system-packages ".[dev]"
   libheif_info_script:
     - python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
   perform_tests_script:
@@ -50,7 +50,7 @@ test_src_build_lite_macos_arm_task:
     - brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom
     - brew install --formula ./libheif/macos/libheif.rb
   install_pi_heif_script:
-    - python3 -m pip -v install ".[tests]"
+    - python3 -m pip -v install --break-system-packages ".[tests]"
   libheif_info_script:
     - python3 -c "import pi_heif; print(pi_heif.libheif_info())"
   perform_tests_script:
