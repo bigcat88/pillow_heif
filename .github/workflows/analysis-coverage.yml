@@ -188,6 +188,7 @@ jobs:
         run: |
           python -c 'import sysconfig; print(sysconfig.get_paths()["platlib"])'
           $site_packages=(python -c 'import sysconfig; print(sysconfig.get_paths()["platlib"])')
+          Get-ChildItem -Path $Env:MSYS2_PREFIX/bin -Force | Format-List
           cp ${{ env.MSYS2_PREFIX }}/bin/libheif.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libx265.dll $site_packages/
@@ -204,6 +205,8 @@ jobs:
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjpeg-8.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjp2-7.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/zlib1.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Dec-0.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc-2.dll $site_packages/
 
       - name: Install from source
         run: |
