@@ -205,7 +205,8 @@ jobs:
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjpeg-8.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjp2-7.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/zlib1.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/svt-av1.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Dec-0.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc-2.dll $site_packages/
 
       - name: Install from source
         run: |
