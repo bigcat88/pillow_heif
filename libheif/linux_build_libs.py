@@ -99,9 +99,7 @@ def check_install_nasm(version: str):
 
 def is_musllinux() -> bool:
     _ = run("ldd --version".split(), stdout=PIPE, stderr=STDOUT, check=False)
-    if _.stdout and _.stdout.decode("utf-8").find("musl") != -1:
-        return True
-    return False
+    return bool(_.stdout and _.stdout.decode("utf-8").find("musl") != -1)
 
 
 def is_library_installed(name: str) -> bool:
