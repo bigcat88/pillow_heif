@@ -139,20 +139,7 @@ def _is_supported_heif(fp) -> bool:
     magic = _get_bytes(fp, 12)
     if magic[4:8] != b"ftyp":
         return False
-    if magic[8:12] in (
-        b"heic",
-        b"heix",
-        b"heim",
-        b"heis",
-        b"hevc",
-        b"hevx",
-        b"hevm",
-        b"hevs",
-        b"mif1",
-        b"msf1",
-    ):
-        return True
-    return False
+    return magic[8:12] in (b"heic", b"heix", b"heim", b"heis", b"hevc", b"hevx", b"hevm", b"hevs", b"mif1", b"msf1")
 
 
 def _save_heif(im, fp, _filename):
