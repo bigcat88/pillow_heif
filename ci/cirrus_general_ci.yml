@@ -20,14 +20,13 @@ test_src_build_full_macos_arm_task:
     - brew install --formula ./libheif/macos/libheif.rb
   install_python_3_11:
     - brew install python@3.11
-    - ln -s python3 /opt/homebrew/opt/python@3.11/bin/python
   install_pillow_heif_script:
-    - python3 -m pip install -U --break-system-packages pip
-    - python3 -m pip -v install --break-system-packages ".[dev]"
+    - python3.11 -m pip install -U --break-system-packages pip
+    - python3.11 -m pip -v install --break-system-packages ".[dev]"
   libheif_info_script:
-    - python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+    - python3.11 -c "import pillow_heif; print(pillow_heif.libheif_info())"
   perform_tests_script:
-    - python3 -m pytest
+    - python3.11 -m pytest
 
 test_src_build_lite_macos_arm_task:
   only_if: "changesInclude(
@@ -55,14 +54,13 @@ test_src_build_lite_macos_arm_task:
     - brew install --formula ./libheif/macos/libheif.rb
   install_python_3_11:
     - brew install python@3.11
-    - ln -s python3 /opt/homebrew/opt/python@3.11/bin/python
-    - python3 -m pip install -U --break-system-packages pip
+    - python3.11 -m pip install -U --break-system-packages pip
   install_pi_heif_script:
-    - python3 -m pip -v install --break-system-packages ".[tests]"
+    - python3.11 -m pip -v install --break-system-packages ".[tests]"
   libheif_info_script:
-    - python3 -c "import pi_heif; print(pi_heif.libheif_info())"
+    - python3.11 -c "import pi_heif; print(pi_heif.libheif_info())"
   perform_tests_script:
-    - python3 -m pytest
+    - python3.11 -m pytest
 
 test_src_build_full_freebsd_task:
   only_if: "changesInclude(
