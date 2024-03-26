@@ -7,7 +7,7 @@ test_src_build_full_macos_arm_task:
 
   name: From source(macOS) / macOS:12-arm64
   macos_instance:
-    image: ghcr.io/cirruslabs/macos-monterey-xcode
+    image: ghcr.io/cirruslabs/macos-ventura-xcode:14.2
 
   env:
     PH_FULL_ACTION: 1
@@ -38,7 +38,7 @@ test_src_build_lite_macos_arm_task:
 
   name: From source(macOS) / macOS:12-arm64(Pi-Heif)
   macos_instance:
-    image: ghcr.io/cirruslabs/macos-monterey-xcode
+    image: ghcr.io/cirruslabs/macos-ventura-xcode:14.2
 
   env:
     PH_LIGHT_ACTION: 1
