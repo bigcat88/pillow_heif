@@ -162,6 +162,42 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
+  coverage-macos-arm:
+    runs-on: macos-14
+    name: Coverage(macOS-14) • 🐍3.11
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install from source
+        run: |
+          brew install --formula ./libheif/macos/libheif.rb
+          python3 -m pip -v install ".[dev]"
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Generate coverage report
+        run: coverage run -m pytest && coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_macos_arm
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
+
   coverage-windows:
     runs-on: windows-2022
     name: Coverage(Windows) • 🐍3.9

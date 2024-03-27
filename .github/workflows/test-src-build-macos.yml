@@ -52,6 +52,32 @@ jobs:
       - name: Perform tests
         run: python3 -m pytest
 
+  full_macos_14:
+    name: macOS:14-Arm
+    runs-on: macos-14
+    env:
+      PH_FULL_ACTION: 1
+      EXP_PH_LIBHEIF_VERSION: ""
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install libheif from formula
+        run: |
+          brew uninstall --force --ignore-dependencies imagemagick libheif
+          brew install --formula ./libheif/macos/libheif.rb
+
+      - name: Installing Pillow-Heif
+        run: python3 -m pip -v install ".[dev]"
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Perform tests
+        run: python3 -m pytest
+
   lite_macos_12:
     name: macOS:12-x86_64(Pi-Heif)
     runs-on: macos-12
@@ -62,6 +88,37 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Transform to Pi-Heif
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
+
+      - name: Install libheif from formula
+        run: |
+          brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom
+          brew install --formula ./libheif/macos/libheif.rb
+
+      - name: Installing Pi-Heif
+        run: python3 -m pip -v install ".[tests]"
+
+      - name: LibHeif info
+        run: python3 -c "import pi_heif; print(pi_heif.libheif_info())"
+
+      - name: Perform tests
+        run: python3 -m pytest
+
+  lite_macos_14:
+    name: macOS:14-Arm(Pi-Heif)
+    runs-on: macos-14
+    env:
+      PH_LIGHT_ACTION: 1
+      EXP_PH_LIBHEIF_VERSION: ""
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
