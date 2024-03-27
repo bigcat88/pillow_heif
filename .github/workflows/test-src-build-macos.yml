@@ -53,7 +53,7 @@ jobs:
         run: python3 -m pytest
 
   full_macos_14:
-    name: macOS:14-x86_64
+    name: macOS:14-Arm
     runs-on: macos-14
     env:
       PH_FULL_ACTION: 1
