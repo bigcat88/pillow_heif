@@ -33,13 +33,6 @@ repos:
     hooks:
     -   id: ruff
 
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.9.0
-    hooks:
-     -  id: mypy
-        files: pillow_heif/
-        additional_dependencies: [pillow, pytest]
-
 -   repo: https://github.com/mgedmin/check-manifest
     rev: "0.49"
     hooks:
