@@ -173,7 +173,7 @@ def _get_orientation(info: dict, reset: bool = False) -> Optional[int]:
         except Exception:  # noqa # pylint: disable=broad-except
             pass
     xmp_orientation = _get_orientation_xmp(info, original_orientation, reset=reset)
-    return xmp_orientation if xmp_orientation else original_orientation
+    return xmp_orientation or original_orientation
 
 
 def get_file_mimetype(fp) -> str:

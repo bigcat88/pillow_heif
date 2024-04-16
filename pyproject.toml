@@ -49,21 +49,21 @@ preview = true
 line-length = 120
 preview = true
 target-version = "py38"
-select = ["A", "B", "C", "D", "E", "F", "FURB", "G", "I", "S", "SIM", "PERF", "PIE", "Q", "RET", "RUF", "UP" , "W"]
-extend-ignore = ["D107", "D105", "D203", "D213", "D401", "E203", "I001", "RUF100"]
+lint.select = ["A", "B", "C", "D", "E", "F", "FURB", "G", "I", "S", "SIM", "PERF", "PIE", "Q", "RET", "RUF", "UP" , "W"]
+lint.extend-ignore = ["D107", "D105", "D203", "D213", "D401", "E203", "I001", "RUF100"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "pillow_heif/__init__.py" = ["F401"]
 "setup.py" = ["S"]
 
-[tool.ruff.extend-per-file-ignores]
+[tool.ruff.lint.extend-per-file-ignores]
 "benchmarks/**/*.py" = ["D", "S404", "S603"]
 "docs/**/*.py" = ["D"]
 "examples/**/*.py" = ["D", "PERF"]
 "libheif/**/*.py" = ["D", "PERF", "S"]
 "tests/**/*.py" = ["B009", "D", "E402", "PERF", "S", "UP"]
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 16
 
 [tool.isort]
