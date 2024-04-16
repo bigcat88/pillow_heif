@@ -26,8 +26,7 @@ if __name__ == "__main__":
         data = pathlib.Path(file_name).read_text(encoding="utf-8")
         modified_data = data.replace("pillow_heif", "pi_heif")
         if modified_data != data:
-            with open(file_name + DEV_NAME_ADD, "w") as file:
-                file.write(modified_data)
+            pathlib.Path(file_name + DEV_NAME_ADD).write_text(modified_data)
 
     os.rename("pillow_heif/_pillow_heif.c", "pillow_heif/_pi_heif.c")
     os.rename("pillow_heif", "pi_heif")

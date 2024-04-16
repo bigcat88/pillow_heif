@@ -19,7 +19,7 @@ repos:
     -   id: isort
 
 -   repo: https://github.com/psf/black
-    rev: 24.3.0
+    rev: 24.4.0
     hooks:
     -   id: black
 
@@ -29,16 +29,9 @@ repos:
     -   id: pyproject-fmt
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.5
+    rev: v0.3.7
     hooks:
     -   id: ruff
-
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.9.0
-    hooks:
-     -  id: mypy
-        files: pillow_heif/
-        additional_dependencies: [pillow, pytest]
 
 -   repo: https://github.com/mgedmin/check-manifest
     rev: "0.49"
