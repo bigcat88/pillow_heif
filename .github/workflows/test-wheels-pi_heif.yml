@@ -105,7 +105,7 @@ jobs:
 
   macos-wheels:
     name: macOS • 12 • ${{ matrix.python-version }}
-    runs-on: macos-12
+    runs-on: macos-14
     strategy:
       fail-fast: false
       matrix:
@@ -170,7 +170,7 @@ jobs:
 
   macos-projects-together:
     name: macOS • Together • ${{ matrix.python-version }}
-    runs-on: macos-12
+    runs-on: macos-14
     strategy:
       matrix:
         python-version: ["pypy-3.9", "3.9"]
