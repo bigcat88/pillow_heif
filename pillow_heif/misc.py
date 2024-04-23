@@ -432,8 +432,7 @@ class CtxEncode:
         """Ask encoder to produce output based on previously added images."""
         data = self.ctx_write.finalize()
         if isinstance(fp, (str, Path)):
-            with builtins.open(fp, "wb") as f:
-                f.write(data)
+            Path(fp).write_bytes(data)
         elif hasattr(fp, "write"):
             fp.write(data)
         else:

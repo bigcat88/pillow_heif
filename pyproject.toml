@@ -61,7 +61,7 @@ lint.extend-ignore = ["D107", "D105", "D203", "D213", "D401", "E203", "I001", "R
 "docs/**/*.py" = ["D"]
 "examples/**/*.py" = ["D", "PERF"]
 "libheif/**/*.py" = ["D", "PERF", "S"]
-"tests/**/*.py" = ["B009", "D", "E402", "PERF", "S", "UP"]
+"tests/**/*.py" = ["B009", "D", "E402", "PERF", "S", "UP", "SIM115"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 16
