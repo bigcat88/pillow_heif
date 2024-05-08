@@ -61,6 +61,27 @@ if pi_heif.is_supported("input.heic"):
     np_array = np.asarray(heif_file)
 ```
 
+### Accessing Depth Images
+
+```python3
+from PIL import Image
+from pillow_heif import register_heif_opener
+import numpy as np
+
+register_heif_opener()
+
+im = Image.open("../tests/images/heif_other/pug.heic")
+if im.info["depth_images"]:
+    depth_im = im.info["depth_images"][0]  # Access the first depth image (usually there will be only one).
+    # Depth images are instances of `class HeifDepthImage(BaseImage)`,
+    # so work with them as you would with any usual image in pillow_heif.
+    # Depending on what you need the depth image for, you can convert it to a NumPy array or convert it to a Pillow image.
+    pil_im = depth_im.to_pillow()
+    np_im = np.asarray(depth_im)
+    print(pil_im)
+    print(pil_im.info["metadata"])
+```
+
 ### Wheels
 
 | **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
