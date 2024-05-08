@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [0.x.x - 2024-0x-xx]
+
+### Fixed
+
+- Processing of the images in `P` mode with `transparency` = 0. #238
+
 ## [0.16.0 - 2024-04-02]
 
 This release contains breaking change for monochrome images.

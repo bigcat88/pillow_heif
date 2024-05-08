@@ -8,7 +8,7 @@ from unittest import mock
 import helpers
 import pytest
 from packaging.version import parse as parse_version
-from PIL import Image, ImageSequence
+from PIL import Image, ImageDraw, ImageSequence
 
 import pillow_heif
 
@@ -592,6 +592,22 @@ def test_input_chroma_value():
     assert im.info["chroma"] == 420
     im = pillow_heif.open_heif(Path("images/heif_other/pug.heic"))
     assert im.info["chroma"] == 420
+
+
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_transparency_parameter(save_format):
+    im = Image.new("P", size=(64, 64))
+    draw = ImageDraw.Draw(im)
+    draw.rectangle(xy=[(0, 0), (32, 32)], fill=255)
+    draw.rectangle(xy=[(32, 32), (64, 64)], fill=255)
+
+    buf_png = BytesIO()
+    im.save(buf_png, format="PNG", transparency=0)
+    im_png = Image.open(buf_png)
+    buf_out = BytesIO()
+    im_png.save(buf_out, format=save_format, quality=-1)
+
+    helpers.assert_image_equal(im_png.convert("RGBA"), Image.open(buf_out))
 
 
 def test_invalid_encoder():
