@@ -282,7 +282,7 @@ def _xmp_from_pillow(img: Image.Image) -> Optional[bytes]:
 def _pil_to_supported_mode(img: Image.Image) -> Image.Image:
     # We support "YCbCr" for encoding in Pillow plugin mode and do not call this function.
     if img.mode == "P":
-        mode = "RGBA" if img.info.get("transparency") else "RGB"
+        mode = "RGBA" if img.info.get("transparency", None) is not None else "RGB"
         img = img.convert(mode=mode)
     elif img.mode == "I":
         img = img.convert(mode="I;16L")
