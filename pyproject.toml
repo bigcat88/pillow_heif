@@ -6,23 +6,27 @@ requires = [
 
 [tool.cibuildwheel]
 build-verbosity = "2"
-build = ["cp38-* cp39-* cp310-* cp311-* cp312-* pp38-* pp39-* pp310-*"]
-skip = ["cp36-* cp37-* pp37-*"]
+build = [
+  "cp38-* cp39-* cp310-* cp311-* cp312-* pp38-* pp39-* pp310-*",
+]
+skip = [
+  "cp36-* cp37-* pp37-*",
+]
 test-extras = "tests-min"
 test-command = "pytest {project}"
 before-test = [
-    "pip install --prefer-binary pillow",
-    "pip install --only-binary=:all: numpy || true",
-    "pip install pympler || true",
+  "pip install --prefer-binary pillow",
+  "pip install --only-binary=:all: numpy || true",
+  "pip install pympler || true",
 ]
 
 [tool.cibuildwheel.macos]
 before-all = [
-    "brew install libjpeg little-cms2",
-    "brew uninstall --force --ignore-dependencies libheif aom",
-    "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install --formula {project}/libheif/macos/libheif.rb",
-    "HOMEBREW_PREFIX=$(brew --prefix)",
-    "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib",
+  "brew install libjpeg little-cms2",
+  "brew uninstall --force --ignore-dependencies libheif aom",
+  "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install --formula {project}/libheif/macos/libheif.rb",
+  "HOMEBREW_PREFIX=$(brew --prefix)",
+  "REPAIR_LIBRARY_PATH=$HOMEBREW_PREFIX/lib",
 ]
 repair-wheel-command = [
   "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel}",
@@ -32,7 +36,7 @@ test-skip = "cp38-macosx_arm64"
 
 [tool.cibuildwheel.windows]
 before-build = [
-    "pip install delvewheel",
+  "pip install delvewheel",
 ]
 
 [tool.cibuildwheel.linux]
@@ -42,26 +46,81 @@ musllinux-aarch64-image = "musllinux_1_2"
 
 [tool.black]
 line-length = 120
-target-versions = ["py38"]
+target-versions = [
+  "py38",
+]
 preview = true
 
 [tool.ruff]
 line-length = 120
 preview = true
 target-version = "py38"
-lint.select = ["A", "B", "C", "D", "E", "F", "FURB", "G", "I", "S", "SIM", "PERF", "PIE", "Q", "RET", "RUF", "UP" , "W"]
-lint.extend-ignore = ["D107", "D105", "D203", "D213", "D401", "E203", "I001", "RUF100"]
+lint.select = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "FURB",
+  "G",
+  "I",
+  "S",
+  "SIM",
+  "PERF",
+  "PIE",
+  "Q",
+  "RET",
+  "RUF",
+  "UP",
+  "W",
+]
+lint.extend-ignore = [
+  "D107",
+  "D105",
+  "D203",
+  "D213",
+  "D401",
+  "E203",
+  "I001",
+  "RUF100",
+]
 
 [tool.ruff.lint.per-file-ignores]
-"pillow_heif/__init__.py" = ["F401"]
-"setup.py" = ["S"]
+"pillow_heif/__init__.py" = [
+  "F401",
+]
+"setup.py" = [
+  "S",
+]
 
 [tool.ruff.lint.extend-per-file-ignores]
-"benchmarks/**/*.py" = ["D", "S404", "S603"]
-"docs/**/*.py" = ["D"]
-"examples/**/*.py" = ["D", "PERF"]
-"libheif/**/*.py" = ["D", "PERF", "S"]
-"tests/**/*.py" = ["B009", "D", "E402", "PERF", "S", "UP", "SIM115"]
+"benchmarks/**/*.py" = [
+  "D",
+  "S404",
+  "S603",
+]
+"docs/**/*.py" = [
+  "D",
+]
+"examples/**/*.py" = [
+  "D",
+  "PERF",
+]
+"libheif/**/*.py" = [
+  "D",
+  "PERF",
+  "S",
+]
+"tests/**/*.py" = [
+  "B009",
+  "D",
+  "E402",
+  "PERF",
+  "S",
+  "UP",
+  "SIM115",
+]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 16
@@ -71,45 +130,65 @@ profile = "black"
 
 [tool.pylint]
 master.py-version = "3.8"
-master.extension-pkg-allow-list = ["_pillow_heif"]
+master.extension-pkg-allow-list = [
+  "_pillow_heif",
+]
 design.max-attributes = 12
 design.max-branches = 16
 design.max-locals = 18
 design.max-returns = 8
 similarities.min-similarity-lines = 6
 basic.good-names = [
-    "a", "b", "c", "d", "e", "f", "i", "j", "k", "v",
-    "ex", "_", "fp", "im", "HeifImagePlugin", "AvifImagePlugin",
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f",
+  "i",
+  "j",
+  "k",
+  "v",
+  "ex",
+  "_",
+  "fp",
+  "im",
+  "HeifImagePlugin",
+  "AvifImagePlugin",
 ]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
 messages_control.disable = [
-    "missing-class-docstring",
-    "missing-function-docstring",
-    "line-too-long",
+  "missing-class-docstring",
+  "missing-function-docstring",
+  "line-too-long",
 ]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = [
-    "tests",
+  "tests",
 ]
 filterwarnings = [
-    "ignore::DeprecationWarning",
+  "ignore::DeprecationWarning",
 ]
 addopts = "-rs --color=yes"
 
 [tool.coverage.run]
 cover_pylib = true
-include = ["*/pillow_heif/*"]
-omit = ["*/tests/*"]
+include = [
+  "*/pillow_heif/*",
+]
+omit = [
+  "*/tests/*",
+]
 
 [tool.coverage.report]
 exclude_lines = [
-    "pragma: no cover",
-    "raise NotImplementedError",
-    "DeprecationWarning",
-    "DEPRECATED"
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "DeprecationWarning",
+  "DEPRECATED",
 ]
 
 [tool.mypy]
