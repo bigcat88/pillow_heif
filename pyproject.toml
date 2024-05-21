@@ -52,9 +52,9 @@ target-versions = [
 preview = true
 
 [tool.ruff]
+target-version = "py38"
 line-length = 120
 preview = true
-target-version = "py38"
 lint.select = [
   "A",
   "B",
@@ -65,19 +65,19 @@ lint.select = [
   "FURB",
   "G",
   "I",
-  "S",
-  "SIM",
   "PERF",
   "PIE",
   "Q",
   "RET",
   "RUF",
+  "S",
+  "SIM",
   "UP",
   "W",
 ]
 lint.extend-ignore = [
-  "D107",
   "D105",
+  "D107",
   "D203",
   "D213",
   "D401",
@@ -86,44 +86,39 @@ lint.extend-ignore = [
   "RUF100",
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"pillow_heif/__init__.py" = [
+lint.per-file-ignores."pillow_heif/__init__.py" = [
   "F401",
 ]
-"setup.py" = [
+lint.per-file-ignores."setup.py" = [
   "S",
 ]
-
-[tool.ruff.lint.extend-per-file-ignores]
-"benchmarks/**/*.py" = [
+lint.extend-per-file-ignores."benchmarks/**/*.py" = [
   "D",
   "S404",
   "S603",
 ]
-"docs/**/*.py" = [
+lint.extend-per-file-ignores."docs/**/*.py" = [
   "D",
 ]
-"examples/**/*.py" = [
+lint.extend-per-file-ignores."examples/**/*.py" = [
   "D",
   "PERF",
 ]
-"libheif/**/*.py" = [
+lint.extend-per-file-ignores."libheif/**/*.py" = [
   "D",
   "PERF",
   "S",
 ]
-"tests/**/*.py" = [
+lint.extend-per-file-ignores."tests/**/*.py" = [
   "B009",
   "D",
   "E402",
   "PERF",
   "S",
-  "UP",
   "SIM115",
+  "UP",
 ]
-
-[tool.ruff.lint.mccabe]
-max-complexity = 16
+lint.mccabe.max-complexity = 16
 
 [tool.isort]
 profile = "black"
