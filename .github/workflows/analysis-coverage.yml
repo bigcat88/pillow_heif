@@ -27,8 +27,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install from source
-        run: python3 -m pip install ".[dev]" wheel
+        run: python3 -m pip install ".[dev]" wheel setuptools
 
       - name: Run Analysis
         run: python3 -m pylint "setup.py" "pillow_heif/"
