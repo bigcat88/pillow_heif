@@ -22,10 +22,10 @@ jobs:
           { "os": "debian", "ver": "11", "arch": "arm64" },
           { "os": "debian", "ver": "12", "arch": "amd64" },
           { "os": "debian", "ver": "12", "arch": "arm64" },
-          { "os": "alpine", "ver": "3.18", "arch": "amd64" },
-          { "os": "alpine", "ver": "3.18", "arch": "arm64" },
           { "os": "alpine", "ver": "3.19", "arch": "amd64" },
           { "os": "alpine", "ver": "3.19", "arch": "arm64" },
+          { "os": "alpine", "ver": "3.20", "arch": "amd64" },
+          { "os": "alpine", "ver": "3.20", "arch": "arm64" },
         ]
 
     steps:

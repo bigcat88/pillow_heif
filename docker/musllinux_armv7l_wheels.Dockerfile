@@ -1,6 +1,6 @@
 ARG PY_VERSION
 
-FROM python:$PY_VERSION-alpine3.18
+FROM python:$PY_VERSION-alpine3.19
 
 COPY . /
 

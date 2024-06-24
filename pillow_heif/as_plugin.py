@@ -5,7 +5,6 @@ from typing import Union
 from warnings import warn
 
 from PIL import Image, ImageFile, ImageSequence
-from PIL import __version__ as pil_version
 
 from . import options
 from .constants import HeifCompressionFormat
@@ -119,11 +118,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def _init_from_heif_file(self, img_index: int) -> None:
         if self._heif_file:
             self._size = self._heif_file[img_index].size
-            if pil_version[:4] not in ("9.5.", "10.0"):
-                # starting from Pillow 10.1, `mode` is a readonly property.
-                self._mode = self._heif_file[img_index].mode
-            else:
-                self.mode = self._heif_file[img_index].mode
+            self._mode = self._heif_file[img_index].mode
             self.info = self._heif_file[img_index].info
             self.info["original_orientation"] = set_orientation(self.info)
 

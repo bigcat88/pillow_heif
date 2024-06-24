@@ -1,6 +1,10 @@
 All notable changes to this project will be documented in this file.
 
-## [0.x.x - 2024-0x-xx]
+## [0.17.0 - 2024-07-02]
+
+### Changed
+
+- Minimum supported Pillow version raised to `10.1.0`. #251
 
 ### Fixed
 
