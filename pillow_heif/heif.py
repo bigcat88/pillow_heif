@@ -155,11 +155,12 @@ class HeifImage(BaseImage):
             "primary": bool(c_image.primary),
             "bit_depth": int(c_image.bit_depth),
             "exif": _exif,
-            "xmp": _xmp,
             "metadata": _metadata,
             "thumbnails": _thumbnails,
             "depth_images": _depth_images,
         }
+        if _xmp:
+            self.info["xmp"] = _xmp
         save_colorspace_chroma(c_image, self.info)
         _color_profile: Dict[str, Any] = c_image.color_profile
         if _color_profile:
@@ -424,7 +425,9 @@ class HeifFile:
             raise ValueError("Empty images are not supported.")
         _info = image.info.copy()
         _info["exif"] = _exif_from_pillow(image)
-        _info["xmp"] = _xmp_from_pillow(image)
+        _xmp = _xmp_from_pillow(image)
+        if _xmp:
+            _info["xmp"] = _xmp
         original_orientation = set_orientation(_info)
         _img = _pil_to_supported_mode(image)
         if original_orientation is not None and original_orientation != 1:
@@ -442,7 +445,9 @@ class HeifFile:
             if key in image.info:
                 added_image.info[key] = deepcopy(image.info[key])
         added_image.info["exif"] = _exif_from_pillow(image)
-        added_image.info["xmp"] = _xmp_from_pillow(image)
+        _xmp = _xmp_from_pillow(image)
+        if _xmp:
+            added_image.info["xmp"] = _xmp
         return added_image
 
     @property

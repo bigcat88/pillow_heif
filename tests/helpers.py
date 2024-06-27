@@ -83,7 +83,10 @@ def compare_heif_files_fields(
                 difference = box - image2.info["thumbnails"][i2]
                 assert abs(difference) <= thumb_size_max_differ
         assert image1.info["exif"] == image2.info["exif"]
-        assert image1.info["xmp"] == image2.info["xmp"]
+        if "xmp" in image1.info:
+            assert image1.info["xmp"] == image2.info["xmp"]
+        else:
+            assert "xmp" not in image2.info
         for block_i, block in enumerate(image1.info["metadata"]):
             assert block["data"] == image1.info["metadata"][block_i]["data"]
             assert block["content_type"] == image1.info["metadata"][block_i]["content_type"]
