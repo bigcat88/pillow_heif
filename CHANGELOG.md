@@ -2,9 +2,14 @@ All notable changes to this project will be documented in this file.
 
 ## [0.17.0 - 2024-07-02]
 
+### Added
+
+- Support for `Pillow` **10.4.0** #254
+
 ### Changed
 
 - Minimum supported Pillow version raised to `10.1.0`. #251
+- `xmp` in `info` dictionary is not present if it is empty. #254
 
 ### Fixed
 

@@ -86,9 +86,9 @@ def test_heif_info_changing(save_format):
     im_out = pillow_heif.open_heif(out_buf)
     for i in range(3):
         if i == 1:
-            assert im_out[i].info["primary"] and not im_out[i].info["exif"] and not im_out[i].info["xmp"]
+            assert im_out[i].info["primary"] and not im_out[i].info["exif"] and "xmp" not in im_out[i].info
         else:
-            assert not im_out[i].info["primary"] and not im_out[i].info["exif"] and not im_out[i].info["xmp"]
+            assert not im_out[i].info["primary"] and not im_out[i].info["exif"] and "xmp" not in im_out[i].info
     # Set exif and xmp of all images. Change Primary Image to be last.
     for i in range(3):
         im[i].info["xmp"] = xmp
@@ -110,7 +110,7 @@ def test_heif_info_changing(save_format):
     assert im_out.info["primary"]
     assert im_out.primary_index == 0
     for i in range(3):
-        assert not im_out[i].info["exif"] and not im_out[i].info["xmp"]
+        assert not im_out[i].info["exif"] and "xmp" not in im_out[i].info
 
 
 @pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
@@ -136,9 +136,9 @@ def test_pillow_info_changing(save_format):
     for i in range(3):
         im_out.seek(i)
         if i == 1:
-            assert im_out.info["primary"] and not im_out.info["exif"] and not im_out.info["xmp"]
+            assert im_out.info["primary"] and not im_out.info["exif"] and "xmp" not in im_out.info
         else:
-            assert not im_out.info["primary"] and not im_out.info["exif"] and not im_out.info["xmp"]
+            assert not im_out.info["primary"] and not im_out.info["exif"] and "xmp" not in im_out.info
     # Set exif and xmp of all images. Change Primary Image to be last.
     for i in range(3):
         im.seek(i)
@@ -164,7 +164,7 @@ def test_pillow_info_changing(save_format):
     assert im_out.tell() == 0
     for i in range(3):
         im_out.seek(i)
-        assert not im_out.info["exif"] and not im_out.info["xmp"]
+        assert not im_out.info["exif"] and "xmp" not in im_out.info
 
 
 @pytest.mark.skipif(not aom(), reason="Requires AVIF support.")

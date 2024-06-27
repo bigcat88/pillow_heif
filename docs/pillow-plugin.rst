@@ -91,8 +91,8 @@ Removing EXIF and XMP information inside ``info`` dictionary:
 .. code-block:: python
 
     image = Image.open(Path("test.heic"))
-    image.info["exif"] = None
-    image.info["xmp"] = None
+    del image.info["exif"]
+    del image.info["xmp"]
     image.save("output.heic")
 
 Removing EXIF and XMP specifying them when calling ``save``:
