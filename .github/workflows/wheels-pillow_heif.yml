@@ -58,6 +58,7 @@ jobs:
 
       - name: Remove DLL trailing data
         run: |
+          Get-ChildItem -Path $Env:MSYS2_PREFIX/bin -Force | Format-List
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libheif.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libx265.dll
