@@ -5,6 +5,7 @@ from typing import Union
 from warnings import warn
 
 from PIL import Image, ImageFile, ImageSequence
+from PIL import __version__ as pil_version
 
 from . import options
 from .constants import HeifCompressionFormat
@@ -71,16 +72,17 @@ class _LibHeifImageFile(ImageFile.ImageFile):
                 self._heif_file = None
         return super().load()
 
-    def getxmp(self) -> dict:
-        """Returns a dictionary containing the XMP tags. Requires ``defusedxml`` to be installed.
+    if pil_version[:4] in ("10.1", "10.2", "10.3"):
+        def getxmp(self) -> dict:
+            """Returns a dictionary containing the XMP tags. Requires ``defusedxml`` to be installed.
 
-        :returns: XMP tags in a dictionary.
-        """
-        if self.info.get("xmp", None):
-            xmp_data = self.info["xmp"].rsplit(b"\x00", 1)
-            if xmp_data[0]:
-                return self._getxmp(xmp_data[0])
-        return {}
+            :returns: XMP tags in a dictionary.
+            """
+            if self.info.get("xmp", None):
+                xmp_data = self.info["xmp"].rsplit(b"\x00", 1)
+                if xmp_data[0]:
+                    return self._getxmp(xmp_data[0])
+            return {}
 
     def seek(self, frame):
         if not self._seek_check(frame):
