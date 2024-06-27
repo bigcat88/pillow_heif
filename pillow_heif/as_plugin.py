@@ -73,6 +73,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         return super().load()
 
     if pil_version[:4] in ("10.1", "10.2", "10.3"):
+
         def getxmp(self) -> dict:
             """Returns a dictionary containing the XMP tags. Requires ``defusedxml`` to be installed.
 
