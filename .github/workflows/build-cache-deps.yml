@@ -63,7 +63,7 @@ jobs:
         run: twine check wheelhouse/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: wheelhouse/*.whl
@@ -135,7 +135,7 @@ jobs:
         run: twine check wheelhouse/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: wheelhouse/*.whl
@@ -194,7 +194,7 @@ jobs:
           python3 -m twine check ./repaired_dist/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels_pi_heif
           path: ./repaired_dist/*.whl
