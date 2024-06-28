@@ -24,9 +24,8 @@ class RequiredDependencyException(Exception):
 
 def get_version():
     """Returns version of the project."""
-    version_file = "pillow_heif/_version.py"
-    exec(compile(Path(version_file).read_text(encoding="utf-8"), version_file, "exec"))  # pylint: disable=exec-used
-    return locals()["__version__"]
+    match = re.search(r'__version__\s*=\s*"(.*?)"', Path("pillow_heif/_version.py").read_text(encoding="utf-8"))
+    return match.group(1)
 
 
 def _cmd_exists(cmd: str) -> bool:
