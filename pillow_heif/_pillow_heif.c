@@ -9,8 +9,6 @@
 #define MAX_ENCODERS 20
 #define MAX_DECODERS 20
 
-#define RETURN_NONE Py_INCREF(Py_None); return Py_None;
-
 static struct heif_error heif_error_no = { .code = 0, .subcode = 0, .message = "" };
 
 int check_error(struct heif_error error) {
@@ -310,7 +308,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
         PyErr_SetString(PyExc_ValueError, "invalid plane mode value");
         return NULL;
     }
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWriteImage_add_plane_la(CtxWriteImageObject* self, PyObject* args) {
@@ -415,7 +413,7 @@ static PyObject* _CtxWriteImage_add_plane_la(CtxWriteImageObject* self, PyObject
         PyErr_SetString(PyExc_ValueError, "invalid plane mode value");
         return NULL;
     }
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject* args) {
@@ -483,7 +481,7 @@ static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject*
         PyErr_SetString(PyExc_ValueError, "invalid plane mode value");
         return NULL;
     }
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWriteImage_set_icc_profile(CtxWriteImageObject* self, PyObject* args) {
@@ -499,7 +497,7 @@ static PyObject* _CtxWriteImage_set_icc_profile(CtxWriteImageObject* self, PyObj
     PyBuffer_Release(&buffer);
     if (check_error(error))
         return NULL;
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWriteImage_set_nclx_profile(CtxWriteImageObject* self, PyObject* args) {
@@ -520,7 +518,7 @@ static PyObject* _CtxWriteImage_set_nclx_profile(CtxWriteImageObject* self, PyOb
     heif_nclx_color_profile_free(nclx_color_profile);
     if (check_error(error))
         return NULL;
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWriteImage_encode(CtxWriteImageObject* self, PyObject* args) {
@@ -568,7 +566,7 @@ static PyObject* _CtxWriteImage_encode(CtxWriteImageObject* self, PyObject* args
 
     if (primary)
         heif_context_set_primary_image(ctx_write->ctx, self->handle);
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWriteImage_set_exif(CtxWriteImageObject* self, PyObject* args) {
@@ -584,7 +582,7 @@ static PyObject* _CtxWriteImage_set_exif(CtxWriteImageObject* self, PyObject* ar
     PyBuffer_Release(&buffer);
     if (check_error(error))
         return NULL;
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWriteImage_set_xmp(CtxWriteImageObject* self, PyObject* args) {
@@ -600,7 +598,7 @@ static PyObject* _CtxWriteImage_set_xmp(CtxWriteImageObject* self, PyObject* arg
     PyBuffer_Release(&buffer);
     if (check_error(error))
         return NULL;
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWriteImage_set_metadata(CtxWriteImageObject* self, PyObject* args) {
@@ -617,7 +615,7 @@ static PyObject* _CtxWriteImage_set_metadata(CtxWriteImageObject* self, PyObject
     PyBuffer_Release(&buffer);
     if (check_error(error))
         return NULL;
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWriteImage_encode_thumbnail(CtxWriteImageObject* self, PyObject* args) {
@@ -647,7 +645,7 @@ static PyObject* _CtxWriteImage_encode_thumbnail(CtxWriteImageObject* self, PyOb
     if (check_error(error))
         return NULL;
     heif_image_handle_release(thumb_handle);
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static struct PyMethodDef _CtxWriteImage_methods[] = {
@@ -688,7 +686,7 @@ static PyObject* _CtxWrite_set_parameter(CtxWriteObject* self, PyObject* args) {
         return NULL;
     if (check_error(heif_encoder_set_parameter(self->encoder, key, value)))
         return NULL;
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWriteImage_create(CtxWriteObject* self, PyObject* args) {
@@ -740,12 +738,12 @@ PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id dep
                             int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
     struct heif_image_handle* depth_handle;
     if (check_error(heif_image_handle_get_depth_image_handle(main_handle, depth_image_id, &depth_handle))) {
-        RETURN_NONE
+        Py_RETURN_NONE;
     }
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(depth_handle);
-        RETURN_NONE
+        Py_RETURN_NONE;
     }
     if (!heif_image_handle_get_depth_image_representation_info(main_handle, depth_image_id, &ctx_image->depth_metadata))
         ctx_image->depth_metadata = NULL;
@@ -805,7 +803,7 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(handle);
-        RETURN_NONE
+        Py_RETURN_NONE;
     }
     ctx_image->depth_metadata = NULL;
     ctx_image->image_type = PhHeifImage;
@@ -995,7 +993,7 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
     else if (self->image_type == PhHeifDepthImage) {
         PyObject* meta = PyDict_New();
         if (!meta) {
-            RETURN_NONE
+            Py_RETURN_NONE;
         }
         if (!self->depth_metadata)
             return meta;
@@ -1020,7 +1018,7 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
         // need an example file with this info. need info about depth_nonlinear_representation_model
         return meta;
     }
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxImage_thumbnails(CtxImageObject* self, void* closure) {
@@ -1381,7 +1379,7 @@ static PyObject* _load_plugins(PyObject* self, PyObject* args) {
     if (check_error(error)) {
         return NULL;
     }
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 static PyObject* _load_plugin(PyObject* self, PyObject* args) {
@@ -1394,7 +1392,7 @@ static PyObject* _load_plugin(PyObject* self, PyObject* args) {
     if (check_error(error)) {
         return NULL;
     }
-    RETURN_NONE
+    Py_RETURN_NONE;
 }
 
 /* =========== Module =========== */
