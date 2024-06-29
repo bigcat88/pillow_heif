@@ -72,7 +72,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.17.0
+          python3 -m pip install cibuildwheel==2.19.1
           python3 -m cibuildwheel
         env:
           CIBW_ARCHS: "AMD64"
@@ -104,7 +104,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.17.0
+          python3 -m pip install cibuildwheel==2.19.1
           python3 -m cibuildwheel
         env:
           CIBW_ARCHS: "x86_64"
@@ -170,7 +170,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.17.0
+          python3 -m pip install cibuildwheel==2.19.1
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}
@@ -230,7 +230,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.17.0
+          python3 -m pip install cibuildwheel==2.19.1
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('pp3*-{0}_{1}', matrix.cibw_buildlinux, matrix.cibw_arch) }}

@@ -39,11 +39,6 @@ before-build = [
   "pip install delvewheel",
 ]
 
-[tool.cibuildwheel.linux]
-musllinux-i686-image = "musllinux_1_2"
-musllinux-x86_64-image = "musllinux_1_2"
-musllinux-aarch64-image = "musllinux_1_2"
-
 [tool.black]
 line-length = 120
 target-versions = [
