@@ -7,10 +7,10 @@ requires = [
 [tool.cibuildwheel]
 build-verbosity = "2"
 build = [
-  "cp38-* cp39-* cp310-* cp311-* cp312-* pp38-* pp39-* pp310-*",
+  "cp38-* cp39-* cp310-* cp311-* cp312-* pp39-* pp310-*",
 ]
 skip = [
-  "cp36-* cp37-* pp37-*",
+  "cp36-* cp37-* pp37-* pp38-*",
 ]
 test-extras = "tests-min"
 test-command = "pytest {project}"
