@@ -101,7 +101,7 @@ jobs:
         env:
           CIBW_ARCHS: "x86_64"
           CIBW_ENVIRONMENT_MACOS: PH_FULL_ACTION=1 TEST_DECODE_THREADS=0
-          MACOSX_DEPLOYMENT_TARGET: "11.0"
+          MACOSX_DEPLOYMENT_TARGET: "12.0"
 
       - name: Check built wheels
         run: |

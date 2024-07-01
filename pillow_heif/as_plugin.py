@@ -82,7 +82,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
             if self.info.get("xmp", None):
                 xmp_data = self.info["xmp"].rsplit(b"\x00", 1)
                 if xmp_data[0]:
-                    return self._getxmp(xmp_data[0])
+                    return self._getxmp(xmp_data[0])  # pylint: disable=no-member
             return {}
 
     def seek(self, frame):
