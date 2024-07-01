@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Minimum supported Pillow version raised to `10.1.0`. #251
-- `xmp` in `info` dictionary is not present if it is empty. #254
+- `xmp` in `info` dictionary is now not present if it is empty. #254
 
 ### Fixed
 
