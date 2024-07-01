@@ -109,7 +109,7 @@ jobs:
         env:
           CIBW_ARCHS: "x86_64"
           CIBW_ENVIRONMENT_MACOS: PH_LIGHT_ACTION=1 TEST_DECODE_THREADS=0
-          MACOSX_DEPLOYMENT_TARGET: "11.0"
+          MACOSX_DEPLOYMENT_TARGET: "12.0"
 
       - name: Checking built wheels
         run: |
@@ -128,7 +128,7 @@ jobs:
       fail-fast: true
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
-        cibw_arch: [ "aarch64", "i686", "x86_64" ]
+        cibw_arch: [ "aarch64", "x86_64" ]
     name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
     runs-on: ubuntu-20.04
     env:
@@ -153,12 +153,6 @@ jobs:
         run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
-
-      - name: 32-bit manylinux preparations
-        if: matrix.cibw_buildlinux == 'manylinux'
-        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "libjpeg-turbo-devel lcms2-devel"
 
       - uses: actions/cache@v4
         with:
