@@ -154,5 +154,3 @@ if im.info["depth_images"]:
 | PyPy 3.10 v7.3     |        ✅        |         ✅         |         ✅         |    N/A     |     ✅      |
 
 &ast; **x86_64**, **aarch64** wheels.
-
-`i686`, `ARMv7l`, `PyPy` 32-bit wheels are published only for [pi-heif](https://pypi.org/project/pi-heif/) from `0.13.0` version.
