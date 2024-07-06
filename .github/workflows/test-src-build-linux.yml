@@ -38,10 +38,6 @@ jobs:
         arch: ["amd64", "arm64"]
         docker_file: ["Alpine_3_19", "Alpine_3_20", "Almalinux_9", "Debian_12"]
         include:
-          - arch: "arm/v7"
-            docker_file: "Alpine_3_20"
-          - arch: "arm/v7"
-            docker_file: "Debian_12"
           - arch: "amd64"
             docker_file: "Archlinux"
           - arch: "amd64"

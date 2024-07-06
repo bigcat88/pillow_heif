@@ -77,7 +77,7 @@ jobs:
       fail-fast: true
       matrix:
         cibw_buildlinux: [ manylinux, musllinux ]
-        cibw_arch: [ "aarch64", "i686", "x86_64" ]
+        cibw_arch: [ "aarch64", "x86_64" ]
     name: Pi-Heif • ${{ matrix.cibw_arch }} • ${{ matrix.cibw_buildlinux }}
     runs-on: ubuntu-20.04
     env:
@@ -99,18 +99,6 @@ jobs:
 
       - name: Install cibuildwheel & twine
         run: python3 -m pip install twine cibuildwheel==2.19.1
-
-      - name: 32-bit musllinux preparations
-        if: matrix.cibw_buildlinux == 'musllinux' && matrix.cibw_arch == 'i686'
-        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
-
-      - name: 32-bit manylinux preparations
-        if: matrix.cibw_buildlinux == 'manylinux' && matrix.cibw_arch == 'i686'
-        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "libjpeg-turbo-devel lcms2-devel"
 
       - uses: actions/cache@v4
         with:
@@ -139,65 +127,6 @@ jobs:
         with:
           name: wheels
           path: wheelhouse/*.whl
-          if-no-files-found: error
-
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
-
-  pi_heif_dependencies_linux_armv7:
-    strategy:
-      fail-fast: true
-      matrix:
-        i: [
-          { "docker_file": "manylinux_armv7l_wheels", "name": "manylinux" },
-          { "docker_file": "musllinux_armv7l_wheels", "name": "musllinux" },
-        ]
-        v: ["3.10"]
-    name: Pi-Heif • ARMv7l • ${{ matrix.i['name'] }}
-    runs-on: ubuntu-20.04
-    env:
-      KEY_HEAD: Pi-Heif-ARMv7l-${{ matrix.i['name'] }}
-      BUILD_DIR: "./build_cache"
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Transform to Pi-Heif
-        run: |
-          cp -r -v ./pi-heif/* .
-          python3 .github/transform_to-pi_heif.py
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
-        env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
-          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
-
-      - name: Build Pi-Heif
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/${{ matrix.i['docker_file'] }}.Dockerfile
-          build-args: |
-            PY_VERSION=${{ matrix.v }}
-          platforms: linux/arm/v7
-          push: false
-          outputs: type=local,dest=./
-
-      - name: Checking built wheels
-        run: |
-          python3 -m pip install twine
-          python3 -m twine check ./repaired_dist/*
-
-      - name: Uploading wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels_pi_heif
-          path: ./repaired_dist/*.whl
           if-no-files-found: error
 
       - name: Fix cache permissions

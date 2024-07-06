@@ -95,5 +95,3 @@ if im.info["depth_images"]:
 | PyPy 3.10 v7.3     |        ✅        |         ✅         |         ✅         |    N/A     |     ✅      |
 
 &ast; **x86_64**, **aarch64** wheels.
-
-`ARMv7l`: wheels are present for Debian 11+(Ubuntu 20.04+) and Alpine 3.16+
