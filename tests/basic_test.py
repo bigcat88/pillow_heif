@@ -15,13 +15,10 @@ def test_libheif_info():
     info = pillow_heif.libheif_info()
     for key in ("HEIF", "AVIF", "encoders", "decoders"):
         assert key in info
-    assert pillow_heif.libheif_version() in (
-        "1.17.1",
-        "1.17.3",
-        "1.17.4",
-        "1.17.5",
-        "1.17.6",
-    )
+
+    version = pillow_heif.libheif_version()
+    valid_prefixes = ["1.17.", "1.18."]
+    assert any(version.startswith(prefix) for prefix in valid_prefixes)
 
 
 @pytest.mark.skipif(helpers.aom(), reason="Only when AVIF support missing.")
