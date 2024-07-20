@@ -99,8 +99,8 @@ def test_heif_corrupted_open(img_path):
 @pytest.mark.parametrize("img_path", dataset.CORRUPTED_DATASET)
 def test_pillow_corrupted_open(img_path):
     for input_type in [BytesIO(img_path.read_bytes()), img_path, builtins.open(img_path, "rb")]:
-        with pytest.raises(UnidentifiedImageError):
-            Image.open(input_type)
+        with pytest.raises((UnidentifiedImageError, ValueError)):
+            Image.open(input_type).load()
 
 
 def test_heif_image_order():
