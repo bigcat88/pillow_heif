@@ -4,7 +4,7 @@
 _realname=libheif
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.17.6
+pkgver=1.18.1
 pkgrel=1
 pkgdesc="HEIF image decoder/encoder library and tools (mingw-w64)"
 arch=('any')
@@ -18,7 +18,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-libde265")
 source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('8390baf4913eda0a183e132cec62b875fb2ef507ced5ddddc98dfd2f17780aee')
+sha256sums=('8702564b0f288707ea72b260b3bf4ba9bf7abfa7dac01353def3a86acd6bbb76')
 
 build() {
   mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
@@ -32,6 +32,9 @@ build() {
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       "${extra_config[@]}" \
       -DBUILD_SHARED_LIBS=ON \
+      -DWITH_OPENJPH_DECODER=OFF \
+      -DDWITH_OPENJPH_ENCODER=OFF \
+      -DWITH_HEADER_COMPRESSION=OFF \
       -DWITH_LIBDE265=ON \
       -DWITH_LIBDE265_PLUGIN=OFF \
       -DWITH_X265=OFF \
