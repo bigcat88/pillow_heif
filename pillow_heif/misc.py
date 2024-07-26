@@ -336,6 +336,31 @@ def _get_primary_index(some_iterator, primary_index: Optional[int]) -> int:
     return primary_index
 
 
+def __get_camera_intrinsic_matrix(values: Optional[tuple]):
+    return (
+        {
+            "focal_length_x": values[0],
+            "focal_length_y": values[1],
+            "principal_point_x": values[2],
+            "principal_point_y": values[3],
+            "skew": values[4],
+        }
+        if values
+        else None
+    )
+
+
+def _get_heif_meta(c_image) -> dict:
+    r = {}
+    _camera_intrinsic_matrix = __get_camera_intrinsic_matrix(c_image.camera_intrinsic_matrix)
+    if _camera_intrinsic_matrix:
+        r["camera_intrinsic_matrix"] = _camera_intrinsic_matrix
+    _camera_extrinsic_matrix_rot = c_image.camera_extrinsic_matrix_rot
+    if _camera_extrinsic_matrix_rot:
+        r["camera_extrinsic_matrix_rot"] = _camera_extrinsic_matrix_rot
+    return r
+
+
 class CtxEncode:
     """Encoder bindings from python to python C module."""
 
@@ -455,6 +480,8 @@ class MimCImage:
         self.primary = False
         self.chroma = HeifChroma.UNDEFINED.value
         self.colorspace = HeifColorspace.UNDEFINED.value
+        self.camera_intrinsic_matrix = None
+        self.camera_extrinsic_matrix_rot = None
 
     @property
     def size_mode(self):

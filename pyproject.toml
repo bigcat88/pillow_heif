@@ -41,9 +41,7 @@ before-build = [
 
 [tool.black]
 line-length = 120
-target-versions = [
-  "py38",
-]
+target-version = [ "py38" ]
 preview = true
 
 [tool.ruff]
@@ -123,7 +121,7 @@ master.py-version = "3.8"
 master.extension-pkg-allow-list = [
   "_pillow_heif",
 ]
-design.max-attributes = 12
+design.max-attributes = 14
 design.max-branches = 16
 design.max-locals = 18
 design.max-returns = 8

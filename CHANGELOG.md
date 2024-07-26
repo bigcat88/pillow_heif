@@ -1,10 +1,14 @@
 All notable changes to this project will be documented in this file.
 
-## [0.18.0 - 2024-0x-xx]
+## [0.18.0 - 2024-07-27]
+
+### Added
+
+- `image.info["heif"]` dictionary with `camera_intrinsic_matrix` HEIF specific metadata. Currently only reading is supported. #234
 
 ### Changed
 
-- libheif updated from `1.17.6` to `1.18.1` version.
+- libheif updated from `1.17.6` to `1.18.1` version.  #249
 
 ## [0.17.0 - 2024-07-02]
 
