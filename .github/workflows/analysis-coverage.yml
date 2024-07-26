@@ -258,7 +258,7 @@ jobs:
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libdeflate.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjbig-0.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libtiffxx-6.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjph-0.14.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjph-0.*.dll $site_packages/
 
       - name: Install from source
         run: |
