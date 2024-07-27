@@ -14,6 +14,7 @@ from .misc import (
     MimCImage,
     _exif_from_pillow,
     _get_bytes,
+    _get_heif_meta,
     _get_orientation_for_encoder,
     _get_primary_index,
     _pil_to_supported_mode,
@@ -151,6 +152,7 @@ class HeifImage(BaseImage):
         _depth_images: List[Optional[HeifDepthImage]] = (
             [HeifDepthImage(i) for i in c_image.depth_image_list if i is not None] if options.DEPTH_IMAGES else []
         )
+        _heif_meta = _get_heif_meta(c_image)
         self.info = {
             "primary": bool(c_image.primary),
             "bit_depth": int(c_image.bit_depth),
@@ -161,6 +163,8 @@ class HeifImage(BaseImage):
         }
         if _xmp:
             self.info["xmp"] = _xmp
+        if _heif_meta:
+            self.info["heif"] = _heif_meta
         save_colorspace_chroma(c_image, self.info)
         _color_profile: Dict[str, Any] = c_image.color_profile
         if _color_profile:

@@ -14,12 +14,12 @@ test_src_build_full_freebsd_task:
 
   install_libheif_script:
     - pkg install -y gcc cmake aom x265
-    - pkg install -y py39-pip
-    - pkg install -y py39-pillow py39-numpy
-    - python3 libheif/linux_build_libs.py
+    - pkg install -y py311-pip
+    - pkg install -y py311-pillow py311-numpy
+    - python3.11 libheif/linux_build_libs.py
   install_pillow_heif_script:
-    - python3 -m pip -v install ".[tests-min]"
+    - python3.11 -m pip -v install --break-system-packages ".[tests-min]"
   libheif_info_script:
-    - python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+    - python3.11 -c "import pillow_heif; print(pillow_heif.libheif_info())"
   perform_tests_script:
-    - python3 -m pytest
+    - python3.11 -m pytest
