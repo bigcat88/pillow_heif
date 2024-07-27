@@ -84,14 +84,15 @@ if im.info["depth_images"]:
 
 ### Wheels
 
-| **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/>64bit | musllinux* | manylinux* |
-|--------------------|:---------------:|:-----------------:|:-----------------:|:----------:|:----------:|
-| CPython 3.8        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
-| CPython 3.9        |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
-| CPython 3.10       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
-| CPython 3.11       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
-| CPython 3.12       |        ✅        |         ✅         |         ✅         |     ✅      |     ✅      |
-| PyPy 3.9 v7.3      |        ✅        |         ✅         |         ✅         |    N/A     |     ✅      |
-| PyPy 3.10 v7.3     |        ✅        |         ✅         |         ✅         |    N/A     |     ✅      |
+| **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/> | musllinux* | manylinux* |
+|--------------------|:---------------:|:-----------------:|:------------:|:----------:|:----------:|
+| CPython 3.8        |        ✅        |        N/A        |      ✅       |     ✅      |     ✅      |
+| CPython 3.9        |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
+| CPython 3.10       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
+| CPython 3.11       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
+| CPython 3.12       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
+| CPython 3.13       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
+| PyPy 3.9 v7.3      |        ✅        |         ✅         |      ✅       |    N/A     |     ✅      |
+| PyPy 3.10 v7.3     |        ✅        |         ✅         |      ✅       |    N/A     |     ✅      |
 
 &ast; **x86_64**, **aarch64** wheels.
