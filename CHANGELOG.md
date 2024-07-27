@@ -4,11 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- `image.info["heif"]` dictionary with `camera_intrinsic_matrix` HEIF specific metadata. Currently only reading is supported. #234
+- `image.info["heif"]` dictionary with `camera_intrinsic_matrix` HEIF specific metadata. Currently only reading is supported. #271
 
 ### Changed
 
 - libheif updated from `1.17.6` to `1.18.1` version.  #249
+- Python `3.13.0b3` wheels added; macOS **arm64** Python3.8 wheels dropped. #272
 
 ## [0.17.0 - 2024-07-02]
 
