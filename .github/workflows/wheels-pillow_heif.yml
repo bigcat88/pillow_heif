@@ -91,7 +91,7 @@ jobs:
 
   wheels_macos:
     name: macosx • x86_64
-    runs-on: macos-12
+    runs-on: macos-14
 
     steps:
       - uses: actions/checkout@v4
@@ -260,7 +260,7 @@ jobs:
 
   sdist:
     name: Source distribution
-    runs-on: macos-12
+    runs-on: macos-14
 
     steps:
       - uses: actions/checkout@v4
