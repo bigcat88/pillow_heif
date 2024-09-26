@@ -134,7 +134,7 @@ jobs:
 
   manylinux-wheels:
     name: Ubuntu-Focal • ${{ matrix.python-version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -202,7 +202,7 @@ jobs:
 
   linux-projects-together:
     name: Linux • Together • ${{ matrix.python-version }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: ["pypy-3.10", "3.10"]

@@ -7,7 +7,7 @@ on:
 jobs:
   wheels_macos_arm:
     name: macosx • aarch64
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Waiting for Cirrus CI
@@ -132,7 +132,7 @@ jobs:
         cibw_buildlinux: [ manylinux, musllinux ]
         cibw_arch: [ "aarch64", "x86_64" ]
     name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • CPython
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
       KEY_HEAD: Pi-Heif-${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
@@ -199,7 +199,7 @@ jobs:
         cibw_buildlinux: [ manylinux ]
         cibw_arch: [ "aarch64", "x86_64" ]
     name: ${{ matrix.cibw_buildlinux }} • ${{ matrix.cibw_arch }} • PyPy
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
       KEY_HEAD: Pi-Heif-${{ matrix.cibw_arch }}-${{ matrix.cibw_buildlinux }}
