@@ -570,7 +570,7 @@ def _encode_images(images: List[HeifImage], fp, **kwargs) -> None:
         images_to_save = images_to_save[:1]
     if not images_to_save:
         raise ValueError("Cannot write file with no images as HEIF.")
-    primary_index = _get_primary_index(images_to_save, kwargs.get("primary_index", None))
+    primary_index = _get_primary_index(images_to_save, kwargs.get("primary_index"))
     ctx_write = CtxEncode(compression_format, **kwargs)
     for i, img in enumerate(images_to_save):
         img.load()
