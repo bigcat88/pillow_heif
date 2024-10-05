@@ -376,7 +376,7 @@ class CtxEncode:
         if "subsampling" in kwargs:
             chroma = SUBSAMPLING_CHROMA_MAP.get(kwargs["subsampling"], None)
         if chroma is None:
-            chroma = kwargs.get("chroma", None)
+            chroma = kwargs.get("chroma")
         if chroma:
             enc_params["chroma"] = chroma
         for key, value in enc_params.items():
@@ -414,11 +414,11 @@ class CtxEncode:
 
     def _finish_add_image(self, im_out, size: tuple, **kwargs):
         # set ICC color profile
-        __icc_profile = kwargs.get("icc_profile", None)
+        __icc_profile = kwargs.get("icc_profile")
         if __icc_profile is not None:
             im_out.set_icc_profile(kwargs.get("icc_profile_type", "prof"), __icc_profile)
         # set NCLX color profile
-        if kwargs.get("nclx_profile", None):
+        if kwargs.get("nclx_profile"):
             im_out.set_nclx_profile(
                 *[
                     kwargs["nclx_profile"][i]
@@ -438,12 +438,12 @@ class CtxEncode:
             image_orientation,
         )
         # adding metadata
-        exif = kwargs.get("exif", None)
+        exif = kwargs.get("exif")
         if exif is not None:
             if isinstance(exif, Image.Exif):
                 exif = exif.tobytes()
             im_out.set_exif(self.ctx_write, exif)
-        xmp = kwargs.get("xmp", None)
+        xmp = kwargs.get("xmp")
         if xmp is not None:
             im_out.set_xmp(self.ctx_write, xmp)
         for metadata in kwargs.get("metadata", []):

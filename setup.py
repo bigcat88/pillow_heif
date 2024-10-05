@@ -275,7 +275,7 @@ try:
             zip_safe=not PLATFORM_MINGW,
         )
 except RequiredDependencyException as err:
-    msg = f"""
+    MSG = f"""
 
 The headers or library files could not be found for {err},
 a required dependency when compiling Pillow-Heif from source.
@@ -284,5 +284,5 @@ Please see the install instructions at:
    https://pillow-heif.readthedocs.io/en/latest/installation.html
 
 """
-    sys.stderr.write(msg)
-    raise RequiredDependencyException(msg) from None
+    sys.stderr.write(MSG)
+    raise RequiredDependencyException(MSG) from None
