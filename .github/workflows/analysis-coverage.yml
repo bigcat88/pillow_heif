@@ -288,7 +288,7 @@ jobs:
 
   coverage-pi-heif:
     runs-on: ubuntu-22.04
-    name: Pi-Heif Coverage(Linux) • 🐍3.8
+    name: Pi-Heif Coverage(Linux) • 🐍3.13
 
     steps:
       - uses: actions/checkout@v4
@@ -297,7 +297,8 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: '3.13'
+          allow-prereleases: true
 
       - name: Prepare system
         run: |
@@ -333,7 +334,7 @@ jobs:
 
   test-pi-heif:
     runs-on: ubuntu-22.04
-    name: Pi-Heif Test(Linux) • 🐍3.8
+    name: Pi-Heif Test(Linux) • 🐍3.13
 
     steps:
       - uses: actions/checkout@v4
@@ -344,7 +345,8 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: '3.13'
+          allow-prereleases: true
 
       - name: Prepare system
         run: |

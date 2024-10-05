@@ -1,8 +1,10 @@
 """Functions and classes for heif images to read and write."""
 
+from __future__ import annotations
+
 from copy import copy, deepcopy
 from io import SEEK_SET
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from PIL import Image
 
@@ -38,7 +40,7 @@ except ImportError as ex:
 class BaseImage:
     """Base class for :py:class:`HeifImage` and :py:class:`HeifDepthImage`."""
 
-    size: tuple
+    size: tuple[int, int]
     """Width and height of the image."""
 
     mode: str
@@ -82,7 +84,7 @@ class BaseImage:
         else:
             width = int(width / 2)
             typestr = "<u2"
-        shape: Tuple[Any, ...] = (self.size[1], width)
+        shape: tuple[Any, ...] = (self.size[1], width)
         if MODE_INFO[self.mode][0] > 1:
             shape += (MODE_INFO[self.mode][0],)
         return {"shape": shape, "typestr": typestr, "version": 3, "data": self.data}
@@ -143,13 +145,11 @@ class HeifImage(BaseImage):
 
     def __init__(self, c_image):
         super().__init__(c_image)
-        _metadata: List[dict] = c_image.metadata
+        _metadata: list[dict] = c_image.metadata
         _exif = _retrieve_exif(_metadata)
         _xmp = _retrieve_xmp(_metadata)
-        _thumbnails: List[Optional[int]] = (
-            [i for i in c_image.thumbnails if i is not None] if options.THUMBNAILS else []
-        )
-        _depth_images: List[Optional[HeifDepthImage]] = (
+        _thumbnails: list[int | None] = [i for i in c_image.thumbnails if i is not None] if options.THUMBNAILS else []
+        _depth_images: list[HeifDepthImage | None] = (
             [HeifDepthImage(i) for i in c_image.depth_image_list if i is not None] if options.DEPTH_IMAGES else []
         )
         _heif_meta = _get_heif_meta(c_image)
@@ -166,7 +166,7 @@ class HeifImage(BaseImage):
         if _heif_meta:
             self.info["heif"] = _heif_meta
         save_colorspace_chroma(c_image, self.info)
-        _color_profile: Dict[str, Any] = c_image.color_profile
+        _color_profile: dict[str, Any] = c_image.color_profile
         if _color_profile:
             if _color_profile["type"] in ("rICC", "prof"):
                 self.info["icc_profile"] = _color_profile["data"]
@@ -248,7 +248,7 @@ class HeifFile:
                 preferred_decoder,
             )
         self.mimetype = mimetype
-        self._images: List[HeifImage] = [HeifImage(i) for i in images if i is not None]
+        self._images: list[HeifImage] = [HeifImage(i) for i in images if i is not None]
         self.primary_index = 0
         for index, _ in enumerate(self._images):
             if _.info.get("primary", False):
@@ -385,7 +385,7 @@ class HeifFile:
             raise IndexError(f"invalid image index: {key}")
         del self._images[key]
 
-    def add_frombytes(self, mode: str, size: tuple, data, **kwargs):
+    def add_frombytes(self, mode: str, size: tuple[int, int], data, **kwargs):
         """Adds image from bytes to container.
 
         .. note:: Supports ``stride`` value if needed.
@@ -549,7 +549,7 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     return ret
 
 
-def encode(mode: str, size: tuple, data, fp, **kwargs) -> None:
+def encode(mode: str, size: tuple[int, int], data, fp, **kwargs) -> None:
     """Encodes data in a ``fp``.
 
     :param mode: `BGR(A);16`, `RGB(A);16`, LA;16`, `L;16`, `I;16L`, `BGR(A)`, `RGB(A)`, `LA`, `L`
@@ -560,12 +560,12 @@ def encode(mode: str, size: tuple, data, fp, **kwargs) -> None:
     _encode_images([HeifImage(MimCImage(mode, size, data, **kwargs))], fp, **kwargs)
 
 
-def _encode_images(images: List[HeifImage], fp, **kwargs) -> None:
+def _encode_images(images: list[HeifImage], fp, **kwargs) -> None:
     compression = kwargs.get("format", "HEIF")
     compression_format = HeifCompressionFormat.AV1 if compression == "AVIF" else HeifCompressionFormat.HEVC
     if not _pillow_heif.get_lib_info()[compression]:
         raise RuntimeError(f"No {compression} encoder found.")
-    images_to_save: List[HeifImage] = images + kwargs.get("append_images", [])
+    images_to_save: list[HeifImage] = images + kwargs.get("append_images", [])
     if not kwargs.get("save_all", True):
         images_to_save = images_to_save[:1]
     if not images_to_save:
@@ -603,7 +603,7 @@ def from_pillow(pil_image: Image.Image) -> HeifFile:
     return _
 
 
-def from_bytes(mode: str, size: tuple, data, **kwargs) -> HeifFile:
+def from_bytes(mode: str, size: tuple[int, int], data, **kwargs) -> HeifFile:
     """Creates :py:class:`~pillow_heif.HeifFile` from bytes.
 
     .. note:: Supports ``stride`` value if needed.

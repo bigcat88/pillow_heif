@@ -7,10 +7,10 @@ requires = [
 [tool.cibuildwheel]
 build-verbosity = "2"
 build = [
-  "cp38-* cp39-* cp310-* cp311-* cp312-* cp313-* pp39-* pp310-*",
+  "cp39-* cp310-* cp311-* cp312-* cp313-* pp39-* pp310-*",
 ]
 skip = [
-  "cp36-* cp37-* pp37-* pp38-* cp38-macosx_arm64",
+  "cp36-* cp37-* cp38-* pp37-* pp38-*",
 ]
 test-extras = "tests-min"
 test-command = "pytest {project}"
@@ -40,11 +40,11 @@ before-build = [
 
 [tool.black]
 line-length = 120
-target-version = [ "py38" ]
+target-version = [ "py39" ]
 preview = true
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 line-length = 120
 preview = true
 lint.select = [

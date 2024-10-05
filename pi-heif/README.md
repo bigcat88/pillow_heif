@@ -3,7 +3,7 @@
 [![Analysis & Coverage](https://github.com/bigcat88/pillow_heif/actions/workflows/analysis-coverage.yml/badge.svg)](https://github.com/bigcat88/pillow_heif/actions/workflows/analysis-coverage.yml)
 [![Wheels test(Pi-Heif)](https://github.com/bigcat88/pillow_heif/actions/workflows/test-wheels-pi_heif.yml/badge.svg)](https://github.com/bigcat88/pillow_heif/actions/workflows/test-wheels-pi_heif.yml)
 
-![PythonVersion](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)
+![PythonVersion](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)
 ![impl](https://img.shields.io/pypi/implementation/pi_heif)
 ![pypi](https://img.shields.io/pypi/v/pi_heif.svg)
 [![Downloads](https://static.pepy.tech/personalized-badge/pi-heif?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pi-heif)
@@ -86,7 +86,6 @@ if im.info["depth_images"]:
 
 | **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/> | musllinux* | manylinux* |
 |--------------------|:---------------:|:-----------------:|:------------:|:----------:|:----------:|
-| CPython 3.8        |        ✅        |        N/A        |      ✅       |     ✅      |     ✅      |
 | CPython 3.9        |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | CPython 3.10       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | CPython 3.11       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
