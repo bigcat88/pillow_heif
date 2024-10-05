@@ -6,7 +6,7 @@
 [![docs](https://readthedocs.org/projects/pillow-heif/badge/?version=latest)](https://pillow-heif.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/bigcat88/pillow_heif/branch/master/graph/badge.svg?token=JY64F2OL6V)](https://codecov.io/gh/bigcat88/pillow_heif)
 
-![PythonVersion](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
+![PythonVersion](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
 ![impl](https://img.shields.io/pypi/implementation/pillow_heif)
 ![pypi](https://img.shields.io/pypi/v/pillow_heif.svg)
 [![Downloads](https://static.pepy.tech/personalized-badge/pillow-heif?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pillow-heif)
@@ -145,7 +145,6 @@ if im.info["depth_images"]:
 
 | **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/> | musllinux* | manylinux* |
 |--------------------|:---------------:|:-----------------:|:------------:|:----------:|:----------:|
-| CPython 3.8        |        ✅        |        N/A        |      ✅       |     ✅      |     ✅      |
 | CPython 3.9        |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | CPython 3.10       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | CPython 3.11       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |

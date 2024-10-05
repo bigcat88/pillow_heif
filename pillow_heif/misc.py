@@ -3,6 +3,8 @@
 Mostly for internal use, so prototypes can change between versions.
 """
 
+from __future__ import annotations
+
 import builtins
 import re
 from dataclasses import dataclass
@@ -10,7 +12,6 @@ from enum import IntEnum
 from math import ceil
 from pathlib import Path
 from struct import pack, unpack
-from typing import List, Optional, Union
 
 from PIL import Image
 
@@ -93,7 +94,7 @@ def save_colorspace_chroma(c_image, info: dict) -> None:
         info["chroma"] = chroma
 
 
-def set_orientation(info: dict) -> Optional[int]:
+def set_orientation(info: dict) -> int | None:
     """Reset orientation in ``EXIF`` to ``1`` if any orientation present.
 
     Removes ``XMP`` orientation tag if it is present.
@@ -116,7 +117,7 @@ def _get_orientation_for_encoder(info: dict) -> int:
     return 1 if image_orientation is None else image_orientation
 
 
-def _get_orientation_xmp(info: dict, exif_orientation: Optional[int], reset: bool = False) -> Optional[int]:
+def _get_orientation_xmp(info: dict, exif_orientation: int | None, reset: bool = False) -> int | None:
     xmp_orientation = 1
     if info.get("xmp"):
         xmp_data = info["xmp"].rsplit(b"\x00", 1)
@@ -141,7 +142,7 @@ def _get_orientation_xmp(info: dict, exif_orientation: Optional[int], reset: boo
     return xmp_orientation if exif_orientation is None and xmp_orientation != 1 else None
 
 
-def _get_orientation(info: dict, reset: bool = False) -> Optional[int]:
+def _get_orientation(info: dict, reset: bool = False) -> int | None:
     original_orientation = None
     if info.get("exif"):
         try:
@@ -215,7 +216,7 @@ def _get_bytes(fp, length=None) -> bytes:
     return bytes(fp)[:length]
 
 
-def _retrieve_exif(metadata: List[dict]) -> Optional[bytes]:
+def _retrieve_exif(metadata: list[dict]) -> bytes | None:
     _result = None
     _purge = []
     for i, md_block in enumerate(metadata):
@@ -235,7 +236,7 @@ def _retrieve_exif(metadata: List[dict]) -> Optional[bytes]:
     return _result
 
 
-def _retrieve_xmp(metadata: List[dict]) -> Optional[bytes]:
+def _retrieve_xmp(metadata: list[dict]) -> bytes | None:
     _result = None
     _purge = []
     for i, md_block in enumerate(metadata):
@@ -248,7 +249,7 @@ def _retrieve_xmp(metadata: List[dict]) -> Optional[bytes]:
     return _result
 
 
-def _exif_from_pillow(img: Image.Image) -> Optional[bytes]:
+def _exif_from_pillow(img: Image.Image) -> bytes | None:
     if "exif" in img.info:
         return img.info["exif"]
     if hasattr(img, "getexif"):  # noqa
@@ -258,7 +259,7 @@ def _exif_from_pillow(img: Image.Image) -> Optional[bytes]:
     return None
 
 
-def _xmp_from_pillow(img: Image.Image) -> Optional[bytes]:
+def _xmp_from_pillow(img: Image.Image) -> bytes | None:
     _xmp = None
     if "xmp" in img.info:
         _xmp = img.info["xmp"]
@@ -324,7 +325,7 @@ def _rotate_pil(img: Image.Image, orientation: int) -> Image.Image:
     return img
 
 
-def _get_primary_index(some_iterator, primary_index: Optional[int]) -> int:
+def _get_primary_index(some_iterator, primary_index: int | None) -> int:
     primary_attrs = [_.info.get("primary", False) for _ in some_iterator]
     if primary_index is None:
         primary_index = 0
@@ -336,7 +337,7 @@ def _get_primary_index(some_iterator, primary_index: Optional[int]) -> int:
     return primary_index
 
 
-def __get_camera_intrinsic_matrix(values: Optional[tuple]):
+def __get_camera_intrinsic_matrix(values: tuple | None):
     return (
         {
             "focal_length_x": values[0],
@@ -383,7 +384,7 @@ class CtxEncode:
             _value = value if isinstance(value, str) else str(value)
             self.ctx_write.set_parameter(key, _value)
 
-    def add_image(self, size: tuple, mode: str, data, **kwargs) -> None:
+    def add_image(self, size: tuple[int, int], mode: str, data, **kwargs) -> None:
         """Adds image to the encoder."""
         if size[0] <= 0 or size[1] <= 0:
             raise ValueError("Empty images are not supported.")
@@ -412,7 +413,7 @@ class CtxEncode:
             im_out.add_plane_l(img.size, 8, 8, bytes(img.getdata(i)), kwargs.get("stride", 0), i)
         self._finish_add_image(im_out, img.size, **kwargs)
 
-    def _finish_add_image(self, im_out, size: tuple, **kwargs):
+    def _finish_add_image(self, im_out, size: tuple[int, int], **kwargs):
         # set ICC color profile
         __icc_profile = kwargs.get("icc_profile")
         if __icc_profile is not None:
@@ -468,15 +469,15 @@ class CtxEncode:
 class MimCImage:
     """Mimicry of the HeifImage class."""
 
-    def __init__(self, mode: str, size: tuple, data: bytes, **kwargs):
+    def __init__(self, mode: str, size: tuple[int, int], data: bytes, **kwargs):
         self.mode = mode
         self.size = size
         self.stride: int = kwargs.get("stride", size[0] * MODE_INFO[mode][0] * ceil(MODE_INFO[mode][1] / 8))
         self.data = data
-        self.metadata: List[dict] = []
+        self.metadata: list[dict] = []
         self.color_profile = None
-        self.thumbnails: List[int] = []
-        self.depth_image_list: List = []
+        self.thumbnails: list[int] = []
+        self.depth_image_list: list = []
         self.primary = False
         self.chroma = HeifChroma.UNDEFINED.value
         self.colorspace = HeifColorspace.UNDEFINED.value
@@ -494,6 +495,6 @@ class MimCImage:
         return MODE_INFO[self.mode][1]
 
 
-def load_libheif_plugin(plugin_path: Union[str, Path]) -> None:
+def load_libheif_plugin(plugin_path: str | Path) -> None:
     """Load specified LibHeif plugin."""
     _pillow_heif.load_plugin(plugin_path)

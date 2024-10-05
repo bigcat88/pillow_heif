@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """Script to build wheel."""
+from __future__ import annotations
+
 import os
 import re
 import subprocess
@@ -7,7 +9,6 @@ import sys
 from pathlib import Path
 from re import finditer
 from shutil import copy
-from typing import List
 from warnings import warn
 
 from setuptools import Extension, setup
@@ -22,7 +23,7 @@ class RequiredDependencyException(Exception):
     """Raised when no ``libheif`` is found."""
 
 
-def get_version():
+def get_version() -> str:
     """Returns version of the project."""
     match = re.search(r'__version__\s*=\s*"(.*?)"', Path("pillow_heif/_version.py").read_text(encoding="utf-8"))
     return match.group(1)
@@ -35,7 +36,7 @@ def _cmd_exists(cmd: str) -> bool:
     return any(os.access(os.path.join(path, cmd), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
 
 
-def _pkg_config(name):
+def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
     command = os.environ.get("PKG_CONFIG", "pkg-config")
     for keep_system in (True, False):
         try:
@@ -67,7 +68,7 @@ def _pkg_config(name):
 class PillowHeifBuildExt(build_ext):
     """Class based on the Pillow setup method."""
 
-    def build_extensions(self):  # noqa
+    def build_extensions(self) -> None:  # noqa
         """Builds all required python binary extensions of the project."""
         if os.getenv("PRE_COMMIT"):
             return
@@ -216,7 +217,7 @@ class PillowHeifBuildExt(build_ext):
 
         build_ext.build_extensions(self)
 
-    def _update_extension(self, name, libraries, extra_compile_args=None, extra_link_args=None):
+    def _update_extension(self, name: str, libraries, extra_compile_args=None, extra_link_args=None) -> None:
         for extension in self.extensions:
             if extension.name == name:
                 extension.libraries += libraries
@@ -225,7 +226,7 @@ class PillowHeifBuildExt(build_ext):
                 if extra_link_args is not None:
                     extension.extra_link_args += extra_link_args
 
-    def _find_include_dir(self, dirname, include):
+    def _find_include_dir(self, dirname: str, include: str):
         for directory in self.compiler.include_dirs:
             print(f"Checking for include file '{include}' in '{directory}'")
             result_path = os.path.join(directory, include)
@@ -241,7 +242,7 @@ class PillowHeifBuildExt(build_ext):
         return ""
 
     @staticmethod
-    def _add_directory(paths: List, subdir):
+    def _add_directory(paths: list[str], subdir: str | None):
         if subdir:
             subdir = os.path.realpath(subdir)
             if os.path.isdir(subdir) and subdir not in paths:

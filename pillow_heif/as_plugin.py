@@ -1,7 +1,9 @@
 """Plugins for the Pillow library."""
 
+from __future__ import annotations
+
 from itertools import chain
-from typing import Union
+from typing import IO
 from warnings import warn
 
 from PIL import Image, ImageFile, ImageSequence
@@ -32,7 +34,7 @@ except ImportError as ex:
 class _LibHeifImageFile(ImageFile.ImageFile):
     """Base class with all functionality for ``HeifImageFile`` and ``AvifImageFile`` classes."""
 
-    _heif_file: Union[HeifFile, None] = None
+    _heif_file: HeifFile | None = None
     _close_exclusive_fp_after_loading = True
     _mode: str  # only for Pillow 10.1+
 
@@ -85,7 +87,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
                     return self._getxmp(xmp_data[0])  # pylint: disable=no-member
             return {}
 
-    def seek(self, frame):
+    def seek(self, frame: int):
         if not self._seek_check(frame):
             return
         self.__frame = frame
@@ -94,7 +96,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         if _exif is not None and getattr(_exif, "_loaded", None):
             _exif._loaded = False  # pylint: disable=protected-access
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__frame
 
     def verify(self) -> None:
@@ -113,7 +115,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         """Returns ``True`` if this image contains more than one frame, or ``False`` otherwise."""
         return self.n_frames > 1
 
-    def _seek_check(self, frame):
+    def _seek_check(self, frame: int):
         if frame < 0 or frame >= self.n_frames:
             raise EOFError("attempt to seek outside sequence")
         return self.tell() != frame
@@ -140,11 +142,11 @@ def _is_supported_heif(fp) -> bool:
     return magic[8:12] in (b"heic", b"heix", b"heim", b"heis", b"hevc", b"hevx", b"hevm", b"hevs", b"mif1", b"msf1")
 
 
-def _save_heif(im, fp, _filename):
+def _save_heif(im: Image.Image, fp: IO[bytes], _filename: str | bytes):
     __save_one(im, fp, HeifCompressionFormat.HEVC)
 
 
-def _save_all_heif(im, fp, _filename):
+def _save_all_heif(im: Image.Image, fp: IO[bytes], _filename: str | bytes):
     __save_all(im, fp, HeifCompressionFormat.HEVC)
 
 
@@ -183,11 +185,11 @@ def _is_supported_avif(fp) -> bool:
     # return False
 
 
-def _save_avif(im, fp, _filename):
+def _save_avif(im: Image.Image, fp: IO[bytes], _filename: str | bytes):
     __save_one(im, fp, HeifCompressionFormat.AV1)
 
 
-def _save_all_avif(im, fp, _filename):
+def _save_all_avif(im: Image.Image, fp: IO[bytes], _filename: str | bytes):
     __save_all(im, fp, HeifCompressionFormat.AV1)
 
 
@@ -234,13 +236,13 @@ def __options_update(**kwargs):
             warn(f"Unknown option: {k}", stacklevel=1)
 
 
-def __save_one(im, fp, compression_format: HeifCompressionFormat):
+def __save_one(im: Image.Image, fp: IO[bytes], compression_format: HeifCompressionFormat):
     ctx_write = CtxEncode(compression_format, **im.encoderinfo)
     _pil_encode_image(ctx_write, im, True, **im.encoderinfo)
     ctx_write.save(fp)
 
 
-def __save_all(im, fp, compression_format: HeifCompressionFormat):
+def __save_all(im: Image.Image, fp: IO[bytes], compression_format: HeifCompressionFormat):
     ctx_write = CtxEncode(compression_format, **im.encoderinfo)
     current_frame = im.tell() if hasattr(im, "tell") else None
     append_images = im.encoderinfo.get("append_images", [])
