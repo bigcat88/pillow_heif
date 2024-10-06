@@ -93,7 +93,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         self.__frame = frame
         self._init_from_heif_file(frame)
 
-        if pil_version[:3] != "10." and getattr(self, "im", None) and self.im.mode != self._mode:
+        if pil_version[:3] != "10.":
             # Pillow 11.0+
             # We need to create a new core image object on second and
             # subsequent frames in the image. Image may be different size/mode.
