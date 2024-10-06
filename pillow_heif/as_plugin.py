@@ -92,6 +92,14 @@ class _LibHeifImageFile(ImageFile.ImageFile):
             return
         self.__frame = frame
         self._init_from_heif_file(frame)
+
+        if pil_version[:3] != "10.":
+            # Pillow 11.0+
+            # We need to create a new core image object on second and
+            # subsequent frames in the image. Image may be different size/mode.
+            # https://github.com/python-pillow/Pillow/issues/8439
+            self.im = Image.core.new(self._mode, self._size)  # pylint: disable=too-many-function-args
+
         _exif = getattr(self, "_exif", None)  # Pillow 9.2+ do no reload exif between frames.
         if _exif is not None and getattr(_exif, "_loaded", None):
             _exif._loaded = False  # pylint: disable=protected-access
