@@ -732,6 +732,54 @@ static struct PyMethodDef _CtxWrite_methods[] = {
     {NULL, NULL}
 };
 
+/* =========== CtxAuxImage ======== */
+
+PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_image_id,
+                            int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
+    struct heif_image_handle* aux_handle;
+    if (check_error(heif_image_handle_get_auxiliary_image_handle(main_handle, aux_image_id, &aux_handle))) {
+        Py_RETURN_NONE;
+    }
+    CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
+    if (!ctx_image) {
+        heif_image_handle_release(aux_handle);
+        Py_RETURN_NONE;
+    }
+    ctx_image->depth_metadata = NULL;
+    ctx_image->image_type = PhHeifImage;
+    ctx_image->width = heif_image_handle_get_width(aux_handle);
+    ctx_image->height = heif_image_handle_get_height(aux_handle);
+    ctx_image->alpha = 0;
+    ctx_image->n_channels = 1;
+    ctx_image->bits = heif_image_handle_get_luma_bits_per_pixel(aux_handle);
+    strcpy(ctx_image->mode, "L");
+    if (ctx_image->bits > 8) {
+        if (hdr_to_16bit) {
+            strcpy(ctx_image->mode, "I;16");
+        }
+        else if (ctx_image->bits == 10) {
+            strcpy(ctx_image->mode, "I;10");
+        }
+        else {
+            strcpy(ctx_image->mode, "I;12");
+        }
+    }
+    ctx_image->hdr_to_8bit = 0;
+    ctx_image->bgr_mode = 0;
+    ctx_image->colorspace = heif_colorspace_monochrome;
+    ctx_image->chroma = heif_chroma_monochrome;
+    ctx_image->handle = aux_handle;
+    ctx_image->heif_image = NULL;
+    ctx_image->data = NULL;
+    ctx_image->remove_stride = remove_stride;
+    ctx_image->hdr_to_16bit = hdr_to_16bit;
+    ctx_image->reload_size = 1;
+    ctx_image->file_bytes = file_bytes;
+    ctx_image->stride = get_stride(ctx_image);
+    Py_INCREF(file_bytes);
+    return (PyObject*)ctx_image;
+}
+
 /* =========== CtxDepthImage ======== */
 
 PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id depth_image_id,
@@ -1183,6 +1231,44 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
     return images_list;
 }
 
+static PyObject* _CtxImage_aux_image_list(CtxImageObject* self, void* closure) {
+    int aux_filter = LIBHEIF_AUX_IMAGE_FILTER_OMIT_ALPHA | LIBHEIF_AUX_IMAGE_FILTER_OMIT_DEPTH;
+    int n_images = heif_image_handle_get_number_of_auxiliary_images(self->handle, aux_filter);
+    if (n_images == 0)
+        return PyList_New(0);
+    heif_item_id* images_ids = (heif_item_id*)malloc(n_images * sizeof(heif_item_id));
+    if (!images_ids)
+        return PyList_New(0);
+
+    n_images = heif_image_handle_get_list_of_auxiliary_image_IDs(self->handle, aux_filter, images_ids, n_images);
+    PyObject* images_list = PyList_New(n_images);
+    if (!images_list) {
+        free(images_ids);
+        return PyList_New(0);
+    }
+
+    for (int i = 0; i < n_images; i++) {
+        PyList_SET_ITEM(images_list,
+                        i,
+                        _CtxAuxImage(
+                            self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->file_bytes
+                        ));
+    }
+    free(images_ids);
+    return images_list;
+}
+
+static PyObject* _CtxImage_aux_image_type(CtxImageObject* self, void* closure) {
+    const char* aux_type_c = NULL;
+    struct heif_error error = heif_image_handle_get_auxiliary_type(self->handle, &aux_type_c);
+    if (check_error(error)) {
+        Py_RETURN_NONE;
+    }
+    PyObject *aux_image_type = PyUnicode_FromString(aux_type_c);
+    heif_image_handle_release_auxiliary_type(self->handle, &aux_type_c);
+    return aux_image_type;
+}
+
 /* =========== CtxImage Experimental Part ======== */
 
 static PyObject* _CtxImage_camera_intrinsic_matrix(CtxImageObject* self, void* closure) {
@@ -1245,6 +1331,8 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"stride", (getter)_CtxImage_stride, NULL, NULL, NULL},
     {"data", (getter)_CtxImage_data, NULL, NULL, NULL},
     {"depth_image_list", (getter)_CtxImage_depth_image_list, NULL, NULL, NULL},
+    {"aux_image_list", (getter)_CtxImage_aux_image_list, NULL, NULL, NULL},
+    {"aux_image_type", (getter)_CtxImage_aux_image_type, NULL, NULL, NULL},
     {"camera_intrinsic_matrix", (getter)_CtxImage_camera_intrinsic_matrix, NULL, NULL, NULL},
     {"camera_extrinsic_matrix_rot", (getter)_CtxImage_camera_extrinsic_matrix_rot, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}

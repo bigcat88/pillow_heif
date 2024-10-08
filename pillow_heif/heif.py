@@ -38,7 +38,7 @@ except ImportError as ex:
 
 
 class BaseImage:
-    """Base class for :py:class:`HeifImage` and :py:class:`HeifDepthImage`."""
+    """Base class for :py:class:`HeifImage`, :py:class:`HeifDepthImage` and :py:class:`HeifAuxImage`."""
 
     size: tuple[int, int]
     """Width and height of the image."""
@@ -140,6 +140,31 @@ class HeifDepthImage(BaseImage):
         return image
 
 
+class HeifAuxImage(BaseImage):
+    """Class representing the auxiliary image associated with the :py:class:`~pillow_heif.HeifImage` class."""
+
+    def __init__(self, c_image):
+        super().__init__(c_image)
+        _image_type = c_image.aux_image_type
+        self.info = {
+            "aux_image_type": _image_type,
+        }
+        save_colorspace_chroma(c_image, self.info)
+
+    def __repr__(self):
+        _bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
+        return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
+
+    def to_pillow(self) -> Image.Image:
+        """Helper method to create :external:py:class:`~PIL.Image.Image` class.
+
+        :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
+        """
+        image = super().to_pillow()
+        image.info = self.info.copy()
+        return image
+
+
 class HeifImage(BaseImage):
     """One image in a :py:class:`~pillow_heif.HeifFile` container."""
 
@@ -152,6 +177,9 @@ class HeifImage(BaseImage):
         _depth_images: list[HeifDepthImage | None] = (
             [HeifDepthImage(i) for i in c_image.depth_image_list if i is not None] if options.DEPTH_IMAGES else []
         )
+        _aux_images: list[HeifAuxImage | None] = (
+            [HeifAuxImage(i) for i in c_image.aux_image_list if i is not None]  # if options.AUX_IMAGES else []
+        )
         _heif_meta = _get_heif_meta(c_image)
         self.info = {
             "primary": bool(c_image.primary),
@@ -160,6 +188,7 @@ class HeifImage(BaseImage):
             "metadata": _metadata,
             "thumbnails": _thumbnails,
             "depth_images": _depth_images,
+            "aux_images": _aux_images,
         }
         if _xmp:
             self.info["xmp"] = _xmp
