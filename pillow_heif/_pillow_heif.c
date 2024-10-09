@@ -1231,7 +1231,7 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
     return images_list;
 }
 
-static PyObject* _CtxImage_aux_image_list(CtxImageObject* self, void* closure) {
+static PyObject* _CtxImage_aux_image_ids(CtxImageObject* self, void* closure) {
     int aux_filter = LIBHEIF_AUX_IMAGE_FILTER_OMIT_ALPHA | LIBHEIF_AUX_IMAGE_FILTER_OMIT_DEPTH;
     int n_images = heif_image_handle_get_number_of_auxiliary_images(self->handle, aux_filter);
     if (n_images == 0)
@@ -1250,23 +1250,48 @@ static PyObject* _CtxImage_aux_image_list(CtxImageObject* self, void* closure) {
     for (int i = 0; i < n_images; i++) {
         PyList_SET_ITEM(images_list,
                         i,
-                        _CtxAuxImage(
-                            self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->file_bytes
-                        ));
+                        PyLong_FromUnsignedLong(images_ids[i]));
     }
     free(images_ids);
     return images_list;
 }
 
-static PyObject* _CtxImage_aux_image_type(CtxImageObject* self, void* closure) {
+static PyObject* _CtxImage_aux_type(CtxImageObject* self, void* closure) {
     const char* aux_type_c = NULL;
     struct heif_error error = heif_image_handle_get_auxiliary_type(self->handle, &aux_type_c);
     if (check_error(error)) {
         Py_RETURN_NONE;
     }
-    PyObject *aux_image_type = PyUnicode_FromString(aux_type_c);
+    PyObject *aux_type = PyUnicode_FromString(aux_type_c);
     heif_image_handle_release_auxiliary_type(self->handle, &aux_type_c);
-    return aux_image_type;
+    return aux_type;
+}
+
+static PyObject* _CtxImage_get_aux_image(CtxImageObject* self, PyObject* arg_image_id) {
+    heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
+    return _CtxAuxImage(
+        self->handle, aux_image_id, self->remove_stride, self->hdr_to_16bit, self->file_bytes
+    );
+}
+
+// TODO change to get_aux_metadata which returns a dictionary with:
+//      aux_type, luma_bits, chroma_bits, preferred_colorspace (and more?)
+static PyObject* _CtxImage_get_aux_type(CtxImageObject* self, PyObject* arg_image_id) {
+    heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
+    struct heif_image_handle* aux_handle;
+    if (check_error(heif_image_handle_get_auxiliary_image_handle(self->handle, aux_image_id, &aux_handle))) {
+        Py_RETURN_NONE;
+    }
+    const char* aux_type_c = NULL;
+    struct heif_error error = heif_image_handle_get_auxiliary_type(aux_handle, &aux_type_c);
+    if (check_error(error)) {
+        heif_image_handle_release(aux_handle);
+        Py_RETURN_NONE;
+    }
+    PyObject *aux_type = PyUnicode_FromString(aux_type_c);
+    heif_image_handle_release_auxiliary_type(aux_handle, &aux_type_c);
+    heif_image_handle_release(aux_handle);
+    return aux_type;
 }
 
 /* =========== CtxImage Experimental Part ======== */
@@ -1331,11 +1356,17 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"stride", (getter)_CtxImage_stride, NULL, NULL, NULL},
     {"data", (getter)_CtxImage_data, NULL, NULL, NULL},
     {"depth_image_list", (getter)_CtxImage_depth_image_list, NULL, NULL, NULL},
-    {"aux_image_list", (getter)_CtxImage_aux_image_list, NULL, NULL, NULL},
-    {"aux_image_type", (getter)_CtxImage_aux_image_type, NULL, NULL, NULL},
+    {"aux_image_ids", (getter)_CtxImage_aux_image_ids, NULL, NULL, NULL},
+    {"aux_type", (getter)_CtxImage_aux_type, NULL, NULL, NULL},
     {"camera_intrinsic_matrix", (getter)_CtxImage_camera_intrinsic_matrix, NULL, NULL, NULL},
     {"camera_extrinsic_matrix_rot", (getter)_CtxImage_camera_extrinsic_matrix_rot, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}
+};
+
+static struct PyMethodDef _CtxImage_methods[] = {
+    {"get_aux_image", (PyCFunction)_CtxImage_get_aux_image, METH_O},
+    {"get_aux_type", (PyCFunction)_CtxImage_get_aux_type, METH_O},
+    {NULL, NULL}
 };
 
 /* =========== Functions ======== */
@@ -1574,6 +1605,7 @@ static PyTypeObject CtxImage_Type = {
     .tp_dealloc = (destructor)_CtxImage_destructor,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_getset = _CtxImage_getseters,
+    .tp_methods = _CtxImage_methods,
 };
 
 static int setup_module(PyObject* m) {

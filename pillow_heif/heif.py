@@ -143,9 +143,8 @@ class HeifAuxImage(BaseImage):
 
     def __init__(self, c_image):
         super().__init__(c_image)
-        _image_type = c_image.aux_image_type
         self.info = {
-            "aux_image_type": _image_type,
+            "aux_type": c_image.aux_type,
         }
         save_colorspace_chroma(c_image, self.info)
 
@@ -173,8 +172,9 @@ class HeifImage(BaseImage):
         _depth_images: list[HeifDepthImage | None] = (
             [HeifDepthImage(i) for i in c_image.depth_image_list if i is not None] if options.DEPTH_IMAGES else []
         )
+        _ctx_aux_images = [c_image.get_aux_image(aux_id) for aux_id in c_image.aux_image_ids]
         _aux_images: list[HeifAuxImage | None] = (
-            [HeifAuxImage(i) for i in c_image.aux_image_list if i is not None]  # if options.AUX_IMAGES else []
+            [HeifAuxImage(img) for img in _ctx_aux_images if img is not None]  # if options.AUX_IMAGES else []
         )
         _heif_meta = _get_heif_meta(c_image)
         self.info = {
@@ -184,7 +184,7 @@ class HeifImage(BaseImage):
             "metadata": _metadata,
             "thumbnails": _thumbnails,
             "depth_images": _depth_images,
-            "aux_images": _aux_images,
+            "aux": _aux_images,
         }
         if _xmp:
             self.info["xmp"] = _xmp
