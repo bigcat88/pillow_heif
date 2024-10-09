@@ -127,7 +127,6 @@ class HeifDepthImage(BaseImage):
         save_colorspace_chroma(c_image, self.info)
 
     def __repr__(self):
-        _bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
 
     def to_pillow(self) -> Image.Image:
@@ -136,7 +135,6 @@ class HeifDepthImage(BaseImage):
         :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
         """
         image = super().to_pillow()
-        image.info = self.info.copy()
         return image
 
 
@@ -152,7 +150,6 @@ class HeifAuxImage(BaseImage):
         save_colorspace_chroma(c_image, self.info)
 
     def __repr__(self):
-        _bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
 
     def to_pillow(self) -> Image.Image:
@@ -161,7 +158,6 @@ class HeifAuxImage(BaseImage):
         :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
         """
         image = super().to_pillow()
-        image.info = self.info.copy()
         return image
 
 
