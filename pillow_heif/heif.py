@@ -38,7 +38,7 @@ except ImportError as ex:
 
 
 class BaseImage:
-    """Base class for :py:class:`HeifImage` and :py:class:`HeifDepthImage`."""
+    """Base class for :py:class:`HeifImage`, :py:class:`HeifDepthImage` and :py:class:`HeifAuxImage`."""
 
     size: tuple[int, int]
     """Width and height of the image."""
@@ -127,17 +127,19 @@ class HeifDepthImage(BaseImage):
         save_colorspace_chroma(c_image, self.info)
 
     def __repr__(self):
-        _bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
 
-    def to_pillow(self) -> Image.Image:
-        """Helper method to create :external:py:class:`~PIL.Image.Image` class.
 
-        :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
-        """
-        image = super().to_pillow()
-        image.info = self.info.copy()
-        return image
+class HeifAuxImage(BaseImage):
+    """Class representing the auxiliary image associated with the :py:class:`~pillow_heif.HeifImage` class."""
+
+    def __init__(self, c_image, info):
+        super().__init__(c_image)
+        self.info = info
+        save_colorspace_chroma(c_image, self.info)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
 
 
 class HeifImage(BaseImage):
@@ -152,7 +154,7 @@ class HeifImage(BaseImage):
         _depth_images: list[HeifDepthImage | None] = (
             [HeifDepthImage(i) for i in c_image.depth_image_list if i is not None] if options.DEPTH_IMAGES else []
         )
-        _heif_meta = _get_heif_meta(c_image)
+        _ctx_aux_meta = {aux_id: c_image.get_aux_metadata(aux_id) for aux_id in c_image.aux_image_ids}
         self.info = {
             "primary": bool(c_image.primary),
             "bit_depth": int(c_image.bit_depth),
@@ -160,7 +162,9 @@ class HeifImage(BaseImage):
             "metadata": _metadata,
             "thumbnails": _thumbnails,
             "depth_images": _depth_images,
+            "aux": _ctx_aux_meta,
         }
+        _heif_meta = _get_heif_meta(c_image)
         if _xmp:
             self.info["xmp"] = _xmp
         if _heif_meta:
@@ -205,6 +209,28 @@ class HeifImage(BaseImage):
         image.info = self.info.copy()
         image.info["original_orientation"] = set_orientation(image.info)
         return image
+
+    def get_aux_image(self, aux_id: int) -> HeifAuxImage:
+        """Method to retrieve the auxiliary image at the given ID.
+
+        :returns: a :py:class:`~pillow_heif.HeifAuxImage` class instance.
+        """
+        aux_info = self._c_image.get_aux_metadata(aux_id)
+        if aux_info["colorspace"] is None:
+            raise RuntimeError("Error while getting auxiliary information.")
+        colorspace, bit_depth = aux_info["colorspace"], aux_info["bit_depth"]
+        if colorspace != "monochrome":
+            raise NotImplementedError(
+                f"{colorspace} color space is not supported for auxiliary images at the moment. "
+                "Please consider filing an issue with an example HEIF file."
+            )
+        if bit_depth != 8:
+            raise NotImplementedError(
+                f"{bit_depth}-bit auxiliary images are not supported at the moment. "
+                "Please consider filing an issue with an example HEIF file."
+            )
+        aux_image = self._c_image.get_aux_image(aux_id)
+        return HeifAuxImage(aux_image, aux_info)
 
 
 class HeifFile:
@@ -480,6 +506,13 @@ class HeifFile:
         _im_copy.mimetype = self.mimetype
         _im_copy.primary_index = self.primary_index
         return _im_copy
+
+    def get_aux_image(self, aux_id):
+        """`get_aux_image`` method of the primary :class:`~pillow_heif.HeifImage` in the container.
+
+        :exception IndexError: If there are no images.
+        """
+        return self._images[self.primary_index].get_aux_image(aux_id)
 
     __copy__ = __copy
 
