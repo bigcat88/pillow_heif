@@ -738,12 +738,13 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
                        int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
     struct heif_image_handle* aux_handle;
     if (check_error(heif_image_handle_get_auxiliary_image_handle(main_handle, aux_image_id, &aux_handle))) {
-        Py_RETURN_NONE;
+        return NULL;
     }
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(aux_handle);
-        Py_RETURN_NONE;
+        PyErr_SetString(PyExc_RuntimeError, "Could not create CtxImage object");
+        return NULL;
     }
     ctx_image->depth_metadata = NULL;
     ctx_image->image_type = PhHeifImage;
@@ -1228,13 +1229,13 @@ static PyObject* _CtxImage_aux_image_ids(CtxImageObject* self, void* closure) {
         return PyList_New(0);
     heif_item_id* images_ids = (heif_item_id*)malloc(n_images * sizeof(heif_item_id));
     if (!images_ids)
-        return PyList_New(0);
+        return PyErr_NoMemory();
 
     n_images = heif_image_handle_get_list_of_auxiliary_image_IDs(self->handle, aux_filter, images_ids, n_images);
     PyObject* images_list = PyList_New(n_images);
     if (!images_list) {
         free(images_ids);
-        return PyList_New(0);
+        return PyErr_NoMemory();
     }
 
     for (int i = 0; i < n_images; i++) {
@@ -1299,7 +1300,7 @@ static PyObject* _CtxImage_get_aux_metadata(CtxImageObject* self, PyObject* arg_
     heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
     struct heif_image_handle* aux_handle;
     if (check_error(heif_image_handle_get_auxiliary_image_handle(self->handle, aux_image_id, &aux_handle))) {
-        Py_RETURN_NONE;
+        return NULL;
     }
     PyObject* metadata = PyDict_New();
     PyObject* aux_type = _get_aux_type(aux_handle);

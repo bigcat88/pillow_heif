@@ -216,7 +216,7 @@ class HeifImage(BaseImage):
         :returns: a :py:class:`~pillow_heif.HeifAuxImage` class instance.
         """
         aux_info = self._c_image.get_aux_metadata(aux_id)
-        if aux_info is None or aux_info["colorspace"] is None:
+        if aux_info["colorspace"] is None:
             raise RuntimeError("Error while getting auxiliary information.")
         colorspace, bit_depth = aux_info["colorspace"], aux_info["bit_depth"]
         if colorspace != "monochrome":
@@ -230,8 +230,6 @@ class HeifImage(BaseImage):
                 "Please consider filing an issue with an example HEIF file."
             )
         aux_image = self._c_image.get_aux_image(aux_id)
-        if aux_image is None:
-            raise RuntimeError("Error while decoding the auxiliary image.")
         return HeifAuxImage(aux_image, aux_info)
 
 
