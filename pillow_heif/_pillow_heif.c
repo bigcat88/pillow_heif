@@ -735,7 +735,7 @@ static struct PyMethodDef _CtxWrite_methods[] = {
 /* =========== CtxAuxImage ======== */
 
 PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_image_id,
-                            int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
+                       int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
     struct heif_image_handle* aux_handle;
     if (check_error(heif_image_handle_get_auxiliary_image_handle(main_handle, aux_image_id, &aux_handle))) {
         Py_RETURN_NONE;
@@ -750,20 +750,10 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
     ctx_image->width = heif_image_handle_get_width(aux_handle);
     ctx_image->height = heif_image_handle_get_height(aux_handle);
     ctx_image->alpha = 0;
+    // note: in HeifImage.get_aux_image(..), we only allow 8-bit monochrome images
     ctx_image->n_channels = 1;
-    ctx_image->bits = heif_image_handle_get_luma_bits_per_pixel(aux_handle);
+    ctx_image->bits = 8;
     strcpy(ctx_image->mode, "L");
-    if (ctx_image->bits > 8) {
-        if (hdr_to_16bit) {
-            strcpy(ctx_image->mode, "I;16");
-        }
-        else if (ctx_image->bits == 10) {
-            strcpy(ctx_image->mode, "I;10");
-        }
-        else {
-            strcpy(ctx_image->mode, "I;12");
-        }
-    }
     ctx_image->hdr_to_8bit = 0;
     ctx_image->bgr_mode = 0;
     ctx_image->colorspace = heif_colorspace_monochrome;
@@ -1266,7 +1256,8 @@ static PyObject* _CtxImage_get_aux_image(CtxImageObject* self, PyObject* arg_ima
 static PyObject* _get_aux_type(const struct heif_image_handle* aux_handle) {
     const char* aux_type_c = NULL;
     struct heif_error error = heif_image_handle_get_auxiliary_type(aux_handle, &aux_type_c);
-    if (check_error(error)) {
+    if (error.code != heif_error_Ok) {
+        // note: we are silently ignoring the error
         Py_RETURN_NONE;
     }
     PyObject *aux_type = PyUnicode_FromString(aux_type_c);
@@ -1280,6 +1271,7 @@ static PyObject* _get_aux_colorspace(const struct heif_image_handle* aux_handle)
     struct heif_error error;
     error = heif_image_handle_get_preferred_decoding_colorspace(aux_handle, &colorspace, &chroma);
     if (error.code != heif_error_Ok) {
+        // note: we are silently ignoring the error
         Py_RETURN_NONE;
     }
     const char* colorspace_str;
@@ -1297,6 +1289,7 @@ static PyObject* _get_aux_colorspace(const struct heif_image_handle* aux_handle)
             colorspace_str = "YCbCr";
             break;
         default:
+            // note: this means the upstream API has changed
             colorspace_str = "unknown";
     }
     return PyUnicode_FromString(colorspace_str);

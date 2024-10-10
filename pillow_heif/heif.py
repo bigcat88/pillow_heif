@@ -226,13 +226,20 @@ class HeifImage(BaseImage):
         image.info["original_orientation"] = set_orientation(image.info)
         return image
 
-    def get_aux_image(self, aux_id: int) -> HeifAuxImage | None:
+    def get_aux_image(self, aux_id: int) -> HeifAuxImage:
         aux_info = self._c_image.get_aux_metadata(aux_id)
-        if aux_info is None:
-            return None
+        if aux_info is None or aux_info["colorspace"] is None:
+            raise RuntimeError("Error while getting auxiliary information.")
+        colorspace, bit_depth = aux_info["colorspace"], aux_info["bit_depth"]
+        if colorspace != "monochrome":
+            raise NotImplementedError(f"{colorspace} color space is not supported for auxiliary images at the moment. "
+                                      "Please file an issue with an example HEIF file.")
+        if bit_depth != 8:
+            raise NotImplementedError(f"{bit_depth}-bit auxiliary images are not supported at the moment. "
+                                      "Please file an issue with an example HEIF file.")
         aux_image = self._c_image.get_aux_image(aux_id)
         if aux_image is None:
-            return None
+            raise RuntimeError("Error while decoding the auxiliary image.")
         return HeifAuxImage(aux_image, aux_info)
 
 
