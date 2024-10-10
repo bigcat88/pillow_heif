@@ -1256,17 +1256,6 @@ static PyObject* _CtxImage_aux_image_ids(CtxImageObject* self, void* closure) {
     return images_list;
 }
 
-static PyObject* _CtxImage_aux_type(CtxImageObject* self, void* closure) {
-    const char* aux_type_c = NULL;
-    struct heif_error error = heif_image_handle_get_auxiliary_type(self->handle, &aux_type_c);
-    if (check_error(error)) {
-        Py_RETURN_NONE;
-    }
-    PyObject *aux_type = PyUnicode_FromString(aux_type_c);
-    heif_image_handle_release_auxiliary_type(self->handle, &aux_type_c);
-    return aux_type;
-}
-
 static PyObject* _CtxImage_get_aux_image(CtxImageObject* self, PyObject* arg_image_id) {
     heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
     return _CtxAuxImage(
@@ -1274,24 +1263,61 @@ static PyObject* _CtxImage_get_aux_image(CtxImageObject* self, PyObject* arg_ima
     );
 }
 
-// TODO change to get_aux_metadata which returns a dictionary with:
-//      aux_type, luma_bits, chroma_bits, preferred_colorspace (and more?)
-static PyObject* _CtxImage_get_aux_type(CtxImageObject* self, PyObject* arg_image_id) {
+static PyObject* _get_aux_type(const struct heif_image_handle* aux_handle) {
+    const char* aux_type_c = NULL;
+    struct heif_error error = heif_image_handle_get_auxiliary_type(aux_handle, &aux_type_c);
+    if (check_error(error)) {
+        Py_RETURN_NONE;
+    }
+    PyObject *aux_type = PyUnicode_FromString(aux_type_c);
+    heif_image_handle_release_auxiliary_type(aux_handle, &aux_type_c);
+    return aux_type;
+}
+
+static PyObject* _get_aux_colorspace(const struct heif_image_handle* aux_handle) {
+    enum heif_colorspace colorspace;
+    enum heif_chroma chroma;
+    struct heif_error error;
+    error = heif_image_handle_get_preferred_decoding_colorspace(aux_handle, &colorspace, &chroma);
+    if (error.code != heif_error_Ok) {
+        Py_RETURN_NONE;
+    }
+    const char* colorspace_str;
+    switch (colorspace) {
+        case heif_colorspace_undefined:
+            colorspace_str = "undefined";
+            break;
+        case heif_colorspace_monochrome:
+            colorspace_str = "monochrome";
+            break;
+        case heif_colorspace_RGB:
+            colorspace_str = "RGB";
+            break;
+        case heif_colorspace_YCbCr:
+            colorspace_str = "YCbCr";
+            break;
+        default:
+            colorspace_str = "unknown";
+    }
+    return PyUnicode_FromString(colorspace_str);
+}
+
+static PyObject* _CtxImage_get_aux_metadata(CtxImageObject* self, PyObject* arg_image_id) {
     heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
     struct heif_image_handle* aux_handle;
     if (check_error(heif_image_handle_get_auxiliary_image_handle(self->handle, aux_image_id, &aux_handle))) {
         Py_RETURN_NONE;
     }
-    const char* aux_type_c = NULL;
-    struct heif_error error = heif_image_handle_get_auxiliary_type(aux_handle, &aux_type_c);
-    if (check_error(error)) {
-        heif_image_handle_release(aux_handle);
-        Py_RETURN_NONE;
-    }
-    PyObject *aux_type = PyUnicode_FromString(aux_type_c);
-    heif_image_handle_release_auxiliary_type(aux_handle, &aux_type_c);
+    PyObject* metadata = PyDict_New();
+    PyObject* aux_type = _get_aux_type(aux_handle);
+    __PyDict_SetItemString(metadata, "type", aux_type);
+    PyObject* luma_bits = PyLong_FromLong(heif_image_handle_get_luma_bits_per_pixel(aux_handle));
+    __PyDict_SetItemString(metadata, "bit_depth", luma_bits);
+    PyObject* colorspace = _get_aux_colorspace(aux_handle);
+    __PyDict_SetItemString(metadata, "colorspace", colorspace);
+    // anything more to add? heif_image_handle_get_chroma_bits_per_pixel?
     heif_image_handle_release(aux_handle);
-    return aux_type;
+    return metadata;
 }
 
 /* =========== CtxImage Experimental Part ======== */
@@ -1357,7 +1383,6 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"data", (getter)_CtxImage_data, NULL, NULL, NULL},
     {"depth_image_list", (getter)_CtxImage_depth_image_list, NULL, NULL, NULL},
     {"aux_image_ids", (getter)_CtxImage_aux_image_ids, NULL, NULL, NULL},
-    {"aux_type", (getter)_CtxImage_aux_type, NULL, NULL, NULL},
     {"camera_intrinsic_matrix", (getter)_CtxImage_camera_intrinsic_matrix, NULL, NULL, NULL},
     {"camera_extrinsic_matrix_rot", (getter)_CtxImage_camera_extrinsic_matrix_rot, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}
@@ -1365,7 +1390,7 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
 
 static struct PyMethodDef _CtxImage_methods[] = {
     {"get_aux_image", (PyCFunction)_CtxImage_get_aux_image, METH_O},
-    {"get_aux_type", (PyCFunction)_CtxImage_get_aux_type, METH_O},
+    {"get_aux_metadata", (PyCFunction)_CtxImage_get_aux_metadata, METH_O},
     {NULL, NULL}
 };
 

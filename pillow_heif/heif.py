@@ -141,11 +141,9 @@ class HeifDepthImage(BaseImage):
 class HeifAuxImage(BaseImage):
     """Class representing the auxiliary image associated with the :py:class:`~pillow_heif.HeifImage` class."""
 
-    def __init__(self, c_image):
+    def __init__(self, c_image, info):
         super().__init__(c_image)
-        self.info = {
-            "aux_type": c_image.aux_type,
-        }
+        self.info = info
         save_colorspace_chroma(c_image, self.info)
 
     def __repr__(self):
@@ -172,11 +170,7 @@ class HeifImage(BaseImage):
         _depth_images: list[HeifDepthImage | None] = (
             [HeifDepthImage(i) for i in c_image.depth_image_list if i is not None] if options.DEPTH_IMAGES else []
         )
-        _ctx_aux_images = [c_image.get_aux_image(aux_id) for aux_id in c_image.aux_image_ids]
-        _aux_images: list[HeifAuxImage | None] = (
-            [HeifAuxImage(img) for img in _ctx_aux_images if img is not None]  # if options.AUX_IMAGES else []
-        )
-        _heif_meta = _get_heif_meta(c_image)
+        _ctx_aux_meta = {aux_id: c_image.get_aux_metadata(aux_id) for aux_id in c_image.aux_image_ids}
         self.info = {
             "primary": bool(c_image.primary),
             "bit_depth": int(c_image.bit_depth),
@@ -184,8 +178,9 @@ class HeifImage(BaseImage):
             "metadata": _metadata,
             "thumbnails": _thumbnails,
             "depth_images": _depth_images,
-            "aux": _aux_images,
+            "aux": _ctx_aux_meta,
         }
+        _heif_meta = _get_heif_meta(c_image)
         if _xmp:
             self.info["xmp"] = _xmp
         if _heif_meta:
@@ -230,6 +225,15 @@ class HeifImage(BaseImage):
         image.info = self.info.copy()
         image.info["original_orientation"] = set_orientation(image.info)
         return image
+
+    def get_aux_image(self, aux_id: int) -> HeifAuxImage | None:
+        aux_info = self._c_image.get_aux_metadata(aux_id)
+        if aux_info is None:
+            return None
+        aux_image = self._c_image.get_aux_image(aux_id)
+        if aux_image is None:
+            return None
+        return HeifAuxImage(aux_image, aux_info)
 
 
 class HeifFile:
@@ -505,6 +509,13 @@ class HeifFile:
         _im_copy.mimetype = self.mimetype
         _im_copy.primary_index = self.primary_index
         return _im_copy
+
+    def get_aux_image(self, aux_id):
+        """`get_aux_image`` method of the primary :class:`~pillow_heif.HeifImage` in the container.
+
+        :exception IndexError: If there are no images.
+        """
+        return self._images[self.primary_index].get_aux_image(aux_id)
 
     __copy__ = __copy
 
