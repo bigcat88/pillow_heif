@@ -129,14 +129,6 @@ class HeifDepthImage(BaseImage):
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
 
-    def to_pillow(self) -> Image.Image:
-        """Helper method to create :external:py:class:`~PIL.Image.Image` class.
-
-        :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
-        """
-        image = super().to_pillow()
-        return image
-
 
 class HeifAuxImage(BaseImage):
     """Class representing the auxiliary image associated with the :py:class:`~pillow_heif.HeifImage` class."""
@@ -148,14 +140,6 @@ class HeifAuxImage(BaseImage):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
-
-    def to_pillow(self) -> Image.Image:
-        """Helper method to create :external:py:class:`~PIL.Image.Image` class.
-
-        :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
-        """
-        image = super().to_pillow()
-        return image
 
 
 class HeifImage(BaseImage):
@@ -227,16 +211,24 @@ class HeifImage(BaseImage):
         return image
 
     def get_aux_image(self, aux_id: int) -> HeifAuxImage:
+        """Method to retrieve the auxiliary image at the given ID.
+
+        :returns: a :py:class:`~pillow_heif.HeifAuxImage` class instance.
+        """
         aux_info = self._c_image.get_aux_metadata(aux_id)
         if aux_info is None or aux_info["colorspace"] is None:
             raise RuntimeError("Error while getting auxiliary information.")
         colorspace, bit_depth = aux_info["colorspace"], aux_info["bit_depth"]
         if colorspace != "monochrome":
-            raise NotImplementedError(f"{colorspace} color space is not supported for auxiliary images at the moment. "
-                                      "Please file an issue with an example HEIF file.")
+            raise NotImplementedError(
+                f"{colorspace} color space is not supported for auxiliary images at the moment. "
+                "Please consider filing an issue with an example HEIF file."
+            )
         if bit_depth != 8:
-            raise NotImplementedError(f"{bit_depth}-bit auxiliary images are not supported at the moment. "
-                                      "Please file an issue with an example HEIF file.")
+            raise NotImplementedError(
+                f"{bit_depth}-bit auxiliary images are not supported at the moment. "
+                "Please consider filing an issue with an example HEIF file."
+            )
         aux_image = self._c_image.get_aux_image(aux_id)
         if aux_image is None:
             raise RuntimeError("Error while decoding the auxiliary image.")
