@@ -894,8 +894,17 @@ static PyObject* _CtxImage_color_profile(CtxImageObject* self, void* closure) {
             return NULL;
 
         PyObject* result = PyDict_New();
+        if (!result) {
+            heif_nclx_color_profile_free(nclx_profile);
+            return NULL;
+        }
         __PyDict_SetItemString(result, "type", PyUnicode_FromString("nclx"));
         PyObject* d = PyDict_New();
+        if (!d) {
+            heif_nclx_color_profile_free(nclx_profile);
+            Py_DECREF(result);
+            return NULL;
+        }
         __PyDict_SetItemString(d, "color_primaries", PyLong_FromLong(nclx_profile->color_primaries));
         __PyDict_SetItemString(d, "transfer_characteristics", PyLong_FromLong(nclx_profile->transfer_characteristics));
         __PyDict_SetItemString(d, "matrix_coefficients", PyLong_FromLong(nclx_profile->matrix_coefficients));
@@ -914,6 +923,9 @@ static PyObject* _CtxImage_color_profile(CtxImageObject* self, void* closure) {
     }
 
     PyObject* result = PyDict_New();
+    if (!result) {
+        return NULL;
+    }
     __PyDict_SetItemString(
         result, "type", PyUnicode_FromString(profile_type == heif_color_profile_type_rICC ? "rICC" : "prof"));
     size_t size = heif_image_handle_get_raw_color_profile_size(self->handle);
@@ -972,6 +984,7 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
                 error = heif_image_handle_get_metadata(self->handle, meta_ids[i], data);
                 if (error.code == heif_error_Ok) {
                     meta_item_info = PyDict_New();
+                    // TODO handle meta_item_info == NULL
                     __PyDict_SetItemString(meta_item_info, "type", PyUnicode_FromString(type));
                     __PyDict_SetItemString(meta_item_info, "content_type", PyUnicode_FromString(content_type));
                     __PyDict_SetItemString(meta_item_info, "data", PyBytes_FromStringAndSize((char*)data, size));
@@ -990,7 +1003,7 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
     else if (self->image_type == PhHeifDepthImage) {
         PyObject* meta = PyDict_New();
         if (!meta) {
-            Py_RETURN_NONE;
+            return NULL;
         }
         if (!self->depth_metadata)
             return meta;
@@ -1389,10 +1402,19 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
 
 static PyObject* _get_lib_info(PyObject* self) {
     PyObject* lib_info_dict = PyDict_New();
+    if (!lib_info_dict) {
+        return NULL;
+    }
     PyObject* encoders_dict = PyDict_New();
+    if (!encoders_dict) {
+        Py_DECREF(lib_info_dict);
+        return NULL;
+    }
     PyObject* decoders_dict = PyDict_New();
-    if ((!lib_info_dict) || (!encoders_dict) || (!decoders_dict)) {
-        return PyErr_NoMemory();
+    if (!decoders_dict) {
+        Py_DECREF(encoders_dict);
+        Py_DECREF(lib_info_dict);
+        return NULL;
     }
     __PyDict_SetItemString(lib_info_dict, "libheif", PyUnicode_FromString(heif_get_version()));
 
