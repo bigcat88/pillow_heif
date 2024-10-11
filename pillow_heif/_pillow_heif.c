@@ -804,8 +804,8 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(handle);
-        PyErr_SetString(PyExc_RuntimeError, "could not create CtxImage object");
-        return NULL;
+        // note: silently ignoring the error
+        Py_RETURN_NONE;
     }
     ctx_image->depth_metadata = NULL;
     ctx_image->image_type = PhHeifImage;
@@ -1175,7 +1175,11 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
     for (int i = 0; i < n_images; i++) {
         PyObject* ctx_depth_image = _CtxDepthImage(
             self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->file_bytes);
-        // TODO how to handle the error if ctx_depth_image == NULL?
+        if (!ctx_depth_image) {
+            Py_DECREF(images_list);
+            free(images_ids);
+            return NULL;
+        }
         PyList_SET_ITEM(images_list, i, ctx_depth_image);
     }
     free(images_ids);
@@ -1365,7 +1369,7 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
                 PyObject* ctx_image = _CtxImage(
                     handle, hdr_to_8bit, bgr_mode, remove_stride, hdr_to_16bit, reload_size, primary, heif_bytes,
                     decoder_id, colorspace, chroma);
-                // TODO how to handle the error if ctx_image == NULL?
+                // note: ctx_image could be None here
                 PyList_SET_ITEM(images_list, i, ctx_image);
             } else {
                 heif_image_handle_release(handle);
