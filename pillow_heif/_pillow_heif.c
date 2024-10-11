@@ -959,7 +959,7 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
         PyObject* meta_list = PyList_New(n_metas);
         if (!meta_list) {
             free(meta_ids);
-            return PyErr_NoMemory();
+            return NULL;
         }
 
         for (int i = 0; i < n_metas; i++) {
@@ -1030,7 +1030,7 @@ static PyObject* _CtxImage_thumbnails(CtxImageObject* self, void* closure) {
     PyObject* images_list = PyList_New(n_images);
     if (!images_list) {
         free(images_ids);
-        return PyList_New(0);
+        return NULL;
     }
 
     struct heif_image_handle* handle;
@@ -1166,7 +1166,7 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
     PyObject* images_list = PyList_New(n_images);
     if (!images_list) {
         free(images_ids);
-        return PyErr_NoMemory();
+        return NULL;
     }
 
     for (int i = 0; i < n_images; i++) {
@@ -1344,7 +1344,7 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
     if (!images_list) {
         free(images_ids);
         heif_context_free(heif_ctx);
-        return PyErr_NoMemory();
+        return NULL;
     }
 
     enum heif_colorspace colorspace;
