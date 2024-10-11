@@ -704,7 +704,6 @@ static PyObject* _CtxWriteImage_create(CtxWriteObject* self, PyObject* args) {
     CtxWriteImageObject* ctx_write_image = PyObject_New(CtxWriteImageObject, &CtxWriteImage_Type);
     if (!ctx_write_image) {
         heif_image_release(image);
-        PyErr_SetString(PyExc_RuntimeError, "could not create CtxWriteImage object");
         return NULL;
     }
     ctx_write_image->chroma = chroma;
@@ -743,7 +742,6 @@ PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id dep
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(depth_handle);
-        PyErr_SetString(PyExc_RuntimeError, "could not create CtxImage object");
         return NULL;
     }
     if (!heif_image_handle_get_depth_image_representation_info(main_handle, depth_image_id, &ctx_image->depth_metadata))
@@ -804,8 +802,7 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(handle);
-        // note: silently ignoring the error
-        Py_RETURN_NONE;
+        return NULL;
     }
     ctx_image->depth_metadata = NULL;
     ctx_image->image_type = PhHeifImage;
@@ -1295,7 +1292,6 @@ static PyObject* _CtxWrite(PyObject* self, PyObject* args) {
     if (!ctx_write) {
         heif_encoder_release(encoder);
         heif_context_free(ctx);
-        PyErr_SetString(PyExc_RuntimeError, "could not create CtxWrite object");
         return NULL;
     }
     ctx_write->ctx = ctx;
@@ -1369,7 +1365,13 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
                 PyObject* ctx_image = _CtxImage(
                     handle, hdr_to_8bit, bgr_mode, remove_stride, hdr_to_16bit, reload_size, primary, heif_bytes,
                     decoder_id, colorspace, chroma);
-                // note: ctx_image could be None here
+                if (!ctx_image) {
+                    Py_DECREF(images_list);
+                    heif_image_handle_release(handle);
+                    free(images_ids);
+                    heif_context_free(heif_ctx);
+                    return NULL;
+                }
                 PyList_SET_ITEM(images_list, i, ctx_image);
             } else {
                 heif_image_handle_release(handle);
