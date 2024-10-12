@@ -964,9 +964,9 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
             return PyList_New(0);
 
         heif_item_id* meta_ids  = (heif_item_id*)malloc(n_metas * sizeof(heif_item_id));
-        if (!meta_ids) {
+        if (!meta_ids)
             return PyErr_NoMemory();
-        }
+
         n_metas = heif_image_handle_get_list_of_metadata_block_IDs(self->handle, NULL, meta_ids, n_metas);
         PyObject* meta_list = PyList_New(n_metas);
         if (!meta_list) {
@@ -980,17 +980,25 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
             content_type = heif_image_handle_get_metadata_content_type(self->handle, meta_ids[i]);
             size = heif_image_handle_get_metadata_size(self->handle, meta_ids[i]);
             data = malloc(size);
-            if (data) {
-                error = heif_image_handle_get_metadata(self->handle, meta_ids[i], data);
-                if (error.code == heif_error_Ok) {
-                    meta_item_info = PyDict_New();
-                    // TODO handle meta_item_info == NULL
-                    __PyDict_SetItemString(meta_item_info, "type", PyUnicode_FromString(type));
-                    __PyDict_SetItemString(meta_item_info, "content_type", PyUnicode_FromString(content_type));
-                    __PyDict_SetItemString(meta_item_info, "data", PyBytes_FromStringAndSize((char*)data, size));
-                }
-                free(data);
+            if (!data) {
+                Py_DECREF(meta_list);
+                free(meta_ids);
+                return PyErr_NoMemory();
             }
+            error = heif_image_handle_get_metadata(self->handle, meta_ids[i], data);
+            if (error.code == heif_error_Ok) {
+                meta_item_info = PyDict_New();
+                if (!meta_item_info) {
+                    free(data);
+                    Py_DECREF(meta_list);
+                    free(meta_ids);
+                    return NULL;
+                }
+                __PyDict_SetItemString(meta_item_info, "type", PyUnicode_FromString(type));
+                __PyDict_SetItemString(meta_item_info, "content_type", PyUnicode_FromString(content_type));
+                __PyDict_SetItemString(meta_item_info, "data", PyBytes_FromStringAndSize((char*)data, size));
+            }
+            free(data);
             if (!meta_item_info) {
                 meta_item_info = Py_None;
                 Py_INCREF(meta_item_info);
@@ -1002,9 +1010,8 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
     }
     else if (self->image_type == PhHeifDepthImage) {
         PyObject* meta = PyDict_New();
-        if (!meta) {
+        if (!meta)
             return NULL;
-        }
         if (!self->depth_metadata)
             return meta;
 
