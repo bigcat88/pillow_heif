@@ -1299,7 +1299,7 @@ static PyObject* _CtxImage_get_aux_info(CtxImageObject* self, PyObject* arg_imag
     PyObject* aux_type = _get_aux_type(aux_handle);
     if (!aux_type)
         return NULL;
-    __PyDict_SetItemString(metadata, "type", aux_type);
+    __PyDict_SetItemString(metadata, "aux_type", aux_type);
     PyObject* luma_bits = PyLong_FromLong(heif_image_handle_get_luma_bits_per_pixel(aux_handle));
     __PyDict_SetItemString(metadata, "bit_depth", luma_bits);
     PyObject* colorspace = _get_aux_colorspace(aux_handle);
