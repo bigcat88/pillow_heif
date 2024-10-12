@@ -142,22 +142,11 @@ class HeifDepthImage(BaseImage):
 class HeifAuxImage(BaseImage):
     """Class representing the auxiliary image associated with the :py:class:`~pillow_heif.HeifImage` class."""
 
-    def __init__(self, c_image, info):
+    def __init__(self, c_image):
         super().__init__(c_image)
-        self.info = info
-        save_colorspace_chroma(c_image, self.info)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
-
-    def to_pillow(self) -> Image.Image:
-        """Helper method to create :external:py:class:`~PIL.Image.Image` class.
-
-        :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
-        """
-        image = super().to_pillow()
-        image.info = self.info.copy()
-        return image
 
 
 class HeifImage(BaseImage):
@@ -239,22 +228,8 @@ class HeifImage(BaseImage):
 
         :returns: a :py:class:`~pillow_heif.HeifAuxImage` class instance.
         """
-        aux_info = self._c_image.get_aux_info(aux_id)
-        if aux_info["colorspace"] is None:
-            raise RuntimeError("Error while getting auxiliary information.")
-        colorspace, bit_depth = aux_info["colorspace"], aux_info["bit_depth"]
-        if colorspace != "monochrome":
-            raise NotImplementedError(
-                f"{colorspace} color space is not supported for auxiliary images at the moment. "
-                "Please consider filing an issue with an example HEIF file."
-            )
-        if bit_depth != 8:
-            raise NotImplementedError(
-                f"{bit_depth}-bit auxiliary images are not supported at the moment. "
-                "Please consider filing an issue with an example HEIF file."
-            )
         aux_image = self._c_image.get_aux_image(aux_id)
-        return HeifAuxImage(aux_image, aux_info)
+        return HeifAuxImage(aux_image)
 
 
 class HeifFile:

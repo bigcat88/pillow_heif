@@ -734,10 +734,40 @@ static struct PyMethodDef _CtxWrite_methods[] = {
 
 /* =========== CtxAuxImage ======== */
 
+static const char* _colorspace_to_str(enum heif_colorspace colorspace) {
+    switch (colorspace) {
+        case heif_colorspace_undefined:
+            return "undefined";
+        case heif_colorspace_monochrome:
+            return "monochrome";
+        case heif_colorspace_RGB:
+            return "RGB";
+        case heif_colorspace_YCbCr:
+            return "YCbCr";
+        default:  // note: this means the upstream API has changed
+            return "unknown";
+    }
+}
+
 PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_image_id,
                        int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
     struct heif_image_handle* aux_handle;
     if (check_error(heif_image_handle_get_auxiliary_image_handle(main_handle, aux_image_id, &aux_handle))) {
+        return NULL;
+    }
+    int luma_bits = heif_image_handle_get_luma_bits_per_pixel(aux_handle);
+    enum heif_colorspace colorspace;
+    enum heif_chroma chroma;
+    if (check_error(heif_image_handle_get_preferred_decoding_colorspace(aux_handle, &colorspace, &chroma))) {
+        return NULL;
+    }
+    if (luma_bits != 8 || colorspace != heif_colorspace_monochrome) {
+        const char* colorspace_str = _colorspace_to_str(colorspace);
+        PyErr_Format(
+            PyExc_NotImplementedError,
+            "Only 8-bit monochrome auxiliary images are currently supported. Got %d-bit %s image. "
+            "Please consider filing an issue with an example HEIF file.",
+            luma_bits, colorspace_str);
         return NULL;
     }
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
@@ -750,7 +780,6 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
     ctx_image->width = heif_image_handle_get_width(aux_handle);
     ctx_image->height = heif_image_handle_get_height(aux_handle);
     ctx_image->alpha = 0;
-    // note: in HeifImage.get_aux_image(..), we only allow 8-bit monochrome images
     ctx_image->n_channels = 1;
     ctx_image->bits = 8;
     strcpy(ctx_image->mode, "L");
@@ -1260,55 +1289,6 @@ static PyObject* _get_aux_type(const struct heif_image_handle* aux_handle) {
     return aux_type;
 }
 
-static PyObject* _get_aux_colorspace(const struct heif_image_handle* aux_handle) {
-    enum heif_colorspace colorspace;
-    enum heif_chroma chroma;
-    struct heif_error error;
-    error = heif_image_handle_get_preferred_decoding_colorspace(aux_handle, &colorspace, &chroma);
-    if (error.code != heif_error_Ok) {
-        // note: we are silently ignoring the error
-        Py_RETURN_NONE;
-    }
-    const char* colorspace_str;
-    switch (colorspace) {
-        case heif_colorspace_undefined:
-            colorspace_str = "undefined";
-            break;
-        case heif_colorspace_monochrome:
-            colorspace_str = "monochrome";
-            break;
-        case heif_colorspace_RGB:
-            colorspace_str = "RGB";
-            break;
-        case heif_colorspace_YCbCr:
-            colorspace_str = "YCbCr";
-            break;
-        default:
-            // note: this means the upstream API has changed
-            colorspace_str = "unknown";
-    }
-    return PyUnicode_FromString(colorspace_str);
-}
-
-static PyObject* _CtxImage_get_aux_info(CtxImageObject* self, PyObject* arg_image_id) {
-    heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
-    struct heif_image_handle* aux_handle;
-    if (check_error(heif_image_handle_get_auxiliary_image_handle(self->handle, aux_image_id, &aux_handle)))
-        return NULL;
-    PyObject* metadata = PyDict_New();
-    PyObject* aux_type = _get_aux_type(aux_handle);
-    if (!aux_type)
-        return NULL;
-    __PyDict_SetItemString(metadata, "aux_type", aux_type);
-    PyObject* luma_bits = PyLong_FromLong(heif_image_handle_get_luma_bits_per_pixel(aux_handle));
-    __PyDict_SetItemString(metadata, "bit_depth", luma_bits);
-    PyObject* colorspace = _get_aux_colorspace(aux_handle);
-    __PyDict_SetItemString(metadata, "colorspace", colorspace);
-    // anything more to add? heif_image_handle_get_chroma_bits_per_pixel?
-    heif_image_handle_release(aux_handle);
-    return metadata;
-}
-
 static PyObject* _CtxImage_get_aux_type(CtxImageObject* self, PyObject* arg_image_id) {
     heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
     struct heif_image_handle* aux_handle;
@@ -1391,7 +1371,6 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
 
 static struct PyMethodDef _CtxImage_methods[] = {
     {"get_aux_image", (PyCFunction)_CtxImage_get_aux_image, METH_O},
-    {"get_aux_info", (PyCFunction)_CtxImage_get_aux_info, METH_O},
     {"get_aux_type", (PyCFunction)_CtxImage_get_aux_type, METH_O},
     {NULL, NULL}
 };
