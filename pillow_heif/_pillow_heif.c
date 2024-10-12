@@ -759,6 +759,7 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
     enum heif_colorspace colorspace;
     enum heif_chroma chroma;
     if (check_error(heif_image_handle_get_preferred_decoding_colorspace(aux_handle, &colorspace, &chroma))) {
+        heif_image_handle_release(aux_handle);
         return NULL;
     }
     if (luma_bits != 8 || colorspace != heif_colorspace_monochrome) {
@@ -768,6 +769,7 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
             "Only 8-bit monochrome auxiliary images are currently supported. Got %d-bit %s image. "
             "Please consider filing an issue with an example HEIF file.",
             luma_bits, colorspace_str);
+        heif_image_handle_release(aux_handle);
         return NULL;
     }
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
