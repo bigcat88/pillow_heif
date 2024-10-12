@@ -129,6 +129,15 @@ class HeifDepthImage(BaseImage):
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
 
+    def to_pillow(self) -> Image.Image:
+        """Helper method to create :external:py:class:`~PIL.Image.Image` class.
+
+        :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
+        """
+        image = super().to_pillow()
+        image.info = self.info.copy()
+        return image
+
 
 class HeifAuxImage(BaseImage):
     """Class representing the auxiliary image associated with the :py:class:`~pillow_heif.HeifImage` class."""
@@ -140,6 +149,15 @@ class HeifAuxImage(BaseImage):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
+
+    def to_pillow(self) -> Image.Image:
+        """Helper method to create :external:py:class:`~PIL.Image.Image` class.
+
+        :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
+        """
+        image = super().to_pillow()
+        image.info = self.info.copy()
+        return image
 
 
 class HeifImage(BaseImage):
