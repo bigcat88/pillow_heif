@@ -1309,6 +1309,18 @@ static PyObject* _CtxImage_get_aux_info(CtxImageObject* self, PyObject* arg_imag
     return metadata;
 }
 
+static PyObject* _CtxImage_get_aux_type(CtxImageObject* self, PyObject* arg_image_id) {
+    heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
+    struct heif_image_handle* aux_handle;
+    if (check_error(heif_image_handle_get_auxiliary_image_handle(self->handle, aux_image_id, &aux_handle)))
+        return NULL;
+    PyObject* aux_type = _get_aux_type(aux_handle);
+    if (!aux_type)
+        return NULL;
+    heif_image_handle_release(aux_handle);
+    return aux_type;
+}
+
 /* =========== CtxImage Experimental Part ======== */
 
 static PyObject* _CtxImage_camera_intrinsic_matrix(CtxImageObject* self, void* closure) {
@@ -1380,6 +1392,7 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
 static struct PyMethodDef _CtxImage_methods[] = {
     {"get_aux_image", (PyCFunction)_CtxImage_get_aux_image, METH_O},
     {"get_aux_info", (PyCFunction)_CtxImage_get_aux_info, METH_O},
+    {"get_aux_type", (PyCFunction)_CtxImage_get_aux_type, METH_O},
     {NULL, NULL}
 };
 

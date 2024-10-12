@@ -154,7 +154,6 @@ class HeifImage(BaseImage):
         _depth_images: list[HeifDepthImage | None] = (
             [HeifDepthImage(i) for i in c_image.depth_image_list if i is not None] if options.DEPTH_IMAGES else []
         )
-        _ctx_aux_info = {aux_id: c_image.get_aux_info(aux_id) for aux_id in c_image.aux_image_ids}
         self.info = {
             "primary": bool(c_image.primary),
             "bit_depth": int(c_image.bit_depth),
@@ -162,8 +161,15 @@ class HeifImage(BaseImage):
             "metadata": _metadata,
             "thumbnails": _thumbnails,
             "depth_images": _depth_images,
-            "aux": _ctx_aux_info,
         }
+        if options.AUX_IMAGES:
+            _ctx_aux_info = {}
+            for aux_id in c_image.aux_image_ids:
+                aux_type = c_image.get_aux_type(aux_id)
+                if aux_type not in _ctx_aux_info:
+                    _ctx_aux_info[aux_type] = []
+                _ctx_aux_info[aux_type].append(aux_id)
+            self.info["aux"] = _ctx_aux_info
         _heif_meta = _get_heif_meta(c_image)
         if _xmp:
             self.info["xmp"] = _xmp
