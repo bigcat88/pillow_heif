@@ -154,7 +154,7 @@ class HeifImage(BaseImage):
         _depth_images: list[HeifDepthImage | None] = (
             [HeifDepthImage(i) for i in c_image.depth_image_list if i is not None] if options.DEPTH_IMAGES else []
         )
-        _ctx_aux_meta = {aux_id: c_image.get_aux_metadata(aux_id) for aux_id in c_image.aux_image_ids}
+        _ctx_aux_info = {aux_id: c_image.get_aux_info(aux_id) for aux_id in c_image.aux_image_ids}
         self.info = {
             "primary": bool(c_image.primary),
             "bit_depth": int(c_image.bit_depth),
@@ -162,7 +162,7 @@ class HeifImage(BaseImage):
             "metadata": _metadata,
             "thumbnails": _thumbnails,
             "depth_images": _depth_images,
-            "aux": _ctx_aux_meta,
+            "aux": _ctx_aux_info,
         }
         _heif_meta = _get_heif_meta(c_image)
         if _xmp:
@@ -215,7 +215,7 @@ class HeifImage(BaseImage):
 
         :returns: a :py:class:`~pillow_heif.HeifAuxImage` class instance.
         """
-        aux_info = self._c_image.get_aux_metadata(aux_id)
+        aux_info = self._c_image.get_aux_info(aux_id)
         if aux_info["colorspace"] is None:
             raise RuntimeError("Error while getting auxiliary information.")
         colorspace, bit_depth = aux_info["colorspace"], aux_info["bit_depth"]

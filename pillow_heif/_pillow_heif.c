@@ -743,7 +743,6 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(aux_handle);
-        PyErr_SetString(PyExc_RuntimeError, "Could not create CtxImage object");
         return NULL;
     }
     ctx_image->depth_metadata = NULL;
@@ -1237,11 +1236,8 @@ static PyObject* _CtxImage_aux_image_ids(CtxImageObject* self, void* closure) {
         free(images_ids);
         return PyErr_NoMemory();
     }
-
     for (int i = 0; i < n_images; i++) {
-        PyList_SET_ITEM(images_list,
-                        i,
-                        PyLong_FromUnsignedLong(images_ids[i]));
+        PyList_SET_ITEM(images_list, i, PyLong_FromUnsignedLong(images_ids[i]));
     }
     free(images_ids);
     return images_list;
@@ -1257,10 +1253,8 @@ static PyObject* _CtxImage_get_aux_image(CtxImageObject* self, PyObject* arg_ima
 static PyObject* _get_aux_type(const struct heif_image_handle* aux_handle) {
     const char* aux_type_c = NULL;
     struct heif_error error = heif_image_handle_get_auxiliary_type(aux_handle, &aux_type_c);
-    if (error.code != heif_error_Ok) {
-        // note: we are silently ignoring the error
-        Py_RETURN_NONE;
-    }
+    if (check_error(error))
+        return NULL;
     PyObject *aux_type = PyUnicode_FromString(aux_type_c);
     heif_image_handle_release_auxiliary_type(aux_handle, &aux_type_c);
     return aux_type;
@@ -1296,14 +1290,15 @@ static PyObject* _get_aux_colorspace(const struct heif_image_handle* aux_handle)
     return PyUnicode_FromString(colorspace_str);
 }
 
-static PyObject* _CtxImage_get_aux_metadata(CtxImageObject* self, PyObject* arg_image_id) {
+static PyObject* _CtxImage_get_aux_info(CtxImageObject* self, PyObject* arg_image_id) {
     heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
     struct heif_image_handle* aux_handle;
-    if (check_error(heif_image_handle_get_auxiliary_image_handle(self->handle, aux_image_id, &aux_handle))) {
+    if (check_error(heif_image_handle_get_auxiliary_image_handle(self->handle, aux_image_id, &aux_handle)))
         return NULL;
-    }
     PyObject* metadata = PyDict_New();
     PyObject* aux_type = _get_aux_type(aux_handle);
+    if (!aux_type)
+        return NULL;
     __PyDict_SetItemString(metadata, "type", aux_type);
     PyObject* luma_bits = PyLong_FromLong(heif_image_handle_get_luma_bits_per_pixel(aux_handle));
     __PyDict_SetItemString(metadata, "bit_depth", luma_bits);
@@ -1384,7 +1379,7 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
 
 static struct PyMethodDef _CtxImage_methods[] = {
     {"get_aux_image", (PyCFunction)_CtxImage_get_aux_image, METH_O},
-    {"get_aux_metadata", (PyCFunction)_CtxImage_get_aux_metadata, METH_O},
+    {"get_aux_info", (PyCFunction)_CtxImage_get_aux_info, METH_O},
     {NULL, NULL}
 };
 
