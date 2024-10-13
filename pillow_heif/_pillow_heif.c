@@ -704,7 +704,6 @@ static PyObject* _CtxWriteImage_create(CtxWriteObject* self, PyObject* args) {
     CtxWriteImageObject* ctx_write_image = PyObject_New(CtxWriteImageObject, &CtxWriteImage_Type);
     if (!ctx_write_image) {
         heif_image_release(image);
-        PyErr_SetString(PyExc_RuntimeError, "could not create CtxWriteImage object");
         return NULL;
     }
     ctx_write_image->chroma = chroma;
@@ -807,12 +806,12 @@ PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id dep
                             int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
     struct heif_image_handle* depth_handle;
     if (check_error(heif_image_handle_get_depth_image_handle(main_handle, depth_image_id, &depth_handle))) {
-        Py_RETURN_NONE;
+        return NULL;
     }
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(depth_handle);
-        Py_RETURN_NONE;
+        return NULL;
     }
     if (!heif_image_handle_get_depth_image_representation_info(main_handle, depth_image_id, &ctx_image->depth_metadata))
         ctx_image->depth_metadata = NULL;
@@ -872,7 +871,7 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(handle);
-        Py_RETURN_NONE;
+        return NULL;
     }
     ctx_image->depth_metadata = NULL;
     ctx_image->image_type = PhHeifImage;
@@ -964,8 +963,17 @@ static PyObject* _CtxImage_color_profile(CtxImageObject* self, void* closure) {
             return NULL;
 
         PyObject* result = PyDict_New();
+        if (!result) {
+            heif_nclx_color_profile_free(nclx_profile);
+            return NULL;
+        }
         __PyDict_SetItemString(result, "type", PyUnicode_FromString("nclx"));
         PyObject* d = PyDict_New();
+        if (!d) {
+            heif_nclx_color_profile_free(nclx_profile);
+            Py_DECREF(result);
+            return NULL;
+        }
         __PyDict_SetItemString(d, "color_primaries", PyLong_FromLong(nclx_profile->color_primaries));
         __PyDict_SetItemString(d, "transfer_characteristics", PyLong_FromLong(nclx_profile->transfer_characteristics));
         __PyDict_SetItemString(d, "matrix_coefficients", PyLong_FromLong(nclx_profile->matrix_coefficients));
@@ -984,6 +992,9 @@ static PyObject* _CtxImage_color_profile(CtxImageObject* self, void* closure) {
     }
 
     PyObject* result = PyDict_New();
+    if (!result) {
+        return NULL;
+    }
     __PyDict_SetItemString(
         result, "type", PyUnicode_FromString(profile_type == heif_color_profile_type_rICC ? "rICC" : "prof"));
     size_t size = heif_image_handle_get_raw_color_profile_size(self->handle);
@@ -994,7 +1005,7 @@ static PyObject* _CtxImage_color_profile(CtxImageObject* self, void* closure) {
         if (!data) {
             Py_DECREF(result);
             result = NULL;
-            PyErr_SetString(PyExc_OSError, "Out of Memory");
+            PyErr_NoMemory();
         }
         else {
             if (!check_error(heif_image_handle_get_raw_color_profile(self->handle, data)))
@@ -1022,15 +1033,13 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
             return PyList_New(0);
 
         heif_item_id* meta_ids  = (heif_item_id*)malloc(n_metas * sizeof(heif_item_id));
-        if (!meta_ids) {
-            PyErr_SetString(PyExc_OSError, "Out of Memory");
-            return NULL;
-        }
+        if (!meta_ids)
+            return PyErr_NoMemory();
+
         n_metas = heif_image_handle_get_list_of_metadata_block_IDs(self->handle, NULL, meta_ids, n_metas);
         PyObject* meta_list = PyList_New(n_metas);
         if (!meta_list) {
             free(meta_ids);
-            PyErr_SetString(PyExc_OSError, "Out of Memory");
             return NULL;
         }
 
@@ -1040,16 +1049,25 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
             content_type = heif_image_handle_get_metadata_content_type(self->handle, meta_ids[i]);
             size = heif_image_handle_get_metadata_size(self->handle, meta_ids[i]);
             data = malloc(size);
-            if (data) {
-                error = heif_image_handle_get_metadata(self->handle, meta_ids[i], data);
-                if (error.code == heif_error_Ok) {
-                    meta_item_info = PyDict_New();
-                    __PyDict_SetItemString(meta_item_info, "type", PyUnicode_FromString(type));
-                    __PyDict_SetItemString(meta_item_info, "content_type", PyUnicode_FromString(content_type));
-                    __PyDict_SetItemString(meta_item_info, "data", PyBytes_FromStringAndSize((char*)data, size));
-                }
-                free(data);
+            if (!data) {
+                Py_DECREF(meta_list);
+                free(meta_ids);
+                return PyErr_NoMemory();
             }
+            error = heif_image_handle_get_metadata(self->handle, meta_ids[i], data);
+            if (error.code == heif_error_Ok) {
+                meta_item_info = PyDict_New();
+                if (!meta_item_info) {
+                    free(data);
+                    Py_DECREF(meta_list);
+                    free(meta_ids);
+                    return NULL;
+                }
+                __PyDict_SetItemString(meta_item_info, "type", PyUnicode_FromString(type));
+                __PyDict_SetItemString(meta_item_info, "content_type", PyUnicode_FromString(content_type));
+                __PyDict_SetItemString(meta_item_info, "data", PyBytes_FromStringAndSize((char*)data, size));
+            }
+            free(data);
             if (!meta_item_info) {
                 meta_item_info = Py_None;
                 Py_INCREF(meta_item_info);
@@ -1061,9 +1079,8 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
     }
     else if (self->image_type == PhHeifDepthImage) {
         PyObject* meta = PyDict_New();
-        if (!meta) {
-            Py_RETURN_NONE;
-        }
+        if (!meta)
+            return NULL;
         if (!self->depth_metadata)
             return meta;
 
@@ -1102,7 +1119,7 @@ static PyObject* _CtxImage_thumbnails(CtxImageObject* self, void* closure) {
     PyObject* images_list = PyList_New(n_images);
     if (!images_list) {
         free(images_ids);
-        return PyList_New(0);
+        return NULL;
     }
 
     struct heif_image_handle* handle;
@@ -1232,21 +1249,24 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
         return PyList_New(0);
     heif_item_id* images_ids = (heif_item_id*)malloc(n_images * sizeof(heif_item_id));
     if (!images_ids)
-        return PyList_New(0);
+        return PyErr_NoMemory();
 
     n_images = heif_image_handle_get_list_of_depth_image_IDs(self->handle, images_ids, n_images);
     PyObject* images_list = PyList_New(n_images);
     if (!images_list) {
         free(images_ids);
-        return PyList_New(0);
+        return NULL;
     }
 
     for (int i = 0; i < n_images; i++) {
-        PyList_SET_ITEM(images_list,
-                        i,
-                        _CtxDepthImage(
-                            self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->file_bytes
-                        ));
+        PyObject* ctx_depth_image = _CtxDepthImage(
+            self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->file_bytes);
+        if (!ctx_depth_image) {
+            Py_DECREF(images_list);
+            free(images_ids);
+            return NULL;
+        }
+        PyList_SET_ITEM(images_list, i, ctx_depth_image);
     }
     free(images_ids);
     return images_list;
@@ -1313,7 +1333,7 @@ static PyObject* _CtxImage_camera_intrinsic_matrix(CtxImageObject* self, void* c
             Py_RETURN_NONE;
         }
         if (check_error(heif_image_handle_get_camera_intrinsic_matrix(self->handle, &camera_intrinsic_matrix))) {
-            Py_RETURN_NONE;
+            return NULL;
         }
         return Py_BuildValue(
             "(ddddd)",
@@ -1338,12 +1358,12 @@ static PyObject* _CtxImage_camera_extrinsic_matrix_rot(CtxImageObject* self, voi
             Py_RETURN_NONE;
         }
         if (check_error(heif_image_handle_get_camera_extrinsic_matrix(self->handle, &camera_extrinsic_matrix))) {
-            Py_RETURN_NONE;
+            return NULL;
         }
         error = heif_camera_extrinsic_matrix_get_rotation_matrix(camera_extrinsic_matrix, rot);
         heif_camera_extrinsic_matrix_release(camera_extrinsic_matrix);
         if (check_error(error)) {
-            Py_RETURN_NONE;
+            return NULL;
         }
         return Py_BuildValue("(ddddddddd)", rot[0], rot[1], rot[2], rot[3], rot[4], rot[5], rot[6], rot[7], rot[8]);
     #else
@@ -1419,7 +1439,6 @@ static PyObject* _CtxWrite(PyObject* self, PyObject* args) {
     if (!ctx_write) {
         heif_encoder_release(encoder);
         heif_context_free(ctx);
-        PyErr_SetString(PyExc_RuntimeError, "could not create CtxWrite object");
         return NULL;
     }
     ctx_write->ctx = ctx;
@@ -1465,15 +1484,13 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
     heif_item_id* images_ids = (heif_item_id*)malloc(n_images * sizeof(heif_item_id));
     if (!images_ids) {
         heif_context_free(heif_ctx);
-        PyErr_SetString(PyExc_OSError, "Out of Memory");
-        return NULL;
+        return PyErr_NoMemory();
     }
     n_images = heif_context_get_list_of_top_level_image_IDs(heif_ctx, images_ids, n_images);
     PyObject* images_list = PyList_New(n_images);
     if (!images_list) {
         free(images_ids);
         heif_context_free(heif_ctx);
-        PyErr_SetString(PyExc_OSError, "Out of Memory");
         return NULL;
     }
 
@@ -1492,11 +1509,17 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
         if (error.code == heif_error_Ok) {
             error = heif_image_handle_get_preferred_decoding_colorspace(handle, &colorspace, &chroma);
             if (error.code == heif_error_Ok) {
-                PyList_SET_ITEM(images_list,
-                                i,
-                                _CtxImage(handle, hdr_to_8bit,
-                                    bgr_mode, remove_stride, hdr_to_16bit, reload_size, primary, heif_bytes,
-                                    decoder_id, colorspace, chroma));
+                PyObject* ctx_image = _CtxImage(
+                    handle, hdr_to_8bit, bgr_mode, remove_stride, hdr_to_16bit, reload_size, primary, heif_bytes,
+                    decoder_id, colorspace, chroma);
+                if (!ctx_image) {
+                    Py_DECREF(images_list);
+                    heif_image_handle_release(handle);
+                    free(images_ids);
+                    heif_context_free(heif_ctx);
+                    return NULL;
+                }
+                PyList_SET_ITEM(images_list, i, ctx_image);
             } else {
                 heif_image_handle_release(handle);
             }
@@ -1513,10 +1536,18 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
 
 static PyObject* _get_lib_info(PyObject* self) {
     PyObject* lib_info_dict = PyDict_New();
+    if (!lib_info_dict) {
+        return NULL;
+    }
     PyObject* encoders_dict = PyDict_New();
+    if (!encoders_dict) {
+        Py_DECREF(lib_info_dict);
+        return NULL;
+    }
     PyObject* decoders_dict = PyDict_New();
-    if ((!lib_info_dict) || (!encoders_dict) || (!decoders_dict)) {
-        PyErr_SetString(PyExc_OSError, "Out of Memory");
+    if (!decoders_dict) {
+        Py_DECREF(encoders_dict);
+        Py_DECREF(lib_info_dict);
         return NULL;
     }
     __PyDict_SetItemString(lib_info_dict, "libheif", PyUnicode_FromString(heif_get_version()));
