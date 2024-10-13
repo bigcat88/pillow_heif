@@ -142,9 +142,6 @@ class HeifDepthImage(BaseImage):
 class HeifAuxImage(BaseImage):
     """Class representing the auxiliary image associated with the :py:class:`~pillow_heif.HeifImage` class."""
 
-    def __init__(self, c_image):
-        super().__init__(c_image)
-
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode}>"
 
