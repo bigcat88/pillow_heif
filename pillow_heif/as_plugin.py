@@ -226,6 +226,8 @@ def __options_update(**kwargs):
             options.THUMBNAILS = v
         elif k == "depth_images":
             options.DEPTH_IMAGES = v
+        elif k == "aux_images":
+            options.AUX_IMAGES = v
         elif k == "quality":
             options.QUALITY = v
         elif k == "save_to_12bit":

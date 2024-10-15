@@ -496,6 +496,19 @@ def test_depth_image():
     assert im_pil.info == depth_image.info
 
 
+def test_aux_image():
+    im = pillow_heif.open_heif("images/heif_other/pug.heic")
+    assert len(im.info["aux"]) == 1
+    assert "urn:com:apple:photo:2020:aux:hdrgainmap" in im.info["aux"]
+    assert len(im.info["aux"]["urn:com:apple:photo:2020:aux:hdrgainmap"]) == 1
+    aux_id = im.info["aux"]["urn:com:apple:photo:2020:aux:hdrgainmap"][0]
+    aux_image = im.get_aux_image(aux_id)
+    assert isinstance(aux_image, pillow_heif.HeifAuxImage)
+    aux_pil = aux_image.to_pillow()
+    assert aux_pil.size == (2016, 1512)
+    assert aux_pil.mode == "L"
+
+
 @pytest.mark.skipif(
     parse_version(pillow_heif.libheif_version()) < parse_version("1.18.0"), reason="requires LibHeif 1.18+"
 )

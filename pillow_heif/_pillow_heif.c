@@ -731,6 +731,75 @@ static struct PyMethodDef _CtxWrite_methods[] = {
     {NULL, NULL}
 };
 
+/* =========== CtxAuxImage ======== */
+
+static const char* _colorspace_to_str(enum heif_colorspace colorspace) {
+    switch (colorspace) {
+        case heif_colorspace_undefined:
+            return "undefined";
+        case heif_colorspace_monochrome:
+            return "monochrome";
+        case heif_colorspace_RGB:
+            return "RGB";
+        case heif_colorspace_YCbCr:
+            return "YCbCr";
+        default:  // note: this means the upstream API has changed
+            return "unknown";
+    }
+}
+
+PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_image_id,
+                       int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
+    struct heif_image_handle* aux_handle;
+    if (check_error(heif_image_handle_get_auxiliary_image_handle(main_handle, aux_image_id, &aux_handle))) {
+        return NULL;
+    }
+    int luma_bits = heif_image_handle_get_luma_bits_per_pixel(aux_handle);
+    enum heif_colorspace colorspace;
+    enum heif_chroma chroma;
+    if (check_error(heif_image_handle_get_preferred_decoding_colorspace(aux_handle, &colorspace, &chroma))) {
+        heif_image_handle_release(aux_handle);
+        return NULL;
+    }
+    if (luma_bits != 8 || colorspace != heif_colorspace_monochrome) {
+        const char* colorspace_str = _colorspace_to_str(colorspace);
+        PyErr_Format(
+            PyExc_NotImplementedError,
+            "Only 8-bit monochrome auxiliary images are currently supported. Got %d-bit %s image. "
+            "Please consider filing an issue with an example HEIF file.",
+            luma_bits, colorspace_str);
+        heif_image_handle_release(aux_handle);
+        return NULL;
+    }
+    CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
+    if (!ctx_image) {
+        heif_image_handle_release(aux_handle);
+        return NULL;
+    }
+    ctx_image->depth_metadata = NULL;
+    ctx_image->image_type = PhHeifImage;
+    ctx_image->width = heif_image_handle_get_width(aux_handle);
+    ctx_image->height = heif_image_handle_get_height(aux_handle);
+    ctx_image->alpha = 0;
+    ctx_image->n_channels = 1;
+    ctx_image->bits = 8;
+    strcpy(ctx_image->mode, "L");
+    ctx_image->hdr_to_8bit = 0;
+    ctx_image->bgr_mode = 0;
+    ctx_image->colorspace = heif_colorspace_monochrome;
+    ctx_image->chroma = heif_chroma_monochrome;
+    ctx_image->handle = aux_handle;
+    ctx_image->heif_image = NULL;
+    ctx_image->data = NULL;
+    ctx_image->remove_stride = remove_stride;
+    ctx_image->hdr_to_16bit = hdr_to_16bit;
+    ctx_image->reload_size = 1;
+    ctx_image->file_bytes = file_bytes;
+    ctx_image->stride = get_stride(ctx_image);
+    Py_INCREF(file_bytes);
+    return (PyObject*)ctx_image;
+}
+
 /* =========== CtxDepthImage ======== */
 
 PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id depth_image_id,
@@ -1203,6 +1272,57 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
     return images_list;
 }
 
+static PyObject* _CtxImage_aux_image_ids(CtxImageObject* self, void* closure) {
+    int aux_filter = LIBHEIF_AUX_IMAGE_FILTER_OMIT_ALPHA | LIBHEIF_AUX_IMAGE_FILTER_OMIT_DEPTH;
+    int n_images = heif_image_handle_get_number_of_auxiliary_images(self->handle, aux_filter);
+    if (n_images == 0)
+        return PyList_New(0);
+    heif_item_id* images_ids = (heif_item_id*)malloc(n_images * sizeof(heif_item_id));
+    if (!images_ids)
+        return PyErr_NoMemory();
+
+    n_images = heif_image_handle_get_list_of_auxiliary_image_IDs(self->handle, aux_filter, images_ids, n_images);
+    PyObject* images_list = PyList_New(n_images);
+    if (!images_list) {
+        free(images_ids);
+        return PyErr_NoMemory();
+    }
+    for (int i = 0; i < n_images; i++) {
+        PyList_SET_ITEM(images_list, i, PyLong_FromUnsignedLong(images_ids[i]));
+    }
+    free(images_ids);
+    return images_list;
+}
+
+static PyObject* _CtxImage_get_aux_image(CtxImageObject* self, PyObject* arg_image_id) {
+    heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
+    return _CtxAuxImage(
+        self->handle, aux_image_id, self->remove_stride, self->hdr_to_16bit, self->file_bytes
+    );
+}
+
+static PyObject* _get_aux_type(const struct heif_image_handle* aux_handle) {
+    const char* aux_type_c = NULL;
+    struct heif_error error = heif_image_handle_get_auxiliary_type(aux_handle, &aux_type_c);
+    if (check_error(error))
+        return NULL;
+    PyObject *aux_type = PyUnicode_FromString(aux_type_c);
+    heif_image_handle_release_auxiliary_type(aux_handle, &aux_type_c);
+    return aux_type;
+}
+
+static PyObject* _CtxImage_get_aux_type(CtxImageObject* self, PyObject* arg_image_id) {
+    heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
+    struct heif_image_handle* aux_handle;
+    if (check_error(heif_image_handle_get_auxiliary_image_handle(self->handle, aux_image_id, &aux_handle)))
+        return NULL;
+    PyObject* aux_type = _get_aux_type(aux_handle);
+    if (!aux_type)
+        return NULL;
+    heif_image_handle_release(aux_handle);
+    return aux_type;
+}
+
 /* =========== CtxImage Experimental Part ======== */
 
 static PyObject* _CtxImage_camera_intrinsic_matrix(CtxImageObject* self, void* closure) {
@@ -1265,9 +1385,16 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"stride", (getter)_CtxImage_stride, NULL, NULL, NULL},
     {"data", (getter)_CtxImage_data, NULL, NULL, NULL},
     {"depth_image_list", (getter)_CtxImage_depth_image_list, NULL, NULL, NULL},
+    {"aux_image_ids", (getter)_CtxImage_aux_image_ids, NULL, NULL, NULL},
     {"camera_intrinsic_matrix", (getter)_CtxImage_camera_intrinsic_matrix, NULL, NULL, NULL},
     {"camera_extrinsic_matrix_rot", (getter)_CtxImage_camera_extrinsic_matrix_rot, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}
+};
+
+static struct PyMethodDef _CtxImage_methods[] = {
+    {"get_aux_image", (PyCFunction)_CtxImage_get_aux_image, METH_O},
+    {"get_aux_type", (PyCFunction)_CtxImage_get_aux_type, METH_O},
+    {NULL, NULL}
 };
 
 /* =========== Functions ======== */
@@ -1517,6 +1644,7 @@ static PyTypeObject CtxImage_Type = {
     .tp_dealloc = (destructor)_CtxImage_destructor,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_getset = _CtxImage_getseters,
+    .tp_methods = _CtxImage_methods,
 };
 
 static int setup_module(PyObject* m) {

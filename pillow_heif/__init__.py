@@ -16,6 +16,7 @@ from .constants import (
     HeifTransferCharacteristics,
 )
 from .heif import (
+    HeifAuxImage,
     HeifDepthImage,
     HeifFile,
     HeifImage,

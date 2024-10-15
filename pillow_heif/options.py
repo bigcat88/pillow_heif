@@ -18,6 +18,12 @@ DEPTH_IMAGES = True
 When use pillow_heif as a plugin you can set it with: `register_*_opener(depth_images=False)`"""
 
 
+AUX_IMAGES = True
+"""Option to enable/disable auxiliary image support
+
+When use pillow_heif as a plugin you can set it with: `register_*_opener(aux_images=False)`"""
+
+
 QUALITY = None
 """Default encoding quality
 

@@ -478,6 +478,7 @@ class MimCImage:
         self.color_profile = None
         self.thumbnails: list[int] = []
         self.depth_image_list: list = []
+        self.aux_image_ids: list[int] = []
         self.primary = False
         self.chroma = HeifChroma.UNDEFINED.value
         self.colorspace = HeifColorspace.UNDEFINED.value
