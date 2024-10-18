@@ -147,7 +147,7 @@ def test_hif_file():
     heif_file1 = pillow_heif.open_heif(hif_path)
     assert heif_file1.info["bit_depth"] == 10
     out_buf = BytesIO()
-    heif_file1.save(out_buf, quality=80)
+    heif_file1.save(out_buf, quality=90)
     heif_file2 = pillow_heif.open_heif(out_buf)
     assert heif_file2.info["bit_depth"] == 8
     assert heif_file1.info["nclx_profile"] == heif_file2.info["nclx_profile"]
