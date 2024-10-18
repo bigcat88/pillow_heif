@@ -7,29 +7,40 @@ on:
 jobs:
   wheels_macos_arm:
     name: macosx • aarch64
-    runs-on: ubuntu-20.04
+    runs-on: macos-14
 
     steps:
-    - name: Waiting for Cirrus CI
-      uses: lewagon/wait-on-check-action@v1.3.4
-      with:
-        ref: ${{ github.ref }}
-        check-name: 'macosx • aarch64 • Pi-Heif • Cirrus'
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        wait-interval: 60
-        allowed-conclusions: success
+      - uses: actions/checkout@v4
+      - name: Transform to Pi-Heif
+        run: |
+          cp -r -v ./pi-heif/* .
+          python3 .github/transform_to-pi_heif.py
 
-    - name: Download artifacts
-      run: |
-        curl -L https://api.cirrus-ci.com/v1/artifact/github/${{ github.repository }}/wheel_pi_heif_macos_arm/wheels.zip -o wheels.zip
-        unzip wheels.zip
+      - name: Install libheif from formula
+        run: |
+          brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom
+          brew install --formula ./libheif/macos/libheif.rb
 
-    - name: Upload built wheels
-      uses: actions/upload-artifact@v3
-      with:
-        name: wheels_pi_heif
-        path: wheelhouse/*.whl
-        if-no-files-found: error
+      - name: Run cibuildwheel
+        run: |
+          python3 -m pip install cibuildwheel==2.21.3
+          python3 -m cibuildwheel
+        env:
+          CIBW_ARCHS: "arm64"
+          CIBW_ENVIRONMENT_MACOS: PH_LIGHT_ACTION=1
+          MACOSX_DEPLOYMENT_TARGET: "14.0"
+
+      - name: Check built wheels
+        run: |
+          python3 -m pip install twine
+          python3 -m twine check wheelhouse/*
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels_pi_heif
+          path: wheelhouse/*.whl
+          if-no-files-found: error
 
   wheels_windows:
     name: windows • x86_64
@@ -111,7 +122,7 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: PH_LIGHT_ACTION=1 TEST_DECODE_THREADS=0
           MACOSX_DEPLOYMENT_TARGET: "12.0"
 
-      - name: Checking built wheels
+      - name: Check built wheels
         run: |
           python3 -m pip install twine
           python3 -m twine check wheelhouse/*
