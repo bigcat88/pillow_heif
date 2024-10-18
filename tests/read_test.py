@@ -503,6 +503,7 @@ def test_aux_image():
     assert len(im.info["aux"]["urn:com:apple:photo:2020:aux:hdrgainmap"]) == 1
     aux_id = im.info["aux"]["urn:com:apple:photo:2020:aux:hdrgainmap"][0]
     aux_image = im.get_aux_image(aux_id)
+    assert str(aux_image) == "<HeifAuxImage 2016x1512 L>"
     assert isinstance(aux_image, pillow_heif.HeifAuxImage)
     aux_pil = aux_image.to_pillow()
     assert aux_pil.size == (2016, 1512)

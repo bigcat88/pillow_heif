@@ -1,10 +1,20 @@
 All notable changes to this project will be documented in this file.
 
-## [0.19.0 - 2024-10-16]
+## [0.20.0 - 2024-10-19]
+
+### Added
+
+- Initial support for parsing auxiliary images. #297 Thanks to @johncf
 
 ### Changed
 
-- libheif updated from `1.18.1` to `1.18.2` version.
+- libheif updated from `1.18.1` to `1.18.2` version. #278
+- Dropped `Python 3.8` support. #293
+
+### Fixed
+
+- More accurate error handling in the `C` module. #298 Thanks to @johncf
+- Support for `Pillow` **11.0.0** #294
 
 ## [0.18.0 - 2024-07-27]
 
