@@ -169,7 +169,7 @@ class PillowHeifBuildExt(build_ext):
             self.compiler.include_dirs.append(os.path.dirname(os.path.abspath(__file__)))
 
             if PLATFORM_MINGW:
-                self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-Ofast", "-Werror"])
+                self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-O3", "-Werror"])
             else:
                 self._update_extension(
                     "_pillow_heif", ["libheif"], extra_compile_args=["/d2FH4-", "/WX"], extra_link_args=["/WX"]
@@ -196,7 +196,7 @@ class PillowHeifBuildExt(build_ext):
                 self._add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
                 self._add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
 
-            self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-Ofast", "-Werror"])
+            self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-O3", "-Werror"])
         else:  # let's assume it's some kind of linux
             # this old code waiting for refactoring, when time comes.
             self._add_directory(include_dirs, "/usr/local/include")
@@ -206,7 +206,7 @@ class PillowHeifBuildExt(build_ext):
             self._add_directory(library_dirs, "/usr/lib")
             self._add_directory(library_dirs, "/lib")
 
-            self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-Ofast", "-Werror"])
+            self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-O3", "-Werror"])
 
         self.compiler.library_dirs = library_dirs + self.compiler.library_dirs
         self.compiler.include_dirs = include_dirs + self.compiler.include_dirs
