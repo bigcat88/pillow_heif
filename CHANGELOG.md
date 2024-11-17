@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [0.21.0 - 2024-1x-xx]
+
+### Changed
+
+- libheif updated from `1.18.2` to `1.19.3` version.
+
 ## [0.20.0 - 2024-10-19]
 
 ### Added

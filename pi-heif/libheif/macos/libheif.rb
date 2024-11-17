@@ -3,14 +3,15 @@
 class Libheif < Formula
   desc "ISO/IEC 23008-12:2017 HEIF file format decoder and encoder"
   homepage "https://www.libde265.org/"
-  url "https://github.com/strukturag/libheif/releases/download/v1.18.2/libheif-1.18.2.tar.gz"
-  sha256 "c4002a622bec9f519f29d84bfdc6024e33fd67953a5fb4dc2c2f11f67d5e45bf"
+  url "https://github.com/strukturag/libheif/releases/download/v1.19.3/libheif-1.19.3.tar.gz"
+  sha256 "1e6d3bb5216888a78fbbf5fd958cd3cf3b941aceb002d2a8d635f85cc59a8599"
   license "LGPL-3.0-only"
   # Set current revision from what it was taken plus 10
   revision 10
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
+
   depends_on "libde265"
 
   def install
@@ -42,9 +43,11 @@ class Libheif < Formula
       -DWITH_OpenJPEG_ENCODER=OFF
       -DENABLE_PLUGIN_LOADING=OFF
       -DWITH_LIBSHARPYUV=OFF
+      -DWITH_GDK_PIXBUF=OFF
       -DWITH_EXAMPLES=OFF
       -DCMAKE_INSTALL_RPATH=#{rpath}
     ]
+
     system "cmake", "-S", ".", "-B", "build", *args, *std_cmake_args
     system "cmake", "--build", "build"
     system "cmake", "--install", "build"

@@ -4,11 +4,11 @@
 _realname=libheif
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.18.2
-pkgrel=1
+pkgver=1.19.3
+pkgrel=2
 pkgdesc="HEIF image decoder/encoder library and tools (mingw-w64)"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url="https://github.com/strukturag/libheif"
 license=('spdx:LGPL-3.0' 'spdx:MIT')
 makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
@@ -20,7 +20,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-libde265"
          "${MINGW_PACKAGE_PREFIX}-x265")
 source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('c4002a622bec9f519f29d84bfdc6024e33fd67953a5fb4dc2c2f11f67d5e45bf')
+sha256sums=('1e6d3bb5216888a78fbbf5fd958cd3cf3b941aceb002d2a8d635f85cc59a8599')
 
 build() {
   mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
@@ -63,6 +63,7 @@ build() {
       -DENABLE_PLUGIN_LOADING=OFF \
       -DWITH_LIBSHARPYUV=OFF \
       -DWITH_EXAMPLES=OFF \
+      -DBUILD_TESTING=OFF \
       -DX265_CFLAGS="-DX265_API_IMPORTS" \
       ../${_realname}-${pkgver}
 
