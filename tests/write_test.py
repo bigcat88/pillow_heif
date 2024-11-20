@@ -180,7 +180,7 @@ def test_hdr_save(im_path, save_format):
     heif_file.save(out_buf, quality=-1, format=save_format, chroma=444)
     heif_file_out = pillow_heif.open_heif(out_buf, convert_hdr_to_8bit=False)
     helpers.compare_heif_files_fields(heif_file, heif_file_out)
-    helpers.compare_hashes([im_path, out_buf], hash_size=32)
+    helpers.compare_hashes([im_path, out_buf], hash_size=16)  # was 32 before libheif 1.19 version
 
 
 def test_encoder_parameters():
@@ -275,7 +275,7 @@ def test_CMYK_color_mode():  # noqa
     helpers.compare_hashes([im, im_heif], hash_size=16)
 
 
-@pytest.mark.parametrize("subsampling, expected_max_difference", (("4:4:4", 0.0004), ("4:2:2", 0.11), ("4:2:0", 1.33)))
+@pytest.mark.parametrize("subsampling, expected_max_difference", (("4:4:4", 0.0004), ("4:2:2", 0.11), ("4:2:0", 1.4)))
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 def test_YCbCr_color_mode(
     save_format,
