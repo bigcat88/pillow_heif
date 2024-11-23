@@ -180,6 +180,9 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Workaround for pkg-config
+        run: brew link --overwrite pkgconf
+
       - name: Install from source
         run: |
           brew install --formula ./libheif/macos/libheif.rb
