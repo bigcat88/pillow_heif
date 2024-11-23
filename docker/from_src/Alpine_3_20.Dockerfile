@@ -5,7 +5,11 @@ RUN \
     python3-dev \
     py3-pip \
     alpine-sdk \
-    libheif-dev \
+    cmake \
+    nasm \
+    aom-dev \
+    x265-dev \
+    libde265-dev \
     py3-numpy \
     py3-pillow
 
