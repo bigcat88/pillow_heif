@@ -22,7 +22,7 @@ on:
 
 jobs:
   analysis:
-    runs-on: macos-12
+    runs-on: macos-13
     name: Analysis
 
     steps:
@@ -130,8 +130,8 @@ jobs:
           verbose: true
 
   coverage-macos:
-    runs-on: macos-12
-    name: Coverage(macOS) • 🐍3.10
+    runs-on: macos-13
+    name: Coverage(macOS-13) • 🐍3.10
     env:
       TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
 
@@ -143,6 +143,7 @@ jobs:
 
       - name: Install from source
         run: |
+          brew install --formula ./libheif/macos/libheif.rb
           python3 -m pip -v install ".[dev]"
 
       - name: LibHeif info
@@ -366,11 +367,15 @@ jobs:
         run: sudo -H PH_LIGHT_ACTION=1 EXP_PH_LIBHEIF_VERSION="" python3 -m pytest
 
   coverage-import-error:
-    runs-on: macos-12
+    runs-on: macos-13
     name: Coverage(ImportError)
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install from source
         run: |
           python3 -m pip -v install .
