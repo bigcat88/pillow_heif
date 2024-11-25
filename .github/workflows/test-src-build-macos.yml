@@ -65,9 +65,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Workaround for pkg-config
-        run: brew link --overwrite pkgconf
-
       - name: Install libheif from formula
         run: |
           brew uninstall --force --ignore-dependencies imagemagick libheif
@@ -123,9 +120,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Workaround for pkg-config
-        run: brew link --overwrite pkgconf
 
       - name: Transform to Pi-Heif
         run: |

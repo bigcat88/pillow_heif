@@ -20,9 +20,6 @@ jobs:
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
 
-      - name: Workaround for pkg-config
-        run: brew link --overwrite pkgconf
-
       - name: Install libheif from formula
         run: |
           brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom
