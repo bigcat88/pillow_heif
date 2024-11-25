@@ -235,34 +235,34 @@ jobs:
           Get-ChildItem -Path $Env:MSYS2_PREFIX/bin -Force | Format-List
           cp ${{ env.MSYS2_PREFIX }}/bin/libheif.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll $site_packages/
-          cp ${{ env.MSYS2_PREFIX }}/bin/libx265*.dll $site_packages/
+          cp ${{ env.MSYS2_PREFIX }}/bin/libx265-209.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libaom.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
           cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libsharpyuv-0.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libdav1d-7.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libsharpyuv-*.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libdav1d-*.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libkvazaar-7.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libkvazaar-*.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libcryptopp.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjpeg-8.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjp2-7.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjpeg-*.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjp2-*.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/zlib1.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Dec-0.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc-2.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Dec-*.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc-*.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libbrotlicommon.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libbrotlidec.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libbrotlienc.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libtiff-6.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libtiff-*.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libzstd.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libwebp-7.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/liblzma-5.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libwebp-*.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/liblzma-*.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libLerc.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libdeflate.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjbig-0.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libtiffxx-6.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjph-0.*.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjbig-*.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libtiffxx-*.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjph-*.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenh264-*.dll $site_packages/
 
       - name: Install from source
         run: |
