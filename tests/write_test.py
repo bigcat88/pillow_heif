@@ -1,5 +1,7 @@
 import builtins
+import math
 import os
+import zlib
 from gc import collect
 from io import SEEK_END, BytesIO
 from pathlib import Path
@@ -581,6 +583,43 @@ def test_lossless_encoding_rgba(save_format):
     buf = BytesIO()
     im_rgb.save(buf, format=save_format, quality=-1, chroma=444, matrix_coefficients=0)
     helpers.assert_image_equal(im_rgb, Image.open(buf))
+
+
+@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+def test_lossless_encoding_non_primary_image(save_format):
+    def encode_to_image(data):
+        binary_data = zlib.compress(data)
+        side_length = math.ceil(math.sqrt((len(binary_data) + 3) // 4))
+        total_pixels = side_length * side_length
+        padded_binary_data = binary_data + b"\x00" * (total_pixels * 4 - len(binary_data))
+        binary_array = [tuple(padded_binary_data[i : i + 4]) for i in range(0, len(padded_binary_data), 4)]
+        image_data = [binary_array[i : i + side_length] for i in range(0, len(binary_array), side_length)]
+        im = Image.new("RGBA", (side_length, side_length))
+        im.putdata([pixel for row in image_data for pixel in row])
+        return im
+
+    im_rgb = helpers.gradient_rgb()
+    im_rgb.encoderinfo = {"matrix_coefficients": 0}
+    binary_data_to_encode = b"Some binary data to encode"
+    second_image = encode_to_image(binary_data_to_encode)
+    second_image.encoderinfo = {"matrix_coefficients": 0}
+    buf = BytesIO()
+    im_rgb.save(
+        buf,
+        format=save_format,
+        quality=-1,
+        chroma=444,
+        matrix_coefficients=0,
+        save_all=True,
+        append_images=[second_image],
+    )
+    im_out = Image.open(buf)
+    helpers.assert_image_equal(im_rgb, im_out)
+    bin_data = ImageSequence.Iterator(im_out)[1].copy()
+    flattened_binary_array = list(bin_data.getdata())
+    binary_data_with_padding = b"".join(bytes(pixel) for pixel in flattened_binary_array)
+    z = binary_data_with_padding.rstrip(b"\x00")
+    assert zlib.decompress(z) == binary_data_to_encode
 
 
 def test_input_chroma_value():
