@@ -10,7 +10,7 @@ class Libheif < Formula
   revision 10
 
   depends_on "cmake" => :build
-  depends_on "pkg-config" => :build
+  depends_on "pkgconf" => :build
 
   depends_on "libde265"
 
