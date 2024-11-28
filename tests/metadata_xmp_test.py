@@ -110,7 +110,7 @@ def test_heif_xmp_add_remove():
 
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 def test_heif_xmp_latin1_with_zero_byte():
-    im = Image.open("images/heif_other/xmp_latin1.heic")
+    im = Image.open("images/heif_other/L_xmp_latin1.heic")
     out_heif = BytesIO()
     im.save(out_heif, format="HEIF")
     out_im = Image.open(out_heif)

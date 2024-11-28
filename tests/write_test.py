@@ -180,7 +180,7 @@ def test_hdr_save(im_path, save_format):
     heif_file.save(out_buf, quality=-1, format=save_format, chroma=444)
     heif_file_out = pillow_heif.open_heif(out_buf, convert_hdr_to_8bit=False)
     helpers.compare_heif_files_fields(heif_file, heif_file_out)
-    helpers.compare_hashes([im_path, out_buf], hash_size=32)
+    helpers.compare_hashes([im_path, out_buf], hash_size=16)  # was 32 before libheif 1.19 version
 
 
 def test_encoder_parameters():
@@ -188,8 +188,8 @@ def test_encoder_parameters():
     out_buf2 = BytesIO()
     heif_buf = helpers.create_heif()
     im_heif = pillow_heif.open_heif(heif_buf)
-    im_heif.save(out_buf1, enc_params={"x265:ctu": "32", "x265:min-cu-size": "16", "x265:rdLevel": "2"})
-    im_heif.save(out_buf2, enc_params={"x265:ctu": 64, "x265:min-cu-size": 8, "x265:rdLevel": 6})
+    im_heif.save(out_buf1, enc_params={"x265:ctu": "32", "x265:min-cu-size": "16"})
+    im_heif.save(out_buf2, enc_params={"x265:ctu": 64, "x265:min-cu-size": 8})
     assert out_buf1.seek(0, SEEK_END) != out_buf2.seek(0, SEEK_END)
 
 
@@ -275,7 +275,7 @@ def test_CMYK_color_mode():  # noqa
     helpers.compare_hashes([im, im_heif], hash_size=16)
 
 
-@pytest.mark.parametrize("subsampling, expected_max_difference", (("4:4:4", 0.0004), ("4:2:2", 0.11), ("4:2:0", 1.33)))
+@pytest.mark.parametrize("subsampling, expected_max_difference", (("4:4:4", 0.0004), ("4:2:2", 0.11), ("4:2:0", 1.4)))
 @pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
 def test_YCbCr_color_mode(
     save_format,

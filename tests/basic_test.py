@@ -17,7 +17,7 @@ def test_libheif_info():
         assert key in info
 
     version = pillow_heif.libheif_version()
-    valid_prefixes = ["1.17.", "1.18."]
+    valid_prefixes = ["1.17.", "1.18.", "1.19."]
     assert any(version.startswith(prefix) for prefix in valid_prefixes)
 
 
