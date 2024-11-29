@@ -272,8 +272,7 @@ def _pil_encode_image(ctx: CtxEncode, img: Image.Image, primary: bool, **kwargs)
     _info = img.info.copy()
     _info["exif"] = _exif_from_pillow(img)
     _info["xmp"] = _xmp_from_pillow(img)
-    if primary:
-        _info.update(**kwargs)
+    _info.update(**kwargs)
     _info["primary"] = primary
     if img.mode == "YCbCr":
         ctx.add_image_ycbcr(img, image_orientation=_get_orientation_for_encoder(_info), **_info)
