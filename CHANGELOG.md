@@ -1,10 +1,19 @@
 All notable changes to this project will be documented in this file.
 
-## [0.21.0 - 2024-1x-xx]
+## [0.21.0 - 2024-11-29]
+
+### Added
+
+- Allow specifying encoder parameters for non-primary images in image sequence. #313
 
 ### Changed
 
-- libheif updated from `1.18.2` to `1.19.3` version.
+- Libheif updated from `1.18.2` to `1.19.5` version. #312
+- For macOS(`x86_64`), the minimum supported version for binary wheels has been raised from `12` to `13`.
+
+### Fixed
+
+- Error `argument '-Ofast' is deprecated` when building from source. #305
 
 ## [0.20.0 - 2024-10-19]
 
@@ -14,7 +23,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- libheif updated from `1.18.1` to `1.18.2` version. #278
+- Libheif updated from `1.18.1` to `1.18.2` version. #278
 - Dropped `Python 3.8` support. #293
 
 ### Fixed
