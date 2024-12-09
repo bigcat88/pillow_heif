@@ -100,6 +100,7 @@ lint.extend-per-file-ignores."libheif/**/*.py" = [
   "D",
   "PERF",
   "S",
+  "SIM905",
 ]
 lint.extend-per-file-ignores."tests/**/*.py" = [
   "B009",
