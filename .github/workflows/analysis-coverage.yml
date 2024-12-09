@@ -32,10 +32,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install Libheif
-        run: |
-          brew update
-          brew install libheif
-          brew upgrade libheif
+        run: brew install libheif
 
       - name: Install from source
         run: python3 -m pip install ".[dev]" wheel setuptools
@@ -148,10 +145,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install Libheif
-        run: |
-          brew update
-          brew install libheif
-          brew upgrade libheif
+        run: brew install libheif
 
       - name: Install from source
         run: python3 -m pip -v install ".[dev]"
@@ -188,10 +182,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install Libheif
-        run: |
-          brew update
-          brew install libheif
-          brew upgrade libheif
+        run: brew install libheif
 
       - name: Install from source
         run: python3 -m pip -v install ".[dev]"
@@ -391,10 +382,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install Libheif
-        run: |
-          brew update
-          brew install libheif
-          brew upgrade libheif
+        run: brew install libheif
 
       - name: Install from source
         run: |
