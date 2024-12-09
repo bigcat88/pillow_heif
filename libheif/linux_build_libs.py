@@ -77,7 +77,7 @@ def tool_check_version(name: str, min_version: str) -> bool:
 
 
 def check_install_nasm(version: str):
-    if not match("(i[3-6]86|x86_64)$", machine()):
+    if not match(r"(i[3-6]86|x86_64)$", machine()):
         return True
     if tool_check_version("nasm", version):
         return True
