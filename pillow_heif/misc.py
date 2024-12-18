@@ -160,9 +160,9 @@ def _get_orientation(info: dict, reset: bool = False) -> int | None:
                 if unpack(endian_mark + "H", tif_tag[pointer : pointer + 2])[0] != 274:
                     continue
                 value = tif_tag[pointer + 8 : pointer + 12]
-                _original_orientation = unpack(endian_mark + "H", value[0:2])[0]
-                if _original_orientation != 1:
-                    original_orientation = _original_orientation
+                t_original_orientation = unpack(endian_mark + "H", value[0:2])[0]
+                if t_original_orientation != 1:
+                    original_orientation = t_original_orientation
                     if not reset:
                         break
                     p_value = pointer + 8
@@ -217,36 +217,36 @@ def _get_bytes(fp, length=None) -> bytes:
 
 
 def _retrieve_exif(metadata: list[dict]) -> bytes | None:
-    _result = None
-    _purge = []
+    result = None
+    purge = []
     for i, md_block in enumerate(metadata):
         if md_block["type"] == "Exif":
-            _purge.append(i)
+            purge.append(i)
             skip_size = int.from_bytes(md_block["data"][:4], byteorder="big", signed=False)
             skip_size += 4  # skip 4 bytes with offset
             if len(md_block["data"]) - skip_size <= 4:  # bad EXIF data, skip first 4 bytes
                 skip_size = 4
             elif skip_size >= 6 and md_block["data"][skip_size - 6 : skip_size] == b"Exif\x00\x00":
                 skip_size -= 6
-            _data = md_block["data"][skip_size:]
-            if not _result and _data:
-                _result = _data
-    for i in reversed(_purge):
+            data = md_block["data"][skip_size:]
+            if not result and data:
+                result = data
+    for i in reversed(purge):
         del metadata[i]
-    return _result
+    return result
 
 
 def _retrieve_xmp(metadata: list[dict]) -> bytes | None:
-    _result = None
-    _purge = []
+    result = None
+    purge = []
     for i, md_block in enumerate(metadata):
         if md_block["type"] == "mime":
-            _purge.append(i)
-            if not _result:
-                _result = md_block["data"]
-    for i in reversed(_purge):
+            purge.append(i)
+            if not result:
+                result = md_block["data"]
+    for i in reversed(purge):
         del metadata[i]
-    return _result
+    return result
 
 
 def _exif_from_pillow(img: Image.Image) -> bytes | None:
@@ -260,24 +260,24 @@ def _exif_from_pillow(img: Image.Image) -> bytes | None:
 
 
 def _xmp_from_pillow(img: Image.Image) -> bytes | None:
-    _xmp = None
+    im_xmp = None
     if "xmp" in img.info:
-        _xmp = img.info["xmp"]
+        im_xmp = img.info["xmp"]
     elif "XML:com.adobe.xmp" in img.info:  # PNG
-        _xmp = img.info["XML:com.adobe.xmp"]
+        im_xmp = img.info["XML:com.adobe.xmp"]
     elif hasattr(img, "tag_v2"):  # TIFF
         if 700 in img.tag_v2:
-            _xmp = img.tag_v2[700]
+            im_xmp = img.tag_v2[700]
     elif hasattr(img, "applist"):  # JPEG
         for segment, content in img.applist:
             if segment == "APP1":
                 marker, xmp_tags = content.rsplit(b"\x00", 1)
                 if marker == b"http://ns.adobe.com/xap/1.0/":
-                    _xmp = xmp_tags
+                    im_xmp = xmp_tags
                     break
-    if isinstance(_xmp, str):
-        _xmp = _xmp.encode("utf-8")
-    return _xmp
+    if isinstance(im_xmp, str):
+        im_xmp = im_xmp.encode("utf-8")
+    return im_xmp
 
 
 def _pil_to_supported_mode(img: Image.Image) -> Image.Image:
@@ -353,12 +353,12 @@ def __get_camera_intrinsic_matrix(values: tuple | None):
 
 def _get_heif_meta(c_image) -> dict:
     r = {}
-    _camera_intrinsic_matrix = __get_camera_intrinsic_matrix(c_image.camera_intrinsic_matrix)
-    if _camera_intrinsic_matrix:
-        r["camera_intrinsic_matrix"] = _camera_intrinsic_matrix
-    _camera_extrinsic_matrix_rot = c_image.camera_extrinsic_matrix_rot
-    if _camera_extrinsic_matrix_rot:
-        r["camera_extrinsic_matrix_rot"] = _camera_extrinsic_matrix_rot
+    camera_intrinsic_matrix = __get_camera_intrinsic_matrix(c_image.camera_intrinsic_matrix)
+    if camera_intrinsic_matrix:
+        r["camera_intrinsic_matrix"] = camera_intrinsic_matrix
+    camera_extrinsic_matrix_rot = c_image.camera_extrinsic_matrix_rot
+    if camera_extrinsic_matrix_rot:
+        r["camera_extrinsic_matrix_rot"] = camera_extrinsic_matrix_rot
     return r
 
 
@@ -381,8 +381,7 @@ class CtxEncode:
         if chroma:
             enc_params["chroma"] = chroma
         for key, value in enc_params.items():
-            _value = value if isinstance(value, str) else str(value)
-            self.ctx_write.set_parameter(key, _value)
+            self.ctx_write.set_parameter(key, value if isinstance(value, str) else str(value))
 
     def add_image(self, size: tuple[int, int], mode: str, data, **kwargs) -> None:
         """Adds image to the encoder."""
@@ -415,9 +414,9 @@ class CtxEncode:
 
     def _finish_add_image(self, im_out, size: tuple[int, int], **kwargs):
         # set ICC color profile
-        __icc_profile = kwargs.get("icc_profile")
-        if __icc_profile is not None:
-            im_out.set_icc_profile(kwargs.get("icc_profile_type", "prof"), __icc_profile)
+        icc_profile = kwargs.get("icc_profile")
+        if icc_profile is not None:
+            im_out.set_icc_profile(kwargs.get("icc_profile_type", "prof"), icc_profile)
         # set NCLX color profile
         if kwargs.get("nclx_profile"):
             im_out.set_nclx_profile(

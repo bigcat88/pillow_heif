@@ -25,10 +25,10 @@ pillow_heif.register_heif_opener()
 )
 def test_exif_from_pillow(im_format, save_format):
     def pil_image_with_exif():
-        _exif = Image.Exif()
-        _exif[0x010E] = exif_desc_value
+        im_exif = Image.Exif()
+        im_exif[0x010E] = exif_desc_value
         _ = BytesIO()
-        Image.new("RGB", (16, 16), 0).save(_, format=im_format, exif=_exif)
+        Image.new("RGB", (16, 16), 0).save(_, format=im_format, exif=im_exif)
         return _
 
     exif_desc_value = "this is a desc"
