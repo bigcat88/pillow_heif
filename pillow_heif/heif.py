@@ -120,9 +120,9 @@ class HeifDepthImage(BaseImage):
 
     def __init__(self, c_image):
         super().__init__(c_image)
-        _metadata: dict = c_image.metadata
+        metadata: dict = c_image.metadata
         self.info = {
-            "metadata": _metadata,
+            "metadata": metadata,
         }
         save_colorspace_chroma(c_image, self.info)
 
@@ -151,48 +151,48 @@ class HeifImage(BaseImage):
 
     def __init__(self, c_image):
         super().__init__(c_image)
-        _metadata: list[dict] = c_image.metadata
-        _exif = _retrieve_exif(_metadata)
-        _xmp = _retrieve_xmp(_metadata)
-        _thumbnails: list[int | None] = [i for i in c_image.thumbnails if i is not None] if options.THUMBNAILS else []
-        _depth_images: list[HeifDepthImage | None] = (
+        metadata: list[dict] = c_image.metadata
+        exif = _retrieve_exif(metadata)
+        xmp = _retrieve_xmp(metadata)
+        thumbnails: list[int | None] = [i for i in c_image.thumbnails if i is not None] if options.THUMBNAILS else []
+        depth_images: list[HeifDepthImage | None] = (
             [HeifDepthImage(i) for i in c_image.depth_image_list if i is not None] if options.DEPTH_IMAGES else []
         )
         self.info = {
             "primary": bool(c_image.primary),
             "bit_depth": int(c_image.bit_depth),
-            "exif": _exif,
-            "metadata": _metadata,
-            "thumbnails": _thumbnails,
-            "depth_images": _depth_images,
+            "exif": exif,
+            "metadata": metadata,
+            "thumbnails": thumbnails,
+            "depth_images": depth_images,
         }
         if options.AUX_IMAGES:
-            _ctx_aux_info = {}
+            ctx_aux_info = {}
             for aux_id in c_image.aux_image_ids:
                 aux_type = c_image.get_aux_type(aux_id)
-                if aux_type not in _ctx_aux_info:
-                    _ctx_aux_info[aux_type] = []
-                _ctx_aux_info[aux_type].append(aux_id)
-            self.info["aux"] = _ctx_aux_info
-        _heif_meta = _get_heif_meta(c_image)
-        if _xmp:
-            self.info["xmp"] = _xmp
-        if _heif_meta:
-            self.info["heif"] = _heif_meta
+                if aux_type not in ctx_aux_info:
+                    ctx_aux_info[aux_type] = []
+                ctx_aux_info[aux_type].append(aux_id)
+            self.info["aux"] = ctx_aux_info
+        heif_meta = _get_heif_meta(c_image)
+        if xmp:
+            self.info["xmp"] = xmp
+        if heif_meta:
+            self.info["heif"] = heif_meta
         save_colorspace_chroma(c_image, self.info)
-        _color_profile: dict[str, Any] = c_image.color_profile
-        if _color_profile:
-            if _color_profile["type"] in ("rICC", "prof"):
-                self.info["icc_profile"] = _color_profile["data"]
-                self.info["icc_profile_type"] = _color_profile["type"]
+        color_profile: dict[str, Any] = c_image.color_profile
+        if color_profile:
+            if color_profile["type"] in ("rICC", "prof"):
+                self.info["icc_profile"] = color_profile["data"]
+                self.info["icc_profile_type"] = color_profile["type"]
             else:
-                self.info["nclx_profile"] = _color_profile["data"]
+                self.info["nclx_profile"] = color_profile["data"]
 
     def __repr__(self):
-        _bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
+        s_bytes = f"{len(self.data)} bytes" if self._data or isinstance(self._c_image, MimCImage) else "no"
         return (
             f"<{self.__class__.__name__} {self.size[0]}x{self.size[1]} {self.mode} "
-            f"with {_bytes} image data and {len(self.info.get('thumbnails', []))} thumbnails>"
+            f"with {s_bytes} image data and {len(self.info.get('thumbnails', []))} thumbnails>"
         )
 
     @property
@@ -449,20 +449,20 @@ class HeifFile:
         """
         if image.size[0] <= 0 or image.size[1] <= 0:
             raise ValueError("Empty images are not supported.")
-        _info = image.info.copy()
-        _info["exif"] = _exif_from_pillow(image)
-        _xmp = _xmp_from_pillow(image)
-        if _xmp:
-            _info["xmp"] = _xmp
-        original_orientation = set_orientation(_info)
-        _img = _pil_to_supported_mode(image)
+        info = image.info.copy()
+        info["exif"] = _exif_from_pillow(image)
+        xmp = _xmp_from_pillow(image)
+        if xmp:
+            info["xmp"] = xmp
+        original_orientation = set_orientation(info)
+        img = _pil_to_supported_mode(image)
         if original_orientation is not None and original_orientation != 1:
-            _img = _rotate_pil(_img, original_orientation)
-        _img.load()
+            img = _rotate_pil(img, original_orientation)
+        img.load()
         added_image = self.add_frombytes(
-            _img.mode,
-            _img.size,
-            _img.tobytes(),
+            img.mode,
+            img.size,
+            img.tobytes(),
         )
         for key in ["bit_depth", "thumbnails", "icc_profile", "icc_profile_type"]:
             if key in image.info:
@@ -471,9 +471,9 @@ class HeifFile:
             if key in image.info:
                 added_image.info[key] = deepcopy(image.info[key])
         added_image.info["exif"] = _exif_from_pillow(image)
-        _xmp = _xmp_from_pillow(image)
-        if _xmp:
-            added_image.info["xmp"] = _xmp
+        im_xmp = _xmp_from_pillow(image)
+        if im_xmp:
+            added_image.info["xmp"] = im_xmp
         return added_image
 
     @property
@@ -497,11 +497,11 @@ class HeifFile:
             added_image.info = im_info
 
     def __copy(self):
-        _im_copy = HeifFile()
-        _im_copy._images = copy(self._images)  # pylint: disable=protected-access
-        _im_copy.mimetype = self.mimetype
-        _im_copy.primary_index = self.primary_index
-        return _im_copy
+        im_copy = HeifFile()
+        im_copy._images = copy(self._images)  # pylint: disable=protected-access
+        im_copy.mimetype = self.mimetype
+        im_copy.primary_index = self.primary_index
+        return im_copy
 
     def get_aux_image(self, aux_id):
         """`get_aux_image`` method of the primary :class:`~pillow_heif.HeifImage` in the container.
@@ -522,10 +522,10 @@ def is_supported(fp) -> bool:
 
     :returns: A boolean indicating if the object can be opened.
     """
-    __data = _get_bytes(fp, 12)
-    if __data[4:8] != b"ftyp":
+    f_data = _get_bytes(fp, 12)
+    if f_data[4:8] != b"ftyp":
         return False
-    return get_file_mimetype(__data) != ""
+    return get_file_mimetype(f_data) != ""
 
 
 def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFile:
@@ -603,18 +603,18 @@ def _encode_images(images: list[HeifImage], fp, **kwargs) -> None:
     ctx_write = CtxEncode(compression_format, **kwargs)
     for i, img in enumerate(images_to_save):
         img.load()
-        _info = img.info.copy()
-        _info["primary"] = False
+        info = img.info.copy()
+        info["primary"] = False
         if i == primary_index:
-            _info.update(**kwargs)
-            _info["primary"] = True
-        _info.pop("stride", 0)
+            info.update(**kwargs)
+            info["primary"] = True
+        info.pop("stride", 0)
         ctx_write.add_image(
             img.size,
             img.mode,
             img.data,
-            image_orientation=_get_orientation_for_encoder(_info),
-            **_info,
+            image_orientation=_get_orientation_for_encoder(info),
+            **info,
             stride=img.stride,
         )
     ctx_write.save(fp)

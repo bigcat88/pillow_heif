@@ -45,12 +45,12 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def _open(self):
         try:
             # when Pillow starts supporting 16-bit multichannel images change `convert_hdr_to_8bit` to False
-            _heif_file = HeifFile(self.fp, convert_hdr_to_8bit=True, hdr_to_16bit=True, remove_stride=False)
+            heif_file = HeifFile(self.fp, convert_hdr_to_8bit=True, hdr_to_16bit=True, remove_stride=False)
         except (OSError, ValueError, SyntaxError, RuntimeError, EOFError) as exception:
             raise SyntaxError(str(exception)) from None
-        self.custom_mimetype = _heif_file.mimetype
-        self._heif_file = _heif_file
-        self.__frame = _heif_file.primary_index
+        self.custom_mimetype = heif_file.mimetype
+        self._heif_file = heif_file
+        self.__frame = heif_file.primary_index
         self._init_from_heif_file(self.__frame)
         self.tile = []
 
@@ -100,9 +100,9 @@ class _LibHeifImageFile(ImageFile.ImageFile):
             # https://github.com/python-pillow/Pillow/issues/8439
             self.im = Image.core.new(self._mode, self._size)  # pylint: disable=too-many-function-args
 
-        _exif = getattr(self, "_exif", None)  # Pillow 9.2+ do no reload exif between frames.
-        if _exif is not None and getattr(_exif, "_loaded", None):
-            _exif._loaded = False  # pylint: disable=protected-access
+        exif = getattr(self, "_exif", None)  # Pillow 9.2+ do no reload exif between frames.
+        if exif is not None and getattr(exif, "_loaded", None):
+            exif._loaded = False  # pylint: disable=protected-access
 
     def tell(self) -> int:
         return self.__frame
@@ -269,15 +269,13 @@ def __save_all(im: Image.Image, fp: IO[bytes], compression_format: HeifCompressi
 def _pil_encode_image(ctx: CtxEncode, img: Image.Image, primary: bool, **kwargs) -> None:
     if img.size[0] <= 0 or img.size[1] <= 0:
         raise ValueError("Empty images are not supported.")
-    _info = img.info.copy()
-    _info["exif"] = _exif_from_pillow(img)
-    _info["xmp"] = _xmp_from_pillow(img)
-    _info.update(**kwargs)
-    _info["primary"] = primary
+    info = img.info.copy()
+    info["exif"] = _exif_from_pillow(img)
+    info["xmp"] = _xmp_from_pillow(img)
+    info.update(**kwargs)
+    info["primary"] = primary
     if img.mode == "YCbCr":
-        ctx.add_image_ycbcr(img, image_orientation=_get_orientation_for_encoder(_info), **_info)
+        ctx.add_image_ycbcr(img, image_orientation=_get_orientation_for_encoder(info), **info)
     else:
-        _img = _pil_to_supported_mode(img)
-        ctx.add_image(
-            _img.size, _img.mode, _img.tobytes(), image_orientation=_get_orientation_for_encoder(_info), **_info
-        )
+        img = _pil_to_supported_mode(img)
+        ctx.add_image(img.size, img.mode, img.tobytes(), image_orientation=_get_orientation_for_encoder(info), **info)

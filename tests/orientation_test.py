@@ -103,8 +103,8 @@ def test_heif_exif_orientation(orientation):
         assert im_heif.info["original_orientation"] == orientation
     im_heif_exif = im_heif.getexif()
     assert 0x0112 not in im_heif_exif or im_heif_exif[0x0112] == 1
-    _im = pillow_heif.misc._rotate_pil(im, orientation)
-    assert_image_similar(_im, im_heif)
+    im_result = pillow_heif.misc._rotate_pil(im, orientation)
+    assert_image_similar(im_result, im_heif)
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
@@ -117,12 +117,12 @@ def test_heif_xmp_orientation(orientation):
     # Image will be automatically rotated by XMP value before saving.
     im.save(out_im_heif, format="HEIF", xmp=xmp.encode("utf-8"), quality=-1)
     im_heif = Image.open(out_im_heif)
-    _im = pillow_heif.misc._rotate_pil(im, orientation)
+    im_result = pillow_heif.misc._rotate_pil(im, orientation)
     if orientation == 1:
         assert im_heif.info["original_orientation"] is None
     else:
         assert im_heif.info["original_orientation"] == orientation
-    assert_image_similar(_im, im_heif)
+    assert_image_similar(im_result, im_heif)
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
@@ -135,12 +135,12 @@ def test_heif_xmp_orientation_exiftool(orientation):
     # Image will be automatically rotated by EXIF value before saving.
     im.save(out_im_heif, format="HEIF", xmp=xmp.encode("utf-8"), quality=-1)
     im_heif = Image.open(out_im_heif)
-    _im = pillow_heif.misc._rotate_pil(im, orientation)
+    im_result = pillow_heif.misc._rotate_pil(im, orientation)
     if orientation != 1:
         assert im_heif.info["original_orientation"] == orientation
     else:
         assert im_heif.info["original_orientation"] is None
-    assert_image_similar(_im, im_heif)
+    assert_image_similar(im_result, im_heif)
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
@@ -155,12 +155,12 @@ def test_heif_xmp_orientation_with_exif_eq_1(orientation):
     # Image will be automatically rotated by XMP value before saving.
     im.save(out_im_heif, format="HEIF", exif=exif_data.tobytes(), xmp=xmp.encode("utf-8"), quality=-1)
     im_heif = Image.open(out_im_heif)
-    _im = pillow_heif.misc._rotate_pil(im, orientation)
+    im_result = pillow_heif.misc._rotate_pil(im, orientation)
     if orientation != 1:
         assert im_heif.info["original_orientation"] == orientation
     else:
         assert im_heif.info["original_orientation"] is None
-    assert_image_similar(_im, im_heif)
+    assert_image_similar(im_result, im_heif)
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
