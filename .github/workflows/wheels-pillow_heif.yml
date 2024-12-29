@@ -71,7 +71,7 @@ jobs:
           Get-ChildItem -Path $Env:MSYS2_PREFIX/bin -Force | Format-List
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libheif.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll
-          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libx265-209.dll
+          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libx265-215.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libaom.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll
