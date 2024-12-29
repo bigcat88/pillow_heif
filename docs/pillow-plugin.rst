@@ -50,6 +50,8 @@ AVIF plugin
 
 ``AVIF`` plugin should support all operations and work the same way as ``HEIF`` plugin do.
 
+.. note:: Deprecated, use the `pillow-avif-plugin <https://github.com/fdintino/pillow-avif-plugin>`_ project instead.
+
 Tips & Tricks
 """""""""""""
 

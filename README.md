@@ -21,8 +21,8 @@
 Python bindings to [libheif](https://github.com/strukturag/libheif) for working with HEIF images and plugin for Pillow.
 
 Features:
- * Decoding of `8`, `10`, `12` bit HEIC and AVIF files.
- * Encoding of `8`, `10`, `12` bit HEIC and AVIF files.
+ * Decoding of `8`, `10`, `12` bit HEIC files.
+ * Encoding of `8`, `10`, `12` bit HEIC files.
  * `EXIF`, `XMP`, `IPTC` read & write support.
  * Support of multiple images in one file and a `PrimaryImage` attribute.
  * Adding & removing `thumbnails`.
@@ -95,15 +95,6 @@ import pillow_heif
 if pillow_heif.is_supported("input.heic"):
     heif_file = pillow_heif.open_heif("input.heic")
     np_array = np.asarray(heif_file)
-```
-
-### AVIF support
-
-Working with the `AVIF` files as the same as with the `HEIC` files. Just use a separate function to register plugin:
-```python3
-import pillow_heif
-
-pillow_heif.register_avif_opener()
 ```
 
 ### Accessing Depth Images

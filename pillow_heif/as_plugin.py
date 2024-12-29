@@ -206,6 +206,13 @@ def register_avif_opener(**kwargs) -> None:
 
     :param kwargs: dictionary with values to set in options. See: :ref:`options`.
     """
+    warn(
+        "The AVIF support in this library is marked as deprecated and will be removed in the next version. "
+        "If you still need AVIF support until it natively appears in Pillow, use the "
+        "https://github.com/fdintino/pillow-avif-plugin project instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     if not _pillow_heif.get_lib_info()["AVIF"]:
         warn("This version of `pillow-heif` was built without AVIF support.", stacklevel=1)
         return
