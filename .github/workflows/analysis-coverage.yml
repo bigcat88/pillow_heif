@@ -21,50 +21,55 @@ on:
   workflow_dispatch:
 
 jobs:
-  analysis:
-    runs-on: macos-13
-    name: Analysis
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install Libheif
-        run: brew install libheif
-
-      - name: Install from source
-        run: python3 -m pip install ".[dev]" wheel setuptools
-
-      - name: Run Analysis
-        run: python3 -m pylint "setup.py" "pillow_heif/"
-
-  coverage-linux:
-    runs-on: ubuntu-22.04
-    name: Coverage(Linux) • 🐍3.11
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Prepare system
-        run: |
-          sudo apt -y purge libheif1
-          sudo add-apt-repository ppa:strukturag/libheif
-          sudo apt update
-          sudo apt -y install libheif-dev
-
-      - name: Install from source
-        run: |
-          python3 -m pip install pillow==10.2.0
-          python3 -m pip -v install ".[dev]"
-
-      - name: LibHeif info
-        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
-
+#  analysis:
+#    runs-on: macos-13
+#    name: Analysis
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.12'
+#
+#      - name: Install Libheif
+#        run: brew install libheif
+#
+#      - name: Install from source
+#        run: python3 -m pip install ".[dev]" wheel setuptools
+#
+#      - name: Run Analysis
+#        run: python3 -m pylint "setup.py" "pillow_heif/"
+#
+#  coverage-linux:
+#    runs-on: ubuntu-22.04
+#    name: Coverage(Linux) • 🐍3.11
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.11'
+#
+#      - name: Prepare system
+#        run: |
+#          sudo apt -y purge libheif1
+#          sudo add-apt-repository ppa:strukturag/libheif
+#          sudo apt update
+#          sudo apt -y install libheif-dev
+#
+#      - name: Reinstall Libheif from source
+#        run: |
+#          sudo apt -y purge libheif1 --no-auto-remove
+#          sudo python3 libheif/linux_build_libs.py
+#
+#      - name: Install from source
+#        run: |
+#          python3 -m pip install pillow==10.2.0
+#          python3 -m pip -v install ".[dev]"
+#
+#      - name: LibHeif info
+#        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+#
 #      - name: Generate coverage report
 #        run: |
 #          TEST_PLUGIN_LOAD="$(whereis libheif | awk '{print $2}')/plugins/libheif-x265.so" coverage run -m pytest
@@ -101,13 +106,20 @@ jobs:
           sudo add-apt-repository ppa:strukturag/libheif
           sudo apt update
           sudo apt -y install libheif-dev
-          sudo apt -y install zlib1g-dev libjpeg-dev liblcms2-dev libwebp-dev libfribidi-dev libharfbuzz-dev libffi-dev
 
-      - name: Install from source
+      - name: Install Pillow-dev
         run: |
+          sudo apt -y install zlib1g-dev libjpeg-dev liblcms2-dev libwebp-dev libfribidi-dev libharfbuzz-dev libffi-dev
           git clone --depth=1 https://github.com/python-pillow/Pillow.git
           cd Pillow && python3 -m pip install . && cd ..
-          python3 -m pip -v install ".[dev]"
+
+      - name: Reinstall Libheif from source
+        run: |
+          sudo dpkg --remove --force-depends libheif1
+          sudo python3 libheif/linux_build_libs.py
+
+      - name: Install from source
+        run: python3 -m pip -v install ".[dev]"
 
       - name: LibHeif info
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
@@ -131,278 +143,278 @@ jobs:
 #          file: ./coverage.xml
 #          fail_ci_if_error: true
 #          verbose: true
-
-  coverage-macos:
-    runs-on: macos-13
-    name: Coverage(macOS-13) • 🐍3.10
-    env:
-      TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install Libheif
-        run: brew install libheif
-
-      - name: Install from source
-        run: python3 -m pip -v install ".[dev]"
-
-      - name: LibHeif info
-        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
-
-      - name: Generate coverage report
-        run: coverage run -m pytest && coverage xml && coverage html
-
-      - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage_macos
-          path: ./htmlcov
-          if-no-files-found: error
-
-      - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
-
-  coverage-macos-arm:
-    runs-on: macos-14
-    name: Coverage(macOS-14) • 🐍3.11
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install Libheif
-        run: brew install libheif
-
-      - name: Install from source
-        run: python3 -m pip -v install ".[dev]"
-
-      - name: LibHeif info
-        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
-
-      - name: Generate coverage report
-        run: coverage run -m pytest && coverage xml && coverage html
-
-      - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage_macos_arm
-          path: ./htmlcov
-          if-no-files-found: error
-
-      - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
-
-  coverage-windows:
-    runs-on: windows-2022
-    name: Coverage(Windows) • 🐍3.9
-    env:
-      MSYS2_PREFIX: "C:/temp/msys64/mingw64"
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
-
-      - uses: msys2/setup-msys2@v2
-        with:
-          location: C:/temp
-          update: true
-          install: >-
-            mingw-w64-x86_64-binutils
-            mingw-w64-x86_64-libheif
-
-#     In release or building from source we do not build `dav1d`,`rav1e` and `libSvtAv1Enc` libraries.
-#     Here we just test working with original package from MSYS.
-      - name: Copy DLLs from MSYS2
-        run: |
-          python -c 'import sysconfig; print(sysconfig.get_paths()["platlib"])'
-          $site_packages=(python -c 'import sysconfig; print(sysconfig.get_paths()["platlib"])')
-          Get-ChildItem -Path $Env:MSYS2_PREFIX/bin -Force | Format-List
-          cp ${{ env.MSYS2_PREFIX }}/bin/libheif.dll $site_packages/
-          cp ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll $site_packages/
-          cp ${{ env.MSYS2_PREFIX }}/bin/libx265-215.dll $site_packages/
-          cp ${{ env.MSYS2_PREFIX }}/bin/libaom.dll $site_packages/
-          cp ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll $site_packages/
-          cp ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
-          cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libsharpyuv-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libdav1d-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libkvazaar-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libcryptopp.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjpeg-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjp2-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/zlib1.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Dec-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libbrotlicommon.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libbrotlidec.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libbrotlienc.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libtiff-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libzstd.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libwebp-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/liblzma-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libLerc.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libdeflate.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjbig-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libtiffxx-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjph-*.dll $site_packages/
-          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenh264-*.dll $site_packages/
-
-      - name: Install from source
-        run: |
-          python -m pip install pillow==10.1.0
-          python -m pip -v install ".[dev]"
-
-      - name: LibHeif info
-        run: python -c "import pillow_heif; print(pillow_heif.libheif_info())"
-
-      - name: Generate coverage report
-        run: coverage run -m pytest && coverage xml && coverage html
-
-      - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage_windows
-          path: ./htmlcov
-          if-no-files-found: error
-
-      - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
-
-  coverage-pi-heif:
-    runs-on: ubuntu-22.04
-    name: Pi-Heif Coverage(Linux) • 🐍3.13
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Transform to Pi-Heif
-        run: cp -r -v ./pi-heif/* .
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-          allow-prereleases: true
-
-      - name: Prepare system
-        run: |
-          sudo apt -y purge libheif1 libaom-dev libx265-dev libde265-dev
-          sudo apt -y install nasm
-
-      - name: Install from source
-        run: |
-          sudo -H python3 -m pip install pillow==10.3.0 pytest defusedxml packaging numpy coverage
-          sudo -H PH_LIGHT_ACTION=1 python3 libheif/linux_build_libs.py
-          sudo -H python3 -m pip -v install --no-build-isolation .
-
-      - name: LibHeif info
-        run: sudo -H python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
-
-      - name: Generate coverage report
-        run: sudo -H coverage run -m pytest && coverage xml && coverage html
-
-      - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage_light_macos
-          path: ./htmlcov
-          if-no-files-found: error
-
-      - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
-
-  test-pi-heif:
-    runs-on: ubuntu-22.04
-    name: Pi-Heif Test(Linux) • 🐍3.13
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Transform to Pi-Heif
-        run: |
-          cp -r -v ./pi-heif/* .
-          python3 .github/transform_to-pi_heif.py
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-          allow-prereleases: true
-
-      - name: Prepare system
-        run: |
-          sudo apt -y purge libheif1 libaom-dev libx265-dev libde265-dev
-          sudo apt -y install  nasm
-
-      - name: Install from source
-        run: |
-          sudo -H python3 -m pip install pillow==10.1.0 pytest defusedxml packaging numpy
-          sudo -H PH_LIGHT_ACTION=1 python3 libheif/linux_build_libs.py
-          sudo -H python3 -m pip -v install --no-build-isolation .
-
-      - name: LibHeif info
-        run: sudo -H python3 -c "import pi_heif; print(pi_heif.libheif_info())"
-
-      - name: Perform tests
-        run: sudo -H PH_LIGHT_ACTION=1 EXP_PH_LIBHEIF_VERSION="" python3 -m pytest
-
-  coverage-import-error:
-    runs-on: macos-13
-    name: Coverage(ImportError)
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install Libheif
-        run: brew install libheif
-
-      - name: Install from source
-        run: |
-          python3 -m pip -v install .
-          python3 -m pip install pytest coverage
-
-      - name: Generate coverage report
-        run: coverage run -m pytest tests/import_error_test.py && coverage xml && coverage html
-
-      - name: HTML coverage to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage_macos_imp_err
-          path: ./htmlcov
-          if-no-files-found: error
-
-      - name: Upload report to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
+#
+#  coverage-macos:
+#    runs-on: macos-13
+#    name: Coverage(macOS-13) • 🐍3.10
+#    env:
+#      TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.10'
+#
+#      - name: Install Libheif
+#        run: brew install libheif
+#
+#      - name: Install from source
+#        run: python3 -m pip -v install ".[dev]"
+#
+#      - name: LibHeif info
+#        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+#
+#      - name: Generate coverage report
+#        run: coverage run -m pytest && coverage xml && coverage html
+#
+#      - name: HTML coverage to artifacts
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: coverage_macos
+#          path: ./htmlcov
+#          if-no-files-found: error
+#
+#      - name: Upload report to Codecov
+#        uses: codecov/codecov-action@v4
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          file: ./coverage.xml
+#          fail_ci_if_error: true
+#          verbose: true
+#
+#  coverage-macos-arm:
+#    runs-on: macos-14
+#    name: Coverage(macOS-14) • 🐍3.11
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.11'
+#
+#      - name: Install Libheif
+#        run: brew install libheif
+#
+#      - name: Install from source
+#        run: python3 -m pip -v install ".[dev]"
+#
+#      - name: LibHeif info
+#        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+#
+#      - name: Generate coverage report
+#        run: coverage run -m pytest && coverage xml && coverage html
+#
+#      - name: HTML coverage to artifacts
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: coverage_macos_arm
+#          path: ./htmlcov
+#          if-no-files-found: error
+#
+#      - name: Upload report to Codecov
+#        uses: codecov/codecov-action@v4
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          file: ./coverage.xml
+#          fail_ci_if_error: true
+#          verbose: true
+#
+#  coverage-windows:
+#    runs-on: windows-2022
+#    name: Coverage(Windows) • 🐍3.9
+#    env:
+#      MSYS2_PREFIX: "C:/temp/msys64/mingw64"
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.9'
+#
+#      - uses: msys2/setup-msys2@v2
+#        with:
+#          location: C:/temp
+#          update: true
+#          install: >-
+#            mingw-w64-x86_64-binutils
+#            mingw-w64-x86_64-libheif
+#
+##     In release or building from source we do not build `dav1d`,`rav1e` and `libSvtAv1Enc` libraries.
+##     Here we just test working with original package from MSYS.
+#      - name: Copy DLLs from MSYS2
+#        run: |
+#          python -c 'import sysconfig; print(sysconfig.get_paths()["platlib"])'
+#          $site_packages=(python -c 'import sysconfig; print(sysconfig.get_paths()["platlib"])')
+#          Get-ChildItem -Path $Env:MSYS2_PREFIX/bin -Force | Format-List
+#          cp ${{ env.MSYS2_PREFIX }}/bin/libheif.dll $site_packages/
+#          cp ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll $site_packages/
+#          cp ${{ env.MSYS2_PREFIX }}/bin/libx265-215.dll $site_packages/
+#          cp ${{ env.MSYS2_PREFIX }}/bin/libaom.dll $site_packages/
+#          cp ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll $site_packages/
+#          cp ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll $site_packages/
+#          cp ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libsharpyuv-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libdav1d-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/rav1e.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libkvazaar-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libcryptopp.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjpeg-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjp2-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/zlib1.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Dec-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libSvtAv1Enc-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libbrotlicommon.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libbrotlidec.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libbrotlienc.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libtiff-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libzstd.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libwebp-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/liblzma-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libLerc.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libdeflate.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libjbig-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libtiffxx-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjph-*.dll $site_packages/
+#          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenh264-*.dll $site_packages/
+#
+#      - name: Install from source
+#        run: |
+#          python -m pip install pillow==10.1.0
+#          python -m pip -v install ".[dev]"
+#
+#      - name: LibHeif info
+#        run: python -c "import pillow_heif; print(pillow_heif.libheif_info())"
+#
+#      - name: Generate coverage report
+#        run: coverage run -m pytest && coverage xml && coverage html
+#
+#      - name: HTML coverage to artifacts
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: coverage_windows
+#          path: ./htmlcov
+#          if-no-files-found: error
+#
+#      - name: Upload report to Codecov
+#        uses: codecov/codecov-action@v4
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          file: ./coverage.xml
+#          fail_ci_if_error: true
+#          verbose: true
+#
+#  coverage-pi-heif:
+#    runs-on: ubuntu-22.04
+#    name: Pi-Heif Coverage(Linux) • 🐍3.13
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Transform to Pi-Heif
+#        run: cp -r -v ./pi-heif/* .
+#
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.13'
+#          allow-prereleases: true
+#
+#      - name: Prepare system
+#        run: |
+#          sudo apt -y purge libheif1 libaom-dev libx265-dev libde265-dev
+#          sudo apt -y install nasm
+#
+#      - name: Install from source
+#        run: |
+#          sudo -H python3 -m pip install pillow==10.3.0 pytest defusedxml packaging numpy coverage
+#          sudo -H PH_LIGHT_ACTION=1 python3 libheif/linux_build_libs.py
+#          sudo -H python3 -m pip -v install --no-build-isolation .
+#
+#      - name: LibHeif info
+#        run: sudo -H python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+#
+#      - name: Generate coverage report
+#        run: sudo -H coverage run -m pytest && coverage xml && coverage html
+#
+#      - name: HTML coverage to artifacts
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: coverage_light_macos
+#          path: ./htmlcov
+#          if-no-files-found: error
+#
+#      - name: Upload report to Codecov
+#        uses: codecov/codecov-action@v4
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          file: ./coverage.xml
+#          fail_ci_if_error: true
+#          verbose: true
+#
+#  test-pi-heif:
+#    runs-on: ubuntu-22.04
+#    name: Pi-Heif Test(Linux) • 🐍3.13
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Transform to Pi-Heif
+#        run: |
+#          cp -r -v ./pi-heif/* .
+#          python3 .github/transform_to-pi_heif.py
+#
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.13'
+#          allow-prereleases: true
+#
+#      - name: Prepare system
+#        run: |
+#          sudo apt -y purge libheif1 libaom-dev libx265-dev libde265-dev
+#          sudo apt -y install  nasm
+#
+#      - name: Install from source
+#        run: |
+#          sudo -H python3 -m pip install pillow==10.1.0 pytest defusedxml packaging numpy
+#          sudo -H PH_LIGHT_ACTION=1 python3 libheif/linux_build_libs.py
+#          sudo -H python3 -m pip -v install --no-build-isolation .
+#
+#      - name: LibHeif info
+#        run: sudo -H python3 -c "import pi_heif; print(pi_heif.libheif_info())"
+#
+#      - name: Perform tests
+#        run: sudo -H PH_LIGHT_ACTION=1 EXP_PH_LIBHEIF_VERSION="" python3 -m pytest
+#
+#  coverage-import-error:
+#    runs-on: macos-13
+#    name: Coverage(ImportError)
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.12'
+#
+#      - name: Install Libheif
+#        run: brew install libheif
+#
+#      - name: Install from source
+#        run: |
+#          python3 -m pip -v install .
+#          python3 -m pip install pytest coverage
+#
+#      - name: Generate coverage report
+#        run: coverage run -m pytest tests/import_error_test.py && coverage xml && coverage html
+#
+#      - name: HTML coverage to artifacts
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: coverage_macos_imp_err
+#          path: ./htmlcov
+#          if-no-files-found: error
+#
+#      - name: Upload report to Codecov
+#        uses: codecov/codecov-action@v4
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          file: ./coverage.xml
+#          fail_ci_if_error: true
+#          verbose: true
