@@ -65,25 +65,25 @@ jobs:
       - name: LibHeif info
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
-#      - name: Generate coverage report
-#        run: |
-#          TEST_PLUGIN_LOAD="$(whereis libheif | awk '{print $2}')/plugins/libheif-x265.so" coverage run -m pytest
-#          coverage xml && coverage html
-#
-#      - name: HTML coverage to artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: coverage_linux
-#          path: ./htmlcov
-#          if-no-files-found: error
-#
-#      - name: Upload report to Codecov
-#        uses: codecov/codecov-action@v4
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          file: ./coverage.xml
-#          fail_ci_if_error: true
-#          verbose: true
+      - name: Generate coverage report
+        run: |
+          TEST_PLUGIN_LOAD="$(whereis libheif | awk '{print $2}')/plugins/libheif-x265.so" coverage run -m pytest
+          coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_linux
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
 
   coverage-linux-pillow-dev:
     runs-on: ubuntu-22.04
@@ -112,25 +112,25 @@ jobs:
       - name: LibHeif info
         run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
 
-#      - name: Generate coverage report
-#        run: |
-#          TEST_PLUGIN_LOAD="$(whereis libheif | awk '{print $2}')/plugins/libheif-x265.so" coverage run -m pytest
-#          coverage xml && coverage html
-#
-#      - name: HTML coverage to artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: coverage_linux_dev
-#          path: ./htmlcov
-#          if-no-files-found: error
-#
-#      - name: Upload report to Codecov
-#        uses: codecov/codecov-action@v4
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          file: ./coverage.xml
-#          fail_ci_if_error: true
-#          verbose: true
+      - name: Generate coverage report
+        run: |
+          TEST_PLUGIN_LOAD="$(whereis libheif | awk '{print $2}')/plugins/libheif-x265.so" coverage run -m pytest
+          coverage xml && coverage html
+
+      - name: HTML coverage to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_linux_dev
+          path: ./htmlcov
+          if-no-files-found: error
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
 
   coverage-macos:
     runs-on: macos-13
