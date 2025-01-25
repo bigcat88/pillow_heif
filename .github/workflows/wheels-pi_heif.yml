@@ -147,7 +147,6 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
-      KEY_HEAD: Pi-Heif-x86_64-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v4
@@ -161,14 +160,6 @@ jobs:
         run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
-        env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
-          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
 
       - name: Run cibuildwheel
         run: |
@@ -194,9 +185,6 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
-
   wheels_linux_cpython_arm64:
     strategy:
       fail-fast: true
@@ -206,7 +194,6 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
-      KEY_HEAD: Pi-Heif-aarch64-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v4
@@ -221,20 +208,12 @@ jobs:
         env:
           OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
 
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
-        env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
-          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
-
       - name: Run cibuildwheel
         run: |
           python3 -m pip install cibuildwheel==2.21.3
           python3 -m cibuildwheel
         env:
-          CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, aarch64) }}
+          CIBW_BUILD: ${{ format('cp3*-{0}_aarch64', matrix.cibw_buildlinux) }}
           CIBW_ARCHS: "aarch64"
           CIBW_BEFORE_ALL_LINUX: |
             ${{ env.INSTALL_OS_PACKAGES }}
@@ -253,9 +232,6 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
-
   wheels_linux_pypy_amd64:
     strategy:
       fail-fast: true
@@ -265,7 +241,6 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
-      KEY_HEAD: Pi-Heif-x86_64-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v4
@@ -273,14 +248,6 @@ jobs:
         run: |
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
-        env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
-          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
 
       - name: Run cibuildwheel
         run: |
@@ -306,9 +273,6 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
-
   wheels_linux_pypy_arm64:
     strategy:
       fail-fast: true
@@ -318,7 +282,6 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
-      KEY_HEAD: Pi-Heif-aarch64-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v4
@@ -327,20 +290,12 @@ jobs:
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
 
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
-        env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
-          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
-
       - name: Run cibuildwheel
         run: |
           python3 -m pip install cibuildwheel==2.21.3
           python3 -m cibuildwheel
         env:
-          CIBW_BUILD: ${{ format('pp3*-{0}_{1}', matrix.cibw_buildlinux, aarch64) }}
+          CIBW_BUILD: ${{ format('pp3*-{0}_aarch64', matrix.cibw_buildlinux) }}
           CIBW_ARCHS: "aarch64"
           CIBW_BEFORE_ALL_LINUX: |
             yum makecache && yum install -y libjpeg-turbo-devel lcms2-devel
@@ -358,9 +313,6 @@ jobs:
           name: wheels_pi_heif
           path: wheelhouse/*.whl
           if-no-files-found: error
-
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
 
   sdist:
     name: Source distribution
