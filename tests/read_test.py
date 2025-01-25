@@ -557,3 +557,7 @@ def test_dav1d_decoder():
         Image.open("images/heif/RGB_8__128x128.avif").load()
     finally:
         pillow_heif.options.PREFERRED_DECODER["AVIF"] = ""
+
+
+def test_200_megapixels():
+    pillow_heif.open_heif("images/heif_special/200MP.heic")
