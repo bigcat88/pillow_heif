@@ -28,25 +28,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  full_linux:
-    name: ${{ matrix.docker_file }}-${{ matrix.arch }}
+  linux_amd64:
+    name: ${{ matrix.docker_file }} • amd64
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        arch: ["amd64", "arm64"]
-        docker_file: ["Alpine_3_19", "Alpine_3_20", "Almalinux_9", "Debian_12"]
-#        include:
-#          - arch: "amd64"
-#            docker_file: "Archlinux"
-#          - arch: "amd64"
-#            docker_file: "Fedora_39"
+        docker_file: ["Alpine_3_20", "Alpine_3_21", "Almalinux_9", "Debian_12"]
+#        docker_file: ["Alpine_3_20", "Alpine_3_21", "Almalinux_9", "Debian_12", "Archlinux", "Fedora_39"]
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -56,10 +49,10 @@ jobs:
         with:
           context: .
           file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
-          platforms: linux/${{ matrix.arch }}
+          platforms: linux/amd64
           push: false
-          cache-from: type=gha,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
-          cache-to: type=gha,mode=min,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=${{ matrix.docker_file }}-amd64
+          cache-to: type=gha,mode=min,scope=${{ matrix.docker_file }}-amd64
           target: base
 
       - name: Build & Test Pillow-Heif
@@ -67,7 +60,44 @@ jobs:
         with:
           context: .
           file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
-          platforms: linux/${{ matrix.arch }}
+          platforms: linux/amd64
           push: false
-          cache-from: type=gha,scope=${{ matrix.docker_file }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=${{ matrix.docker_file }}-amd64
           target: build_test
+
+  linux_arm64:
+    name: ${{ matrix.docker_file }} • arm64
+    runs-on: ubuntu-24.04-arm
+
+    strategy:
+      fail-fast: false
+      matrix:
+        docker_file: ["Alpine_3_20", "Alpine_3_21", "Almalinux_9", "Debian_12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Requirements
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
+          platforms: linux/arm64
+          push: false
+          cache-from: type=gha,scope=${{ matrix.docker_file }}-arm64
+          cache-to: type=gha,mode=min,scope=${{ matrix.docker_file }}-arm64
+          target: base
+
+      - name: Build & Test Pillow-Heif
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/from_src/${{ matrix.docker_file }}.Dockerfile
+          platforms: linux/arm64
+          push: false
+          cache-from: type=gha,scope=${{ matrix.docker_file }}-arm64
+          target: build_test
+
