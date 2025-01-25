@@ -52,7 +52,9 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Checking built wheels
-        run: twine check wheelhouse/*
+        run: |
+          pip install "twine>=6.1.0" "packaging>=24.2"
+          twine check wheelhouse/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
@@ -99,7 +101,9 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Checking built wheels
-        run: twine check wheelhouse/*
+        run: |
+          pip install "twine>=6.1.0" "packaging>=24.2"
+          twine check wheelhouse/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
@@ -152,7 +156,9 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Checking built wheels
-        run: twine check wheelhouse/*
+        run: |
+          pip install "twine>=6.1.0" "packaging>=24.2"
+          twine check wheelhouse/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
@@ -205,7 +211,9 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Checking built wheels
-        run: twine check wheelhouse/*
+        run: |
+          pip install "twine>=6.1.0" "packaging>=24.2"
+          twine check wheelhouse/*
 
       - name: Uploading wheels
         uses: actions/upload-artifact@v3
