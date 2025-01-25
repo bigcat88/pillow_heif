@@ -166,7 +166,7 @@ jobs:
           python3 -m pip install cibuildwheel==2.21.3
           python3 -m cibuildwheel
         env:
-          CIBW_BUILD: ${{ format('cp3*-{0}_{1}', matrix.cibw_buildlinux, x86_64) }}
+          CIBW_BUILD: ${{ format('cp3*-{0}_x86_64', matrix.cibw_buildlinux) }}
           CIBW_ARCHS: "x86_64"
           CIBW_BEFORE_ALL_LINUX: |
             ${{ env.INSTALL_OS_PACKAGES }}
