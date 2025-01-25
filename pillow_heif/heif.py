@@ -268,6 +268,7 @@ class HeifFile:
                 kwargs.get("hdr_to_16bit", True),
                 kwargs.get("reload_size", options.ALLOW_INCORRECT_HEADERS),
                 preferred_decoder,
+                options.DISABLE_SECURITY_LIMITS,
             )
         self.mimetype = mimetype
         self._images: list[HeifImage] = [HeifImage(i) for i in images if i is not None]

@@ -1449,12 +1449,12 @@ static PyObject* _CtxWrite(PyObject* self, PyObject* args) {
 }
 
 static PyObject* _load_file(PyObject* self, PyObject* args) {
-    int hdr_to_8bit, threads_count, bgr_mode, remove_stride, hdr_to_16bit, reload_size;
+    int hdr_to_8bit, threads_count, bgr_mode, remove_stride, hdr_to_16bit, reload_size, disable_security_limits;
     PyObject *heif_bytes;
     const char *decoder_id;
 
     if (!PyArg_ParseTuple(args,
-                          "Oiiiiiis",
+                          "Oiiiiiisi",
                           &heif_bytes,
                           &threads_count,
                           &hdr_to_8bit,
@@ -1462,10 +1462,23 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
                           &remove_stride,
                           &hdr_to_16bit,
                           &reload_size,
-                          &decoder_id))
+                          &decoder_id,
+                          &disable_security_limits))
         return NULL;
 
     struct heif_context* heif_ctx = heif_context_alloc();
+
+    #if LIBHEIF_HAVE_VERSION(1,19,0)
+    if (disable_security_limits) {
+        heif_context_set_security_limits(heif_ctx, heif_get_disabled_security_limits());
+    } else {
+        // override libheif default value for max_memory_block_size from 512MB to 768MB
+        struct heif_security_limits* current_limits = heif_context_get_security_limits(heif_ctx);
+        current_limits->max_memory_block_size = 768 * 1024 * 1024;
+        heif_context_set_security_limits(heif_ctx, current_limits);
+    }
+    #endif
+
     if (check_error(heif_context_read_from_memory_without_copy(
                         heif_ctx, (void*)PyBytes_AS_STRING(heif_bytes), PyBytes_GET_SIZE(heif_bytes), NULL))) {
         heif_context_free(heif_ctx);
