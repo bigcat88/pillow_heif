@@ -6,26 +6,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker-tests:
-    name: ${{ matrix.i['os'] }} • ${{ matrix.i['ver'] }} • ${{ matrix.i['arch'] }}
-    runs-on: ubuntu-latest
+  docker-tests-amd64:
+    name: ${{ matrix.i['os'] }} • ${{ matrix.i['ver'] }} • AMD64
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         i: [
-          { "os": "amazonlinux", "ver": "latest", "arch": "amd64" },
-          { "os": "amazonlinux", "ver": "latest", "arch": "arm64" },
-          { "os": "oraclelinux", "ver": "9", "arch": "amd64" },
-          { "os": "oraclelinux", "ver": "9", "arch": "arm64" },
-          { "os": "fedora", "ver": "37", "arch": "amd64" },
-          { "os": "debian", "ver": "11", "arch": "amd64" },
-          { "os": "debian", "ver": "11", "arch": "arm64" },
-          { "os": "debian", "ver": "12", "arch": "amd64" },
-          { "os": "debian", "ver": "12", "arch": "arm64" },
-          { "os": "alpine", "ver": "3.19", "arch": "amd64" },
-          { "os": "alpine", "ver": "3.19", "arch": "arm64" },
-          { "os": "alpine", "ver": "3.20", "arch": "amd64" },
-          { "os": "alpine", "ver": "3.20", "arch": "arm64" },
+          { "os": "amazonlinux", "ver": "latest" },
+          { "os": "oraclelinux", "ver": "9" },
+          { "os": "fedora", "ver": "37" },
+          { "os": "debian", "ver": "11" },
+          { "os": "debian", "ver": "12" },
+          { "os": "alpine", "ver": "3.19" },
+          { "os": "alpine", "ver": "3.20" },
         ]
 
     steps:
@@ -34,8 +28,6 @@ jobs:
         run: sleep 480
 
       - uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Test type is Full
         run: echo TEST_TYPE="export PH_FULL_ACTION=1" >> $GITHUB_ENV
@@ -61,7 +53,60 @@ jobs:
       - name: Build image & Run tests
         run: |
           docker buildx build \
-            --platform linux/${{ matrix.i.arch }} \
+            --platform linux/amd64 \
+            --build-arg BASE_IMAGE="${{ matrix.i['os'] }}:${{ matrix.i['ver'] }}" \
+            --build-arg PREPARE_CMD="${{ env.PREPARE_CMD }}" \
+            --build-arg INSTALL_CMD="${{ env.INSTALL_CMD }}" \
+            --build-arg TEST_TYPE="${{ env.TEST_TYPE }}" \
+            -f docker/test_wheels.Dockerfile .
+
+  docker-tests-arm64:
+    name: ${{ matrix.i['os'] }} • ${{ matrix.i['ver'] }} • ARM64
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        i: [
+          { "os": "amazonlinux", "ver": "latest" },
+          { "os": "oraclelinux", "ver": "9" },
+          { "os": "debian", "ver": "11" },
+          { "os": "debian", "ver": "12" },
+          { "os": "alpine", "ver": "3.19" },
+          { "os": "alpine", "ver": "3.20" },
+        ]
+
+    steps:
+      - name: Delay, waiting Pypi to update.
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        run: sleep 480
+
+      - uses: actions/checkout@v4
+
+      - name: Test type is Full
+        run: echo TEST_TYPE="export PH_FULL_ACTION=1" >> $GITHUB_ENV
+
+      - name: Preparing debian
+        if: matrix.i['os'] == 'debian' || matrix.i['os'] == 'ubuntu'
+        run: |
+          echo PREPARE_CMD="apt update" >> $GITHUB_ENV
+          echo INSTALL_CMD="apt install -y \
+            python3-minimal python3-distutils python3-pip python3-dev python3-venv \
+            zlib1g-dev libjpeg62-turbo-dev liblcms2-dev libwebp-dev libfribidi-dev libharfbuzz-dev" >> $GITHUB_ENV
+
+      - name: Preparing musli
+        if: matrix.i['os'] == 'alpine'
+        run: echo INSTALL_CMD="apk add --no-cache python3 py3-pip py3-pillow py3-numpy" >> $GITHUB_ENV
+
+      - name: Preparing centos
+        if: matrix.i['os'] != 'debian' && matrix.i['os'] != 'ubuntu' && matrix.i['os'] != 'alpine'
+        run: |
+          echo PREPARE_CMD="yum makecache" >> $GITHUB_ENV
+          echo INSTALL_CMD="yum install -y python3 python3-pip" >> $GITHUB_ENV
+
+      - name: Build image & Run tests
+        run: |
+          docker buildx build \
+            --platform linux/arm64 \
             --build-arg BASE_IMAGE="${{ matrix.i['os'] }}:${{ matrix.i['ver'] }}" \
             --build-arg PREPARE_CMD="${{ env.PREPARE_CMD }}" \
             --build-arg INSTALL_CMD="${{ env.INSTALL_CMD }}" \
