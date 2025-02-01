@@ -34,9 +34,9 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels_pillow_heif
+          name: wheels_pillow_heif-macos-arm64
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -92,9 +92,9 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels_pillow_heif
+          name: wheels_pillow_heif-windows-x86_64
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -119,9 +119,9 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels_pillow_heif
+          name: wheels_pillow_heif-macos-x86_64
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -172,13 +172,14 @@ jobs:
 
       - name: Checking built wheels
         run: |
+          python3 -m pip install "twine>=6.1.0" "packaging>=24.2"
           python3 -m pip install twine
           python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels_pillow_heif
+          name: wheels_pillow_heif-${{ matrix.cibw_buildlinux }}-cpython-amd64
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -232,13 +233,14 @@ jobs:
 
       - name: Checking built wheels
         run: |
+          python3 -m pip install "twine>=6.1.0" "packaging>=24.2"
           python3 -m pip install twine
           python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels_pillow_heif
+          name: wheels_pillow_heif-${{ matrix.cibw_buildlinux }}-cpython-arm64
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -281,13 +283,14 @@ jobs:
 
       - name: Checking built wheels
         run: |
+          python3 -m pip install "twine>=6.1.0" "packaging>=24.2"
           python3 -m pip install twine
           python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels_pillow_heif
+          name: wheels_pillow_heif-${{ matrix.cibw_buildlinux }}-pypy-amd64
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -329,13 +332,14 @@ jobs:
 
       - name: Checking built wheels
         run: |
+          python3 -m pip install "twine>=6.1.0" "packaging>=24.2"
           python3 -m pip install twine
           python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels_pillow_heif
+          name: wheels_pillow_heif-${{ matrix.cibw_buildlinux }}-pypy-arm64
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -378,7 +382,7 @@ jobs:
           python3 -m pytest
 
       - name: Upload sdist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels_pillow_heif
+          name: wheels_pillow_heif-sdist
           path: wheelhouse/*.tar.gz

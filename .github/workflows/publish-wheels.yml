@@ -35,16 +35,18 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Pillow-Heif sdist and wheels
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: wheels_pillow_heif
           path: wheelhouse_pillow_heif
+          pattern: wheels_pillow_heif-*
+          merge-multiple: true
 
       - name: Pi-Heif sdist and wheels
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: wheels_pi_heif
           path: wheelhouse_pi_heif
+          pattern: wheels_pi_heif-*
+          merge-multiple: true
 
       - name: Publish Pillow-Heif
         run: |
