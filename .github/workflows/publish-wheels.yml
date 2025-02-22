@@ -66,7 +66,7 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_PI_HEIF }}
 
       - name: Create release draft
-        uses: ncipollo/release-action@v1.15.0
+        uses: ncipollo/release-action@v1.16.0
         with:
           name: ${{ env.RELEASE_TAG }}
           tag: ${{ env.RELEASE_TAG }}
