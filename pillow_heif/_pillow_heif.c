@@ -1471,11 +1471,6 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
     #if LIBHEIF_HAVE_VERSION(1,19,0)
     if (disable_security_limits) {
         heif_context_set_security_limits(heif_ctx, heif_get_disabled_security_limits());
-    } else {
-        // override libheif default value for max_memory_block_size from 512MB to 768MB
-        struct heif_security_limits* current_limits = heif_context_get_security_limits(heif_ctx);
-        current_limits->max_memory_block_size = 768 * 1024 * 1024;
-        heif_context_set_security_limits(heif_ctx, current_limits);
     }
     #endif
 
