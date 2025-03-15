@@ -282,7 +282,7 @@ jobs:
       matrix:
         cibw_buildlinux: [ manylinux ]
     name: ${{ matrix.cibw_buildlinux }} • ARM64 • PyPy
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
 
