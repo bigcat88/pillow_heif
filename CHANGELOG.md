@@ -1,5 +1,17 @@
 All notable changes to this project will be documented in this file.
 
+## [0.22.0 - 2025-03-15]
+
+### Added
+
+- Boolean `pillow_heif.options.DISABLE_SECURITY_LIMITS` to bypass security limit of libheif for the image size. #328
+
+### Changed
+
+- `libx265` library was updated to the latest `4.1` version.
+- `libheif` was updated from the `1.19.5` to `1.19.7` version.
+- `AVIF` format marked as deprecated and pending for the removal.
+
 ## [0.21.0 - 2024-11-29]
 
 ### Added
