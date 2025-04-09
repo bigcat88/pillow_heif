@@ -209,7 +209,7 @@ jobs:
           verbose: true
 
   coverage-windows:
-    runs-on: windows-2022
+    runs-on: windows-2025
     name: Coverage(Windows) • 🐍3.9
     env:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
