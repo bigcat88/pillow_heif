@@ -117,7 +117,7 @@ lint.mccabe.max-complexity = 16
 profile = "black"
 
 [tool.pylint]
-master.py-version = "3.8"
+master.py-version = "3.9"
 master.extension-pkg-allow-list = [
   "_pillow_heif",
 ]
@@ -142,7 +142,6 @@ basic.good-names = [
   "fp",
   "im",
   "HeifImagePlugin",
-  "AvifImagePlugin",
 ]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"

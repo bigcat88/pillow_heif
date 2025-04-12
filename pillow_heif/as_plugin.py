@@ -7,7 +7,6 @@ from typing import IO
 from warnings import warn
 
 from PIL import Image, ImageFile, ImageSequence
-from PIL import __version__ as pil_version
 
 from . import options
 from .constants import HeifCompressionFormat
@@ -32,11 +31,11 @@ except ImportError as ex:
 
 
 class _LibHeifImageFile(ImageFile.ImageFile):
-    """Base class with all functionality for ``HeifImageFile`` and ``AvifImageFile`` classes."""
+    """Base class with all functionality for ``HeifImageFile`` class."""
 
     _heif_file: HeifFile | None = None
     _close_exclusive_fp_after_loading = True
-    _mode: str  # only for Pillow 10.1+
+    _mode: str
 
     def __init__(self, *args, **kwargs):
         self.__frame = 0
@@ -74,31 +73,17 @@ class _LibHeifImageFile(ImageFile.ImageFile):
                 self._heif_file = None
         return super().load()
 
-    if pil_version[:4] in ("10.1", "10.2", "10.3"):
-
-        def getxmp(self) -> dict:
-            """Returns a dictionary containing the XMP tags. Requires ``defusedxml`` to be installed.
-
-            :returns: XMP tags in a dictionary.
-            """
-            if self.info.get("xmp", None):
-                xmp_data = self.info["xmp"].rsplit(b"\x00", 1)
-                if xmp_data[0]:
-                    return self._getxmp(xmp_data[0])  # pylint: disable=no-member
-            return {}
-
     def seek(self, frame: int):
         if not self._seek_check(frame):
             return
         self.__frame = frame
         self._init_from_heif_file(frame)
 
-        if pil_version[:3] != "10.":
-            # Pillow 11.0+
-            # We need to create a new core image object on second and
-            # subsequent frames in the image. Image may be different size/mode.
-            # https://github.com/python-pillow/Pillow/issues/8439
-            self.im = Image.core.new(self._mode, self._size)  # pylint: disable=too-many-function-args
+        # Pillow 11.0+
+        # We need to create a new core image object on second and
+        # subsequent frames in the image. Image may be different size/mode.
+        # https://github.com/python-pillow/Pillow/issues/8439
+        self.im = Image.core.new(self._mode, self._size)  # pylint: disable=too-many-function-args
 
         exif = getattr(self, "_exif", None)  # Pillow 9.2+ do no reload exif between frames.
         if exif is not None and getattr(exif, "_loaded", None):
@@ -173,61 +158,8 @@ def register_heif_opener(**kwargs) -> None:
     Image.register_extensions(HeifImageFile.format, extensions)
 
 
-class AvifImageFile(_LibHeifImageFile):
-    """Pillow plugin class type for an AVIF image format."""
-
-    format = "AVIF"  # noqa
-    format_description = "AVIF container"
-
-
-def _is_supported_avif(fp) -> bool:
-    magic = _get_bytes(fp, 12)
-    if magic[4:8] != b"ftyp":
-        return False
-    return magic[8:12] == b"avif"
-    # if magic[8:12] in (
-    #     b"avif",
-    #     b"avis",
-    # ):
-    #     return True
-    # return False
-
-
-def _save_avif(im: Image.Image, fp: IO[bytes], _filename: str | bytes):
-    __save_one(im, fp, HeifCompressionFormat.AV1)
-
-
-def _save_all_avif(im: Image.Image, fp: IO[bytes], _filename: str | bytes):
-    __save_all(im, fp, HeifCompressionFormat.AV1)
-
-
-def register_avif_opener(**kwargs) -> None:
-    """Registers a Pillow plugin for AVIF format.
-
-    :param kwargs: dictionary with values to set in options. See: :ref:`options`.
-    """
-    warn(
-        "The AVIF support in this library is marked as deprecated and will be removed in the next version. "
-        "If you still need AVIF support until it natively appears in Pillow, use the "
-        "https://github.com/fdintino/pillow-avif-plugin project instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    if not _pillow_heif.get_lib_info()["AVIF"]:
-        warn("This version of `pillow-heif` was built without AVIF support.", stacklevel=1)
-        return
-    __options_update(**kwargs)
-    Image.register_open(AvifImageFile.format, AvifImageFile, _is_supported_avif)
-    Image.register_save(AvifImageFile.format, _save_avif)
-    Image.register_save_all(AvifImageFile.format, _save_all_avif)
-    # extensions = [".avif", ".avifs"]
-    extensions = [".avif"]
-    Image.register_mime(AvifImageFile.format, "image/avif")
-    Image.register_extensions(AvifImageFile.format, extensions)
-
-
 def __options_update(**kwargs):
-    """Internal function to set options from `register_avif_opener` and `register_heif_opener` methods."""
+    """Internal function to set options from `register_heif_opener` method."""
     for k, v in kwargs.items():
         if k == "thumbnails":
             options.THUMBNAILS = v

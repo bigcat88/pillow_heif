@@ -6,14 +6,12 @@ from PIL import Image, features
 
 import pillow_heif
 
-pillow_heif.register_avif_opener()
 pillow_heif.register_heif_opener()
 
 
 @pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
-@pytest.mark.skipif(not helpers.aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 @pytest.mark.parametrize(
     "im_format",
     (
@@ -36,7 +34,7 @@ def test_exif_from_pillow(im_format, save_format):
     exif = im.getexif()  # noqa
     assert exif[0x010E] == exif_desc_value
     out_im_heif = BytesIO()
-    im.save(out_im_heif, format=save_format)  # saving to HEIF(AVIF)
+    im.save(out_im_heif, format=save_format)  # saving to HEIF
     im_heif = Image.open(out_im_heif)
     assert im_heif.info["exif"]
     assert isinstance(im_heif.info["exif"], bytes)

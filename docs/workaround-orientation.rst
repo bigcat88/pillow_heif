@@ -62,4 +62,3 @@ Here is list of functions and method that resets orientations automatically:
     * :py:meth:`pillow_heif.HeifFile.add_from_pillow`
     * :py:meth:`pillow_heif.HeifImage.to_pillow`
     * :py:class:`pillow_heif.HeifImageFile` *Pillow plugin class*
-    * :py:class:`pillow_heif.AvifImageFile` *Pillow plugin class*

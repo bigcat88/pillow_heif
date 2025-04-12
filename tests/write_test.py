@@ -16,24 +16,23 @@ import pillow_heif
 
 pytest.importorskip("numpy", reason="NumPy not installed")
 
-if not helpers.hevc_enc() or not helpers.aom():
-    pytest.skip("No HEIF or AVIF support.", allow_module_level=True)
+if not helpers.hevc_enc():
+    pytest.skip("No HEIF support.", allow_module_level=True)
 
 if parse_version(pillow_heif.libheif_version()) < parse_version("1.17.3"):
     pytest.skip("Requires libheif 1.17.3+", allow_module_level=True)
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-pillow_heif.register_avif_opener()
 pillow_heif.register_heif_opener()
 
 
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_save_format(save_format):
     im = helpers.gradient_rgb()
     buf = BytesIO()
     im.save(buf, format=save_format, quality=1)
     mime = pillow_heif.get_file_mimetype(buf.getbuffer().tobytes())
-    assert mime == "image/avif" if save_format == "AVIF" else "image/heic"
+    assert mime == "image/heic"
 
 
 @pytest.mark.parametrize(
@@ -174,9 +173,9 @@ def test_hif_file():
         "images/heif/RGBA_12__128x128",
     ),
 )
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_hdr_save(im_path, save_format):
-    im_path = im_path + (".heif" if save_format == "HEIF" else ".avif")
+    im_path = im_path + ".heif"
     heif_file = pillow_heif.open_heif(im_path, convert_hdr_to_8bit=False)
     out_buf = BytesIO()
     heif_file.save(out_buf, quality=-1, format=save_format, chroma=444)
@@ -214,7 +213,7 @@ def test_pillow_quality():
     assert out_heic_q30.seek(0, SEEK_END) < heif_original.seek(0, SEEK_END)
 
 
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_P_color_mode(save_format):  # noqa
     im_buffer = BytesIO(helpers.gradient_p_bytes(im_format="TIFF"))
     out_heic = BytesIO()
@@ -225,7 +224,7 @@ def test_P_color_mode(save_format):  # noqa
     helpers.compare_hashes([im_buffer, im_heif], hash_size=16)
 
 
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_PA_color_mode(save_format):  # noqa
     im_buffer = BytesIO(helpers.gradient_pa_bytes(im_format="TIFF"))
     out_heic = BytesIO()
@@ -236,7 +235,7 @@ def test_PA_color_mode(save_format):  # noqa
     helpers.compare_hashes([im_buffer, im_heif], hash_size=16)
 
 
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_L_color_mode(save_format):  # noqa
     im = Image.linear_gradient(mode="L")
     out_heif = BytesIO()
@@ -246,7 +245,7 @@ def test_L_color_mode(save_format):  # noqa
     helpers.compare_hashes([im, im_heif], hash_size=32)
 
 
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_LA_color_mode(save_format):  # noqa
     im = Image.open(BytesIO(helpers.gradient_la_bytes(im_format="PNG")))
     out_heif = BytesIO()
@@ -278,7 +277,7 @@ def test_CMYK_color_mode():  # noqa
 
 
 @pytest.mark.parametrize("subsampling, expected_max_difference", (("4:4:4", 0.0004), ("4:2:2", 0.11), ("4:2:0", 1.4)))
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_YCbCr_color_mode(
     save_format,
     subsampling,
@@ -313,7 +312,7 @@ def test_heif_YCbCr_color_mode():  # noqa
 
 
 @pytest.mark.parametrize("enc_bits", (10, 12))
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_I_color_modes_to_10_12_bit(enc_bits, save_format):  # noqa
     try:
         pillow_heif.options.SAVE_HDR_TO_12_BIT = bool(enc_bits == 12)
@@ -455,16 +454,6 @@ def test_chroma_heif_encoding_8bit(chroma, diff_epsilon, im):
     assert im_buf.getbuffer().nbytes == im_buf_subsampling.getbuffer().nbytes  # results should be the same
 
 
-@pytest.mark.parametrize("chroma, diff_epsilon", ((420, 1.83), (422, 1.32), (444, 0.99)))
-@pytest.mark.parametrize("im", (helpers.gradient_rgb(), helpers.gradient_rgba()))
-def test_chroma_avif_encoding_8bit(chroma, diff_epsilon, im):
-    im_buf = BytesIO()
-    im.save(im_buf, format="AVIF", quality=-1, chroma=chroma)
-    im_out = Image.open(im_buf)
-    im = im.convert(mode=im_out.mode)
-    helpers.assert_image_similar(im, im_out, diff_epsilon)
-
-
 @pytest.mark.parametrize("size", ((8, 8), (9, 9), (10, 10), (11, 11), (21, 21), (31, 31), (64, 64)))
 @pytest.mark.parametrize("mode", ("L", "LA", "RGB", "RGBA"))
 def test_encode_function(mode, size: tuple):
@@ -569,7 +558,7 @@ def test_nclx_profile_write():
         pillow_heif.options.SAVE_NCLX_PROFILE = True
 
 
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_lossless_encoding_rgb(save_format):
     im_rgb = helpers.gradient_rgb()
     buf = BytesIO()
@@ -577,7 +566,7 @@ def test_lossless_encoding_rgb(save_format):
     helpers.assert_image_equal(im_rgb, Image.open(buf))
 
 
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_lossless_encoding_rgba(save_format):
     im_rgb = helpers.gradient_rgba()
     buf = BytesIO()
@@ -585,7 +574,7 @@ def test_lossless_encoding_rgba(save_format):
     helpers.assert_image_equal(im_rgb, Image.open(buf))
 
 
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_lossless_encoding_non_primary_image(save_format):
     def encode_to_image(data):
         binary_data = zlib.compress(data)
@@ -633,7 +622,7 @@ def test_input_chroma_value():
     assert im.info["chroma"] == 420
 
 
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_transparency_parameter(save_format):
     im = Image.new("P", size=(64, 64))
     draw = ImageDraw.Draw(im)
@@ -653,46 +642,7 @@ def test_invalid_encoder():
     im_rgb = helpers.gradient_rgba()
     buf = BytesIO()
     try:
-        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = "invalid_id"
         pillow_heif.options.PREFERRED_ENCODER["HEIF"] = "invalid_id"
-        im_rgb.save(buf, format="AVIF")
         im_rgb.save(buf, format="HEIF")
     finally:
-        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = ""
         pillow_heif.options.PREFERRED_ENCODER["HEIF"] = ""
-
-
-@pytest.mark.skipif("svt" not in pillow_heif.libheif_info()["encoders"], reason="Requires SVT AVIF encoder.")
-@pytest.mark.skipif("aom" not in pillow_heif.libheif_info()["encoders"], reason="Requires AOM AVIF encoder.")
-def test_svt_encoder():
-    im_rgb = helpers.gradient_rgb()
-    buf_aom = BytesIO()
-    im_rgb.save(buf_aom, format="AVIF")
-    buf_svt = BytesIO()
-    try:
-        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = "svt"
-        im_rgb.save(buf_svt, format="AVIF")
-    finally:
-        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = ""
-    aom_img_data = Image.open(buf_aom).tobytes()
-    svt_image_data = Image.open(buf_svt).tobytes()
-    # print(f"AOM size: {len(aom_img_data)} , SVT size: {len(svt_image_data)}", )
-    assert aom_img_data != svt_image_data  # Suppose that: different decoders by default will have different results
-
-
-@pytest.mark.skipif("rav1e" not in pillow_heif.libheif_info()["encoders"], reason="Requires RAV1E AVIF encoder.")
-@pytest.mark.skipif("aom" not in pillow_heif.libheif_info()["encoders"], reason="Requires AOM AVIF encoder.")
-def test_rav1e_encoder():
-    im_rgb = helpers.gradient_rgb()
-    buf_aom = BytesIO()
-    im_rgb.save(buf_aom, format="AVIF")
-    buf_rav1e = BytesIO()
-    try:
-        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = "rav1e"
-        im_rgb.save(buf_rav1e, format="AVIF")
-    finally:
-        pillow_heif.options.PREFERRED_ENCODER["AVIF"] = ""
-    aom_img_data = Image.open(buf_aom).tobytes()
-    rav1e_image_data = Image.open(buf_rav1e).tobytes()
-    # print(f"AOM size: {len(aom_img_data)} , RAV1E size: {len(rav1e_image_data)}", )
-    assert aom_img_data != rav1e_image_data  # Suppose that: different decoders by default will have different results

@@ -373,8 +373,6 @@ class HeifFile:
 
             ``subsampling`` - synonym for *chroma*. Format is string, compatible with Pillow: ``x:x:x``, e.g. '4:4:4'.
 
-            ``format`` - string with encoder format name. Possible values: ``HEIF`` (default) or ``AVIF``.
-
             ``save_nclx_profile`` - boolean, see :py:attr:`~pillow_heif.options.SAVE_NCLX_PROFILE`
 
             ``matrix_coefficients`` - int, nclx profile: color conversion matrix coefficients, default=6 (see h.273)
@@ -530,7 +528,7 @@ def is_supported(fp) -> bool:
 
 
 def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFile:
-    """Opens the given HEIF(AVIF) image file.
+    """Opens the given HEIF image file.
 
     :param fp: See parameter ``fp`` in :func:`is_supported`
     :param convert_hdr_to_8bit: Boolean indicating should 10 bit or 12 bit images
@@ -552,7 +550,7 @@ def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
 
 
 def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFile:
-    """Opens the given HEIF(AVIF) image file and decodes all images.
+    """Opens the given HEIF image file and decodes all images.
 
     .. note:: In most cases it is better to call :py:meth:`~pillow_heif.open_heif`, and
         let images decoded automatically only when needed.

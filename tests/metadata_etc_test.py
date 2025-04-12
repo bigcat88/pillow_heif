@@ -1,18 +1,16 @@
 from io import BytesIO
 
 import pytest
-from helpers import aom, create_heif, hevc_enc
+from helpers import create_heif, hevc_enc
 from PIL import Image
 
 import pillow_heif
 
-pillow_heif.register_avif_opener()
 pillow_heif.register_heif_opener()
 
 
-@pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_heif_primary_image(save_format):
     heif_buf = create_heif((64, 64), n_images=3, primary_index=1, format=save_format)
     heif_file = pillow_heif.open_heif(heif_buf)
@@ -37,9 +35,8 @@ def test_heif_primary_image(save_format):
     assert heif_file_out.primary_index == 2
 
 
-@pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_pillow_primary_image(save_format):
     heif_buf = create_heif((64, 64), n_images=3, primary_index=1, format=save_format)
     heif_file = Image.open(heif_buf)
@@ -64,13 +61,8 @@ def test_pillow_primary_image(save_format):
     assert heif_file_out.tell() == 2
 
 
-@pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.skipif(
-    pillow_heif.libheif_info().get("AVIF", "").find("v3.3.0") != -1,
-    reason="libheif 1.17.1 fails this test with this AOM version.",
-)
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_heif_info_changing(save_format):
     xmp = b"LeagueOf"
     exif_desc_value = "this is a desc"
@@ -113,13 +105,8 @@ def test_heif_info_changing(save_format):
         assert not im_out[i].info["exif"] and "xmp" not in im_out[i].info
 
 
-@pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.skipif(
-    pillow_heif.libheif_info().get("AVIF", "").find("v3.3.0") != -1,
-    reason="libheif 1.17.1 fails this test with this AOM version.",
-)
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_pillow_info_changing(save_format):
     xmp = b"LeagueOf"
     exif_desc_value = "this is a desc"
@@ -167,9 +154,8 @@ def test_pillow_info_changing(save_format):
         assert not im_out.info["exif"] and "xmp" not in im_out.info
 
 
-@pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_heif_iptc_metadata(save_format):
     heif_buf = create_heif((64, 64), format=save_format)
     data = (
@@ -195,9 +181,8 @@ def test_heif_iptc_metadata(save_format):
     assert im_out.info["metadata"][0]["content_type"] == ""
 
 
-@pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_pillow_iptc_metadata(save_format):
     heif_buf = create_heif((64, 64), format=save_format)
     data = (

@@ -12,7 +12,6 @@ class Libheif < Formula
   depends_on "cmake" => :build
   depends_on "pkgconf" => :build
 
-  depends_on "aom"
   depends_on "jpeg-turbo"
   depends_on "libde265"
   depends_on "libpng"
@@ -30,9 +29,9 @@ class Libheif < Formula
       -DWITH_LIBDE265_PLUGIN=OFF
       -DWITH_X265=ON
       -DWITH_X265_PLUGIN=OFF
-      -DWITH_AOM_DECODER=ON
+      -DWITH_AOM_DECODER=OFF
       -DWITH_AOM_DECODER_PLUGIN=OFF
-      -DWITH_AOM_ENCODER=ON
+      -DWITH_AOM_ENCODER=OFF
       -DWITH_AOM_ENCODER_PLUGIN=OFF
       -DWITH_RAV1E=OFF
       -DWITH_RAV1E_PLUGIN=OFF
@@ -58,7 +57,6 @@ class Libheif < Formula
     system "cmake", "--build", "build"
     system "cmake", "--install", "build"
     pkgshare.install "examples/example.heic"
-    pkgshare.install "examples/example.avif"
   end
 
   def post_install
@@ -73,12 +71,5 @@ class Libheif < Formula
     assert_match output, shell_output("#{bin}/heif-convert #{example} #{exout}")
     assert_path_exists testpath/"exampleheic-1.jpg"
     assert_path_exists testpath/"exampleheic-2.jpg"
-
-    output = "File contains 1 image"
-    example = pkgshare/"example.avif"
-    exout = testpath/"exampleavif.jpg"
-
-    assert_match output, shell_output("#{bin}/heif-convert #{example} #{exout}")
-    assert_path_exists testpath/"exampleavif.jpg"
   end
 end

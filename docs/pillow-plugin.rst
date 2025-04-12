@@ -37,21 +37,6 @@ Manual
     with Image.open("image.heic") as im:
         im.rotate(45).save("rotated_image.heic")
 
-AVIF plugin
-"""""""""""
-
-``AVIF`` plugin can be registered the same way as ``HEIF``:
-
-.. code-block:: python
-
-    from pillow_heif import register_avif_opener
-
-    register_avif_opener()
-
-``AVIF`` plugin should support all operations and work the same way as ``HEIF`` plugin do.
-
-.. note:: Deprecated, use the `pillow-avif-plugin <https://github.com/fdintino/pillow-avif-plugin>`_ project instead.
-
 Tips & Tricks
 """""""""""""
 
@@ -67,8 +52,6 @@ Remember, then you can pass multiply config values to :py:func:`~pillow_heif.reg
 .. code-block:: python
 
     register_heif_opener(thumbnails=False, quality=-1)
-
-.. note:: :py:func:`~pillow_heif.register_avif_opener` works in the same way.
 
 Image Modes
 ***********
@@ -137,8 +120,6 @@ Save operation
 **************
 
 For `HEIF` next extensions are registered: ``.heic``, ``.heics``, ``.heif``, ``.heifs`` and ``.hif``
-
-For `AVIF` registered extensions are: ``.avif``
 
 Also images can be saved to memory, using ``format`` parameter:
 

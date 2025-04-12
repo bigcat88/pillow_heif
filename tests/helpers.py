@@ -225,11 +225,3 @@ def hevc_enc() -> bool:
     if getenv("PH_TESTS_NO_HEVC_ENC", "0") != "0":
         return False
     return bool(libheif_info()["HEIF"])
-
-
-def aom() -> bool:
-    if getenv("PH_TESTS_NO_AVIF_DEC", "0") != "0":
-        return False
-    if libheif_info()["AVIF"] == "Rav1e encoder":
-        return False
-    return bool(libheif_info()["AVIF"])

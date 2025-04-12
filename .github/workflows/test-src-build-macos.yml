@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install libheif from formula
         run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif
+          brew uninstall --force --ignore-dependencies imagemagick libheif aom
           brew install --formula ./libheif/macos/libheif.rb
 
       - name: Installing Pillow-Heif
@@ -67,7 +67,7 @@ jobs:
 
       - name: Install libheif from formula
         run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif
+          brew uninstall --force --ignore-dependencies imagemagick libheif aom
           brew install --formula ./libheif/macos/libheif.rb
 
       - name: Installing Pillow-Heif

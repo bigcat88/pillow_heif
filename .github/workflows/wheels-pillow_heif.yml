@@ -16,7 +16,7 @@ jobs:
 
       - name: Install libheif from formula
         run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif
+          brew uninstall --force --ignore-dependencies imagemagick libheif aom
           brew install --formula ./libheif/macos/libheif.rb
 
       - name: Run cibuildwheel
@@ -72,7 +72,6 @@ jobs:
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libheif.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libx265-215.dll
-          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libaom.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll
           ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll
@@ -134,7 +133,6 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
-      KEY_HEAD: x86_64-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v4
@@ -149,14 +147,6 @@ jobs:
         run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "libjpeg-turbo-devel lcms2-devel"
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
-        env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
-          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
 
       - name: Run cibuildwheel
         run: |
@@ -183,9 +173,6 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
-
   wheels_linux_cpython_arm64:
     strategy:
       fail-fast: true
@@ -195,7 +182,6 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
-      KEY_HEAD: aarch64-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v4
@@ -210,14 +196,6 @@ jobs:
         run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
         env:
           OS_PACKAGES: "libjpeg-turbo-devel lcms2-devel"
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
-        env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
-          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
 
       - name: Run cibuildwheel
         run: |
@@ -244,9 +222,6 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
-
   wheels_linux_pypy_amd64:
     strategy:
       fail-fast: true
@@ -256,18 +231,9 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
-      KEY_HEAD: x86_64-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
-        env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
-          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
-
       - name: Run cibuildwheel
         run: |
           python3 -m pip install cibuildwheel==2.21.3
@@ -294,9 +260,6 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
-
   wheels_linux_pypy_arm64:
     strategy:
       fail-fast: true
@@ -306,18 +269,9 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       BUILD_DIR: "/tmp/ph_build_stuff"
-      KEY_HEAD: aarch64-${{ matrix.cibw_buildlinux }}
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: ${{ env.KEY_HEAD }}-${{ env.KEY_C_BUILD }}-${{ env.KEY_LINUX_LIBS }}
-        env:
-          KEY_LINUX_LIBS: ${{ hashFiles('libheif/linux/**') }}
-          KEY_C_BUILD: ${{ hashFiles('libheif/linux_*.py') }}-${{ hashFiles('libheif/setup.py') }}
-
       - name: Run cibuildwheel
         run: |
           python3 -m pip install cibuildwheel==2.21.3
@@ -343,9 +297,6 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-      - name: Fix cache permissions
-        run: sudo chmod -R 777 ${{ env.BUILD_DIR }}
-
   sdist:
     name: Source distribution
     runs-on: macos-13
@@ -360,7 +311,7 @@ jobs:
 
       - name: Install libheif from formula
         run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif
+          brew uninstall --force --ignore-dependencies imagemagick libheif aom
           brew install --formula ./libheif/macos/libheif.rb
 
       - name: Build sdist
