@@ -36,7 +36,6 @@ jobs:
       fail-fast: false
       matrix:
         docker_file: ["Alpine_3_20", "Alpine_3_21", "Almalinux_9", "Debian_12"]
-#        docker_file: ["Alpine_3_20", "Alpine_3_21", "Almalinux_9", "Debian_12", "Archlinux", "Fedora_39"]
 
     steps:
       - uses: actions/checkout@v4

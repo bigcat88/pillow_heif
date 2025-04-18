@@ -19,7 +19,6 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-gdk-pixbuf2"
              "${MINGW_PACKAGE_PREFIX}-cc")
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
-         "${MINGW_PACKAGE_PREFIX}-aom"
          "${MINGW_PACKAGE_PREFIX}-libde265"
          "${MINGW_PACKAGE_PREFIX}-x265")
 source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz")
@@ -45,9 +44,9 @@ build() {
       -DWITH_LIBDE265_PLUGIN=OFF \
       -DWITH_X265=ON \
       -DWITH_X265_PLUGIN=OFF \
-      -DWITH_AOM_DECODER=ON \
+      -DWITH_AOM_DECODER=OFF \
       -DWITH_AOM_DECODER_PLUGIN=OFF \
-      -DWITH_AOM_ENCODER=ON \
+      -DWITH_AOM_ENCODER=OFF \
       -DWITH_AOM_ENCODER_PLUGIN=OFF \
       -DWITH_RAV1E=OFF \
       -DWITH_RAV1E_PLUGIN=OFF \

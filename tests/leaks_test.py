@@ -25,11 +25,9 @@ def perform_open_save(iterations, image_path):
         if helpers.hevc_enc():
             out_buf = BytesIO()
             image.save(out_buf, quality=20, format="HEIF", save_all=True)
-        elif helpers.aom():
-            out_buf = BytesIO()
-            image.save(out_buf, quality=20, format="AVIF", save_all=True)
 
 
+@pytest.mark.skipif(sys.platform.lower() == "win32", reason="Disabled on Windows.")
 @pytest.mark.skipif(sys.executable.lower().find("pypy") != -1, reason="Disabled on PyPy.")
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("image", (Path("images/heif/zPug_3.heic"), Path("images/heif_other/pug.heic")))

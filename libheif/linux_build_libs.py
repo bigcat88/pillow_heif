@@ -12,7 +12,6 @@ INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 
 LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/get/0b75c44c10e605fe9e9ebed58f04a46271131827.tar.gz"
-LIBAOM_URL = "https://aomedia.googlesource.com/aom/+archive/v3.6.1.tar.gz"
 LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.0.15/libde265-1.0.15.tar.gz"
 LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.19.7/libheif-1.19.7.tar.gz"
 
@@ -128,43 +127,31 @@ def build_lib_linux(url: str, name: str):
     else:
         hide_build_process = True
         script_dir = path.dirname(path.abspath(__file__))
-        linux_dir = path.join(script_dir, "linux")
+        linux_dir = path.join(script_dir, "linux")  # noqa
         if name == "x265":
             download_extract_to(url, lib_path)
             chdir(lib_path)
         else:
             build_path = path.join(lib_path, "build")
             makedirs(build_path)
-            if name == "aom":
-                download_extract_to(url, path.join(lib_path, "aom"), False)
-                if is_musllinux():
-                    patch_path = path.join(linux_dir, "aom-musl/fix-stack-size-e53da0b-2.patch")
-                    chdir(path.join(lib_path, "aom"))
-                    run(f"patch -p 1 -i {patch_path}".split(), check=True)
-            else:
-                download_extract_to(url, lib_path)
-                if name == "libde265":  # noqa
-                    chdir(lib_path)
-                    # for patch in (
-                    #     "libde265/CVE-2022-1253.patch",
-                    # ):
-                    #     patch_path = path.join(linux_dir, patch)
-                    #     run(f"patch -p 1 -i {patch_path}".split(), check=True)
-                elif name == "libheif":
-                    chdir(lib_path)
-                    # for patch in (
-                    #     "libheif/001-void-unused-variable.patch",
-                    # ):
-                    #     patch_path = path.join(linux_dir, patch)
-                    #     run(f"patch -p 1 -i {patch_path}".split(), check=True)
+            download_extract_to(url, lib_path)
+            if name == "libde265":  # noqa
+                chdir(lib_path)
+                # for patch in (
+                #     "libde265/CVE-2022-1253.patch",
+                # ):
+                #     patch_path = path.join(linux_dir, patch)
+                #     run(f"patch -p 1 -i {patch_path}".split(), check=True)
+            elif name == "libheif":
+                chdir(lib_path)
+                # for patch in (
+                #     "libheif/001-void-unused-variable.patch",
+                # ):
+                #     patch_path = path.join(linux_dir, patch)
+                #     run(f"patch -p 1 -i {patch_path}".split(), check=True)
             chdir(build_path)
         print(f"Preconfiguring {name}...", flush=True)
-        if name == "aom":
-            cmake_args = "-DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0".split()
-            cmake_args += "-DENABLE_TESTDATA=0 -DCONFIG_AV1_ENCODER=1 -DCMAKE_BUILD_TYPE=Release".split()
-            cmake_args += "-DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=1".split()
-            cmake_args += f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ../aom".split()
-        elif name == "x265":
+        if name == "x265":
             cmake_high_bits = "-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF".split()
             cmake_high_bits += "-DENABLE_SHARED=OFF -DENABLE_CLI=OFF".split()
             mkdir("12bit")
@@ -194,9 +181,9 @@ def build_lib_linux(url: str, name: str):
                     "-DWITH_LIBDE265_PLUGIN=OFF "
                     "-DWITH_X265=ON "
                     "-DWITH_X265_PLUGIN=OFF "
-                    "-DWITH_AOM_DECODER=ON "
+                    "-DWITH_AOM_DECODER=OFF "
                     "-DWITH_AOM_DECODER_PLUGIN=OFF "
-                    "-DWITH_AOM_ENCODER=ON "
+                    "-DWITH_AOM_ENCODER=OFF "
                     "-DWITH_AOM_ENCODER_PLUGIN=OFF "
                     "-DWITH_RAV1E=OFF "
                     "-DWITH_RAV1E_PLUGIN=OFF "
@@ -244,13 +231,6 @@ def build_libs() -> None:
                 build_lib_linux(LIBX265_URL, "x265")
         else:
             print("x265 already installed.")
-        if not is_library_installed("aom"):
-            if not PH_LIGHT_VERSION:
-                if not check_install_nasm("2.15.05"):
-                    raise ValueError("Can not find/install `nasm` with version >=2.15.05")
-                build_lib_linux(LIBAOM_URL, "aom")
-        else:
-            print("aom already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
             build_lib_linux(LIBDE265_URL, "libde265")
         else:

@@ -11,14 +11,12 @@ import pillow_heif
 pytest.importorskip("defusedxml", reason="defusedxml not installed")
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-pillow_heif.register_avif_opener()
 pillow_heif.register_heif_opener()
 
 
 @pytest.mark.skipif(not features.check("webp"), reason="Requires WEBP support.")
-@pytest.mark.skipif(not helpers.aom(), reason="Requires AVIF support.")
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 @pytest.mark.parametrize(
     "img_path",
     (

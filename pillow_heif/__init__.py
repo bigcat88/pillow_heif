@@ -4,9 +4,7 @@ from . import options
 from ._lib_info import libheif_info, libheif_version
 from ._version import __version__
 from .as_plugin import (
-    AvifImageFile,
     HeifImageFile,
-    register_avif_opener,
     register_heif_opener,
 )
 from .constants import (

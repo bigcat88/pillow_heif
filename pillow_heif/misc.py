@@ -265,16 +265,6 @@ def _xmp_from_pillow(img: Image.Image) -> bytes | None:
         im_xmp = img.info["xmp"]
     elif "XML:com.adobe.xmp" in img.info:  # PNG
         im_xmp = img.info["XML:com.adobe.xmp"]
-    elif hasattr(img, "tag_v2"):  # TIFF
-        if 700 in img.tag_v2:
-            im_xmp = img.tag_v2[700]
-    elif hasattr(img, "applist"):  # JPEG
-        for segment, content in img.applist:
-            if segment == "APP1":
-                marker, xmp_tags = content.rsplit(b"\x00", 1)
-                if marker == b"http://ns.adobe.com/xap/1.0/":
-                    im_xmp = xmp_tags
-                    break
     if isinstance(im_xmp, str):
         im_xmp = im_xmp.encode("utf-8")
     return im_xmp

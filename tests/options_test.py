@@ -6,7 +6,7 @@ from time import perf_counter
 from unittest import mock
 
 import pytest
-from helpers import aom, create_heif, hevc_enc
+from helpers import create_heif, hevc_enc
 from PIL import Image, UnidentifiedImageError
 
 from pillow_heif import (
@@ -14,7 +14,6 @@ from pillow_heif import (
     open_heif,
     options,
     read_heif,
-    register_avif_opener,
     register_heif_opener,
 )
 
@@ -22,8 +21,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
-@pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
-@pytest.mark.parametrize("register_opener", (register_avif_opener, register_heif_opener))
+@pytest.mark.parametrize("register_opener", (register_heif_opener,))
 def test_options_change_from_plugin_registering(register_opener):
     try:
         register_opener(
@@ -34,8 +32,8 @@ def test_options_change_from_plugin_registering(register_opener):
             depth_images=False,
             aux_images=False,
             save_nclx_profile=False,
-            preferred_encoder={"HEIF": "id1", "AVIF": "id2"},
-            preferred_decoder={"HEIF": "id3", "AVIF": "id4"},
+            preferred_encoder={"HEIF": "id1", "AVIF": ""},
+            preferred_decoder={"HEIF": "id3", "AVIF": ""},
         )
         assert not options.THUMBNAILS
         assert options.QUALITY == 69
@@ -44,8 +42,8 @@ def test_options_change_from_plugin_registering(register_opener):
         assert options.DEPTH_IMAGES is False
         assert options.AUX_IMAGES is False
         assert options.SAVE_NCLX_PROFILE is False
-        assert options.PREFERRED_ENCODER == {"HEIF": "id1", "AVIF": "id2"}
-        assert options.PREFERRED_DECODER == {"HEIF": "id3", "AVIF": "id4"}
+        assert options.PREFERRED_ENCODER == {"HEIF": "id1", "AVIF": ""}
+        assert options.PREFERRED_DECODER == {"HEIF": "id3", "AVIF": ""}
     finally:
         options.THUMBNAILS = True
         options.QUALITY = None
@@ -73,8 +71,7 @@ def test_thumbnails_option():
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
-@pytest.mark.skipif(not aom(), reason="Requires AVIF support.")
-@pytest.mark.parametrize("save_format", ("HEIF", "AVIF"))
+@pytest.mark.parametrize("save_format", ("HEIF",))
 def test_quality_option(save_format):
     try:
         image = from_pillow(Image.linear_gradient(mode="L"))

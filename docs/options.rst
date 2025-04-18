@@ -26,7 +26,7 @@ Example of use
 Overriding multiple options at once
 """""""""""""""""""""""""""""""""""
 
-When registering a Pillow plugin with :py:func:`pillow_heif.register_heif_opener` or :py:func:`pillow_heif.register_avif_opener`
+When registering a Pillow plugin with :py:func:`pillow_heif.register_heif_opener`
 
 .. code-block:: python
 

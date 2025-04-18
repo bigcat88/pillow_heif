@@ -33,9 +33,4 @@ HeifImageFile object
 .. autoclass:: pillow_heif.HeifImageFile
     :show-inheritance:
 
-.. autoclass:: pillow_heif.AvifImageFile
-    :show-inheritance:
-
 .. autofunction:: pillow_heif.register_heif_opener
-
-.. autofunction:: pillow_heif.register_avif_opener
