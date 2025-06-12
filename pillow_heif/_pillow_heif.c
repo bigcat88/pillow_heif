@@ -761,33 +761,53 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
         heif_image_handle_release(aux_handle);
         return NULL;
     }
-    if (luma_bits != 8 || colorspace != heif_colorspace_monochrome) {
-        const char* colorspace_str = _colorspace_to_str(colorspace);
+    if (luma_bits != 8) {
         PyErr_Format(
             PyExc_NotImplementedError,
-            "Only 8-bit monochrome auxiliary images are currently supported. Got %d-bit %s image. "
-            "Please consider filing an issue with an example HEIF file.",
-            luma_bits, colorspace_str);
+            "Only 8-bit AUX images are currently supported. Got %d-bit image.",
+            luma_bits);
         heif_image_handle_release(aux_handle);
         return NULL;
     }
+
     CtxImageObject *ctx_image = PyObject_New(CtxImageObject, &CtxImage_Type);
     if (!ctx_image) {
         heif_image_handle_release(aux_handle);
         return NULL;
     }
+
+    if (colorspace == heif_colorspace_monochrome) {
+        ctx_image->colorspace = heif_colorspace_monochrome;
+        ctx_image->chroma = heif_chroma_monochrome;
+        strcpy(ctx_image->mode, "L");
+        ctx_image->n_channels = 1;
+    }
+    else if (colorspace == heif_colorspace_YCbCr) {
+        ctx_image->colorspace = heif_colorspace_RGB;
+        ctx_image->chroma = heif_chroma_interleaved_RGB;
+        strcpy(ctx_image->mode, "RGB");
+        ctx_image->n_channels = 3;
+    }
+    else {
+        const char* colorspace_str = _colorspace_to_str(colorspace);
+        PyErr_Format(
+            PyExc_NotImplementedError,
+            "Only monochrome or YCbCr auxiliary images are currently supported. Got %d-bit %s image. "
+            "Please consider filing an issue with an example HEIF file.",
+            luma_bits, colorspace_str);
+        heif_image_handle_release(aux_handle);
+        PyObject_Del(ctx_image);
+        return NULL;
+    }
+
     ctx_image->depth_metadata = NULL;
     ctx_image->image_type = PhHeifImage;
     ctx_image->width = heif_image_handle_get_width(aux_handle);
     ctx_image->height = heif_image_handle_get_height(aux_handle);
     ctx_image->alpha = 0;
-    ctx_image->n_channels = 1;
     ctx_image->bits = 8;
-    strcpy(ctx_image->mode, "L");
     ctx_image->hdr_to_8bit = 0;
     ctx_image->bgr_mode = 0;
-    ctx_image->colorspace = heif_colorspace_monochrome;
-    ctx_image->chroma = heif_chroma_monochrome;
     ctx_image->handle = aux_handle;
     ctx_image->heif_image = NULL;
     ctx_image->data = NULL;
