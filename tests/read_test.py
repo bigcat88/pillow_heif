@@ -479,6 +479,20 @@ def test_aux_image():
     assert aux_pil.mode == "L"
 
 
+def test_aux_image_ycbcr():
+    im = pillow_heif.open_heif("images/heif_special/aux_YCbCr.heic")
+    assert len(im.info["aux"]) == 1
+    assert "urn:com:samsung:photo:2024:aux:hdrgainmap" in im.info["aux"]
+    assert len(im.info["aux"]["urn:com:samsung:photo:2024:aux:hdrgainmap"]) == 1
+    aux_id = im.info["aux"]["urn:com:samsung:photo:2024:aux:hdrgainmap"][0]
+    aux_image = im.get_aux_image(aux_id)
+    assert str(aux_image) == "<HeifAuxImage 1000x462 RGB>"
+    assert isinstance(aux_image, pillow_heif.HeifAuxImage)
+    aux_pil = aux_image.to_pillow()
+    assert aux_pil.size == (1000, 462)
+    assert aux_pil.mode == "RGB"
+
+
 @pytest.mark.skipif(
     parse_version(pillow_heif.libheif_version()) < parse_version("1.18.0"), reason="requires LibHeif 1.18+"
 )
