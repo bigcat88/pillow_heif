@@ -1,5 +1,17 @@
 All notable changes to this project will be documented in this file.
 
+## [1.0.0 - 2025-06-29]
+
+### Added
+
+- Support for `YCbCr` AUX images. #355  Thanks to @marklit for feature request and test file.
+
+### Changed
+
+- `AVIF` support was dropped, as the new upcoming Pillow has native `AVIF` support. #345
+- `libheif` was updated from the `1.19.7` to `1.19.8` version. #349
+- `libde265` was updated from the `1.0.15` to `1.0.16` version.
+
 ## [0.22.0 - 2025-03-15]
 
 ### Added
