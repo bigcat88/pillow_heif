@@ -18,8 +18,7 @@ jobs:
           { "os": "fedora", "ver": "37" },
           { "os": "debian", "ver": "11" },
           { "os": "debian", "ver": "12" },
-          { "os": "alpine", "ver": "3.19" },
-          { "os": "alpine", "ver": "3.20" },
+          { "os": "alpine", "ver": "3.21" },
         ]
 
     steps:
@@ -69,8 +68,7 @@ jobs:
           { "os": "oraclelinux", "ver": "9" },
           { "os": "debian", "ver": "11" },
           { "os": "debian", "ver": "12" },
-          { "os": "alpine", "ver": "3.19" },
-          { "os": "alpine", "ver": "3.20" },
+          { "os": "alpine", "ver": "3.21" },
         ]
 
     steps:
