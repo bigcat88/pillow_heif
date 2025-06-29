@@ -115,7 +115,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy-3.9", "pypy-3.10", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy-3.10", "pypy-3.11", "3.9", "3.10", "3.11", "3.12", "3.13"]
     env:
       PH_LIGHT_ACTION: 1
 
@@ -148,7 +148,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy-3.9", "pypy-3.10", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy-3.10", "pypy-3.11", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -181,7 +181,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy-3.9", "pypy-3.10", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy-3.10", "pypy-3.11", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -212,7 +212,7 @@ jobs:
     runs-on: macos-13
     strategy:
       matrix:
-        python-version: ["pypy-3.9", "3.9"]
+        python-version: ["pypy-3.10", "3.10"]
 
     steps:
       - name: Delay, waiting Pypi to update.

@@ -27,7 +27,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.21.3
+          python3 -m pip install cibuildwheel==2.23.2
           python3 -m cibuildwheel
         env:
           CIBW_ARCHS: "arm64"
@@ -87,7 +87,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.21.3
+          python3 -m pip install cibuildwheel==2.23.2
           python3 -m cibuildwheel
         env:
           CIBW_ARCHS: "AMD64"
@@ -119,7 +119,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.21.3
+          python3 -m pip install cibuildwheel==2.23.2
           python3 -m cibuildwheel
         env:
           CIBW_ARCHS: "x86_64"
@@ -163,7 +163,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.21.3
+          python3 -m pip install cibuildwheel==2.23.2
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}_x86_64', matrix.cibw_buildlinux) }}
@@ -211,7 +211,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.21.3
+          python3 -m pip install cibuildwheel==2.23.2
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('cp3*-{0}_aarch64', matrix.cibw_buildlinux) }}
@@ -254,7 +254,7 @@ jobs:
       - name: Run cibuildwheel
         run: |
           python3 -m pip install "twine>=6.1.0" "packaging>=24.2"
-          python3 -m pip install cibuildwheel==2.21.3
+          python3 -m pip install cibuildwheel==2.23.2
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('pp3*-{0}_x86_64', matrix.cibw_buildlinux) }}
@@ -295,7 +295,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==2.21.3
+          python3 -m pip install cibuildwheel==2.23.2
           python3 -m cibuildwheel
         env:
           CIBW_BUILD: ${{ format('pp3*-{0}_aarch64', matrix.cibw_buildlinux) }}

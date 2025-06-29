@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - `AVIF` support was dropped, as the new upcoming Pillow has native `AVIF` support. #345
 - `libheif` was updated from the `1.19.7` to `1.19.8` version. #349
 - `libde265` was updated from the `1.0.15` to `1.0.16` version.
+- Removed deprecated PyPy 3.9 wheels & added PyPy 3.11 wheels.
 
 ## [0.22.0 - 2025-03-15]
 
