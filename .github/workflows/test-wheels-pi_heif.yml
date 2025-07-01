@@ -109,7 +109,7 @@ jobs:
 
   windows-wheels:
     name: Windows • 2022 • ${{ matrix.python-version }}
-    runs-on: windows-2022
+    runs-on: windows-2025
     strategy:
       fail-fast: false
       matrix:

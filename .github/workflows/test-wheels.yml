@@ -113,7 +113,7 @@ jobs:
 
   windows-wheels:
     name: Windows • 2022 • ${{ matrix.python-version }}
-    runs-on: windows-2022
+    runs-on: windows-2025
     strategy:
       matrix:
         python-version: ["pypy-3.10", "pypy-3.11", "3.9", "3.10", "3.11", "3.12", "3.13"]
