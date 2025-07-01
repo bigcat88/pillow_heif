@@ -112,8 +112,8 @@ jobs:
             -f docker/test_wheels.Dockerfile .
 
   windows-wheels:
-    name: Windows • 2019 • ${{ matrix.python-version }}
-    runs-on: windows-2019
+    name: Windows • 2022 • ${{ matrix.python-version }}
+    runs-on: windows-2022
     strategy:
       matrix:
         python-version: ["pypy-3.10", "pypy-3.11", "3.9", "3.10", "3.11", "3.12", "3.13"]
