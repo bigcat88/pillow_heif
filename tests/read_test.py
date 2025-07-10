@@ -533,14 +533,16 @@ def test_invalid_decoder():
         pillow_heif.options.PREFERRED_DECODER["HEIF"] = ""
 
 
-@pytest.mark.skipif(
-    parse_version(pillow_heif.libheif_version()) < parse_version("1.19.7"), reason="Requires libheif 1.19.7."
-)
-def test_200_megapixels():
-    with pytest.raises(RuntimeError):
-        _ = pillow_heif.open_heif("images/heif_special/200MP.heic").data
-    try:
-        pillow_heif.options.DISABLE_SECURITY_LIMITS = True
-        _ = pillow_heif.open_heif("images/heif_special/200MP.heic").data
-    finally:
-        pillow_heif.options.DISABLE_SECURITY_LIMITS = False
+# to-do: looks like we need now image with 400MP size to hit the security limits :(
+#
+# @pytest.mark.skipif(
+#     parse_version(pillow_heif.libheif_version()) < parse_version("1.19.7"), reason="Requires libheif 1.19.7"
+# )
+# def test_200_megapixels():
+#     with pytest.raises(RuntimeError):
+#         _ = pillow_heif.open_heif("images/heif_special/200MP.heic").data
+#     try:
+#         pillow_heif.options.DISABLE_SECURITY_LIMITS = True
+#         _ = pillow_heif.open_heif("images/heif_special/200MP.heic").data
+#     finally:
+#         pillow_heif.options.DISABLE_SECURITY_LIMITS = False

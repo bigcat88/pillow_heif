@@ -18,7 +18,7 @@ def test_libheif_info():
         assert key in info
 
     version = pillow_heif.libheif_version()
-    valid_prefixes = ["1.17.", "1.18.", "1.19."]
+    valid_prefixes = ["1.17.", "1.18.", "1.19.", "1.20."]
     assert any(version.startswith(prefix) for prefix in valid_prefixes)
 
 
@@ -107,7 +107,7 @@ def test_full_build():
     assert info["HEIF"]
     assert info["encoders"]
     assert info["decoders"]
-    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.19.8")
+    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.20.1")
     if expected_version:
         assert info["libheif"] == expected_version
 
@@ -118,7 +118,7 @@ def test_light_build():
     assert not info["AVIF"]
     assert not info["HEIF"]
     assert info["decoders"]
-    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.19.8")
+    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.20.1")
     if expected_version:
         assert info["libheif"] == expected_version
 
