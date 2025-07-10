@@ -2,6 +2,9 @@
 
 #include "Python.h"
 #include "libheif/heif.h"
+#if LIBHEIF_HAVE_VERSION(1,20,0)
+    #include "libheif/heif_properties.h"
+#endif
 #include "_ph_postprocess.h"
 
 /* =========== Common stuff ======== */
