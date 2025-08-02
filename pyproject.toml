@@ -7,10 +7,10 @@ requires = [
 [tool.cibuildwheel]
 build-verbosity = "2"
 build = [
-  "cp39-* cp310-* cp311-* cp312-* cp313-* pp310-* pp311-*",
+  "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-* pp310-* pp311-*",
 ]
 skip = [
-  "cp36-* cp37-* cp38-* pp37-* pp38-* pp39-*",
+  "cp38-* pp38-* pp39-*",
 ]
 test-extras = "tests-min"
 test-command = "pytest {project}"
@@ -19,6 +19,7 @@ before-test = [
   "pip install --only-binary=:all: numpy || true",
   "pip install pympler || true",
 ]
+enable = [ "pypy", "pypy-eol" ]
 
 [tool.cibuildwheel.macos]
 before-all = [
