@@ -11,7 +11,7 @@ BUILD_DIR = environ.get("BUILD_DIR", "/tmp/ph_build_stuff")
 INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 
-LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/get/0b75c44c10e605fe9e9ebed58f04a46271131827.tar.gz"
+LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.1.tar.gz"
 LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.0.16/libde265-1.0.16.tar.gz"
 LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.20.1/libheif-1.20.1.tar.gz"
 

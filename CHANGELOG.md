@@ -1,5 +1,19 @@
 All notable changes to this project will be documented in this file.
 
+## [1.1.0 - 2025-08-02]
+
+### Added
+
+- Python `3.14` wheels added.
+
+### Changed
+
+- `libheif` was updated from the `1.19.8` to `1.20.1` version.
+
+### Fixed
+
+- `x265` was updated to the `4.1` version for Linux build to be in sync with macOS and Windows.
+
 ## [1.0.0 - 2025-06-29]
 
 ### Added
