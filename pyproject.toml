@@ -19,7 +19,7 @@ before-test = [
   "pip install --only-binary=:all: numpy || true",
   "pip install pympler || true",
 ]
-enable = [ "pypy", "pypy-eol" ]
+enable = [ "pypy" ]
 
 [tool.cibuildwheel.macos]
 before-all = [

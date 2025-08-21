@@ -130,36 +130,51 @@ jobs:
           path: wheelhouse/*.whl
           if-no-files-found: error
 
-  wheels_linux_amd64:
+  wheels_linux:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        cibw_buildlinux: [ manylinux, musllinux ]
-    name: ${{ matrix.cibw_buildlinux }} • AMD64
-    runs-on: ubuntu-24.04
+        include:
+          - name: "manylinux2014 and musllinux x86_64"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: x86_64
+            manylinux: "manylinux2014"
+          - name: "manylinux_2_28 x86_64"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: x86_64
+            build: "*manylinux*"
+          - name: "manylinux2014 and musllinux aarch64"
+            platform: linux
+            os: ubuntu-24.04-arm
+            cibw_arch: aarch64
+            manylinux: "manylinux2014"
+          - name: "manylinux_2_28 aarch64"
+            platform: linux
+            os: ubuntu-24.04-arm
+            cibw_arch: aarch64
+            build: "*manylinux*"
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
-      - name: musllinux preparations
-        if: matrix.cibw_buildlinux == 'musllinux'
-        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
-
-      - name: manylinux preparations
-        if: matrix.cibw_buildlinux == 'manylinux'
-        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "libjpeg-turbo-devel lcms2-devel"
 
       - name: Run cibuildwheel
         run: |
           python3 -m pip install cibuildwheel==3.1.3
           python3 -m cibuildwheel
         env:
-          CIBW_ARCHS: "x86_64"
+          CIBW_PLATFORM: ${{ matrix.platform }}
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
+          CIBW_BUILD: ${{ matrix.build }}
+          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
           CIBW_BEFORE_ALL_LINUX: |
-            ${{ env.INSTALL_OS_PACKAGES }}
             python3 -m pip install cmake==3.31.6
             python3 {package}/libheif/linux_build_libs.py
           CIBW_ENVIRONMENT_LINUX: PH_FULL_ACTION=1
@@ -174,53 +189,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels_pillow_heif-${{ matrix.cibw_buildlinux }}-amd64
-          path: wheelhouse/*.whl
-          if-no-files-found: error
-
-  wheels_linux_arm64:
-    strategy:
-      fail-fast: true
-      matrix:
-        cibw_buildlinux: [ manylinux, musllinux ]
-    name: ${{ matrix.cibw_buildlinux }} • ARM64
-    runs-on: ubuntu-24.04-arm
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: musllinux preparations
-        if: matrix.cibw_buildlinux == 'musllinux'
-        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev"
-
-      - name: manylinux preparations
-        if: matrix.cibw_buildlinux == 'manylinux'
-        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> $GITHUB_ENV
-        env:
-          OS_PACKAGES: "libjpeg-turbo-devel lcms2-devel"
-
-      - name: Run cibuildwheel
-        run: |
-          python3 -m pip install cibuildwheel==3.1.3
-          python3 -m cibuildwheel
-        env:
-          CIBW_ARCHS: "aarch64"
-          CIBW_BEFORE_ALL_LINUX: |
-            ${{ env.INSTALL_OS_PACKAGES }}
-            python3 -m pip install cmake==3.31.6
-            python3 {package}/libheif/linux_build_libs.py
-          CIBW_ENVIRONMENT_LINUX: PH_FULL_ACTION=1
-
-      - name: Checking built wheels
-        run: |
-          python3 -m pip install "twine>=6.1.0" "packaging>=24.2"
-          python3 -m pip install twine
-          python3 -m twine check wheelhouse/*
-
-      - name: Uploading wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels_pillow_heif-${{ matrix.cibw_buildlinux }}-arm64
           path: wheelhouse/*.whl
           if-no-files-found: error
 
