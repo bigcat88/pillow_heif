@@ -26,7 +26,7 @@ jobs:
     name: Analysis
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -45,7 +45,7 @@ jobs:
     name: Coverage(Linux) • 🐍3.11
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -90,7 +90,7 @@ jobs:
     name: Coverage(Linux, Pillow-dev) • 🐍3.12
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -139,7 +139,7 @@ jobs:
       TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -176,7 +176,7 @@ jobs:
     name: Coverage(macOS-14) • 🐍3.11
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -215,7 +215,7 @@ jobs:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.9'
@@ -297,7 +297,7 @@ jobs:
     name: Pi-Heif Coverage(Linux) • 🐍3.13
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Transform to Pi-Heif
         run: cp -r -v ./pi-heif/* .
 
@@ -343,7 +343,7 @@ jobs:
     name: Pi-Heif Test(Linux) • 🐍3.13
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
@@ -376,7 +376,7 @@ jobs:
     name: Coverage(ImportError)
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

@@ -38,7 +38,7 @@ jobs:
         docker_file: ["Alpine_3_20", "Alpine_3_21", "Almalinux_9", "Debian_12"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -74,7 +74,7 @@ jobs:
         docker_file: ["Alpine_3_20", "Alpine_3_21", "Almalinux_9", "Debian_12"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3

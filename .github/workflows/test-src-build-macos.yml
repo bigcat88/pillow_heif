@@ -37,7 +37,7 @@ jobs:
       EXP_PH_LIBHEIF_VERSION: ""
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install libheif from formula
         run: |
           brew uninstall --force --ignore-dependencies imagemagick libheif aom
@@ -60,7 +60,7 @@ jobs:
       EXP_PH_LIBHEIF_VERSION: ""
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -88,7 +88,7 @@ jobs:
       EXP_PH_LIBHEIF_VERSION: ""
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
@@ -116,7 +116,7 @@ jobs:
       EXP_PH_LIBHEIF_VERSION: ""
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
