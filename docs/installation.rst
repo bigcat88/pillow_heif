@@ -77,7 +77,7 @@ Install `gcc`, `cmake`, `aom` and `x265`::
     - pkg install -y gcc cmake aom x265
     - pkg install -y py39-pip
     - pkg install -y py39-pillow py39-numpy
-    - python3 libheif/linux_build_libs.py
+    - python3 libheif/build_libs.py
 
 Install Python and Pillow::
 

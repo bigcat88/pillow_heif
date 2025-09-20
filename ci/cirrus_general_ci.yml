@@ -16,7 +16,7 @@ test_src_build_full_freebsd_task:
     - pkg install -y gcc cmake aom x265
     - pkg install -y py311-pip
     - pkg install -y py311-pillow py311-numpy
-    - python3.11 libheif/linux_build_libs.py
+    - python3.11 libheif/build_libs.py
   install_pillow_heif_script:
     - python3.11 -m pip -v install --break-system-packages ".[tests-min]"
   libheif_info_script:

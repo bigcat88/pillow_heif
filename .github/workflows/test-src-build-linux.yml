@@ -7,8 +7,7 @@ on:
     paths:
       - '.github/workflows/test-src-build-linux.yml'
       - 'docker/from_src/*.Dockerfile'
-      - 'libheif/linux/**'
-      - 'libheif/linux_*.py'
+      - 'libheif/build_libs.py'
       - 'setup.*'
       - 'pyproject.toml'
       - 'pillow_heif/_pillow_heif.c'
@@ -17,8 +16,7 @@ on:
     paths:
       - '.github/workflows/test-src-build-linux.yml'
       - 'docker/from_src/*.Dockerfile'
-      - 'libheif/linux/**'
-      - 'libheif/linux_*.py'
+      - 'libheif/build_libs.py'
       - 'setup.*'
       - 'pyproject.toml'
       - 'pillow_heif/_pillow_heif.c'

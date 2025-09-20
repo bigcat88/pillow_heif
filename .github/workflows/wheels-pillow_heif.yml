@@ -6,7 +6,7 @@ on:
     paths:
       - '.github/workflows/wheels-pillow_heif.yml'
       - 'setup.*'
-      - 'libheif/linux_*.py'
+      - 'libheif/build_libs.py'
       - 'pyproject.toml'
 
 jobs:
@@ -20,10 +20,14 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install libheif from formula
-        run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif aom
-          brew install --formula ./libheif/macos/libheif.rb
+      - name: Uninstall libheif from homebrew
+        run: brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265
+
+      - name: Install libheif
+        run: sudo python3 libheif/build_libs.py
+
+      - name: Install dependencies for Pillow
+        run: brew install libjpeg little-cms2
 
       - name: Run cibuildwheel
         run: |
@@ -109,6 +113,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Uninstall libheif from homebrew
+        run: brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265 jpeg-turbo
+
+      - name: Install libheif
+        run: sudo python3 libheif/build_libs.py
+
+      - name: Install dependencies for Pillow
+        run: brew install libjpeg little-cms2
+
       - name: Run cibuildwheel
         run: |
           python3 -m pip install cibuildwheel==3.1.3
@@ -161,7 +175,7 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: |
             ${{ env.INSTALL_OS_PACKAGES }}
             python3 -m pip install cmake==3.31.6
-            python3 {package}/libheif/linux_build_libs.py
+            python3 {package}/libheif/build_libs.py
           CIBW_ENVIRONMENT_LINUX: PH_FULL_ACTION=1
 
       - name: Checking built wheels
@@ -208,7 +222,7 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: |
             ${{ env.INSTALL_OS_PACKAGES }}
             python3 -m pip install cmake==3.31.6
-            python3 {package}/libheif/linux_build_libs.py
+            python3 {package}/libheif/build_libs.py
           CIBW_ENVIRONMENT_LINUX: PH_FULL_ACTION=1
 
       - name: Checking built wheels
@@ -226,20 +240,25 @@ jobs:
 
   sdist:
     name: Source distribution
-    runs-on: macos-13
+    runs-on: macos-14
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
       - name: Install requirements
-        run: python3 -m pip install check-manifest twine wheel
+        run: python3 -m pip install twine wheel build check-manifest
 
       - name: Run check-manifest
         run: python3 -m check_manifest
 
-      - name: Install libheif from formula
-        run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif aom
-          brew install --formula ./libheif/macos/libheif.rb
+      - name: Uninstall libheif from homebrew
+        run: brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265
+
+      - name: Install libheif
+        run: sudo python3 libheif/build_libs.py
 
       - name: Build sdist
         run: |
