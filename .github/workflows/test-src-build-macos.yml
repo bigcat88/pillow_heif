@@ -6,20 +6,18 @@ on:
   pull_request:
     paths:
       - '.github/workflows/test-src-build-macos.yml'
-      - 'libheif/macos/**'
       - 'setup.*'
       - 'pyproject.toml'
-      - 'pi-heif/libheif/macos/**'
+      - 'libheif/build_libs.py'
       - 'pi-heif/setup.cfg'
       - 'pillow_heif/_pillow_heif.c'
   push:
     branches: [master]
     paths:
       - '.github/workflows/test-src-build-macos.yml'
-      - 'libheif/macos/**'
       - 'setup.*'
       - 'pyproject.toml'
-      - 'pi-heif/libheif/macos/**'
+      - 'libheif/build_libs.py'
       - 'pi-heif/setup.cfg'
       - 'pillow_heif/_pillow_heif.c'
 
@@ -38,10 +36,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Install libheif from formula
+      - name: Uninstall libheif from homebrew
         run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif aom
-          brew install --formula ./libheif/macos/libheif.rb
+          brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265 jpeg-turbo
+
+      - name: Install libheif
+        run: sudo python3 libheif/build_libs.py
 
       - name: Installing Pillow-Heif
         run: python3 -m pip -v install ".[dev]"
@@ -65,10 +65,11 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install libheif from formula
-        run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif aom
-          brew install --formula ./libheif/macos/libheif.rb
+      - name: Uninstall libheif from homebrew
+        run: brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265
+
+      - name: Install libheif
+        run: sudo python3 libheif/build_libs.py
 
       - name: Installing Pillow-Heif
         run: python3 -m pip -v install ".[dev]"
@@ -94,10 +95,12 @@ jobs:
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
 
-      - name: Install libheif from formula
+      - name: Uninstall libheif from homebrew
         run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom
-          brew install --formula ./libheif/macos/libheif.rb
+          brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265 jpeg-turbo
+
+      - name: Install libheif
+        run: sudo PH_LIGHT_ACTION=1 python3 libheif/build_libs.py
 
       - name: Installing Pi-Heif
         run: python3 -m pip -v install ".[tests]"
@@ -126,10 +129,11 @@ jobs:
           cp -r -v ./pi-heif/* .
           python3 .github/transform_to-pi_heif.py
 
-      - name: Install libheif from formula
-        run: |
-          brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom
-          brew install --formula ./libheif/macos/libheif.rb
+      - name: Uninstall libheif from homebrew
+        run: brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265
+
+      - name: Install libheif
+        run: sudo PH_LIGHT_ACTION=1 python3 libheif/build_libs.py
 
       - name: Installing Pi-Heif
         run: python3 -m pip -v install ".[tests]"

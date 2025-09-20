@@ -1,5 +1,6 @@
-"""File containing code to build Linux libraries for LibHeif and the LibHeif itself."""
+"""File containing code to build libraries for LibHeif (Linux and macOS) and LibHeif itself."""
 
+import platform
 import sys
 from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path, remove
 from platform import machine
@@ -8,12 +9,17 @@ from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired
 
 # 1
 BUILD_DIR = environ.get("BUILD_DIR", "/tmp/ph_build_stuff")
-INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", "/usr")
+
+# On macOS, installing into /usr is blocked by SIP. Default to /usr/local there.
+_IS_DARWIN = platform.system() == "Darwin"
+_DEFAULT_PREFIX = "/usr/local" if _IS_DARWIN else "/usr"
+INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", _DEFAULT_PREFIX)
+
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 
 LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.1.tar.gz"
 LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.0.16/libde265-1.0.16.tar.gz"
-LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.20.1/libheif-1.20.1.tar.gz"
+LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.20.2/libheif-1.20.2.tar.gz"
 
 
 def download_file(url: str, out_path: str) -> bool:
@@ -29,7 +35,7 @@ def download_file(url: str, out_path: str) -> bool:
             )
             return True
         except (CalledProcessError, TimeoutExpired):
-            break
+            continue
         except FileNotFoundError:
             n_download_clients -= 1
             break
@@ -38,7 +44,7 @@ def download_file(url: str, out_path: str) -> bool:
             run(["curl", "-L", url, "-o", out_path], timeout=90, stderr=DEVNULL, stdout=DEVNULL, check=True)
             return True
         except (CalledProcessError, TimeoutExpired):
-            break
+            continue
         except FileNotFoundError:
             n_download_clients -= 1
             break
@@ -88,7 +94,8 @@ def check_install_nasm(version: str):
     else:
         download_extract_to(f"https://www.nasm.us/pub/nasm/releasebuilds/{version}/nasm-{version}.tar.gz", tool_path)
         chdir(tool_path)
-        run(["./configure"], check=True)
+        prefix = "/usr/local" if _IS_DARWIN else "/usr"
+        run(["./configure", f"--prefix={prefix}"], check=True)
         run("make".split(), check=True)
     run("make install".split(), check=True)
     run("nasm --version".split(), check=True)
@@ -97,7 +104,12 @@ def check_install_nasm(version: str):
 
 
 def is_musllinux() -> bool:
-    _ = run("ldd --version".split(), stdout=PIPE, stderr=STDOUT, check=False)
+    if platform.system() != "Linux":
+        return False
+    try:
+        _ = run("ldd --version".split(), stdout=PIPE, stderr=STDOUT, check=False)
+    except FileNotFoundError:
+        return False
     return bool(_.stdout and _.stdout.decode("utf-8").find("musl") != -1)
 
 
@@ -119,67 +131,90 @@ def run_print_if_error(args) -> None:
         raise ChildProcessError(f"Failed: {args}")
 
 
-def build_lib_linux(url: str, name: str):
+def _linux_ldconfig():
+    if platform.system() != "Linux":
+        return
+    try:
+        if is_musllinux():
+            run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
+        else:
+            run("ldconfig".split(), check=True)
+    except FileNotFoundError:
+        pass
+
+
+def build_lib(url: str, name: str):
     lib_path = path.join(BUILD_DIR, name)
     if path.isdir(lib_path):
-        print(f"Cache found for {name}", flush=True)
+        print(f"Cache found for {name}: {lib_path}", flush=True)
         chdir(path.join(lib_path, "build")) if name != "x265" else chdir(lib_path)
     else:
-        hide_build_process = True
         script_dir = path.dirname(path.abspath(__file__))
         linux_dir = path.join(script_dir, "linux")  # noqa
         if name == "x265":
             download_extract_to(url, lib_path)
             chdir(lib_path)
+            run(f"patch -p 1 -i {path.join(script_dir, 'x265_cmake_1.patch')}".split(), check=True)
+            run(f"patch -p 1 -i {path.join(script_dir, 'x265_cmake_2.patch')}".split(), check=True)
         else:
             build_path = path.join(lib_path, "build")
-            makedirs(build_path)
+            makedirs(build_path, exist_ok=True)
             download_extract_to(url, lib_path)
-            if name == "libde265":  # noqa
-                chdir(lib_path)
-                # for patch in (
-                #     "libde265/CVE-2022-1253.patch",
-                # ):
-                #     patch_path = path.join(linux_dir, patch)
-                #     run(f"patch -p 1 -i {patch_path}".split(), check=True)
-            elif name == "libheif":
-                chdir(lib_path)
-                # for patch in (
-                #     "libheif/001-void-unused-variable.patch",
-                # ):
-                #     patch_path = path.join(linux_dir, patch)
-                #     run(f"patch -p 1 -i {patch_path}".split(), check=True)
+            # if name == "libde265":
+            #     chdir(lib_path)
+            #     for patch in ("libde265/CVE-2022-1253.patch",):
+            #         patch_path = path.join(linux_dir, patch)
+            #         run(f"patch -p 1 -i {patch_path}".split(), check=True)
+            # elif name == "libheif":
+            #     chdir(lib_path)
+            #     for patch in ("libheif/001-void-unused-variable.patch",):
+            #         patch_path = path.join(linux_dir, patch)
+            #         run(f"patch -p 1 -i {patch_path}".split(), check=True)
             chdir(build_path)
         print(f"Preconfiguring {name}...", flush=True)
         if name == "x265":
+            additional_args = ["-DCMAKE_POLICY_VERSION_MINIMUM=3.5"]
+            if platform.machine().find("x86_64") == -1:
+                additional_args += ["-DENABLE_SVE2=OFF"]
             cmake_high_bits = "-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF".split()
             cmake_high_bits += "-DENABLE_SHARED=OFF -DENABLE_CLI=OFF".split()
             mkdir("12bit")
             mkdir("10bit")
             chdir("10bit")
-            run("cmake ./../source -DENABLE_HDR10_PLUS=ON".split() + cmake_high_bits, check=True)
+            run("cmake ./../source -DENABLE_HDR10_PLUS=ON".split() + cmake_high_bits + additional_args, check=True)
             run_print_if_error("make -j4".split())
             run("mv libx265.a ../libx265_main10.a".split(), check=True)
             chdir("../12bit")
-            run(["cmake", "./../source", "-DMAIN12=ON", *cmake_high_bits], check=True)
+            run(["cmake", "./../source", "-DMAIN12=ON", *cmake_high_bits, *additional_args], check=True)
             run_print_if_error("make -j4".split())
             run("mv libx265.a ../libx265_main12.a".split(), check=True)
             chdir("..")
-            cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ./source".split()
+            cmake_args = [f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS}", "./source"]
             cmake_args += ["-G", "Unix Makefiles"]
             cmake_args += "-DLINKED_10BIT=ON -DLINKED_12BIT=ON -DEXTRA_LINK_FLAGS=-L.".split()
             cmake_args += "-DEXTRA_LIB='x265_main10.a;x265_main12.a'".split()
+            cmake_args += additional_args
+            if _IS_DARWIN:
+                cmake_args += [f"-DCMAKE_INSTALL_NAME_DIR={INSTALL_DIR_LIBS}/lib"]
         else:
-            cmake_args = f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS} ..".split()
+            cmake_args = [f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS}", ".."]
             cmake_args += ["-DCMAKE_BUILD_TYPE=Release"]
+            if _IS_DARWIN:
+                cmake_args += [
+                    f"-DCMAKE_INSTALL_NAME_DIR={INSTALL_DIR_LIBS}/lib",
+                    f"-DCMAKE_PREFIX_PATH={INSTALL_DIR_LIBS}",
+                    f"-DCMAKE_LIBRARY_PATH={INSTALL_DIR_LIBS}/lib",
+                    f"-DCMAKE_INCLUDE_PATH={INSTALL_DIR_LIBS}/include",
+                ]
             if name == "libheif":
                 cmake_args += (
                     "-DWITH_OPENJPH_DECODER=OFF "
                     "-DWITH_OPENJPH_ENCODER=OFF "
+                    "-DWITH_OpenH264_DECODER=OFF "
+                    "-DWITH_OpenH264_ENCODER=OFF "
                     "-DWITH_HEADER_COMPRESSION=OFF "
                     "-DWITH_LIBDE265=ON "
                     "-DWITH_LIBDE265_PLUGIN=OFF "
-                    "-DWITH_X265=ON "
                     "-DWITH_X265_PLUGIN=OFF "
                     "-DWITH_AOM_DECODER=OFF "
                     "-DWITH_AOM_DECODER_PLUGIN=OFF "
@@ -200,23 +235,25 @@ def build_lib_linux(url: str, name: str):
                     "-DENABLE_PLUGIN_LOADING=OFF "
                     "-DWITH_LIBSHARPYUV=OFF "
                     "-DWITH_EXAMPLES=OFF "
+                    "-DWITH_EXAMPLE_HEIF_VIEW=OFF "
+                    "-DWITH_GDK_PIXBUF=OFF "
                     "-DBUILD_TESTING=OFF".split()
                 )
-                hide_build_process = False
-                if is_musllinux():
+                if PH_LIGHT_VERSION:
+                    cmake_args += ["-DWITH_X265=OFF"]
+                else:
+                    cmake_args += ["-DWITH_X265=ON"]
+                if not _IS_DARWIN and is_musllinux():
                     cmake_args += [f"-DCMAKE_INSTALL_LIBDIR={INSTALL_DIR_LIBS}/lib"]
         run(["cmake", *cmake_args], check=True)
         print(f"{name} configured. building...", flush=True)
-        if hide_build_process:
-            run_print_if_error("make -j4".split())
-        else:
+        if name == "libheif":
             run("make -j4".split(), check=True)
+        else:
+            run_print_if_error("make -j4".split())
         print(f"{name} build success.", flush=True)
     run("make install".split(), check=True)
-    if is_musllinux():
-        run(f"ldconfig {INSTALL_DIR_LIBS}/lib".split(), check=True)
-    else:
-        run("ldconfig", check=True)
+    _linux_ldconfig()
 
 
 def build_libs() -> None:
@@ -224,18 +261,27 @@ def build_libs() -> None:
     try:
         if not tool_check_version("cmake", "3.16.3"):
             raise ValueError("Can not find `cmake` with version >=3.16.3")
+        try:
+            makedirs(path.join(INSTALL_DIR_LIBS, "lib"), exist_ok=True)
+            makedirs(path.join(INSTALL_DIR_LIBS, "include"), exist_ok=True)
+        except PermissionError as e:
+            raise PermissionError(
+                f"Install prefix {INSTALL_DIR_LIBS} is not writable. "
+                f"Set INSTALL_DIR_LIBS to a writable path (e.g. $HOME/.local or /usr/local on macOS)."
+            ) from e
+
         if not is_library_installed("x265"):
             if not PH_LIGHT_VERSION:
                 if not check_install_nasm("2.15.05"):
                     raise ValueError("Can not find/install `nasm` with version >=2.15.05")
-                build_lib_linux(LIBX265_URL, "x265")
+                build_lib(LIBX265_URL, "x265")
         else:
             print("x265 already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
-            build_lib_linux(LIBDE265_URL, "libde265")
+            build_lib(LIBDE265_URL, "libde265")
         else:
             print("libde265 already installed.")
-        build_lib_linux(LIBHEIF_URL, "libheif")
+        build_lib(LIBHEIF_URL, "libheif")
     finally:
         chdir(original_dir)
 
