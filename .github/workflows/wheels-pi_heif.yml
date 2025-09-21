@@ -30,7 +30,7 @@ jobs:
         run: brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265
 
       - name: Install libheif
-        run: sudo PH_LIGHT_ACTION=1 python3 libheif/build_libs.py
+        run: sudo PH_LIGHT_ACTION=1 MACOSX_DEPLOYMENT_TARGET="11.0" python3 libheif/build_libs.py
 
       - name: Install dependencies for Pillow
         run: brew install libjpeg little-cms2
@@ -42,7 +42,7 @@ jobs:
         env:
           CIBW_ARCHS: "arm64"
           CIBW_ENVIRONMENT_MACOS: PH_LIGHT_ACTION=1
-          MACOSX_DEPLOYMENT_TARGET: "14.0"
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
 
       - name: Check built wheels
         run: |
