@@ -13,7 +13,7 @@ on:
 jobs:
   wheels_macos_arm:
     name: macosx • aarch64
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v5
@@ -118,7 +118,7 @@ jobs:
 
   wheels_macos:
     name: macosx • x86_64
-    runs-on: macos-13
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v5
@@ -249,7 +249,7 @@ jobs:
 
   sdist:
     name: Source distribution
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v5
