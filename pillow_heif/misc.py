@@ -89,7 +89,7 @@ LIBHEIF_CHROMA_MAP = {
 def save_colorspace_chroma(c_image, info: dict) -> None:
     """Converts `chroma` value from `c_image` to useful values and stores them in ``info`` dict."""
     # Saving of `colorspace` was removed, as currently is not clear where to use that value.
-    chroma = LIBHEIF_CHROMA_MAP.get(c_image.chroma, None)
+    chroma = LIBHEIF_CHROMA_MAP.get(c_image.chroma)
     if chroma is not None:
         info["chroma"] = chroma
 
@@ -365,7 +365,7 @@ class CtxEncode:
         enc_params = kwargs.get("enc_params", {})
         chroma = None
         if "subsampling" in kwargs:
-            chroma = SUBSAMPLING_CHROMA_MAP.get(kwargs["subsampling"], None)
+            chroma = SUBSAMPLING_CHROMA_MAP.get(kwargs["subsampling"])
         if chroma is None:
             chroma = kwargs.get("chroma")
         if chroma:
