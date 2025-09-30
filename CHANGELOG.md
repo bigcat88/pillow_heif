@@ -2,6 +2,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.1.1 - 2025-09-30]
 
+### Changed
+
+- libheif was updated from the `1.20.1` to `1.20.2` version.
+
 ### Fixed
 
 - macOS: Wheels now support older macOS versions like Catalina (x86_64 CPU) or Ventura (ARM CPU). #384 #385
