@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [1.1.1 - 2025-09-30]
+
+### Fixed
+
+- macOS: Wheels now support older macOS versions like Catalina (x86_64 CPU) or Ventura (ARM CPU). #384 #385
+
 ## [1.1.0 - 2025-08-02]
 
 ### Added
