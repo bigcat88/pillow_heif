@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Script to build wheel."""
+
 from __future__ import annotations
 
 import os
