@@ -6,7 +6,7 @@ test_src_build_full_freebsd_task:
 
   name: From source(FreeBSD) / FreeBSD:14-amd64
   freebsd_instance:
-    image_family: freebsd-14-2
+    image_family: freebsd-14-3
 
   env:
     PH_FULL_ACTION: 1
