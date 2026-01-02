@@ -265,6 +265,7 @@ jobs:
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libtiffxx-*.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenjph-*.dll $site_packages/
           cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libopenh264-*.dll $site_packages/
+          cp -ErrorAction SilentlyContinue ${{ env.MSYS2_PREFIX }}/bin/libx264-*.dll $site_packages/
 
       - name: Install from source
         run: |
