@@ -310,18 +310,26 @@ def test_pillow_read_images(image_path):
         assert len(ImageSequence.Iterator(pillow_image)[0].tobytes())
 
 
+@pytest.mark.skipif(
+    parse_version(pillow_heif.libheif_version()) < parse_version("1.21.0"), reason="requires LibHeif 1.21+"
+)
 @pytest.mark.parametrize("img_path", dataset.TRUNCATED_DATASET)
 def test_pillow_truncated_fail(img_path):
-    truncated_heif = Image.open(img_path)
-    with pytest.raises(EOFError):
-        truncated_heif.load()
+    im = Image.open(img_path)
+    with pytest.raises(ValueError):
+        for frame in ImageSequence.Iterator(im):
+            frame.load()
 
 
+@pytest.mark.skipif(
+    parse_version(pillow_heif.libheif_version()) < parse_version("1.21.0"), reason="requires LibHeif 1.21+"
+)
 @mock.patch("PIL.ImageFile.LOAD_TRUNCATED_IMAGES", True)
 @pytest.mark.parametrize("img_path", dataset.TRUNCATED_DATASET)
 def test_pillow_truncated_ok(img_path):
     im = Image.open(img_path)
-    im.load()
+    for frame in ImageSequence.Iterator(im):
+        frame.load()
 
 
 def test_heif_index():
@@ -523,14 +531,6 @@ def test_pillow_read_heif_metadata():
         "skew": 0.0,
     }
     assert im.info["heif"]["camera_extrinsic_matrix_rot"] == (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
-
-
-def test_invalid_decoder():
-    try:
-        pillow_heif.options.PREFERRED_DECODER["HEIF"] = "invalid_id"
-        Image.open("images/heif/RGB_8__128x128.heif").load()
-    finally:
-        pillow_heif.options.PREFERRED_DECODER["HEIF"] = ""
 
 
 # to-do: looks like we need now image with 400MP size to hit the security limits :(

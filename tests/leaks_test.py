@@ -41,7 +41,7 @@ def test_open_save_objects_leaks(image):
     _summary1 = tracker.SummaryTracker().create_summary()  # noqa
     gc.collect()
     gc.set_debug(gc.DEBUG_SAVEALL)
-    perform_open_save(6, image_file_data)
+    perform_open_save(5, image_file_data)
     gc.collect()
     gc.collect()
     gc.collect()

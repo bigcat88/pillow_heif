@@ -420,7 +420,6 @@ class CtxEncode:
         im_out.encode(
             self.ctx_write,
             kwargs.get("primary", False),
-            kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE),
             kwargs.get("color_primaries", -1),
             kwargs.get("transfer_characteristics", -1),
             kwargs.get("matrix_coefficients", -1),
