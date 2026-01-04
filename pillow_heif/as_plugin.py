@@ -61,7 +61,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
                 self._size = frame_heif.size  # noqa
                 self.load_prepare()
                 self.frombytes(data, "raw", (frame_heif.mode, frame_heif.stride))
-            except EOFError:
+            except (EOFError, ValueError):
                 if not ImageFile.LOAD_TRUNCATED_IMAGES:
                     raise
                 self.load_prepare()
@@ -175,8 +175,6 @@ def __options_update(**kwargs):
             options.DECODE_THREADS = v
         elif k == "allow_incorrect_headers":
             options.ALLOW_INCORRECT_HEADERS = v
-        elif k == "save_nclx_profile":
-            options.SAVE_NCLX_PROFILE = v
         elif k == "preferred_encoder":
             options.PREFERRED_ENCODER = v
         elif k == "preferred_decoder":

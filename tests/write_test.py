@@ -388,7 +388,7 @@ def test_add_from():
     assert out_heif[2].info["thumbnails"] == [64]
     helpers.compare_heif_files_fields(out_heif[0], heif_file1[0])
     helpers.compare_heif_files_fields(out_heif[1], heif_file2[0])
-    helpers.compare_heif_to_pillow_fields(out_heif[2], im_pil3)
+    helpers.compare_heif_to_pillow_fields(out_heif[2], im_pil3, ignore_nclx=True)
 
 
 def test_remove():
@@ -514,15 +514,18 @@ def test_invalid_ispe_stride_pillow(image_path):
     assert im.size == (29, 100)
 
 
+@pytest.mark.skipif(
+    parse_version(pillow_heif.libheif_version()) < parse_version("1.21.0"), reason="requires LibHeif 1.21+"
+)
 def test_nclx_profile_write():
     im_rgb = helpers.gradient_rgb()
     buf = BytesIO()
-    # no NCLX profile stored
-    im_rgb.save(buf, format="HEIF", save_nclx_profile=False)
-    assert "nclx_profile" not in Image.open(buf).info
-    # no NCLX profile stored as Image has no one.
-    im_rgb.save(buf, format="HEIF", save_nclx_profile=True)
-    assert "nclx_profile" not in Image.open(buf).info
+    # LibHeif 1.21: NCLX profiles always exist in images but their values may be "undefined"
+    im_rgb.save(buf, format="HEIF")
+    nclx_profile = Image.open(buf).info["nclx_profile"]
+    assert nclx_profile["color_primaries"] == pillow_heif.HeifColorPrimaries.UNSPECIFIED
+    assert nclx_profile["transfer_characteristics"] == pillow_heif.HeifTransferCharacteristics.UNSPECIFIED
+    assert nclx_profile["matrix_coefficients"] == pillow_heif.HeifMatrixCoefficients.UNSPECIFIED
     # specify NCLX for the image, color profile should be stored
     nclx_profile = {
         "color_primaries": 4,
@@ -531,31 +534,20 @@ def test_nclx_profile_write():
         "full_range_flag": 1,
     }
     im_rgb.info["nclx_profile"] = nclx_profile
-    im_rgb.save(buf, format="HEIF", save_nclx_profile=True)
+    im_rgb.save(buf, format="HEIF")
     nclx_out = Image.open(buf).info["nclx_profile"]
     for k in nclx_profile:
         assert nclx_profile[k] == nclx_out[k]
-    try:
-        pillow_heif.options.SAVE_NCLX_PROFILE = False
-        im_rgb.save(buf, format="HEIF")
-        assert "nclx_profile" not in Image.open(buf).info
-        im_rgb.save(buf, format="HEIF", save_nclx_profile=True)
-        nclx_out = Image.open(buf).info["nclx_profile"]
-        for k in nclx_profile:
-            assert nclx_profile[k] == nclx_out[k]
-        # here we set the "output" color profile, even if the image has one, it will be overridden.
-        nclx_profile = {
-            "color_primaries": 1,
-            "transfer_characteristics": 1,
-            "matrix_coefficients": 10,
-            "full_range_flag": 0,
-        }
-        im_rgb.save(buf, format="HEIF", **nclx_profile, save_nclx_profile=True)
-        nclx_out = Image.open(buf).info["nclx_profile"]
-        for k in nclx_profile:
-            assert nclx_profile[k] == nclx_out[k]
-    finally:
-        pillow_heif.options.SAVE_NCLX_PROFILE = True
+    im_rgb.info.pop("nclx_profile")
+    im_rgb.save(buf, format="HEIF")
+    nclx_profile = Image.open(buf).info["nclx_profile"]
+    assert nclx_profile["color_primaries"] == pillow_heif.HeifColorPrimaries.UNSPECIFIED
+    assert nclx_profile["transfer_characteristics"] == pillow_heif.HeifTransferCharacteristics.UNSPECIFIED
+    assert nclx_profile["matrix_coefficients"] == pillow_heif.HeifMatrixCoefficients.UNSPECIFIED
+    im_rgb.save(buf, format="HEIF")
+    nclx_out = Image.open(buf).info["nclx_profile"]
+    for k in nclx_profile:
+        assert nclx_profile[k] == nclx_out[k]
 
 
 @pytest.mark.parametrize("save_format", ("HEIF",))

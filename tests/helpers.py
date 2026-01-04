@@ -106,7 +106,7 @@ def compare_heif_files_fields(
         compare_images_fields(heif1, heif2)
 
 
-def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage], pillow: Image):
+def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage], pillow: Image, ignore_nclx=False):
     def compare_images_fields(heif_image: Union[HeifImage], pillow_image: Image):
         assert heif_image.size == pillow_image.size
         assert heif_image.mode == pillow_image.mode
@@ -116,7 +116,8 @@ def compare_heif_to_pillow_fields(heif: Union[HeifFile, HeifImage], pillow: Imag
                     assert heif_image.info[k] == pillow_image.info[k]
                 else:
                     assert len(heif_image.info[k]) == len(pillow_image.info[k])
-        assert heif_image.info.get("nclx_profile", None) == pillow_image.info.get("nclx_profile", None)
+        if not ignore_nclx:
+            assert heif_image.info.get("nclx_profile", None) == pillow_image.info.get("nclx_profile", None)
         for k in ("icc_profile", "icc_profile_type"):
             if heif_image.info.get(k, None):
                 assert len(heif_image.info[k]) == len(pillow_image.info[k])

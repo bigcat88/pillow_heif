@@ -31,7 +31,6 @@ def test_options_change_from_plugin_registering(register_opener):
             decode_threads=3,
             depth_images=False,
             aux_images=False,
-            save_nclx_profile=False,
             preferred_encoder={"HEIF": "id1", "AVIF": ""},
             preferred_decoder={"HEIF": "id3", "AVIF": ""},
         )
@@ -41,7 +40,6 @@ def test_options_change_from_plugin_registering(register_opener):
         assert options.DECODE_THREADS == 3
         assert options.DEPTH_IMAGES is False
         assert options.AUX_IMAGES is False
-        assert options.SAVE_NCLX_PROFILE is False
         assert options.PREFERRED_ENCODER == {"HEIF": "id1", "AVIF": ""}
         assert options.PREFERRED_DECODER == {"HEIF": "id3", "AVIF": ""}
     finally:
@@ -51,7 +49,6 @@ def test_options_change_from_plugin_registering(register_opener):
         options.DECODE_THREADS = 4
         options.DEPTH_IMAGES = True
         options.AUX_IMAGES = True
-        options.SAVE_NCLX_PROFILE = True
         options.PREFERRED_ENCODER = {"HEIF": "", "AVIF": ""}
         options.PREFERRED_DECODER = {"HEIF": "", "AVIF": ""}
 
