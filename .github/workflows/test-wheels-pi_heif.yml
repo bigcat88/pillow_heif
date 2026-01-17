@@ -113,7 +113,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy-3.10", "pypy-3.11", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy-3.10", "pypy-3.11", "3.10", "3.11", "3.12", "3.13", "3.14"]
     env:
       PH_LIGHT_ACTION: 1
 
@@ -141,12 +141,12 @@ jobs:
           cd .. && python3 -m pytest pillow_heif
 
   macos-wheels:
-    name: macOS • 13 • ${{ matrix.python-version }}
-    runs-on: macos-13
+    name: macOS • 15-intel • ${{ matrix.python-version }}
+    runs-on: macos-15-intel
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy-3.10", "pypy-3.11", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy-3.10", "pypy-3.11", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -179,7 +179,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy-3.10", "pypy-3.11", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy-3.10", "pypy-3.11", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Delay, waiting Pypi to update.
@@ -207,7 +207,7 @@ jobs:
 
   macos-projects-together:
     name: macOS • Together • ${{ matrix.python-version }}
-    runs-on: macos-13
+    runs-on: macos-15-intel
     strategy:
       matrix:
         python-version: ["pypy-3.10", "3.10"]

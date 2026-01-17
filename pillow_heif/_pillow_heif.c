@@ -752,7 +752,8 @@ static const char* _colorspace_to_str(enum heif_colorspace colorspace) {
 }
 
 PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_image_id,
-                       int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
+                       int remove_stride, int hdr_to_16bit, PyObject* file_bytes,
+                       const char* decoder_id) {
     struct heif_image_handle* aux_handle;
     if (check_error(heif_image_handle_get_auxiliary_image_handle(main_handle, aux_image_id, &aux_handle))) {
         return NULL;
@@ -819,6 +820,7 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
     ctx_image->reload_size = 1;
     ctx_image->file_bytes = file_bytes;
     ctx_image->stride = get_stride(ctx_image);
+    strcpy(ctx_image->decoder_id, decoder_id);
     Py_INCREF(file_bytes);
     return (PyObject*)ctx_image;
 }
@@ -826,7 +828,8 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
 /* =========== CtxDepthImage ======== */
 
 PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id depth_image_id,
-                            int remove_stride, int hdr_to_16bit, PyObject* file_bytes) {
+                         int remove_stride, int hdr_to_16bit, PyObject* file_bytes,
+                         const char* decoder_id) {
     struct heif_image_handle* depth_handle;
     if (check_error(heif_image_handle_get_depth_image_handle(main_handle, depth_image_id, &depth_handle))) {
         return NULL;
@@ -868,6 +871,7 @@ PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id dep
     ctx_image->reload_size = 1;
     ctx_image->file_bytes = file_bytes;
     ctx_image->stride = get_stride(ctx_image);
+    strcpy(ctx_image->decoder_id, decoder_id);
     Py_INCREF(file_bytes);
     return (PyObject*)ctx_image;
 }
@@ -1283,7 +1287,8 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
 
     for (int i = 0; i < n_images; i++) {
         PyObject* ctx_depth_image = _CtxDepthImage(
-            self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->file_bytes);
+            self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->file_bytes,
+            self->decoder_id);
         if (!ctx_depth_image) {
             Py_DECREF(images_list);
             free(images_ids);
@@ -1320,7 +1325,8 @@ static PyObject* _CtxImage_aux_image_ids(CtxImageObject* self, void* closure) {
 static PyObject* _CtxImage_get_aux_image(CtxImageObject* self, PyObject* arg_image_id) {
     heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
     return _CtxAuxImage(
-        self->handle, aux_image_id, self->remove_stride, self->hdr_to_16bit, self->file_bytes
+        self->handle, aux_image_id, self->remove_stride, self->hdr_to_16bit, self->file_bytes,
+        self->decoder_id
     );
 }
 
