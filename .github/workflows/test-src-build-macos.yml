@@ -26,9 +26,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  full_macos_13:
-    name: macOS:13-x86_64
-    runs-on: macos-13
+  full_macos_15:
+    name: macOS:15-x86_64
+    runs-on: macos-15-intel
     env:
       TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
       PH_FULL_ACTION: 1
@@ -80,9 +80,9 @@ jobs:
       - name: Perform tests
         run: python3 -m pytest
 
-  lite_macos_13:
-    name: macOS:13-x86_64(Pi-Heif)
-    runs-on: macos-13
+  lite_macos_15:
+    name: macOS:15-x86_64(Pi-Heif)
+    runs-on: macos-15-intel
     env:
       TEST_DECODE_THREADS: 0
       PH_LIGHT_ACTION: 1
