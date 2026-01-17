@@ -113,6 +113,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
 
       - name: Uninstall libheif from homebrew
         run: brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265 jpeg-turbo
