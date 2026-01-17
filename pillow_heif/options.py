@@ -53,13 +53,16 @@ To learn more read: `here <https://github.com/strukturag/libheif/issues/784>`_
 When use pillow_heif as a plugin you can set it with: `register_*_opener(allow_incorrect_headers=True)`"""
 
 
-_SAVE_NCLX_PROFILE = True
+SAVE_NCLX_PROFILE = True
 """Should be ``nclx`` profile saved or not.
 
-.. deprecated:: 1.2.0
-    This option is deprecated and will be removed in a future version.
-    The ``nclx`` profile is now always saved.
-"""
+Default for all previous versions(pillow_heif<0.14.0) was NOT TO save `nclx` profile,
+due to an old bug in Apple software refusing to open images with `nclx` profiles.
+Apple has already fixed this and there is no longer a need to not save the default profile.
+
+.. note:: `save_nclx_profile` specified during calling ``save`` has higher priority than this.
+
+When use pillow_heif as a plugin you can unset it with: `register_*_opener(save_nclx_profile=False)`"""
 
 
 PREFERRED_ENCODER = {
@@ -88,16 +91,3 @@ DISABLE_SECURITY_LIMITS = False
 """Option to completely disable libheif security limits.
 
 Reference: https://github.com/strukturag/libheif/issues/1275"""
-
-
-def __getattr__(name):
-    import warnings  # noqa  # pylint: disable=import-outside-toplevel
-
-    if name == "SAVE_NCLX_PROFILE":
-        warnings.warn(
-            "SAVE_NCLX_PROFILE is deprecated and will be removed in a future version",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return _SAVE_NCLX_PROFILE
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

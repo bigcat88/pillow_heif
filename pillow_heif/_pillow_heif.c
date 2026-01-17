@@ -528,19 +528,20 @@ static PyObject* _CtxWriteImage_encode(CtxWriteImageObject* self, PyObject* args
     /* ctx: CtxWriteObject, primary: int */
     CtxWriteObject* ctx_write;
     int primary, image_orientation,
-        color_primaries, transfer_characteristics, matrix_coefficients, full_range_flag;
+        save_nclx, color_primaries, transfer_characteristics, matrix_coefficients, full_range_flag;
     struct heif_error error;
     struct heif_encoding_options* options;
 
-    if (!PyArg_ParseTuple(args, "Oiiiiii",
+    if (!PyArg_ParseTuple(args, "Oiiiiiii",
         (PyObject*)&ctx_write, &primary,
-        &color_primaries, &transfer_characteristics, &matrix_coefficients, &full_range_flag,
+        &save_nclx, &color_primaries, &transfer_characteristics, &matrix_coefficients, &full_range_flag,
         &image_orientation
     ))
         return NULL;
 
     Py_BEGIN_ALLOW_THREADS
     options = heif_encoding_options_alloc();
+    options->macOS_compatibility_workaround_no_nclx_profile = !save_nclx;
     if (
         (color_primaries != -1) ||
         (transfer_characteristics != -1) ||
