@@ -22,7 +22,7 @@ on:
 
 jobs:
   analysis:
-    runs-on: macos-14
+    runs-on: macos-15
     name: Analysis
 
     steps:
@@ -172,7 +172,7 @@ jobs:
           verbose: true
 
   coverage-macos-arm:
-    runs-on: macos-14
+    runs-on: macos-15
     name: Coverage(macOS-14) • 🐍3.11
 
     steps:
@@ -373,7 +373,7 @@ jobs:
         run: sudo -H PH_LIGHT_ACTION=1 EXP_PH_LIBHEIF_VERSION="" python3 -m pytest
 
   coverage-import-error:
-    runs-on: macos-14
+    runs-on: macos-15
     name: Coverage(ImportError)
 
     steps:
