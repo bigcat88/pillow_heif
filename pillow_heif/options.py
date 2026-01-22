@@ -73,9 +73,7 @@ PREFERRED_ENCODER = {
 
 You can get the available encoders IDs using ``libheif_info()`` function.
 
-When use pillow_heif as a plugin you can set this option with ``preferred_encoder`` key.
-
-.. note:: If the specified encoder is missing, the option will be ignored."""
+When use pillow_heif as a plugin you can set this option with ``preferred_encoder`` key."""
 
 
 PREFERRED_DECODER = {
@@ -86,9 +84,7 @@ PREFERRED_DECODER = {
 
 You can get the available decoders IDs using ``libheif_info()`` function.
 
-When use pillow_heif as a plugin you can set this option with ``preferred_decoder`` key.
-
-.. note:: If the specified decoder is missing, the option will be ignored."""
+When use pillow_heif as a plugin you can set this option with ``preferred_decoder`` key."""
 
 
 DISABLE_SECURITY_LIMITS = False

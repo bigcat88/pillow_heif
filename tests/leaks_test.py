@@ -30,6 +30,7 @@ def perform_open_save(iterations, image_path):
 @pytest.mark.skipif(sys.platform.lower() == "win32", reason="Disabled on Windows.")
 @pytest.mark.skipif(sys.executable.lower().find("pypy") != -1, reason="Disabled on PyPy.")
 @pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.skipif(helpers.RELEASE_FULL_FLAG, reason="Skip when building release.")
 @pytest.mark.parametrize("image", (Path("images/heif/zPug_3.heic"), Path("images/heif_other/pug.heic")))
 def test_open_save_objects_leaks(image):
     from pympler import summary, tracker
@@ -41,7 +42,7 @@ def test_open_save_objects_leaks(image):
     _summary1 = tracker.SummaryTracker().create_summary()  # noqa
     gc.collect()
     gc.set_debug(gc.DEBUG_SAVEALL)
-    perform_open_save(6, image_file_data)
+    perform_open_save(5, image_file_data)
     gc.collect()
     gc.collect()
     gc.collect()

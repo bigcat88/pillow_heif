@@ -61,7 +61,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
                 self._size = frame_heif.size  # noqa
                 self.load_prepare()
                 self.frombytes(data, "raw", (frame_heif.mode, frame_heif.stride))
-            except EOFError:
+            except (EOFError, ValueError):
                 if not ImageFile.LOAD_TRUNCATED_IMAGES:
                     raise
                 self.load_prepare()
