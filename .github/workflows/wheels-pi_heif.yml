@@ -37,7 +37,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==3.1.3
+          python3 -m pip install cibuildwheel==3.2.1
           python3 -m cibuildwheel
         env:
           CIBW_ARCHS: "arm64"
@@ -97,7 +97,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==3.1.3
+          python3 -m pip install cibuildwheel==3.2.1
           python3 -m cibuildwheel
         env:
           CIBW_ARCHS: "AMD64"
@@ -141,7 +141,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==3.1.3
+          python3 -m pip install cibuildwheel==3.2.1
           python3 -m cibuildwheel
         env:
           CIBW_ARCHS: "x86_64"
@@ -183,7 +183,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==3.1.3
+          python3 -m pip install cibuildwheel==3.2.1
           python3 -m cibuildwheel
         env:
           CIBW_ARCHS: "x86_64"
@@ -228,7 +228,7 @@ jobs:
 
       - name: Run cibuildwheel
         run: |
-          python3 -m pip install cibuildwheel==3.1.3
+          python3 -m pip install cibuildwheel==3.2.1
           python3 -m cibuildwheel
         env:
           CIBW_ARCHS: "aarch64"

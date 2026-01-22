@@ -41,7 +41,7 @@ def assert_image_similar(a, b, epsilon=0.0):
     assert a.size == b.size
     a, b = convert_to_comparable(a, b)
     diff = 0
-    for ach, bch in zip(a.split(), b.split()):
+    for ach, bch in zip(a.split(), b.split(), strict=False):
         ch_diff = ImageMath.unsafe_eval("abs(a - b)", a=ach, b=bch).convert("L")
         diff += sum(i * num for i, num in enumerate(ch_diff.histogram()))
     ave_diff = diff / (a.size[0] * a.size[1])

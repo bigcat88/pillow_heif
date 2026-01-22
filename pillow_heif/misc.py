@@ -3,8 +3,6 @@
 Mostly for internal use, so prototypes can change between versions.
 """
 
-from __future__ import annotations
-
 import builtins
 import re
 from dataclasses import dataclass

@@ -7,10 +7,10 @@ requires = [
 [tool.cibuildwheel]
 build-verbosity = "2"
 build = [
-  "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-* pp310-* pp311-*",
+  "cp310-* cp311-* cp312-* cp313-* cp314-* pp311-*",
 ]
 skip = [
-  "cp38-* pp38-* pp39-*",
+  "cp38-* cp39-* pp38-* pp39-* pp310-*",
 ]
 test-extras = "tests-min"
 test-command = "pytest {project}"
@@ -34,11 +34,11 @@ before-build = [
 
 [tool.black]
 line-length = 120
-target-version = [ "py39" ]
+target-version = [ "py310" ]
 preview = true
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 120
 preview = true
 lint.select = [
@@ -111,7 +111,7 @@ lint.mccabe.max-complexity = 16
 profile = "black"
 
 [tool.pylint]
-master.py-version = "3.9"
+master.py-version = "3.10"
 master.extension-pkg-allow-list = [
   "_pillow_heif",
 ]

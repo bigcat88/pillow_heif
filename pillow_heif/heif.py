@@ -1,7 +1,5 @@
 """Functions and classes for heif images to read and write."""
 
-from __future__ import annotations
-
 from copy import copy, deepcopy
 from io import SEEK_SET
 from typing import Any
