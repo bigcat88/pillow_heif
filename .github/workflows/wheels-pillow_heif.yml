@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.14'
 
       - name: Uninstall libheif from homebrew
         run: brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265
@@ -60,7 +60,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.14'
       - uses: msys2/setup-msys2@v2
         with:
           location: C:/temp
@@ -115,7 +115,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.14'
 
       - name: Uninstall libheif from homebrew
         run: brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265 jpeg-turbo
@@ -249,7 +249,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.14'
 
       - name: Install requirements
         run: python3 -m pip install twine wheel build check-manifest
