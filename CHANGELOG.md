@@ -1,5 +1,17 @@
 All notable changes to this project will be documented in this file.
 
+## [1.2.0 - 2026-01-23]
+
+### Changed
+
+- libheif was updated from the `1.20.2` to `1.21.2` version. #399
+- Dropped `Python 3.9` support. #402
+- `PREFERRED_DECODER` must now always be a valid, available decoder ID, or an exception will be raised. (libheif change)
+
+### Fixed
+
+- PREFERRED_DECODER is now correctly taken into account when decoding depth and aux images. #399
+
 ## [1.1.1 - 2025-09-30]
 
 ### Changed
