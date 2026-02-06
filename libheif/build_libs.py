@@ -173,7 +173,7 @@ def build_lib(url: str, name: str):
             chdir(build_path)
         print(f"Preconfiguring {name}...", flush=True)
         if name == "x265":
-            additional_args = ["-DCMAKE_POLICY_VERSION_MINIMUM=3.5"]
+            additional_args = ["-DCMAKE_POLICY_VERSION_MINIMUM=3.5", "-DENABLE_CLI=OFF"]
             if platform.machine().find("x86_64") == -1:
                 additional_args += ["-DENABLE_SVE2=OFF"]
             cmake_high_bits = "-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF".split()
@@ -196,6 +196,12 @@ def build_lib(url: str, name: str):
             cmake_args += additional_args
             if _IS_DARWIN:
                 cmake_args += [f"-DCMAKE_INSTALL_NAME_DIR={INSTALL_DIR_LIBS}/lib"]
+                # Hide internal C++ symbols to prevent macOS dyld weak symbol coalescing
+                # when another copy of libx265 is loaded (e.g. via OpenCV). See issue #89.
+                exports_file = path.join(lib_path, "x265_exports.txt")
+                with open(exports_file, "w") as f:  # noqa
+                    f.write("_x265_*\n")
+                cmake_args += [f"-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-exported_symbols_list,{exports_file}"]
         else:
             cmake_args = [f"-DCMAKE_INSTALL_PREFIX={INSTALL_DIR_LIBS}", ".."]
             cmake_args += ["-DCMAKE_BUILD_TYPE=Release"]
