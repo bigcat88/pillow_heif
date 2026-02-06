@@ -4,7 +4,7 @@ import os
 import sys
 from io import BytesIO
 from pathlib import Path
-from subprocess import CalledProcessError, run
+from subprocess import run
 
 import pytest
 from helpers import compare_hashes, hevc_enc
@@ -149,11 +149,10 @@ def test_read_8_10_12_bit(img):
     compare_hashes([BytesIO(img_encode), path_to_png], hash_size=16)
 
 
+@pytest.mark.skipif(
+    os.environ.get("SKIP_OPENCV_CRASH_TEST", "0") != "0", reason="Skipped: system libheif without x265 fix"
+)
 def test_opencv_crash():
     # https://github.com/bigcat88/pillow_heif/issues/89
     path_to_test_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "opencv_bug.py")
-    if sys.platform.lower() == "darwin":
-        with pytest.raises(CalledProcessError):
-            run([sys.executable, path_to_test_file], check=True)
-    else:
-        run([sys.executable, path_to_test_file], check=True)
+    run([sys.executable, path_to_test_file], check=True)

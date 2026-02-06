@@ -197,7 +197,11 @@ class PillowHeifBuildExt(build_ext):
                 self._add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
                 self._add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
 
-            self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-O3", "-Werror"])
+            self._update_extension(
+                "_pillow_heif",
+                ["heif"],
+                extra_compile_args=["-O3", "-Werror", "-Wno-nullability-completeness"],
+            )
         else:  # let's assume it's some kind of linux
             # this old code waiting for refactoring, when time comes.
             self._add_directory(include_dirs, "/usr/local/include")
