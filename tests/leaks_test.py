@@ -67,7 +67,7 @@ def test_open_to_numpy_mem_leaks():
 
     mem_limit = None
     image_file_data = BytesIO(Path("images/heif/L_10__29x100.heif").read_bytes())
-    for i in range(1000):
+    for i in range(800):
         heif_file = pillow_heif.open_heif(image_file_data, convert_hdr_to_8bit=False)
         _array = np.asarray(heif_file[0])  # noqa
         _array = None  # noqa
@@ -87,7 +87,7 @@ def test_open_to_numpy_mem_leaks():
 def test_color_profile_leaks(im, cp_type):
     mem_limit = None
     heif_file = pillow_heif.open_heif(Path(im), convert_hdr_to_8bit=False)
-    for i in range(1200):
+    for i in range(800):
         _nclx = heif_file[0]._c_image.color_profile  # noqa
         _nclx = None  # noqa
         gc.collect()

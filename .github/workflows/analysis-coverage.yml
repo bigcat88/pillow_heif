@@ -137,6 +137,7 @@ jobs:
     name: Coverage(macOS-15-intel) • 🐍3.10
     env:
       TEST_DECODE_THREADS: 0    # This test fails on GitHub on macOS. We have such enabled test on Cirrus.
+      SKIP_OPENCV_CRASH_TEST: 1  # Homebrew libheif has unfixed x265; see issue #89.
 
     steps:
       - uses: actions/checkout@v5
@@ -174,6 +175,8 @@ jobs:
   coverage-macos-arm:
     runs-on: macos-14
     name: Coverage(macOS-14) • 🐍3.11
+    env:
+      SKIP_OPENCV_CRASH_TEST: 1  # Homebrew libheif has unfixed x265; see issue #89.
 
     steps:
       - uses: actions/checkout@v5
