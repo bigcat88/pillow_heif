@@ -26,7 +26,7 @@ jobs:
     name: Analysis
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -45,7 +45,7 @@ jobs:
     name: Coverage(Linux) • 🐍3.11
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
@@ -90,7 +90,7 @@ jobs:
     name: Coverage(Linux, Pillow-dev) • 🐍3.12
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -140,7 +140,7 @@ jobs:
       SKIP_OPENCV_CRASH_TEST: 1  # Homebrew libheif has unfixed x265; see issue #89.
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
@@ -179,7 +179,7 @@ jobs:
       SKIP_OPENCV_CRASH_TEST: 1  # Homebrew libheif has unfixed x265; see issue #89.
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
@@ -218,7 +218,7 @@ jobs:
       MSYS2_PREFIX: "C:/temp/msys64/mingw64"
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
@@ -301,7 +301,7 @@ jobs:
     name: Pi-Heif Coverage(Linux) • 🐍3.13
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Transform to Pi-Heif
         run: cp -r -v ./pi-heif/* .
 
@@ -347,7 +347,7 @@ jobs:
     name: Pi-Heif Test(Linux) • 🐍3.13
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Transform to Pi-Heif
         run: |
           cp -r -v ./pi-heif/* .
@@ -380,7 +380,7 @@ jobs:
     name: Coverage(ImportError)
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
