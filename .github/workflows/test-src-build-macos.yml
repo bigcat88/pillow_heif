@@ -57,7 +57,7 @@ jobs:
 
   full_macos_14:
     name: macOS:14-Arm
-    runs-on: macos-14
+    runs-on: macos-15
     env:
       PH_FULL_ACTION: 1
       EXP_PH_LIBHEIF_VERSION: ""
@@ -120,7 +120,7 @@ jobs:
 
   lite_macos_14:
     name: macOS:14-Arm(Pi-Heif)
-    runs-on: macos-14
+    runs-on: macos-15
     env:
       PH_LIGHT_ACTION: 1
       EXP_PH_LIBHEIF_VERSION: ""
