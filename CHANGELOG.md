@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [1.2.1 - 2026-02-18]
+
+### Fixed
+
+- macOS: crash when `cv2` and `pillow_heif` both bundle libx265 #403
+
 ## [1.2.0 - 2026-01-23]
 
 ### Changed
