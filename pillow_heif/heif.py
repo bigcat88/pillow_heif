@@ -2,6 +2,7 @@
 
 from copy import copy, deepcopy
 from io import SEEK_SET
+from threading import Lock
 from typing import Any
 
 from PIL import Image
@@ -51,6 +52,7 @@ class BaseImage:
         self.size, self.mode = c_image.size_mode
         self._c_image = c_image
         self._data = None
+        self._load_lock = Lock()
 
     @property
     def data(self):
@@ -109,8 +111,11 @@ class BaseImage:
             when reading `data` or `stride` property of image will be loaded automatically.
         """
         if not self._data:
-            self._data = self._c_image.data
-            self.size, _ = self._c_image.size_mode
+            with self._load_lock:
+                if not self._data:
+                    data = self._c_image.data
+                    self.size, _ = self._c_image.size_mode
+                    self._data = data
 
 
 class HeifDepthImage(BaseImage):
