@@ -44,7 +44,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: wheels_pillow_heif-macos-arm64
           path: wheelhouse/*.whl
@@ -101,7 +101,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: wheels_pillow_heif-windows-x86_64
           path: wheelhouse/*.whl
@@ -141,7 +141,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: wheels_pillow_heif-macos-x86_64
           path: wheelhouse/*.whl
@@ -188,7 +188,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: wheels_pillow_heif-${{ matrix.cibw_buildlinux }}-amd64
           path: wheelhouse/*.whl
@@ -235,7 +235,7 @@ jobs:
           python3 -m twine check wheelhouse/*
 
       - name: Uploading wheels
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: wheels_pillow_heif-${{ matrix.cibw_buildlinux }}-arm64
           path: wheelhouse/*.whl
@@ -282,7 +282,7 @@ jobs:
           python3 -m pytest
 
       - name: Upload sdist
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: wheels_pillow_heif-sdist
           path: wheelhouse/*.tar.gz
