@@ -378,7 +378,7 @@ class HeifFile:
 
             ``save_nclx_profile`` - boolean, see :py:attr:`~pillow_heif.options.SAVE_NCLX_PROFILE`
 
-            ``matrix_coefficients`` - int, nclx profile: color conversion matrix coefficients, default=6 (see h.273)
+            ``matrix_coefficients`` - int, nclx profile: color conversion matrix coef., default=6 (BT.601, see h.273)
 
             ``color_primaries`` - int, nclx profile: color primaries (see h.273)
 

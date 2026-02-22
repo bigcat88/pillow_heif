@@ -415,14 +415,36 @@ class CtxEncode:
             )
         # encode
         image_orientation = kwargs.get("image_orientation", 1)
+        save_nclx = kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE)
+        nclx_keys = ("color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag")
+        has_explicit_nclx = any(k in kwargs for k in nclx_keys)
+        # When NCLX saving is enabled and no existing NCLX profile is on the image and no explicit NCLX parameters
+        # were provided, write an NCLX box that matches libheif internal sRGB encoding defaults.
+        # Without this, no NCLX box is written and viewers must guess the color space, which causes color shifts.
+        # See issue #365.
+        # Values match libheif nclx_profile::set_sRGB_defaults() exactly:
+        #   primaries=1 (BT.709)
+        #   transfer=13 (sRGB)
+        #   matrix=6 (BT.601)
+        #   full_range=1
+        if save_nclx and not kwargs.get("nclx_profile") and not has_explicit_nclx:
+            color_primaries = 1  # BT.709
+            transfer_characteristics = 13  # sRGB (IEC 61966-2-1)
+            matrix_coefficients = 6  # BT.601-6
+            full_range_flag = 1
+        else:
+            color_primaries = kwargs.get("color_primaries", -1)
+            transfer_characteristics = kwargs.get("transfer_characteristics", -1)
+            matrix_coefficients = kwargs.get("matrix_coefficients", -1)
+            full_range_flag = kwargs.get("full_range_flag", -1)
         im_out.encode(
             self.ctx_write,
             kwargs.get("primary", False),
-            kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE),
-            kwargs.get("color_primaries", -1),
-            kwargs.get("transfer_characteristics", -1),
-            kwargs.get("matrix_coefficients", -1),
-            kwargs.get("full_range_flag", -1),
+            save_nclx,
+            color_primaries,
+            transfer_characteristics,
+            matrix_coefficients,
+            full_range_flag,
             image_orientation,
         )
         # adding metadata
