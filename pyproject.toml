@@ -115,7 +115,7 @@ master.py-version = "3.10"
 master.extension-pkg-allow-list = [
   "_pillow_heif",
 ]
-design.max-attributes = 14
+design.max-attributes = 16
 design.max-branches = 16
 design.max-locals = 18
 design.max-returns = 8
