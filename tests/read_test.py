@@ -465,8 +465,8 @@ def test_depth_image():
     helpers.compare_hashes([im_pil, "images/non_heif/pug_depth.png"], hash_size=128)
     assert depth_image.info
     assert depth_image.info["metadata"]
-    assert depth_image.info["metadata"]["d_min"] == 1.498046875
-    assert depth_image.info["metadata"]["d_max"] == 4.3828125
+    assert depth_image.info["metadata"]["d_min"] == pytest.approx(1.498046875)
+    assert depth_image.info["metadata"]["d_max"] == pytest.approx(4.3828125)
     assert depth_image.info["metadata"]["representation_type"] == 1
     assert depth_image.info["metadata"]["disparity_reference_view"] == 0
     assert depth_image.info["metadata"]["nonlinear_representation_model_size"] == 0
