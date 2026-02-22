@@ -7,6 +7,16 @@
 #endif
 #include "_ph_postprocess.h"
 
+/* =========== Free-threading support ======== */
+
+#ifdef Py_GIL_DISABLED
+#define MUTEX_LOCK(m) PyMutex_Lock(m)
+#define MUTEX_UNLOCK(m) PyMutex_Unlock(m)
+#else
+#define MUTEX_LOCK(m)
+#define MUTEX_UNLOCK(m)
+#endif
+
 /* =========== Common stuff ======== */
 
 #define MAX_ENCODERS 20
@@ -99,6 +109,9 @@ typedef struct {
     uint8_t *data;                              // pointer to data after decoding
     int stride;                                 // time when it get filled depends on `remove_stride` value
     PyObject *file_bytes;                       // private
+#ifdef Py_GIL_DISABLED
+    PyMutex decode_mutex;                       // protects lazy decode in free-threaded builds
+#endif
 } CtxImageObject;
 
 static PyTypeObject CtxImage_Type;
@@ -821,6 +834,9 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
     ctx_image->file_bytes = file_bytes;
     ctx_image->stride = get_stride(ctx_image);
     strcpy(ctx_image->decoder_id, decoder_id);
+#ifdef Py_GIL_DISABLED
+    ctx_image->decode_mutex = (PyMutex){0};
+#endif
     Py_INCREF(file_bytes);
     return (PyObject*)ctx_image;
 }
@@ -872,6 +888,9 @@ PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id dep
     ctx_image->file_bytes = file_bytes;
     ctx_image->stride = get_stride(ctx_image);
     strcpy(ctx_image->decoder_id, decoder_id);
+#ifdef Py_GIL_DISABLED
+    ctx_image->decode_mutex = (PyMutex){0};
+#endif
     Py_INCREF(file_bytes);
     return (PyObject*)ctx_image;
 }
@@ -955,6 +974,9 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
     ctx_image->file_bytes = file_bytes;
     ctx_image->stride = get_stride(ctx_image);
     strcpy(ctx_image->decoder_id, decoder_id);
+#ifdef Py_GIL_DISABLED
+    ctx_image->decode_mutex = (PyMutex){0};
+#endif
     Py_INCREF(file_bytes);
     return (PyObject*)ctx_image;
 }
@@ -1257,16 +1279,26 @@ int decode_image(CtxImageObject* self) {
 }
 
 static PyObject* _CtxImage_stride(CtxImageObject* self, void* closure) {
-    if (!self->data)
-        if (!decode_image(self))
+    MUTEX_LOCK(&self->decode_mutex);
+    if (!self->data) {
+        if (!decode_image(self)) {
+            MUTEX_UNLOCK(&self->decode_mutex);
             return NULL;
+        }
+    }
+    MUTEX_UNLOCK(&self->decode_mutex);
     return PyLong_FromSsize_t(self->stride);
 }
 
 static PyObject* _CtxImage_data(CtxImageObject* self, void* closure) {
-    if (!self->data)
-        if (!decode_image(self))
+    MUTEX_LOCK(&self->decode_mutex);
+    if (!self->data) {
+        if (!decode_image(self)) {
+            MUTEX_UNLOCK(&self->decode_mutex);
             return NULL;
+        }
+    }
+    MUTEX_UNLOCK(&self->decode_mutex);
     return PyMemoryView_FromMemory((char*)self->data, self->stride * self->height, PyBUF_READ);
 }
 
@@ -1698,17 +1730,21 @@ static int setup_module(PyObject* m) {
     return 0;
 }
 
+static PyModuleDef_Slot module_slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC PyInit__pillow_heif(void) {
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_pillow_heif", /* m_name */
-        NULL,           /* m_doc */
-        -1,             /* m_size */
-        heifMethods,    /* m_methods */
+        .m_name = "_pillow_heif",
+        .m_methods = heifMethods,
+        .m_slots = module_slots,
     };
 
-    PyObject* m = PyModule_Create(&module_def);
-    if (setup_module(m) < 0)
-        return NULL;
-    return m;
+    return PyModuleDef_Init(&module_def);
 }
