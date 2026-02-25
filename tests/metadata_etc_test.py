@@ -206,3 +206,58 @@ def test_pillow_iptc_metadata(save_format):
     assert im_out.info["metadata"][0]["type"] == "iptc"
     assert im_out.info["metadata"][0]["data"] == data
     assert im_out.info["metadata"][0]["content_type"] == ""
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.parametrize("save_format", ("HEIF",))
+def test_heif_pixel_aspect_ratio_absent(save_format):
+    heif_buf = create_heif((64, 64), format=save_format)
+    heif_file = pillow_heif.open_heif(heif_buf)
+    assert "pixel_aspect_ratio" not in heif_file[0].info
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.parametrize("save_format", ("HEIF",))
+@pytest.mark.parametrize("aspect_h,aspect_v", [(2, 1), (1, 2), (16, 9), (4, 3)])
+def test_heif_pixel_aspect_ratio_roundtrip(save_format, aspect_h, aspect_v):
+    heif_file = pillow_heif.HeifFile()
+    heif_file.add_from_pillow(Image.effect_mandelbrot((64, 64), (-3, -2.5, 2, 2.5), 100))
+    heif_file[0].info["pixel_aspect_ratio"] = (aspect_h, aspect_v)
+    buf1 = BytesIO()
+    heif_file.save(buf1, format=save_format)
+    heif_out1 = pillow_heif.open_heif(buf1)
+    assert heif_out1[0].info["pixel_aspect_ratio"] == (aspect_h, aspect_v)
+    buf2 = BytesIO()
+    heif_out1.save(buf2, format=save_format)
+    heif_out2 = pillow_heif.open_heif(buf2)
+    assert heif_out2[0].info["pixel_aspect_ratio"] == (aspect_h, aspect_v)
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.parametrize("save_format", ("HEIF",))
+def test_pillow_pixel_aspect_ratio_roundtrip(save_format):
+    im = Image.effect_mandelbrot((64, 64), (-3, -2.5, 2, 2.5), 100)
+    buf1 = BytesIO()
+    im.save(buf1, format=save_format, pixel_aspect_ratio=(4, 3))
+    im1 = Image.open(buf1)
+    im1.load()
+    assert im1.info["pixel_aspect_ratio"] == (4, 3)
+    buf2 = BytesIO()
+    im1.save(buf2, format=save_format)
+    im2 = Image.open(buf2)
+    im2.load()
+    assert im2.info["pixel_aspect_ratio"] == (4, 3)
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.parametrize("save_format", ("HEIF",))
+def test_pillow_pixel_aspect_ratio_multiframe(save_format):
+    im1 = Image.effect_mandelbrot((64, 64), (-3, -2.5, 2, 2.5), 100)
+    im1.info["pixel_aspect_ratio"] = (2, 1)
+    im2 = Image.effect_mandelbrot((32, 32), (-3, -2.5, 2, 2.5), 100)
+    im2.info["pixel_aspect_ratio"] = (3, 1)
+    out_buf = BytesIO()
+    im1.save(out_buf, format=save_format, save_all=True, append_images=[im2])
+    heif_out = pillow_heif.open_heif(out_buf)
+    assert heif_out[0].info["pixel_aspect_ratio"] == (2, 1)
+    assert heif_out[1].info["pixel_aspect_ratio"] == (3, 1)
