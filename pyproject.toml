@@ -20,15 +20,11 @@ before-test = [
   "pip install pympler || true",
 ]
 enable = [ "pypy", "pypy-eol", "cpython-freethreading" ]
-
-[tool.cibuildwheel.macos]
-repair-wheel-command = [
+macos.repair-wheel-command = [
   "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel}",
   "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}",
 ]
-
-[tool.cibuildwheel.windows]
-before-build = [
+windows.before-build = [
   "pip install delvewheel",
 ]
 
@@ -71,7 +67,6 @@ lint.extend-ignore = [
   "I001",
   "RUF100",
 ]
-
 lint.per-file-ignores."pillow_heif/__init__.py" = [
   "F401",
 ]
@@ -120,6 +115,7 @@ design.max-branches = 16
 design.max-locals = 18
 design.max-returns = 8
 similarities.min-similarity-lines = 6
+similarities.ignore-imports = "yes"
 basic.good-names = [
   "a",
   "b",
@@ -138,38 +134,35 @@ basic.good-names = [
   "HeifImagePlugin",
 ]
 reports.output-format = "colorized"
-similarities.ignore-imports = "yes"
 messages_control.disable = [
   "missing-class-docstring",
   "missing-function-docstring",
   "line-too-long",
 ]
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-testpaths = [
+[tool.pytest]
+ini_options.minversion = "6.0"
+ini_options.testpaths = [
   "tests",
 ]
-filterwarnings = [
+ini_options.filterwarnings = [
   "ignore::DeprecationWarning",
 ]
-addopts = "-rs --color=yes"
+ini_options.addopts = "-rs --color=yes"
 
-[tool.coverage.report]
-exclude_lines = [
-  "pragma: no cover",
-  "raise NotImplementedError",
-  "DeprecationWarning",
-  "DEPRECATED",
-]
-
-[tool.coverage.run]
-cover_pylib = true
-include = [
+[tool.coverage]
+run.cover_pylib = true
+run.include = [
   "*/pillow_heif/*",
 ]
-omit = [
+run.omit = [
   "*/tests/*",
+]
+report.exclude_lines = [
+  "DEPRECATED",
+  "DeprecationWarning",
+  "pragma: no cover",
+  "raise NotImplementedError",
 ]
 
 [tool.mypy]
