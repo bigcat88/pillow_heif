@@ -155,7 +155,7 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
         real_stride = real_stride * 2;
     if (stride_in == 0)
         stride_in = real_stride;
-    if (stride_in * height > buffer.len) {
+    if ((Py_ssize_t)stride_in * height > buffer.len) {
         PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_ValueError, "image plane does not contain enough data");
         return NULL;
@@ -341,7 +341,7 @@ static PyObject* _CtxWriteImage_add_plane_la(CtxWriteImageObject* self, PyObject
         real_stride = real_stride * 2;
     if (stride_in == 0)
         stride_in = real_stride;
-    if (stride_in * height > buffer.len) {
+    if ((Py_ssize_t)stride_in * height > buffer.len) {
         PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_ValueError, "image plane does not contain enough data");
         return NULL;
@@ -446,7 +446,7 @@ static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject*
         real_stride = real_stride * 2;
     if (stride_in == 0)
         stride_in = real_stride;
-    if (stride_in * height > buffer.len) {
+    if ((Py_ssize_t)stride_in * height > buffer.len) {
         PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_ValueError, "image plane does not contain enough data");
         return NULL;
@@ -534,6 +534,14 @@ static PyObject* _CtxWriteImage_set_nclx_profile(CtxWriteImageObject* self, PyOb
     heif_nclx_color_profile_free(nclx_color_profile);
     if (check_error(error))
         return NULL;
+    Py_RETURN_NONE;
+}
+
+static PyObject* _CtxWriteImage_set_pixel_aspect_ratio(CtxWriteImageObject* self, PyObject* args) {
+    unsigned int aspect_h, aspect_v;
+    if (!PyArg_ParseTuple(args, "II", &aspect_h, &aspect_v))
+        return NULL;
+    heif_image_set_pixel_aspect_ratio(self->image, aspect_h, aspect_v);
     Py_RETURN_NONE;
 }
 
@@ -670,6 +678,7 @@ static struct PyMethodDef _CtxWriteImage_methods[] = {
     {"add_plane_la", (PyCFunction)_CtxWriteImage_add_plane_la, METH_VARARGS},
     {"set_icc_profile", (PyCFunction)_CtxWriteImage_set_icc_profile, METH_VARARGS},
     {"set_nclx_profile", (PyCFunction)_CtxWriteImage_set_nclx_profile, METH_VARARGS},
+    {"set_pixel_aspect_ratio", (PyCFunction)_CtxWriteImage_set_pixel_aspect_ratio, METH_VARARGS},
     {"encode", (PyCFunction)_CtxWriteImage_encode, METH_VARARGS},
     {"set_exif", (PyCFunction)_CtxWriteImage_set_exif, METH_VARARGS},
     {"set_xmp", (PyCFunction)_CtxWriteImage_set_xmp, METH_VARARGS},
@@ -1384,6 +1393,17 @@ static PyObject* _CtxImage_get_aux_type(CtxImageObject* self, PyObject* arg_imag
     return aux_type;
 }
 
+static PyObject* _CtxImage_pixel_aspect_ratio(CtxImageObject* self, void* closure) {
+    #if LIBHEIF_HAVE_VERSION(1,19,0)
+        uint32_t aspect_h, aspect_v;
+        int has_pasp = heif_image_handle_get_pixel_aspect_ratio(self->handle, &aspect_h, &aspect_v);
+        if (has_pasp) {
+            return Py_BuildValue("(II)", aspect_h, aspect_v);
+        }
+    #endif
+    Py_RETURN_NONE;
+}
+
 /* =========== CtxImage Experimental Part ======== */
 
 static PyObject* _CtxImage_camera_intrinsic_matrix(CtxImageObject* self, void* closure) {
@@ -1447,6 +1467,7 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"data", (getter)_CtxImage_data, NULL, NULL, NULL},
     {"depth_image_list", (getter)_CtxImage_depth_image_list, NULL, NULL, NULL},
     {"aux_image_ids", (getter)_CtxImage_aux_image_ids, NULL, NULL, NULL},
+    {"pixel_aspect_ratio", (getter)_CtxImage_pixel_aspect_ratio, NULL, NULL, NULL},
     {"camera_intrinsic_matrix", (getter)_CtxImage_camera_intrinsic_matrix, NULL, NULL, NULL},
     {"camera_extrinsic_matrix_rot", (getter)_CtxImage_camera_extrinsic_matrix_rot, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}

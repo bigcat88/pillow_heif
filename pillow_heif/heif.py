@@ -182,6 +182,9 @@ class HeifImage(BaseImage):
             self.info["xmp"] = xmp
         if heif_meta:
             self.info["heif"] = heif_meta
+        pixel_aspect_ratio = c_image.pixel_aspect_ratio
+        if pixel_aspect_ratio:
+            self.info["pixel_aspect_ratio"] = pixel_aspect_ratio
         save_colorspace_chroma(c_image, self.info)
         color_profile: dict[str, Any] = c_image.color_profile
         if color_profile:
@@ -466,7 +469,7 @@ class HeifFile:
             img.size,
             img.tobytes(),
         )
-        for key in ["bit_depth", "thumbnails", "icc_profile", "icc_profile_type"]:
+        for key in ["bit_depth", "thumbnails", "icc_profile", "icc_profile_type", "pixel_aspect_ratio"]:
             if key in image.info:
                 added_image.info[key] = image.info[key]
         for key in ["nclx_profile", "metadata"]:

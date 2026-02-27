@@ -413,6 +413,10 @@ class CtxEncode:
                     for i in ("color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag")
                 ]
             )
+        # set pixel aspect ratio
+        pixel_aspect_ratio = kwargs.get("pixel_aspect_ratio")
+        if pixel_aspect_ratio:
+            im_out.set_pixel_aspect_ratio(pixel_aspect_ratio[0], pixel_aspect_ratio[1])
         # encode
         image_orientation = kwargs.get("image_orientation", 1)
         save_nclx = kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE)
@@ -491,6 +495,7 @@ class MimCImage:
         self.primary = False
         self.chroma = HeifChroma.UNDEFINED.value
         self.colorspace = HeifColorspace.UNDEFINED.value
+        self.pixel_aspect_ratio = None
         self.camera_intrinsic_matrix = None
         self.camera_extrinsic_matrix_rot = None
 

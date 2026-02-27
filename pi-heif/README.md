@@ -85,12 +85,12 @@ if im.info["depth_images"]:
 
 | **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/> | musllinux* | manylinux* |
 |--------------------|:---------------:|:-----------------:|:------------:|:----------:|:----------:|
-| CPython 3.9        |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | CPython 3.10       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | CPython 3.11       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | CPython 3.12       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | CPython 3.13       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
-| PyPy 3.10 v7.3     |        ✅        |         ✅         |      ✅       |    N/A     |     ✅      |
+| CPython 3.14       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
+| CPython 3.14t      |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | PyPy 3.11 v7.3     |        ✅        |         ✅         |      ✅       |    N/A     |     ✅      |
 
 &ast; **x86_64**, **aarch64** wheels.

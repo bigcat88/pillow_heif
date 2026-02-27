@@ -1,5 +1,16 @@
 All notable changes to this project will be documented in this file.
 
+## [1.3.0 - 2026-02-27]
+
+### Added
+
+- Pixel aspect ratio (pasp) read/write support. #408
+- No-GIL (free-threaded Python) support. #405
+
+### Fixed
+
+- Integer overflow in encode path buffer validation leading to heap out-of-bounds read. (CVE-2026-28231, GHSA-5gjj-6r7v-ph3x) Thanks to @kaizawa97 for finding this!
+
 ## [1.2.1 - 2026-02-18]
 
 ### Fixed
