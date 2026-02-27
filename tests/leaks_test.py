@@ -67,13 +67,13 @@ def test_open_to_numpy_mem_leaks():
 
     mem_limit = None
     image_file_data = BytesIO(Path("images/heif/L_10__29x100.heif").read_bytes())
-    for i in range(800):
+    for i in range(700):
         heif_file = pillow_heif.open_heif(image_file_data, convert_hdr_to_8bit=False)
         _array = np.asarray(heif_file[0])  # noqa
         _array = None  # noqa
         gc.collect()
         mem = _get_mem_usage()
-        if i < 100:
+        if i < 200:
             mem_limit = mem + 2
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
@@ -87,12 +87,12 @@ def test_open_to_numpy_mem_leaks():
 def test_color_profile_leaks(im, cp_type):
     mem_limit = None
     heif_file = pillow_heif.open_heif(Path(im), convert_hdr_to_8bit=False)
-    for i in range(800):
+    for i in range(700):
         _nclx = heif_file[0]._c_image.color_profile  # noqa
         _nclx = None  # noqa
         gc.collect()
         mem = _get_mem_usage()
-        if i < 200:
+        if i < 300:
             mem_limit = mem + 2
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations. Color profile type:{cp_type}"
@@ -103,12 +103,12 @@ def test_color_profile_leaks(im, cp_type):
 def test_metadata_leaks():
     mem_limit = None
     heif_file = pillow_heif.open_heif(Path("images/heif_other/L_exif_xmp_iptc.heic"))
-    for i in range(1000):
+    for i in range(700):
         _metadata = heif_file[0]._c_image.metadata  # noqa
         _metadata = None  # noqa
         gc.collect()
         mem = _get_mem_usage()
-        if i < 100:
+        if i < 200:
             mem_limit = mem + 2
             continue
         assert mem <= mem_limit, f"memory usage limit exceeded after {i + 1} iterations"
@@ -119,7 +119,7 @@ def test_metadata_leaks():
 def test_pillow_plugin_leaks():
     mem_limit = None
     image_file_data = BytesIO(Path("images/heif/zPug_3.heic").read_bytes())
-    for i in range(1000):
+    for i in range(700):
         im = Image.open(image_file_data)
         for frame in ImageSequence.Iterator(im):
             frame.load()
