@@ -388,7 +388,14 @@ def test_add_from():
     assert out_heif[2].info["thumbnails"] == [64]
     helpers.compare_heif_files_fields(out_heif[0], heif_file1[0])
     helpers.compare_heif_files_fields(out_heif[1], heif_file2[0])
-    helpers.compare_heif_to_pillow_fields(out_heif[2], im_pil3)
+    # PNG has no NCLX; the saved HEIF gets sRGB defaults (#365).
+    # compare_heif_to_pillow_fields checks nclx_profile equality, so verify manually.
+    assert out_heif[2].size == im_pil3.size
+    assert out_heif[2].mode == im_pil3.mode
+    nclx = out_heif[2].info["nclx_profile"]
+    assert nclx["color_primaries"] == 1
+    assert nclx["transfer_characteristics"] == 13
+    assert nclx["matrix_coefficients"] == 6
 
 
 def test_remove():
@@ -517,12 +524,16 @@ def test_invalid_ispe_stride_pillow(image_path):
 def test_nclx_profile_write():
     im_rgb = helpers.gradient_rgb()
     buf = BytesIO()
-    # no NCLX profile stored
+    # no NCLX profile stored when save_nclx_profile=False
     im_rgb.save(buf, format="HEIF", save_nclx_profile=False)
     assert "nclx_profile" not in Image.open(buf).info
-    # no NCLX profile stored as Image has no one.
+    # sRGB NCLX profile stored by default when save_nclx_profile=True (#365)
     im_rgb.save(buf, format="HEIF", save_nclx_profile=True)
-    assert "nclx_profile" not in Image.open(buf).info
+    nclx_out = Image.open(buf).info["nclx_profile"]
+    assert nclx_out["color_primaries"] == 1
+    assert nclx_out["transfer_characteristics"] == 13
+    assert nclx_out["matrix_coefficients"] == 6
+    assert nclx_out["full_range_flag"] == 1
     # specify NCLX for the image, color profile should be stored
     nclx_profile = {
         "color_primaries": 4,
@@ -554,6 +565,109 @@ def test_nclx_profile_write():
         nclx_out = Image.open(buf).info["nclx_profile"]
         for k in nclx_profile:
             assert nclx_profile[k] == nclx_out[k]
+    finally:
+        pillow_heif.options.SAVE_NCLX_PROFILE = True
+
+
+def test_default_nclx_srgb():
+    """Test that default save writes sRGB NCLX profile (#365).
+
+    Without explicit NCLX parameters, pillow_heif should write an NCLX
+    profile matching libheif's internal sRGB encoding defaults to ensure
+    viewers interpret colors correctly.
+    """
+    srgb_nclx = {
+        "color_primaries": 1,  # BT.709
+        "transfer_characteristics": 13,  # sRGB (IEC 61966-2-1)
+        "matrix_coefficients": 6,  # BT.601-6
+        "full_range_flag": 1,
+    }
+    im_rgb = helpers.gradient_rgb()
+    buf = BytesIO()
+
+    # default save (no NCLX params) should produce sRGB NCLX
+    im_rgb.save(buf, format="HEIF", quality=90)
+    nclx_out = Image.open(buf).info["nclx_profile"]
+    for k in srgb_nclx:
+        assert srgb_nclx[k] == nclx_out[k]
+
+    # the same but without pillow plugin
+    im_heif = pillow_heif.from_pillow(im_rgb)
+    buf_heif = BytesIO()
+    im_heif.save(buf_heif, quality=90)
+    nclx_out = pillow_heif.open_heif(buf_heif).info["nclx_profile"]
+    for k in srgb_nclx:
+        assert srgb_nclx[k] == nclx_out[k]
+
+
+def test_default_nclx_srgb_rgba():
+    """Test that RGBA images also get sRGB NCLX defaults."""
+    im_rgba = helpers.gradient_rgba()
+    buf = BytesIO()
+    im_rgba.save(buf, format="HEIF", quality=90)
+    nclx_out = Image.open(buf).info["nclx_profile"]
+    assert nclx_out["color_primaries"] == 1
+    assert nclx_out["transfer_characteristics"] == 13
+    assert nclx_out["matrix_coefficients"] == 6
+    assert nclx_out["full_range_flag"] == 1
+
+
+def test_explicit_nclx_overrides_defaults():
+    """Test that explicit NCLX parameters override sRGB defaults."""
+    im_rgb = helpers.gradient_rgb()
+    buf = BytesIO()
+
+    # Partial override: only matrix_coefficients
+    im_rgb.save(buf, format="HEIF", quality=90, matrix_coefficients=1)
+    nclx_out = Image.open(buf).info["nclx_profile"]
+    assert nclx_out["matrix_coefficients"] == 1
+
+    # Full override with custom values
+    custom_nclx = {
+        "color_primaries": 9,
+        "transfer_characteristics": 16,
+        "matrix_coefficients": 9,
+        "full_range_flag": 0,
+    }
+    im_rgb.save(buf, format="HEIF", quality=90, **custom_nclx)
+    nclx_out = Image.open(buf).info["nclx_profile"]
+    for k in custom_nclx:
+        assert custom_nclx[k] == nclx_out[k]
+
+
+def test_existing_nclx_profile_preserved():
+    """Test that images with existing NCLX profiles are preserved on re-save."""
+    hif_path = Path("images/heif_other/cat.hif")
+    if not hif_path.exists():
+        pytest.skip("Test image not available")
+    heif_file = pillow_heif.open_heif(hif_path)
+    original_nclx = heif_file.info.get("nclx_profile")
+    if original_nclx is None:
+        pytest.skip("Test image has no NCLX profile")
+
+    buf = BytesIO()
+    heif_file.save(buf, quality=90)
+    result_nclx = pillow_heif.open_heif(buf).info["nclx_profile"]
+    for k in ("color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag"):
+        assert original_nclx[k] == result_nclx[k]
+
+
+def test_save_nclx_false_no_profile():
+    """Test that save_nclx_profile=False suppresses NCLX even with sRGB defaults."""
+    im_rgb = helpers.gradient_rgb()
+    buf = BytesIO()
+    im_rgb.save(buf, format="HEIF", quality=90, save_nclx_profile=False)
+    assert "nclx_profile" not in Image.open(buf).info
+
+
+def test_nclx_disabled_globally_no_default():
+    """Test that globally disabled NCLX saving skips sRGB defaults."""
+    im_rgb = helpers.gradient_rgb()
+    buf = BytesIO()
+    try:
+        pillow_heif.options.SAVE_NCLX_PROFILE = False
+        im_rgb.save(buf, format="HEIF", quality=90)
+        assert "nclx_profile" not in Image.open(buf).info
     finally:
         pillow_heif.options.SAVE_NCLX_PROFILE = True
 
