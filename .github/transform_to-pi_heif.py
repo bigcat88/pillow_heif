@@ -11,7 +11,6 @@ if __name__ == "__main__":
     # change `pillow_heif` to `pi_heif`
     files_list = [
         "setup.py",
-        "docker/test_wheels.Dockerfile",
         "MANIFEST.in",
         "pillow_heif/_pillow_heif.c",
     ]
