@@ -9,7 +9,6 @@ from unittest import mock
 
 import helpers
 import pytest
-from packaging.version import parse as parse_version
 from PIL import Image, ImageDraw, ImageSequence
 
 import pillow_heif
@@ -18,9 +17,6 @@ pytest.importorskip("numpy", reason="NumPy not installed")
 
 if not helpers.hevc_enc():
     pytest.skip("No HEIF support.", allow_module_level=True)
-
-if parse_version(pillow_heif.libheif_version()) < parse_version("1.17.3"):
-    pytest.skip("Requires libheif 1.17.3+", allow_module_level=True)
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 pillow_heif.register_heif_opener()

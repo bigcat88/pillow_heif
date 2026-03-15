@@ -501,9 +501,6 @@ def test_aux_image_ycbcr():
     assert aux_pil.mode == "RGB"
 
 
-@pytest.mark.skipif(
-    parse_version(pillow_heif.libheif_version()) < parse_version("1.18.0"), reason="requires LibHeif 1.18+"
-)
 def test_read_heif_metadata():
     im = pillow_heif.open_heif("images/heif_other/spatial_photo.heic")
     assert "heif" in im.info
@@ -517,9 +514,6 @@ def test_read_heif_metadata():
     assert im.info["heif"]["camera_extrinsic_matrix_rot"] == (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
 
 
-@pytest.mark.skipif(
-    parse_version(pillow_heif.libheif_version()) < parse_version("1.18.0"), reason="requires LibHeif 1.18+"
-)
 def test_pillow_read_heif_metadata():
     im = Image.open("images/heif_other/spatial_photo.heic")
     assert "heif" in im.info

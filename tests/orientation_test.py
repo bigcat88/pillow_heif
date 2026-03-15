@@ -2,16 +2,11 @@ from io import BytesIO
 
 import pytest
 from helpers import assert_image_similar, hevc_enc
-from packaging.version import parse as parse_version
 from PIL import Image, ImageOps
 
 import pillow_heif
 
 pillow_heif.register_heif_opener()
-
-
-if parse_version(pillow_heif.libheif_version()) < parse_version("1.17.3"):
-    pytest.skip("Requires libheif version 1.17.3 to pass most orientation tests.", allow_module_level=True)
 
 
 def get_xmp_with_orientation(orientation: int, style=1) -> str:

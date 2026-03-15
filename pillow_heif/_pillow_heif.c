@@ -1394,62 +1394,52 @@ static PyObject* _CtxImage_get_aux_type(CtxImageObject* self, PyObject* arg_imag
 }
 
 static PyObject* _CtxImage_pixel_aspect_ratio(CtxImageObject* self, void* closure) {
-    #if LIBHEIF_HAVE_VERSION(1,19,0)
-        uint32_t aspect_h, aspect_v;
-        int has_pasp = heif_image_handle_get_pixel_aspect_ratio(self->handle, &aspect_h, &aspect_v);
-        if (has_pasp) {
-            return Py_BuildValue("(II)", aspect_h, aspect_v);
-        }
-    #endif
+    uint32_t aspect_h, aspect_v;
+    int has_pasp = heif_image_handle_get_pixel_aspect_ratio(self->handle, &aspect_h, &aspect_v);
+    if (has_pasp) {
+        return Py_BuildValue("(II)", aspect_h, aspect_v);
+    }
     Py_RETURN_NONE;
 }
 
 /* =========== CtxImage Experimental Part ======== */
 
 static PyObject* _CtxImage_camera_intrinsic_matrix(CtxImageObject* self, void* closure) {
-    #if LIBHEIF_HAVE_VERSION(1,18,0)
-        struct heif_camera_intrinsic_matrix camera_intrinsic_matrix;
+    struct heif_camera_intrinsic_matrix camera_intrinsic_matrix;
 
-        if (!heif_image_handle_has_camera_intrinsic_matrix(self->handle)) {
-            Py_RETURN_NONE;
-        }
-        if (check_error(heif_image_handle_get_camera_intrinsic_matrix(self->handle, &camera_intrinsic_matrix))) {
-            return NULL;
-        }
-        return Py_BuildValue(
-            "(ddddd)",
-            camera_intrinsic_matrix.focal_length_x,
-            camera_intrinsic_matrix.focal_length_y,
-            camera_intrinsic_matrix.principal_point_x,
-            camera_intrinsic_matrix.principal_point_y,
-            camera_intrinsic_matrix.skew
-            );
-    #else
+    if (!heif_image_handle_has_camera_intrinsic_matrix(self->handle)) {
         Py_RETURN_NONE;
-    #endif
+    }
+    if (check_error(heif_image_handle_get_camera_intrinsic_matrix(self->handle, &camera_intrinsic_matrix))) {
+        return NULL;
+    }
+    return Py_BuildValue(
+        "(ddddd)",
+        camera_intrinsic_matrix.focal_length_x,
+        camera_intrinsic_matrix.focal_length_y,
+        camera_intrinsic_matrix.principal_point_x,
+        camera_intrinsic_matrix.principal_point_y,
+        camera_intrinsic_matrix.skew
+        );
 }
 
 static PyObject* _CtxImage_camera_extrinsic_matrix_rot(CtxImageObject* self, void* closure) {
-    #if LIBHEIF_HAVE_VERSION(1,18,0)
-        struct heif_camera_extrinsic_matrix* camera_extrinsic_matrix;
-        double rot[9];
-        struct heif_error error;
+    struct heif_camera_extrinsic_matrix* camera_extrinsic_matrix;
+    double rot[9];
+    struct heif_error error;
 
-        if (!heif_image_handle_has_camera_extrinsic_matrix(self->handle)) {
-            Py_RETURN_NONE;
-        }
-        if (check_error(heif_image_handle_get_camera_extrinsic_matrix(self->handle, &camera_extrinsic_matrix))) {
-            return NULL;
-        }
-        error = heif_camera_extrinsic_matrix_get_rotation_matrix(camera_extrinsic_matrix, rot);
-        heif_camera_extrinsic_matrix_release(camera_extrinsic_matrix);
-        if (check_error(error)) {
-            return NULL;
-        }
-        return Py_BuildValue("(ddddddddd)", rot[0], rot[1], rot[2], rot[3], rot[4], rot[5], rot[6], rot[7], rot[8]);
-    #else
+    if (!heif_image_handle_has_camera_extrinsic_matrix(self->handle)) {
         Py_RETURN_NONE;
-    #endif
+    }
+    if (check_error(heif_image_handle_get_camera_extrinsic_matrix(self->handle, &camera_extrinsic_matrix))) {
+        return NULL;
+    }
+    error = heif_camera_extrinsic_matrix_get_rotation_matrix(camera_extrinsic_matrix, rot);
+    heif_camera_extrinsic_matrix_release(camera_extrinsic_matrix);
+    if (check_error(error)) {
+        return NULL;
+    }
+    return Py_BuildValue("(ddddddddd)", rot[0], rot[1], rot[2], rot[3], rot[4], rot[5], rot[6], rot[7], rot[8]);
 }
 
 /* =========== CtxImage properties available to Python Part ======== */
@@ -1550,11 +1540,9 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
 
     struct heif_context* heif_ctx = heif_context_alloc();
 
-    #if LIBHEIF_HAVE_VERSION(1,19,0)
     if (disable_security_limits) {
         heif_context_set_security_limits(heif_ctx, heif_get_disabled_security_limits());
     }
-    #endif
 
     if (check_error(heif_context_read_from_memory_without_copy(
                         heif_ctx, (void*)PyBytes_AS_STRING(heif_bytes), PyBytes_GET_SIZE(heif_bytes), NULL))) {
