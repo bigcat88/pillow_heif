@@ -140,6 +140,13 @@ messages_control.disable = [
   "line-too-long",
 ]
 
+[tool.mypy]
+warn_unreachable = true
+ignore_missing_imports = true
+warn_no_return = true
+strict_optional = true
+show_error_codes = true
+
 [tool.pytest]
 ini_options.minversion = "6.0"
 ini_options.testpaths = [
@@ -164,10 +171,3 @@ report.exclude_lines = [
   "pragma: no cover",
   "raise NotImplementedError",
 ]
-
-[tool.mypy]
-warn_unreachable = true
-ignore_missing_imports = true
-warn_no_return = true
-strict_optional = true
-show_error_codes = true
