@@ -14,7 +14,7 @@ repos:
     -   id: mixed-line-ending
 
 -   repo: https://github.com/PyCQA/isort
-    rev: 8.0.1
+    rev: 9.0.0a3
     hooks:
     -   id: isort
 
@@ -24,12 +24,12 @@ repos:
     -   id: black
 
 -   repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.20.0
+    rev: v2.21.2
     hooks:
     -   id: pyproject-fmt
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.8
+    rev: v0.15.12
     hooks:
     -   id: ruff
 
