@@ -17,9 +17,9 @@ INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", _DEFAULT_PREFIX)
 
 PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 
-LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.1.tar.gz"
-LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.0.16/libde265-1.0.16.tar.gz"
-LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.21.2/libheif-1.21.2.tar.gz"
+LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.2.tar.gz"
+LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.1.0/libde265-1.1.0.tar.gz"
+LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.23.0/libheif-1.23.0.tar.gz"
 
 
 def download_file(url: str, out_path: str) -> bool:
@@ -154,8 +154,6 @@ def build_lib(url: str, name: str):
         if name == "x265":
             download_extract_to(url, lib_path)
             chdir(lib_path)
-            run(f"patch -p 1 -i {path.join(script_dir, 'x265_cmake_1.patch')}".split(), check=True)
-            run(f"patch -p 1 -i {path.join(script_dir, 'x265_cmake_2.patch')}".split(), check=True)
         else:
             build_path = path.join(lib_path, "build")
             makedirs(build_path, exist_ok=True)

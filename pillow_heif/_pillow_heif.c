@@ -101,7 +101,6 @@ typedef struct {
     int bgr_mode;                               // private. decode option.
     int remove_stride;                          // private. decode option.
     int hdr_to_16bit;                           // private. decode option.
-    int reload_size;                            // private. decode option.
     char decoder_id[64];                        // private. decode option. optional
     struct heif_image_handle *handle;           // private
     struct heif_image *heif_image;              // private
@@ -839,7 +838,6 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
     ctx_image->data = NULL;
     ctx_image->remove_stride = remove_stride;
     ctx_image->hdr_to_16bit = hdr_to_16bit;
-    ctx_image->reload_size = 1;
     ctx_image->file_bytes = file_bytes;
     ctx_image->stride = get_stride(ctx_image);
     strcpy(ctx_image->decoder_id, decoder_id);
@@ -893,7 +891,6 @@ PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id dep
     ctx_image->data = NULL;
     ctx_image->remove_stride = remove_stride;
     ctx_image->hdr_to_16bit = hdr_to_16bit;
-    ctx_image->reload_size = 1;
     ctx_image->file_bytes = file_bytes;
     ctx_image->stride = get_stride(ctx_image);
     strcpy(ctx_image->decoder_id, decoder_id);
@@ -919,7 +916,7 @@ static void _CtxImage_destructor(CtxImageObject* self) {
 
 PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
                     int bgr_mode, int remove_stride, int hdr_to_16bit,
-                    int reload_size, int primary, PyObject* file_bytes,
+                    int primary, PyObject* file_bytes,
                     const char *decoder_id,
                     enum heif_colorspace colorspace, enum heif_chroma chroma
                     ) {
@@ -976,7 +973,6 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
     ctx_image->data = NULL;
     ctx_image->remove_stride = remove_stride;
     ctx_image->hdr_to_16bit = hdr_to_16bit;
-    ctx_image->reload_size = reload_size;
     ctx_image->primary = primary;
     ctx_image->colorspace = colorspace;
     ctx_image->chroma = chroma;
@@ -1247,21 +1243,8 @@ int decode_image(CtxImageObject* self) {
         return 0;
     }
 
-    int decoded_width = heif_image_get_primary_width(self->heif_image);
-    int decoded_height = heif_image_get_primary_height(self->heif_image);
-    if (self->reload_size) {
-        self->width = decoded_width;
-        self->height = decoded_height;
-    }
-    else if ((self->width > decoded_width) || (self->height > decoded_height)) {
-        heif_image_release(self->heif_image);
-        self->heif_image = NULL;
-        PyErr_Format(PyExc_ValueError,
-                    "corrupted image(dimensions in header: (%d, %d), decoded dimensions: (%d, %d)). "
-                    "Set ALLOW_INCORRECT_HEADERS to True if you need to load them.",
-                    self->width, self->height, decoded_width, decoded_height);
-        return 0;
-    }
+    self->width = heif_image_get_primary_width(self->heif_image);
+    self->height = heif_image_get_primary_height(self->heif_image);
 
     self->stride = self->remove_stride ? get_stride(self) : stride;
 
@@ -1521,19 +1504,18 @@ static PyObject* _CtxWrite(PyObject* self, PyObject* args) {
 }
 
 static PyObject* _load_file(PyObject* self, PyObject* args) {
-    int hdr_to_8bit, threads_count, bgr_mode, remove_stride, hdr_to_16bit, reload_size, disable_security_limits;
+    int hdr_to_8bit, threads_count, bgr_mode, remove_stride, hdr_to_16bit, disable_security_limits;
     PyObject *heif_bytes;
     const char *decoder_id;
 
     if (!PyArg_ParseTuple(args,
-                          "Oiiiiiisi",
+                          "Oiiiiisi",
                           &heif_bytes,
                           &threads_count,
                           &hdr_to_8bit,
                           &bgr_mode,
                           &remove_stride,
                           &hdr_to_16bit,
-                          &reload_size,
                           &decoder_id,
                           &disable_security_limits))
         return NULL;
@@ -1588,7 +1570,7 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
             error = heif_image_handle_get_preferred_decoding_colorspace(handle, &colorspace, &chroma);
             if (error.code == heif_error_Ok) {
                 PyObject* ctx_image = _CtxImage(
-                    handle, hdr_to_8bit, bgr_mode, remove_stride, hdr_to_16bit, reload_size, primary, heif_bytes,
+                    handle, hdr_to_8bit, bgr_mode, remove_stride, hdr_to_16bit, primary, heif_bytes,
                     decoder_id, colorspace, chroma);
                 if (!ctx_image) {
                     Py_DECREF(images_list);

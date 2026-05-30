@@ -50,7 +50,6 @@ def test_native_copy_heif(img_path):
 @pytest.mark.parametrize(
     "img_path", ("images/heif/zPug_3.heic", "images/heif_other/arrow.heic", "images/heif_special/guitar_cw90.hif")
 )
-@mock.patch("pillow_heif.options.ALLOW_INCORRECT_HEADERS", True)
 def test_native_deepcopy_heif(img_path):
     im_heif = pillow_heif.open_heif(Path(img_path))
     im_heif_deepcopy = deepcopy(im_heif)
@@ -395,61 +394,6 @@ def test_heif_only_image_reference():
 )
 def test_hdr_read(im_path, original_path):
     helpers.compare_hashes([im_path, original_path], hash_size=16)
-
-
-@pytest.mark.parametrize(
-    "image_path",
-    (
-        "images/heif_special/L_8__29(255)x100.heif",
-        "images/heif_special/L_8__29x100(255).heif",
-        "images/heif_special/L_8__29x100(100x29).heif",
-    ),
-)
-def test_invalid_ispe_fail(image_path):
-    im = Image.open(image_path)
-    with pytest.raises(ValueError):
-        im.load()
-
-
-@pytest.mark.parametrize(
-    "image_path",
-    ("images/heif_special/L_8__128(64)x128(64).heif",),
-)
-def test_invalid_ispe_ok(image_path):
-    im = Image.open(image_path)
-    im.load()
-
-
-@pytest.mark.parametrize(
-    "image_path",
-    (
-        "images/heif_special/L_8__29(255)x100.heif",
-        "images/heif_special/L_8__29x100(255).heif",
-        "images/heif_special/L_8__128(64)x128(64).heif",
-        "images/heif_special/L_8__29x100(100x29).heif",
-    ),
-)
-@mock.patch("pillow_heif.options.ALLOW_INCORRECT_HEADERS", True)
-def test_invalid_ispe_allow(image_path):
-    im = Image.open(image_path)
-    im.load()
-
-
-@pytest.mark.parametrize(
-    "image_path",
-    (
-        "images/heif_special/L_8__29(255)x100.heif",
-        "images/heif_special/L_8__29x100(255).heif",
-        "images/heif_special/L_8__128(64)x128(64).heif",
-        "images/heif_special/L_8__29x100(100x29).heif",
-    ),
-)
-@mock.patch("pillow_heif.options.ALLOW_INCORRECT_HEADERS", True)
-def test_invalid_ispe_stride(image_path):
-    im = pillow_heif.open_heif(image_path)
-    stride = im.stride
-    _ = im.data
-    assert stride == im.stride
 
 
 def test_depth_image():

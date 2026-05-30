@@ -272,7 +272,6 @@ class HeifFile:
                 bgr_mode,
                 kwargs.get("remove_stride", True),
                 kwargs.get("hdr_to_16bit", True),
-                kwargs.get("reload_size", options.ALLOW_INCORRECT_HEADERS),
                 preferred_decoder,
                 options.DISABLE_SECURITY_LIMITS,
             )
@@ -577,7 +576,7 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :exception RuntimeError: some other error.
     :exception OSError: out of memory.
     """
-    ret = HeifFile(fp, convert_hdr_to_8bit, bgr_mode, reload_size=True, **kwargs)
+    ret = HeifFile(fp, convert_hdr_to_8bit, bgr_mode, **kwargs)
     for img in ret:
         img.load()
     return ret

@@ -1,5 +1,17 @@
 All notable changes to this project will be documented in this file.
 
+## [1.4.0 - 2026-05-30]
+
+### Changed
+
+- `libheif` was updated from the `1.21.2` to `1.23.0` version. #426
+- `libde265` was updated from the `1.0.16` to `1.1.0` version. #426
+- `libx265` was updated from the `4.1` to `4.2` version. #426
+
+### Removed
+
+- `options.ALLOW_INCORRECT_HEADERS` option. Starting with `libheif` `1.22.0`, libheif itself rejects images whose decoded size does not match the `ispe` header. #426
+
 ## [1.3.0 - 2026-02-27]
 
 ### Added
