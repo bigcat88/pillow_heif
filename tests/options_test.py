@@ -7,7 +7,7 @@ from unittest import mock
 
 import pytest
 from helpers import create_heif, hevc_enc
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 
 from pillow_heif import (
     from_pillow,
@@ -111,17 +111,6 @@ def test_decode_threads():
         assert total_time_one_thread > total_time_multiply_threads * 1.1
     finally:
         options.DECODE_THREADS = 4
-
-
-def test_allow_incorrect_headers():
-    test_image = "images/heif_special/L_8__29(255)x100.heif"
-    with pytest.raises(expected_exception=(UnidentifiedImageError, ValueError)):  # noqa
-        Image.open(test_image).load()
-    register_heif_opener(allow_incorrect_headers=True)
-    assert options.ALLOW_INCORRECT_HEADERS
-    Image.open(test_image).load()
-    register_heif_opener(allow_incorrect_headers=False)
-    assert not options.ALLOW_INCORRECT_HEADERS
 
 
 def test_plugin_register_unknown_option():

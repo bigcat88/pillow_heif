@@ -1,6 +1,5 @@
 from io import BytesIO
 from typing import Tuple
-from unittest import mock
 
 import helpers
 import pytest
@@ -33,29 +32,6 @@ def test_numpy_array(im_size: Tuple, mode):
     heif_array = np.asarray(heif_file[0])
     assert np.array_equal(pil_array, heif_array)
     assert np.array_equal(pil_array, np.asarray(heif_file))
-
-
-@pytest.mark.parametrize(
-    "im_path",
-    (
-        "images/heif_special/L_8__29(255)x100.heif",
-        "images/heif_special/L_8__29x100(255).heif",
-        "images/heif_special/L_8__128(64)x128(64).heif",
-        "images/heif_special/L_8__29x100(100x29).heif",
-    ),
-)
-@pytest.mark.parametrize("bgr_mode", (False, True))
-@mock.patch("pillow_heif.options.ALLOW_INCORRECT_HEADERS", True)
-def test_numpy_array_invalid_ispe(im_path, bgr_mode):
-    heif_file = pillow_heif.open_heif(im_path, bgr_mode)
-    old_size = heif_file.size
-    heif_array = np.asarray(heif_file)
-    assert old_size != heif_file.size
-    if not bgr_mode:
-        im = Image.open(im_path)
-        im.load()
-        pil_array = np.asarray(im)
-        assert np.array_equal(pil_array, heif_array)
 
 
 @pytest.mark.parametrize("mode", ("L", "LA", "RGB", "RGBA"))

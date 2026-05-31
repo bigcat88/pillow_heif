@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        docker_file: ["Alpine_3_20", "Alpine_3_21", "Almalinux_9", "Debian_12"]
+        docker_file: ["Alpine_3_21", "Alpine_3_22", "Almalinux_9", "Debian_12"]
 
     steps:
       - uses: actions/checkout@v6
@@ -69,7 +69,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        docker_file: ["Alpine_3_20", "Alpine_3_21", "Almalinux_9", "Debian_12"]
+        docker_file: ["Alpine_3_21", "Alpine_3_22", "Almalinux_9", "Debian_12"]
 
     steps:
       - uses: actions/checkout@v6
