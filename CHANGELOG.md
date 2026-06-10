@@ -1,16 +1,21 @@
 All notable changes to this project will be documented in this file.
 
-## [1.4.0 - 2026-05-30]
+## [1.4.0 - 2026-06-10]
 
 ### Changed
 
 - `libheif` was updated from the `1.21.2` to `1.23.0` version. #426
 - `libde265` was updated from the `1.0.16` to `1.1.0` version. #426
 - `libx265` was updated from the `4.1` to `4.2` version. #426
+- Minimum required `libheif` version is `1.19.0`. #416
 
 ### Removed
 
 - `options.ALLOW_INCORRECT_HEADERS` option. Starting with `libheif` `1.22.0`, libheif itself rejects images whose decoded size does not match the `ispe` header. #426
+
+### Fixed
+
+- `sRGB` NCLX color profile (`BT.709` primaries) is now written by default during encoding when no color information was provided, to avoid color shifts in viewers. #407
 
 ## [1.3.0 - 2026-02-27]
 
