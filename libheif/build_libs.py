@@ -254,6 +254,10 @@ def build_lib(url: str, name: str):
         if name == "libheif":
             run("make -j4".split(), check=True)
         else:
+            if name == "x265":
+                # x265-static and x265-shared each duplicate the asm custom-command rules,
+                # one parallel make over both can race and link a libx265.so with undefined x265_* symbols
+                run_print_if_error("make -j4 x265-static".split())
             run_print_if_error("make -j4".split())
         print(f"{name} build success.", flush=True)
     run("make install".split(), check=True)
