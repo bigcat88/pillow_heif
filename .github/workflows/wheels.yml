@@ -1,0 +1,470 @@
+name: Wheels
+
+on:
+  schedule:
+    - cron: "42 2 * * 6"
+  push:
+    tags:
+      - "v*"
+  pull_request:
+    paths:
+      - ".github/workflows/wheels.yml"
+      - ".github/wheels-test.py"
+      - "setup.*"
+      - "pyproject.toml"
+      - "libheif/**"
+      - "pillow_heif/**"
+      - "tests/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # cp315/cp315t wheels are built only for testing and are skipped on tag builds,
+  # see the "cpython-prerelease" note in pyproject.toml
+  EXPECTED_DISTS: ${{ startsWith(github.ref, 'refs/tags/') && 48 || 62 }}
+
+jobs:
+  check-version:
+    name: Check version
+    runs-on: ubuntu-24.04
+    outputs:
+      changelog: ${{ steps.meta.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Verify tag matches the package version
+        id: meta
+        run: |
+          if [[ "$GITHUB_REF" != refs/tags/v* ]]; then
+            echo "Not a tag build, nothing to check."
+            exit 0
+          fi
+          RELEASE_VERSION=$(sed -n "s/^__version__.*\"\(.*\)\"$/\\1/p" ./pillow_heif/_version.py)
+          if [ "v$RELEASE_VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match _version.py ($RELEASE_VERSION)"
+            exit 1
+          fi
+          CHANGELOG=$(grep -oPz "(?s)##\s\[$RELEASE_VERSION.+?(?=##\s\[|$)" ./CHANGELOG.md | tr -d '\0' | sed /^$/d | sed '1d')
+          if [ -z "$CHANGELOG" ]; then
+            echo "No CHANGELOG.md section for $RELEASE_VERSION"
+            exit 1
+          fi
+          CHANGELOG=$(echo "$CHANGELOG" | sed '$!N;s/^###.*\n#/#/;P;D' | sed '$!N;s/^###.*\n#/#/;P;D' | sed '${/^###/d;}')
+          {
+            echo "changelog<<CHANGELOG_EOF"
+            echo "$CHANGELOG"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  build-linux:
+    name: ${{ matrix.libc }} • ${{ matrix.arch }}
+    needs: check-version
+    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        libc: [ manylinux, musllinux ]
+        arch: [ x86_64, aarch64 ]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: musllinux preparations
+        if: matrix.libc == 'musllinux'
+        run: echo INSTALL_OS_PACKAGES="apk update && apk --no-cache add $OS_PACKAGES" >> "$GITHUB_ENV"
+        env:
+          OS_PACKAGES: "fribidi-dev harfbuzz-dev jpeg-dev lcms2-dev openjpeg-dev zlib-dev"
+
+      - name: manylinux preparations
+        if: matrix.libc == 'manylinux'
+        run: echo INSTALL_OS_PACKAGES="yum makecache && yum install -y $OS_PACKAGES" >> "$GITHUB_ENV"
+        env:
+          OS_PACKAGES: "libjpeg-turbo-devel lcms2-devel zlib-devel"
+
+      - name: Reduce build to oldest and newest stable Python
+        if: github.event_name == 'pull_request'
+        run: echo 'CIBW_BUILD=cp310-* cp314-*' >> "$GITHUB_ENV"
+
+      - name: Restore dependencies cache
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        id: deps-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .ph-deps
+          key: deps-linux-${{ matrix.libc }}-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
+
+      - name: Run cibuildwheel
+        uses: pypa/cibuildwheel@v4.0.0
+        env:
+          CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_SKIP: ${{ matrix.libc == 'manylinux' && '*-musllinux*' || '*-manylinux*' }}${{ github.event_name == 'push' && ' cp315-* cp315t-*' || '' }}
+          CIBW_BEFORE_ALL_LINUX: |
+            set -e
+            ${{ env.INSTALL_OS_PACKAGES }}
+            python3 -m pip install cmake==3.31.6
+            python3 {package}/libheif/build_libs.py
+            chmod -R a+rX "$BUILD_DIR" || true
+          CIBW_ENVIRONMENT_LINUX: >-
+            PH_RELEASE_TESTS=1
+            BUILD_DIR=/host${{ github.workspace }}/.ph-deps
+            ${{ github.event_name != 'push' && format('COVERAGE_OUT=/host{0}/coverage-data', github.workspace) || '' }}
+
+      - name: Save dependencies cache
+        if: github.event_name != 'push' && steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: .ph-deps
+          key: deps-linux-${{ matrix.libc }}-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist-linux-${{ matrix.libc }}-${{ matrix.arch }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+          overwrite: true
+
+      - name: Upload coverage data
+        if: github.event_name != 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-linux-${{ matrix.libc }}-${{ matrix.arch }}
+          path: coverage-data/
+          include-hidden-files: true
+          if-no-files-found: error
+          overwrite: true
+
+  build-macos:
+    name: macosx • ${{ matrix.arch }}
+    needs: check-version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            arch: arm64
+            macosx_target: "11.0"
+          - os: macos-15-intel
+            arch: x86_64
+            macosx_target: "10.15"
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Uninstall libheif from homebrew
+        run: brew uninstall --force --ignore-dependencies imagemagick libheif x265 aom libde265 jpeg-turbo
+
+      - name: Reduce build to oldest and newest stable Python
+        if: github.event_name == 'pull_request'
+        run: echo 'CIBW_BUILD=cp310-* cp314-*' >> "$GITHUB_ENV"
+
+      - name: Restore dependencies cache
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        id: deps-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ runner.temp }}/ph-deps
+          key: deps-macos-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
+
+      - name: Install libheif
+        run: sudo BUILD_DIR="${{ runner.temp }}/ph-deps" MACOSX_DEPLOYMENT_TARGET="${{ matrix.macosx_target }}" python3 libheif/build_libs.py
+
+      - name: Install dependencies for Pillow
+        run: brew install libjpeg little-cms2
+
+      - name: Run cibuildwheel
+        uses: pypa/cibuildwheel@v4.0.0
+        env:
+          CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_SKIP: ${{ github.event_name == 'push' && 'cp315-* cp315t-*' || '' }}
+          CIBW_ENVIRONMENT_MACOS: >-
+            PH_RELEASE_TESTS=1
+            ${{ matrix.arch == 'x86_64' && 'TEST_DECODE_THREADS=0' || '' }}
+            ${{ github.event_name != 'push' && format('COVERAGE_OUT={0}/coverage-data', github.workspace) || '' }}
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_target }}
+
+      - name: Save dependencies cache
+        if: github.event_name != 'push' && steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ runner.temp }}/ph-deps
+          key: deps-macos-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist-macos-${{ matrix.arch }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+          overwrite: true
+
+      - name: Upload coverage data
+        if: github.event_name != 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-macos-${{ matrix.arch }}
+          path: coverage-data/
+          include-hidden-files: true
+          if-no-files-found: error
+          overwrite: true
+
+  build-windows:
+    name: windows • x86_64
+    needs: check-version
+    runs-on: windows-2022
+    env:
+      MSYS2_PREFIX: "C:/temp/msys64/mingw64"
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: msys2/setup-msys2@v2
+        with:
+          location: C:/temp
+          update: true
+          install: >-
+            patch
+            mingw-w64-x86_64-binutils
+
+      - name: Build libheif and dependencies
+        shell: msys2 {0}
+        run: |
+            cd libheif/windows/mingw-w64-libheif
+            makepkg-mingw --syncdeps --noconfirm -f
+            pacman -U mingw-w64-x86_64-libheif-*-any.pkg.tar.zst --noconfirm
+
+      - name: Remove DLL trailing data
+        run: |
+          Get-ChildItem -Path $Env:MSYS2_PREFIX/bin -Force | Format-List
+          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libheif.dll
+          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll
+          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libx265-216.dll
+          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll
+          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll
+          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll
+
+      - name: Reduce build to oldest and newest stable Python
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: echo 'CIBW_BUILD=cp310-* cp314-*' >> "$GITHUB_ENV"
+
+      - name: Run cibuildwheel
+        uses: pypa/cibuildwheel@v4.0.0
+        env:
+          CIBW_ARCHS: "AMD64"
+          CIBW_SKIP: ${{ github.event_name == 'push' && 'cp315-* cp315t-*' || '' }}
+          # No Pillow cp315 wheels on PyPI yet and no way to build it from source in the
+          # test env; remove once Pillow ships cp315 wheels.
+          CIBW_TEST_SKIP: "cp315-win* cp315t-win*"
+          CIBW_ENVIRONMENT_WINDOWS: >-
+            PH_RELEASE_TESTS=1
+            ${{ github.event_name != 'push' && format('COVERAGE_OUT=''{0}/coverage-data''', github.workspace) || '' }}
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.MSYS2_PREFIX }}/bin"
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist-windows-x86_64
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+          overwrite: true
+
+      - name: Upload coverage data
+        if: github.event_name != 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-windows-x86_64
+          path: coverage-data/
+          include-hidden-files: true
+          if-no-files-found: error
+          overwrite: true
+
+  sdist:
+    name: Source distribution
+    needs: check-version
+    runs-on: ubuntu-24.04
+    env:
+      PH_RELEASE_TESTS: 1
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install requirements
+        run: |
+          sudo apt update && sudo apt install -y nasm
+          python3 -m pip install twine build check-manifest
+
+      - name: Run check-manifest
+        run: python3 -m check_manifest
+
+      - name: Restore dependencies cache
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        id: deps-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ runner.temp }}/ph-deps
+          key: deps-sdist-${{ hashFiles('libheif/build_libs.py') }}
+
+      - name: Install libheif
+        run: sudo BUILD_DIR="${{ runner.temp }}/ph-deps" python3 libheif/build_libs.py
+
+      - name: Save dependencies cache
+        if: github.event_name != 'push' && steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ runner.temp }}/ph-deps
+          key: deps-sdist-${{ hashFiles('libheif/build_libs.py') }}
+
+      - name: Build sdist
+        run: |
+          python3 -m pip install pytest pillow numpy pympler defusedxml packaging
+          python3 -m build --sdist --outdir wheelhouse
+
+      - name: Install and check sdist
+        run: |
+          python3 -m pip install wheelhouse/*.tar.gz
+          python3 -m twine check wheelhouse/*
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Test sdist
+        run: python3 -m pytest
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist-sdist
+          path: wheelhouse/*.tar.gz
+          if-no-files-found: error
+          overwrite: true
+
+  check-dists:
+    name: Check dists
+    needs: [ build-linux, build-macos, build-windows, sdist ]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          pattern: dist-*
+          merge-multiple: true
+
+      - name: Check dists with twine
+        run: |
+          python3 -m pip install "twine>=6.1.0" "packaging>=24.2"
+          python3 -m twine check --strict dist/*
+
+      - name: Check dists count
+        if: github.event_name != 'pull_request'
+        run: |
+          ls dist
+          DISTS=$(ls dist | wc -l)
+          if [ "$DISTS" -ne "$EXPECTED_DISTS" ]; then
+            echo "Expected $EXPECTED_DISTS dists, found $DISTS"
+            exit 1
+          fi
+
+  coverage-upload:
+    name: Upload coverage
+    if: github.event_name != 'push'
+    needs: [ build-linux, build-macos, build-windows ]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: coverage-data
+          pattern: coverage-*
+          merge-multiple: true
+
+      - name: Combine coverage data
+        run: |
+          python3 -m pip install coverage
+          python3 -m coverage combine coverage-data
+          python3 -m coverage xml
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: wheels
+          fail_ci_if_error: false
+
+  success:
+    name: Wheels Successful
+    needs: [ check-version, build-linux, build-macos, build-windows, sdist, check-dists, coverage-upload ]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check for failures
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" != "false" ]; then
+            exit 1
+          fi
+
+  pypi-publish:
+    name: Upload to PyPI
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [ check-version, check-dists ]
+    runs-on: ubuntu-24.04
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pillow-heif
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          pattern: dist-*
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+
+  github-release:
+    name: Create GitHub release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [ check-version, pypi-publish ]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          pattern: dist-*
+          merge-multiple: true
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGELOG: ${{ needs.check-version.outputs.changelog }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --clobber dist/*
+          else
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes "$CHANGELOG" dist/*
+          fi

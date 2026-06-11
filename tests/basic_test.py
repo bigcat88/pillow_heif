@@ -114,6 +114,11 @@ def test_full_build():
 
 @pytest.mark.skipif(not os.getenv("TEST_PLUGIN_LOAD"), reason="Only when plugins present")
 def test_load_plugin():
+    info_before = pillow_heif.libheif_info()
     pillow_heif.load_libheif_plugin(os.environ["TEST_PLUGIN_LOAD"])
+    info_after = pillow_heif.libheif_info()
+    decoders_registered = set(info_before["decoders"]) < set(info_after["decoders"])
+    encoders_registered = set(info_before["encoders"]) < set(info_after["encoders"])
+    assert decoders_registered or encoders_registered
     with pytest.raises(RuntimeError):
         pillow_heif.load_libheif_plugin("invalid path")
