@@ -1,5 +1,12 @@
 All notable changes to this project will be documented in this file.
 
+## [1.5.0 - ]
+
+### Removed
+
+- `pi-heif` package is discontinued, `1.4.0` is its final release. #431
+- 32-bit support and the `PH_LIGHT_ACTION` environment variable, `build_libs.py` now always builds `x265`. #431
+
 ## [1.4.0 - 2026-06-10]
 
 ### Changed

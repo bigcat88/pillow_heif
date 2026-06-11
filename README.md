@@ -29,7 +29,7 @@ Features:
  * (beta) Reading of `Auxiliary Images` by [johncf](https://github.com/johncf)
  * Adding HEIF support to Pillow in one line of code as a plugin.
 
-Note: Here is a light version [pi-heif](https://pypi.org/project/pi-heif/) of this project without encoding capabilities.
+Note: The light version [pi-heif](https://pypi.org/project/pi-heif/) of this project is discontinued, `1.4.0` is its final release.
 
 ### Install
 ```console

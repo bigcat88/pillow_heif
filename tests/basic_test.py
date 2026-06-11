@@ -100,23 +100,12 @@ def test_heif_str():
     assert str(heif_file2) == f"<HeifFile with 1 images: ['{str_img_l_1}']>"
 
 
-@pytest.mark.skipif(not helpers.RELEASE_FULL_FLAG, reason="Only when building full release")
+@pytest.mark.skipif(not helpers.RELEASE_TESTS_FLAG, reason="Only when running release tests")
 def test_full_build():
     info = pillow_heif.libheif_info()
     assert not info["AVIF"]
     assert info["HEIF"]
     assert info["encoders"]
-    assert info["decoders"]
-    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.23.0")
-    if expected_version:
-        assert info["libheif"] == expected_version
-
-
-@pytest.mark.skipif(not helpers.RELEASE_LIGHT_FLAG, reason="Only when building light release")
-def test_light_build():
-    info = pillow_heif.libheif_info()
-    assert not info["AVIF"]
-    assert not info["HEIF"]
     assert info["decoders"]
     expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.23.0")
     if expected_version:

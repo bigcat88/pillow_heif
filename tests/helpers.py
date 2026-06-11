@@ -13,8 +13,7 @@ except ImportError:
     np = None
 
 
-RELEASE_FULL_FLAG = getenv("PH_FULL_ACTION", "0") == "1"
-RELEASE_LIGHT_FLAG = getenv("PH_LIGHT_ACTION", "0") == "1"
+RELEASE_TESTS_FLAG = getenv("PH_RELEASE_TESTS", "0") == "1"
 
 
 def assert_image_equal(a, b):

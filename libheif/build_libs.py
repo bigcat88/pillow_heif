@@ -1,8 +1,7 @@
 """File containing code to build libraries for LibHeif (Linux and macOS) and LibHeif itself."""
 
 import platform
-import sys
-from os import chdir, environ, getcwd, getenv, makedirs, mkdir, path, remove
+from os import chdir, environ, getcwd, makedirs, mkdir, path, remove
 from platform import machine
 from re import IGNORECASE, MULTILINE, match, search
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
@@ -14,8 +13,6 @@ BUILD_DIR = environ.get("BUILD_DIR", "/tmp/ph_build_stuff")
 _IS_DARWIN = platform.system() == "Darwin"
 _DEFAULT_PREFIX = "/usr/local" if _IS_DARWIN else "/usr"
 INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", _DEFAULT_PREFIX)
-
-PH_LIGHT_VERSION = sys.maxsize <= 2**32 or getenv("PH_LIGHT_ACTION", "0") != "0"
 
 LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.2.tar.gz"
 LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.1.0/libde265-1.1.0.tar.gz"
@@ -82,7 +79,7 @@ def tool_check_version(name: str, min_version: str) -> bool:
 
 
 def check_install_nasm(version: str):
-    if not match(r"(i[3-6]86|x86_64)$", machine()):
+    if not match(r"x86_64$", machine()):
         return True
     if tool_check_version("nasm", version):
         return True
@@ -243,10 +240,7 @@ def build_lib(url: str, name: str):
                     "-DWITH_GDK_PIXBUF=OFF "
                     "-DBUILD_TESTING=OFF".split()
                 )
-                if PH_LIGHT_VERSION:
-                    cmake_args += ["-DWITH_X265=OFF"]
-                else:
-                    cmake_args += ["-DWITH_X265=ON"]
+                cmake_args += ["-DWITH_X265=ON"]
                 if not _IS_DARWIN and is_musllinux():
                     cmake_args += [f"-DCMAKE_INSTALL_LIBDIR={INSTALL_DIR_LIBS}/lib"]
         run(["cmake", *cmake_args], check=True)
@@ -279,10 +273,9 @@ def build_libs() -> None:
             ) from e
 
         if not is_library_installed("x265"):
-            if not PH_LIGHT_VERSION:
-                if not check_install_nasm("2.15.05"):
-                    raise ValueError("Can not find/install `nasm` with version >=2.15.05")
-                build_lib(LIBX265_URL, "x265")
+            if not check_install_nasm("2.15.05"):
+                raise ValueError("Can not find/install `nasm` with version >=2.15.05")
+            build_lib(LIBX265_URL, "x265")
         else:
             print("x265 already installed.")
         if not is_library_installed("libde265") and not is_library_installed("de265"):
