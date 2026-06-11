@@ -18,4 +18,3 @@ prune docker
 prune benchmarks
 
 recursive-exclude **/__pycache__ *
-recursive-exclude pi-heif *

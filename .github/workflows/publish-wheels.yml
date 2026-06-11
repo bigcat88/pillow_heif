@@ -10,14 +10,8 @@ jobs:
     name: Pillow-Heif
     uses: ./.github/workflows/wheels-pillow_heif.yml
 
-  pi_heif_build:
-    needs: [pillow_heif_build]
-    if: "contains(github.event.head_commit.message, '[publish]')"
-    name: Pi-Heif
-    uses: ./.github/workflows/wheels-pi_heif.yml
-
   publish_pypi:
-    needs: [pi_heif_build]
+    needs: [pillow_heif_build]
     if: "contains(github.event.head_commit.message, '[publish]')"
     name: Upload to PyPi
     runs-on: ubuntu-22.04
@@ -41,13 +35,6 @@ jobs:
           pattern: wheels_pillow_heif-*
           merge-multiple: true
 
-      - name: Pi-Heif sdist and wheels
-        uses: actions/download-artifact@v8
-        with:
-          path: wheelhouse_pi_heif
-          pattern: wheels_pi_heif-*
-          merge-multiple: true
-
       - name: Publish Pillow-Heif
         run: |
           python3 -m pip install twine
@@ -56,14 +43,6 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_PILLOW_HEIF }}
-
-      - name: Publish Pi-Heif
-        run: |
-          python3 -m twine upload --skip-existing wheelhouse_pi_heif/*.whl
-          python3 -m twine upload --skip-existing wheelhouse_pi_heif/*tar.gz
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_PI_HEIF }}
 
       - name: Create release draft
         uses: ncipollo/release-action@v1.21.0

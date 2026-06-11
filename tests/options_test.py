@@ -93,7 +93,6 @@ def test_quality_option(save_format):
 
 @pytest.mark.skipif(os.cpu_count() < 2, reason="Requires at least a processor with two cores.")
 @pytest.mark.skipif(os.getenv("TEST_DECODE_THREADS", "1") == "0", reason="TEST_DECODE_THREADS set to `0`")
-@pytest.mark.skipif(sys.maxsize <= 2147483647, reason="Run test only on 64 bit CPU.")
 @pytest.mark.skipif(machine() in ("arm64", "aarch64") and sys.platform.lower() == "linux", reason="skip emulator")
 def test_decode_threads():
     test_image = "images/heif_other/arrow.heic"  # not all images can be decoded using more than one thread
