@@ -30,25 +30,32 @@ Linux
     | Here is the
         `build script <https://github.com/bigcat88/pillow_heif/blob/master/libheif/build_libs.py>`_
         used to build ``libheif`` with its encoders and decoders for the wheels.
+    | Extra ``cmake`` arguments for the ``libheif`` build can be passed with the
+        ``PH_LIBHEIF_CMAKE_ARGS`` environment variable, they override the default ones,
+        e.g. ``PH_LIBHEIF_CMAKE_ARGS="-DWITH_KVAZAAR=ON" python3 libheif/build_libs.py``
     |
     | **And of course you can build your own libheif library with your preferred encoders and decoders and use what you like.**
 
 There is many different ways how to build it from source. Main requirements are:
-    * ``libheif`` should be version >= ``1.19.0``.
+    * ``libheif`` should be version >= ``1.23.1``.
     * ``x265`` should support 10 - 12 bit encoding(if you want to save in that bitness)
     * ``aom`` should be >= ``3.3.0`` version
     * ``libde265`` should be >= ``1.0.8`` version
 
 
+Distro packages are too old: even the ``strukturag`` PPA tops out at ``libheif`` ``1.19.x``,
+so build ``libheif`` from source first, e.g. with the build script from the source tree:
+
 On `Ubuntu`:
 
-| :bash:`sudo add-apt-repository ppa:strukturag/libheif`
 | :bash:`sudo apt update`
-| :bash:`sudo apt -y install libheif-dev`
+| :bash:`sudo apt -y install cmake nasm build-essential curl`
+| :bash:`sudo python3 libheif/build_libs.py`
 
-On `Alpine 19`:
+On `Alpine`:
 
-| :bash:`sudo apk add --no-cache libheif-dev`
+| :bash:`sudo apk add --no-cache cmake nasm build-base curl`
+| :bash:`sudo python3 libheif/build_libs.py`
 
 Now install Pillow-Heif with::
 

@@ -11,6 +11,7 @@ Options
 .. autodata:: pillow_heif.options.SAVE_NCLX_PROFILE
 .. autodata:: pillow_heif.options.PREFERRED_ENCODER
 .. autodata:: pillow_heif.options.PREFERRED_DECODER
+.. autodata:: pillow_heif.options.GRID_TILE_SIZE
 
 Example of use
 """"""""""""""
