@@ -27,6 +27,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # build the aom decoder as a loadable plugin for `test_load_plugin`
+  PH_LIBHEIF_CMAKE_ARGS: "-DENABLE_PLUGIN_LOADING=ON -DWITH_AOM_DECODER=ON -DWITH_AOM_DECODER_PLUGIN=ON"
+
 jobs:
   lint:
     runs-on: ubuntu-24.04
@@ -40,11 +44,24 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Restore dependencies cache
+        id: deps-cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/ph-deps
+          key: deps-test-plugins-${{ hashFiles('libheif/build_libs.py') }}
+
       - name: Install Libheif
         run: |
-          sudo add-apt-repository -y ppa:strukturag/libheif
-          sudo apt update
-          sudo apt -y install libheif-dev libwebp-dev
+          sudo apt update && sudo apt -y install nasm libaom-dev
+          sudo BUILD_DIR="${{ runner.temp }}/ph-deps" PH_LIBHEIF_CMAKE_ARGS="$PH_LIBHEIF_CMAKE_ARGS" python3 libheif/build_libs.py
+
+      - name: Save dependencies cache
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/ph-deps
+          key: deps-test-plugins-${{ hashFiles('libheif/build_libs.py') }}
 
       - name: Install from source
         run: python3 -m pip install ".[dev]" wheel setuptools
@@ -66,17 +83,32 @@ jobs:
 
       - name: Prepare system
         run: |
-          sudo add-apt-repository -y ppa:strukturag/libheif
           sudo apt update
-          sudo apt -y install libheif-dev
+          sudo apt -y install nasm libaom-dev
           sudo apt -y install zlib1g-dev libjpeg-dev liblcms2-dev libwebp-dev libfribidi-dev libharfbuzz-dev libffi-dev
+
+      - name: Restore dependencies cache
+        id: deps-cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/ph-deps
+          key: deps-test-plugins-${{ hashFiles('libheif/build_libs.py') }}
+
+      - name: Install Libheif
+        run: sudo BUILD_DIR="${{ runner.temp }}/ph-deps" PH_LIBHEIF_CMAKE_ARGS="$PH_LIBHEIF_CMAKE_ARGS" python3 libheif/build_libs.py
+
+      - name: Save dependencies cache
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/ph-deps
+          key: deps-test-plugins-${{ hashFiles('libheif/build_libs.py') }}
 
       - name: Prepare libheif plugin for load test
         run: |
-          sudo apt -y remove libheif-plugin-aomdec libheif-plugin-aomenc || true
-          apt download libheif-plugin-aomdec
-          dpkg-deb -x libheif-plugin-aomdec*.deb plugin-root
-          echo "TEST_PLUGIN_LOAD=$(find "$PWD/plugin-root" -name '*.so' -print -quit)" >> "$GITHUB_ENV"
+          PLUGIN_SO=$(find /usr/lib -name "libheif-aomdec.so" -print -quit)
+          sudo mv "$PLUGIN_SO" "$GITHUB_WORKSPACE/"
+          echo "TEST_PLUGIN_LOAD=$GITHUB_WORKSPACE/libheif-aomdec.so" >> "$GITHUB_ENV"
 
       - name: Install from source
         run: |

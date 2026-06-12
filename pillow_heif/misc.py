@@ -350,6 +350,76 @@ def _get_heif_meta(c_image) -> dict:
     return r
 
 
+def _extract_tile(
+    data, src_stride: int, bytes_per_pixel: int, tile_box: tuple[int, int, int, int], tile_wh: int
+) -> bytes:
+    x, y, w, h = tile_box
+    tile_stride = tile_wh * bytes_per_pixel
+    tile_data = bytearray(tile_stride * tile_wh)
+    src_row_bytes = w * bytes_per_pixel
+    for row in range(h):
+        src_offset = (y + row) * src_stride + x * bytes_per_pixel
+        dst_offset = row * tile_stride
+        tile_data[dst_offset : dst_offset + src_row_bytes] = data[src_offset : src_offset + src_row_bytes]
+        if w < tile_wh:  # replicate the edge pixel, padding with zeros bleeds into the image via chroma subsampling
+            edge_pixel = tile_data[dst_offset + src_row_bytes - bytes_per_pixel : dst_offset + src_row_bytes]
+            tile_data[dst_offset + src_row_bytes : dst_offset + tile_stride] = edge_pixel * (tile_wh - w)
+    if h < tile_wh:
+        edge_row = tile_data[(h - 1) * tile_stride : h * tile_stride]
+        for row in range(h, tile_wh):
+            tile_data[row * tile_stride : (row + 1) * tile_stride] = edge_row
+    return bytes(tile_data)
+
+
+def _add_planes(  # pylint: disable=too-many-arguments disable=too-many-positional-arguments
+    im_out, size: tuple[int, int], mode: str, data, stride: int, bit_depth_out: int
+) -> None:
+    bit_depth_in = MODE_INFO[mode][1]
+    if MODE_INFO[mode][0] == 1:
+        im_out.add_plane_l(size, bit_depth_out, bit_depth_in, data, stride, HeifChannel.CHANNEL_Y)
+    elif MODE_INFO[mode][0] == 2:
+        im_out.add_plane_la(size, bit_depth_out, bit_depth_in, data, stride)
+    else:
+        im_out.add_plane(size, bit_depth_out, bit_depth_in, data, mode.find("BGR") != -1, stride)
+
+
+def _output_bit_depth(mode: str, **kwargs) -> int:
+    bit_depth_out = 8 if MODE_INFO[mode][1] == 8 else kwargs.get("bit_depth", 16)
+    if bit_depth_out == 16:
+        bit_depth_out = 12 if options.SAVE_HDR_TO_12_BIT else 10
+    return bit_depth_out
+
+
+def _output_nclx_params(kwargs: dict, nclx_profile=None) -> tuple[int, int, int, int]:
+    nclx_keys = ("color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag")
+    save_nclx = kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE)
+    has_explicit_nclx = any(k in kwargs for k in nclx_keys)
+    if save_nclx and nclx_profile and not has_explicit_nclx:
+        return (
+            nclx_profile["color_primaries"],
+            nclx_profile["transfer_characteristics"],
+            nclx_profile["matrix_coefficients"],
+            nclx_profile["full_range_flag"],
+        )
+    # When NCLX saving is enabled and no existing NCLX profile is on the image and no explicit NCLX parameters
+    # were provided, write an NCLX box that matches libheif internal sRGB encoding defaults.
+    # Without this, no NCLX box is written and viewers must guess the color space, which causes color shifts.
+    # See issue #365.
+    # Values match libheif nclx_profile::set_sRGB_defaults() exactly:
+    #   primaries=1 (BT.709)
+    #   transfer=13 (sRGB)
+    #   matrix=6 (BT.601-6)
+    #   full_range=1
+    if save_nclx and not kwargs.get("nclx_profile") and not has_explicit_nclx:
+        return 1, 13, 6, 1
+    return (
+        kwargs.get("color_primaries", -1),
+        kwargs.get("transfer_characteristics", -1),
+        kwargs.get("matrix_coefficients", -1),
+        kwargs.get("full_range_flag", -1),
+    )
+
+
 class CtxEncode:
     """Encoder bindings from python to python C module."""
 
@@ -370,29 +440,97 @@ class CtxEncode:
             enc_params["chroma"] = chroma
         for key, value in enc_params.items():
             self.ctx_write.set_parameter(key, value if isinstance(value, str) else str(value))
+        self._grid_images: list = []  # the `output_nclx_color_profile` of a grid must outlive `finalize`
+        self._tiles_count = 0
 
     def add_image(self, size: tuple[int, int], mode: str, data, **kwargs) -> None:
         """Adds image to the encoder."""
         if size[0] <= 0 or size[1] <= 0:
             raise ValueError("Empty images are not supported.")
-        bit_depth_in = MODE_INFO[mode][1]
-        bit_depth_out = 8 if bit_depth_in == 8 else kwargs.get("bit_depth", 16)
-        if bit_depth_out == 16:
-            bit_depth_out = 12 if options.SAVE_HDR_TO_12_BIT else 10
+        tile_size = kwargs.pop("tile_size", None)
+        if tile_size is None:  # for tiled images the grid structure is preserved during re-save by default
+            tile_size = (kwargs.get("tiling") or {}).get("tile_width", 0) or options.GRID_TILE_SIZE
+        # libheif cannot mark grid items as premultiplied, such images are encoded as a single image.
+        premultiplied_alpha = mode.split(sep=";")[0][-1] == "a"
+        if tile_size > 0 and not premultiplied_alpha and (size[0] > tile_size or size[1] > tile_size):
+            self._add_image_grid(size, mode, data, tile_size, **kwargs)
+        else:
+            self._add_image_single(size, mode, data, **kwargs)
+
+    def _add_image_single(self, size: tuple[int, int], mode: str, data, **kwargs) -> None:
         premultiplied_alpha = int(mode.split(sep=";")[0][-1] == "a")
         # creating image
         im_out = self.ctx_write.create_image(size, MODE_INFO[mode][2], MODE_INFO[mode][3], premultiplied_alpha)
         # image data
-        if MODE_INFO[mode][0] == 1:
-            im_out.add_plane_l(size, bit_depth_out, bit_depth_in, data, kwargs.get("stride", 0), HeifChannel.CHANNEL_Y)
-        elif MODE_INFO[mode][0] == 2:
-            im_out.add_plane_la(size, bit_depth_out, bit_depth_in, data, kwargs.get("stride", 0))
-        else:
-            im_out.add_plane(size, bit_depth_out, bit_depth_in, data, mode.find("BGR") != -1, kwargs.get("stride", 0))
+        _add_planes(im_out, size, mode, data, kwargs.get("stride", 0), _output_bit_depth(mode, **kwargs))
         self._finish_add_image(im_out, size, **kwargs)
+
+    def _add_image_grid(self, size: tuple[int, int], mode: str, data, tile_size: int, **kwargs) -> None:
+        tile_columns = ceil(size[0] / tile_size)
+        tile_rows = ceil(size[1] / tile_size)
+        if tile_columns > 256 or tile_rows > 256:  # the ISO grid payload stores tile counts as uint8
+            raise ValueError("Grid image cannot have more than 256 rows or columns, increase `tile_size`.")
+        self._tiles_count += tile_columns * tile_rows
+        if self._tiles_count > 999:  # default libheif security limit during reading is 1000 items per file
+            raise ValueError("File with grid images cannot have more than 999 tiles, increase `tile_size`.")
+        grid_handle = self.ctx_write.create_grid(
+            size[0],
+            size[1],
+            tile_columns,
+            tile_rows,
+            kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE),
+            *_output_nclx_params(kwargs, kwargs.get("nclx_profile")),
+            kwargs.get("image_orientation", 1),
+        )
+        self._add_grid_tiles(grid_handle, size, mode, data, tile_size=tile_size, **kwargs)
+        pixel_aspect_ratio = kwargs.get("pixel_aspect_ratio")
+        if pixel_aspect_ratio:
+            grid_handle.set_pixel_aspect_ratio(pixel_aspect_ratio[0], pixel_aspect_ratio[1])
+        if kwargs.get("primary"):
+            grid_handle.set_primary(self.ctx_write)
+        self._add_metadata(grid_handle, **kwargs)
+        thumbnails = [i for i in kwargs.get("thumbnails", []) if max(size) > i > 3]
+        if thumbnails:
+            pixels_im = self.ctx_write.create_image(size, MODE_INFO[mode][2], MODE_INFO[mode][3], 0)
+            _add_planes(pixels_im, size, mode, data, kwargs.get("stride", 0), _output_bit_depth(mode, **kwargs))
+            image_orientation = kwargs.get("image_orientation", 1)
+            for thumb_box in thumbnails:
+                grid_handle.encode_thumbnail(self.ctx_write, thumb_box, image_orientation, pixels_im)
+        self._grid_images.append(grid_handle)
+
+    def _add_grid_tiles(self, grid_handle, size: tuple[int, int], mode: str, data, **kwargs) -> None:
+        tile_size = kwargs["tile_size"]
+        bit_depth_out = _output_bit_depth(mode, **kwargs)
+        bytes_per_pixel = MODE_INFO[mode][0] * (2 if MODE_INFO[mode][1] > 8 else 1)
+        src_stride = kwargs.get("stride", 0) or (size[0] * bytes_per_pixel)
+        if len(data) < src_stride * (size[1] - 1) + size[0] * bytes_per_pixel:
+            raise ValueError("Image plane does not contain enough data.")
+        icc_profile = kwargs.get("icc_profile")
+        tile_wh = (tile_size, tile_size)
+        for row in range(ceil(size[1] / tile_size)):
+            for col in range(ceil(size[0] / tile_size)):
+                tile_box = (
+                    col * tile_size,
+                    row * tile_size,
+                    min(tile_size, size[0] - col * tile_size),
+                    min(tile_size, size[1] - row * tile_size),
+                )
+                tile_data = _extract_tile(data, src_stride, bytes_per_pixel, tile_box, tile_size)
+                tile_im = self.ctx_write.create_image(
+                    tile_wh, MODE_INFO[mode][2], MODE_INFO[mode][3], int(mode.split(sep=";")[0][-1] == "a")
+                )
+                _add_planes(tile_im, tile_wh, mode, tile_data, 0, bit_depth_out)
+                if icc_profile is not None:
+                    tile_im.set_icc_profile(kwargs.get("icc_profile_type", "prof"), icc_profile)
+                self.ctx_write.add_tile(grid_handle, col, row, tile_im)
 
     def add_image_ycbcr(self, img: Image.Image, **kwargs) -> None:
         """Adds image in `YCbCR` mode to the encoder."""
+        tile_size = kwargs.pop("tile_size", None)
+        if tile_size is None:
+            tile_size = options.GRID_TILE_SIZE
+        if tile_size > 0 and (img.size[0] > tile_size or img.size[1] > tile_size):
+            raise ValueError("Grid encoding is not supported for `YCbCr` mode images, set `tile_size=0`.")
         # creating image
         im_out = self.ctx_write.create_image(img.size, MODE_INFO[img.mode][2], MODE_INFO[img.mode][3], 0)
         # image data
@@ -419,39 +557,21 @@ class CtxEncode:
             im_out.set_pixel_aspect_ratio(pixel_aspect_ratio[0], pixel_aspect_ratio[1])
         # encode
         image_orientation = kwargs.get("image_orientation", 1)
-        save_nclx = kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE)
-        nclx_keys = ("color_primaries", "transfer_characteristics", "matrix_coefficients", "full_range_flag")
-        has_explicit_nclx = any(k in kwargs for k in nclx_keys)
-        # When NCLX saving is enabled and no existing NCLX profile is on the image and no explicit NCLX parameters
-        # were provided, write an NCLX box that matches libheif internal sRGB encoding defaults.
-        # Without this, no NCLX box is written and viewers must guess the color space, which causes color shifts.
-        # See issue #365.
-        # Values match libheif nclx_profile::set_sRGB_defaults() exactly:
-        #   primaries=1 (BT.709)
-        #   transfer=13 (sRGB)
-        #   matrix=6 (BT.601)
-        #   full_range=1
-        if save_nclx and not kwargs.get("nclx_profile") and not has_explicit_nclx:
-            color_primaries = 1  # BT.709
-            transfer_characteristics = 13  # sRGB (IEC 61966-2-1)
-            matrix_coefficients = 6  # BT.601-6
-            full_range_flag = 1
-        else:
-            color_primaries = kwargs.get("color_primaries", -1)
-            transfer_characteristics = kwargs.get("transfer_characteristics", -1)
-            matrix_coefficients = kwargs.get("matrix_coefficients", -1)
-            full_range_flag = kwargs.get("full_range_flag", -1)
         im_out.encode(
             self.ctx_write,
             kwargs.get("primary", False),
-            save_nclx,
-            color_primaries,
-            transfer_characteristics,
-            matrix_coefficients,
-            full_range_flag,
+            kwargs.get("save_nclx_profile", options.SAVE_NCLX_PROFILE),
+            *_output_nclx_params(kwargs),
             image_orientation,
         )
         # adding metadata
+        self._add_metadata(im_out, **kwargs)
+        # adding thumbnails
+        for thumb_box in kwargs.get("thumbnails", []):
+            if max(size) > thumb_box > 3:
+                im_out.encode_thumbnail(self.ctx_write, thumb_box, image_orientation)
+
+    def _add_metadata(self, im_out, **kwargs) -> None:
         exif = kwargs.get("exif")
         if exif is not None:
             if isinstance(exif, Image.Exif):
@@ -462,14 +582,11 @@ class CtxEncode:
             im_out.set_xmp(self.ctx_write, xmp)
         for metadata in kwargs.get("metadata", []):
             im_out.set_metadata(self.ctx_write, metadata["type"], metadata["content_type"], metadata["data"])
-        # adding thumbnails
-        for thumb_box in kwargs.get("thumbnails", []):
-            if max(size) > thumb_box > 3:
-                im_out.encode_thumbnail(self.ctx_write, thumb_box, image_orientation)
 
     def save(self, fp) -> None:
         """Ask encoder to produce output based on previously added images."""
         data = self.ctx_write.finalize()
+        self._grid_images.clear()
         if isinstance(fp, (str, Path)):
             Path(fp).write_bytes(data)
         elif hasattr(fp, "write"):
@@ -498,6 +615,7 @@ class MimCImage:
         self.pixel_aspect_ratio = None
         self.camera_intrinsic_matrix = None
         self.camera_extrinsic_matrix_rot = None
+        self.tiling = None
 
     @property
     def size_mode(self):

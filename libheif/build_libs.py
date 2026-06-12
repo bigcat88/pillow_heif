@@ -4,6 +4,7 @@ import platform
 from os import chdir, environ, getcwd, makedirs, mkdir, path, remove
 from platform import machine
 from re import IGNORECASE, MULTILINE, match, search
+from shlex import split
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, TimeoutExpired, run
 
 # 1
@@ -13,6 +14,9 @@ BUILD_DIR = environ.get("BUILD_DIR", "/tmp/ph_build_stuff")
 _IS_DARWIN = platform.system() == "Darwin"
 _DEFAULT_PREFIX = "/usr/local" if _IS_DARWIN else "/usr"
 INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", _DEFAULT_PREFIX)
+
+# Extra arguments for the libheif `cmake` configure step, they override the default ones.
+LIBHEIF_CMAKE_ARGS = environ.get("PH_LIBHEIF_CMAKE_ARGS", "")
 
 LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.2.tar.gz"
 LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.1.0/libde265-1.1.0.tar.gz"
@@ -238,9 +242,15 @@ def build_lib(url: str, name: str):
                     "-DWITH_EXAMPLES=OFF "
                     "-DWITH_EXAMPLE_HEIF_VIEW=OFF "
                     "-DWITH_GDK_PIXBUF=OFF "
+                    # JPEG/PNG are used only by examples, without this the configured build tree
+                    # depends on whether the host had them installed, breaking the CI deps cache.
+                    "-DCMAKE_DISABLE_FIND_PACKAGE_JPEG=ON "
+                    "-DCMAKE_DISABLE_FIND_PACKAGE_PNG=ON "
                     "-DBUILD_TESTING=OFF".split()
                 )
                 cmake_args += ["-DWITH_X265=ON"]
+                if LIBHEIF_CMAKE_ARGS:
+                    cmake_args += split(LIBHEIF_CMAKE_ARGS)
                 if not _IS_DARWIN and is_musllinux():
                     cmake_args += [f"-DCMAKE_INSTALL_LIBDIR={INSTALL_DIR_LIBS}/lib"]
         run(["cmake", *cmake_args], check=True)
