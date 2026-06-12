@@ -246,7 +246,8 @@ jobs:
             arch_name: arm64
             msystem: CLANGARM64
             msys_prefix: clangarm64
-            msys_packages: "patch"
+            # llvm-tools provides the strip binary required by makepkg
+            msys_packages: "patch mingw-w64-clang-aarch64-llvm-tools"
     env:
       MSYS2_PREFIX: "C:/temp/msys64/${{ matrix.msys_prefix }}"
 
