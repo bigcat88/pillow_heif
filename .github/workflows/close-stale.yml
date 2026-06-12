@@ -4,11 +4,18 @@ on:
   schedule:
     - cron: '0 10 * * 0' # Every day at 12:00 PM (GMT+2)
 
+permissions:
+  contents: read
+
 jobs:
   stale:
+    if: github.event.repository.fork == false
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
-      - uses: actions/stale@v10
+      - uses: actions/stale@eb5cf3af3ac0a1aa4c9c45633dd1ae542a27a899 # v10.3.0
         with:
           days-before-stale: 28
           days-before-close: 14

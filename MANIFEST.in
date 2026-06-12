@@ -12,9 +12,7 @@ graft examples
 
 exclude *.yaml
 exclude *.yml
-exclude .cirrus.star
 
-prune ci
 prune docs
 prune benchmarks
 
