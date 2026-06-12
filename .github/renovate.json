@@ -2,13 +2,23 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base",
-    ":disableDependencyDashboard"
+    ":disableDependencyDashboard",
+    "helpers:pinGitHubActionDigests"
   ],
   "ignorePaths": [
-    "**/docker/**",
     "**/docs/**",
     "**/examples/**",
-    "**/libheif/**",
     "**/tests/**"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^libheif/build_libs\\.py$"],
+      "matchStrings": [
+        "\"https://github\\.com/(?<depName>strukturag/[a-z0-9]+)/releases/download/v(?<currentValue>[0-9.]+)/"
+      ],
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    }
   ]
 }

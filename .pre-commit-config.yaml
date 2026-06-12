@@ -33,6 +33,11 @@ repos:
     hooks:
     -   id: ruff
 
+-   repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.25.2
+    hooks:
+    -   id: zizmor
+
 -   repo: https://github.com/mgedmin/check-manifest
     rev: "0.51"
     hooks:
