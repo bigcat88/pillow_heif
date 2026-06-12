@@ -193,6 +193,9 @@ jobs:
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: ${{ github.event_name == 'push' && 'cp315-* cp315t-*' || '' }}
+          # No Pillow cp315 wheels on PyPI yet and no way to build it from source in the
+          # test env; remove once Pillow ships cp315 wheels.
+          CIBW_TEST_SKIP: "cp315-macosx* cp315t-macosx*"
           CIBW_ENVIRONMENT_MACOS: >-
             PH_RELEASE_TESTS=1
             ${{ matrix.arch == 'x86_64' && 'TEST_DECODE_THREADS=0' || '' }}
