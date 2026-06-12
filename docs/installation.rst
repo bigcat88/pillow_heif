@@ -27,10 +27,9 @@ Linux
 
 .. note::
 
-    | Here is a
-        `GH Action <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-linux.yml>`_
-        and in `docker/from_src <https://github.com/bigcat88/pillow_heif/blob/master/docker/from_src>`_ folder there are docker files for different Linuxes with examples
-        how to build from source.
+    | Here is the
+        `build script <https://github.com/bigcat88/pillow_heif/blob/master/libheif/build_libs.py>`_
+        used to build ``libheif`` with its encoders and decoders for the wheels.
     |
     | **And of course you can build your own libheif library with your preferred encoders and decoders and use what you like.**
 
@@ -91,8 +90,6 @@ Install Pillow-Heif::
 macOS
 ^^^^^
 
-`GA Action to test build on macOS from source <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-macos.yml>`_
-
 First install `Homebrew <https://brew.sh>`_, if it is not installed and run::
 
     brew install x265 libjpeg libde265 libheif
@@ -108,8 +105,6 @@ or from within the uncompressed source directory::
 
 Windows
 ^^^^^^^
-
-`GA Action to test build on Windows from source <https://github.com/bigcat88/pillow_heif/blob/master/.github/workflows/test-src-build-windows.yml>`_
 
 .. note::
     | On Windows, use prebuilt binaries. Installing from source on Windows is tricky.

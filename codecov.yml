@@ -1,7 +1,3 @@
-codecov:
-  notify:
-    after_n_builds: 5
-
 comment:
   require_changes: true
   layout: "diff, files"
@@ -13,3 +9,11 @@ coverage:
         target: auto
         threshold: 2%
     patch: off
+
+flags:
+  wheels:
+    carryforward: true
+  pillow-dev:
+    carryforward: true
+  import-error:
+    carryforward: true

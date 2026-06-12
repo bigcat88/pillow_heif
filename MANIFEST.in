@@ -1,6 +1,8 @@
 include README.md
 include CHANGELOG.md
+include RELEASING.md
 include pyproject.toml
+include .github/wheels-test.py
 
 recursive-include pillow_heif *.c *.h
 
@@ -14,7 +16,6 @@ exclude .cirrus.star
 
 prune ci
 prune docs
-prune docker
 prune benchmarks
 
 recursive-exclude **/__pycache__ *

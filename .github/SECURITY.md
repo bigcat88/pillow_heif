@@ -9,7 +9,7 @@ Fix time is approximately from 1 to 5 days.
 ## Reporting a Vulnerability
 
 Transparency and Security are vital.
-All builds are made using GitHub Actions only and for macOS Arm64 using CirrusCI.
+All builds are made using GitHub Actions only.
 No part of the releases is published from any local source, the release process is fully automated from start to finish.
 
 Please report security issues using GitHub's `Private vulnerability` reporting feature.

@@ -1,0 +1,126 @@
+name: Test
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/test.yml'
+      - 'pillow_heif/*.*'
+      - 'tests/**'
+      - 'setup.*'
+      - 'pyproject.toml'
+      - '.pre-commit-config.yaml'
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/test.yml'
+      - 'pillow_heif/*.*'
+      - 'tests/**'
+      - 'setup.*'
+      - 'pyproject.toml'
+      - '.pre-commit-config.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    name: Analysis
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Libheif
+        run: |
+          sudo add-apt-repository -y ppa:strukturag/libheif
+          sudo apt update
+          sudo apt -y install libheif-dev libwebp-dev
+
+      - name: Install from source
+        run: python3 -m pip install ".[dev]" wheel setuptools
+
+      - name: Run Analysis
+        run: python3 -m pylint "setup.py" "pillow_heif/"
+
+  pillow-dev:
+    runs-on: ubuntu-24.04
+    name: Pillow-dev • 🐍3.12
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Prepare system
+        run: |
+          sudo add-apt-repository -y ppa:strukturag/libheif
+          sudo apt update
+          sudo apt -y install libheif-dev
+          sudo apt -y install zlib1g-dev libjpeg-dev liblcms2-dev libwebp-dev libfribidi-dev libharfbuzz-dev libffi-dev
+
+      - name: Prepare libheif plugin for load test
+        run: |
+          sudo apt -y remove libheif-plugin-aomdec libheif-plugin-aomenc || true
+          apt download libheif-plugin-aomdec
+          dpkg-deb -x libheif-plugin-aomdec*.deb plugin-root
+          echo "TEST_PLUGIN_LOAD=$(find "$PWD/plugin-root" -name '*.so' -print -quit)" >> "$GITHUB_ENV"
+
+      - name: Install from source
+        run: |
+          git clone --depth=1 https://github.com/python-pillow/Pillow.git
+          cd Pillow && python3 -m pip install . && cd ..
+          python3 -m pip -v install ".[dev]"
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Generate coverage report
+        run: coverage run -m pytest && coverage xml
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: pillow-dev
+          fail_ci_if_error: false
+
+  import-error:
+    runs-on: macos-14
+    name: ImportError
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Libheif
+        run: |
+          brew update
+          brew install libheif
+
+      - name: Install from source
+        run: |
+          python3 -m pip -v install .
+          python3 -m pip install pytest coverage
+
+      - name: Generate coverage report
+        run: coverage run -m pytest tests/import_error_test.py && coverage xml
+
+      - name: Upload report to Codecov
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: import-error
+          fail_ci_if_error: false
