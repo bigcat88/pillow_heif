@@ -134,7 +134,7 @@ if im.info["depth_images"]:
 
 ### Wheels
 
-| **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows<br/> | musllinux* | manylinux* |
+| **_Wheels table_** | macOS<br/>Intel | macOS<br/>Silicon | Windows* | musllinux* | manylinux* |
 |--------------------|:---------------:|:-----------------:|:------------:|:----------:|:----------:|
 | CPython 3.10       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | CPython 3.11       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |

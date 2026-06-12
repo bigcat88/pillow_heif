@@ -27,7 +27,7 @@ concurrency:
 env:
   # cp315/cp315t wheels are built only for testing and are skipped on tag builds,
   # see the "cpython-prerelease" note in pyproject.toml
-  EXPECTED_DISTS: ${{ startsWith(github.ref, 'refs/tags/') && 48 || 62 }}
+  EXPECTED_DISTS: ${{ startsWith(github.ref, 'refs/tags/') && 54 || 70 }}
 
 jobs:
   check-version:
@@ -193,6 +193,9 @@ jobs:
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: ${{ github.event_name == 'push' && 'cp315-* cp315t-*' || '' }}
+          # No Pillow cp315 wheels on PyPI yet and no way to build it from source in the
+          # test env; remove once Pillow ships cp315 wheels.
+          CIBW_TEST_SKIP: "cp315-macosx* cp315t-macosx*"
           CIBW_ENVIRONMENT_MACOS: >-
             PH_RELEASE_TESTS=1
             ${{ matrix.arch == 'x86_64' && 'TEST_DECODE_THREADS=0' || '' }}
@@ -225,11 +228,28 @@ jobs:
           overwrite: true
 
   build-windows:
-    name: windows • x86_64
+    name: windows • ${{ matrix.arch_name }}
     needs: check-version
-    runs-on: windows-2022
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            arch: AMD64
+            arch_name: x86_64
+            msystem: MINGW64
+            msys_prefix: mingw64
+            msys_packages: "patch mingw-w64-x86_64-binutils"
+          - os: windows-11-arm
+            arch: ARM64
+            arch_name: arm64
+            msystem: CLANGARM64
+            msys_prefix: clangarm64
+            # llvm-tools provides the strip binary required by makepkg
+            msys_packages: "patch mingw-w64-clang-aarch64-llvm-tools"
     env:
-      MSYS2_PREFIX: "C:/temp/msys64/mingw64"
+      MSYS2_PREFIX: "C:/temp/msys64/${{ matrix.msys_prefix }}"
 
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -241,27 +261,27 @@ jobs:
       - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c # v2.31.1
         with:
           location: C:/temp
+          msystem: ${{ matrix.msystem }}
           update: true
-          install: >-
-            patch
-            mingw-w64-x86_64-binutils
+          install: ${{ matrix.msys_packages }}
 
       - name: Build libheif and dependencies
         shell: msys2 {0}
         run: |
             cd libheif/windows/mingw-w64-libheif
             makepkg-mingw --syncdeps --noconfirm -f
-            pacman -U mingw-w64-x86_64-libheif-*-any.pkg.tar.zst --noconfirm
+            pacman -U mingw-w64-*-libheif-*-any.pkg.tar.zst --noconfirm
 
       - name: Remove DLL trailing data
+        if: matrix.arch == 'AMD64'
         run: |
           Get-ChildItem -Path $Env:MSYS2_PREFIX/bin -Force | Format-List
-          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libheif.dll
-          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libde265-0.dll
-          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libx265-216.dll
-          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libwinpthread-1.dll
-          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libgcc_s_seh-1.dll
-          ${{ env.MSYS2_PREFIX }}/bin/strip -s -v ${{ env.MSYS2_PREFIX }}/bin/libstdc++-6.dll
+          & "$Env:MSYS2_PREFIX/bin/strip" -s -v "$Env:MSYS2_PREFIX/bin/libheif.dll"
+          & "$Env:MSYS2_PREFIX/bin/strip" -s -v "$Env:MSYS2_PREFIX/bin/libde265-0.dll"
+          & "$Env:MSYS2_PREFIX/bin/strip" -s -v "$Env:MSYS2_PREFIX/bin/libx265-216.dll"
+          & "$Env:MSYS2_PREFIX/bin/strip" -s -v "$Env:MSYS2_PREFIX/bin/libwinpthread-1.dll"
+          & "$Env:MSYS2_PREFIX/bin/strip" -s -v "$Env:MSYS2_PREFIX/bin/libgcc_s_seh-1.dll"
+          & "$Env:MSYS2_PREFIX/bin/strip" -s -v "$Env:MSYS2_PREFIX/bin/libstdc++-6.dll"
 
       - name: Reduce build to oldest and newest stable Python
         if: github.event_name == 'pull_request'
@@ -271,7 +291,7 @@ jobs:
       - name: Run cibuildwheel
         uses: pypa/cibuildwheel@f03ac7617d6cff873ccf24cc0d567ef5ba5a9e6d # v4.0.0
         env:
-          CIBW_ARCHS: "AMD64"
+          CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: ${{ github.event_name == 'push' && 'cp315-* cp315t-*' || '' }}
           # No Pillow cp315 wheels on PyPI yet and no way to build it from source in the
           # test env; remove once Pillow ships cp315 wheels.
@@ -284,7 +304,7 @@ jobs:
       - name: Upload built wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: dist-windows-x86_64
+          name: dist-windows-${{ matrix.arch_name }}
           path: wheelhouse/*.whl
           if-no-files-found: error
           overwrite: true
@@ -293,7 +313,7 @@ jobs:
         if: github.event_name != 'push'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: coverage-windows-x86_64
+          name: coverage-windows-${{ matrix.arch_name }}
           path: coverage-data/
           include-hidden-files: true
           if-no-files-found: error

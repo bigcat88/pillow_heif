@@ -2,6 +2,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.0 - ]
 
+### Added
+
+- Windows ARM64 wheels.
+
 ### Changed
 
 - Releases are now tag-triggered and published to PyPI with attestations via Trusted Publishing. #432
