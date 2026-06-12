@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 from re import finditer
-from shutil import copy
+from shutil import copy, copytree
 from warnings import warn
 
 from setuptools import Extension, setup
@@ -164,10 +164,16 @@ class PillowHeifBuildExt(build_ext):
             else:
                 warn("If you build this with MSYS2, you should not see this warning.", stacklevel=1)
 
-            # on Windows, we include "root" of the project instead of MSYS2 directory.
-            # Including MSYS2 directory leads to compilation errors, theirs `stdio.h` and other files are different.
-            # ATTENTION: If someone knows how without hacks include MSYS2 directory as last directory in list - help!
-            self.compiler.include_dirs.append(os.path.dirname(os.path.abspath(__file__)))
+            # MSVC cannot use the whole MSYS2 `include` directory, theirs `stdio.h` and other files conflict.
+            # Copy only the `libheif` headers from MSYS2 to an isolated directory and include that, this
+            # also guarantees that the headers always match the version of the library we link with.
+            staged_include = os.path.join(os.path.abspath(self.build_temp), "libheif_include")
+            copytree(
+                os.path.join(include_path_prefix, "include", "libheif"),
+                os.path.join(staged_include, "libheif"),
+                dirs_exist_ok=True,
+            )
+            self.compiler.include_dirs.append(staged_include)
 
             if PLATFORM_MINGW:
                 self._update_extension("_pillow_heif", ["heif"], extra_compile_args=["-O3", "-Werror"])
