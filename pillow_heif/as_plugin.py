@@ -177,6 +177,8 @@ def __options_update(**kwargs):
             options.PREFERRED_ENCODER = v
         elif k == "preferred_decoder":
             options.PREFERRED_DECODER = v
+        elif k == "grid_tile_size":
+            options.GRID_TILE_SIZE = v
         else:
             warn(f"Unknown option: {k}", stacklevel=1)
 

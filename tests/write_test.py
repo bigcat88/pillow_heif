@@ -723,3 +723,458 @@ def test_invalid_encoder():
         im_rgb.save(buf, format="HEIF")
     finally:
         pillow_heif.options.PREFERRED_ENCODER["HEIF"] = ""
+
+
+def _get_tiling_info(buf):
+    buf.seek(0)
+    return pillow_heif.open_heif(buf).info.get("tiling")
+
+
+def test_grid_encoding_basic():
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64)
+
+    tiling = _get_tiling_info(buf)
+    assert tiling is not None
+    assert tiling["num_columns"] == 4
+    assert tiling["num_rows"] == 4
+    assert tiling["tile_width"] == 64
+    assert tiling["tile_height"] == 64
+    assert tiling["image_width"] == 256
+    assert tiling["image_height"] == 256
+
+    buf.seek(0)
+    im_out = Image.open(buf)
+    assert im_out.size == (256, 256)
+    assert im_out.mode == "RGB"
+    helpers.compare_hashes([im, im_out], hash_size=16)
+
+
+def test_grid_encoding_non_divisible():
+    im = helpers.gradient_rgb().resize((301, 201))  # bright colored edges, to detect wrong edge tiles padding
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=128)
+
+    tiling = _get_tiling_info(buf)
+    assert tiling is not None
+    assert tiling["num_columns"] == 3
+    assert tiling["num_rows"] == 2
+    assert tiling["tile_width"] == 128
+    assert tiling["tile_height"] == 128
+    assert tiling["image_width"] == 301
+    assert tiling["image_height"] == 201
+
+    buf.seek(0)
+    im_out = Image.open(buf)
+    assert im_out.size == (301, 201)
+    helpers.assert_image_similar(im, im_out, 3.0)
+
+    buf_single = BytesIO()
+    im.save(buf_single, format="HEIF")
+    im_single = Image.open(buf_single)
+    # the right and bottom edge tiles are partial, compare their edges with the single image encoding
+    right_columns = (im.size[0] - 2, 0, im.size[0], im.size[1])
+    helpers.assert_image_similar(im_single.crop(right_columns), im_out.crop(right_columns), 3.0)
+    bottom_rows = (0, im.size[1] - 2, im.size[0], im.size[1])
+    helpers.assert_image_similar(im_single.crop(bottom_rows), im_out.crop(bottom_rows), 3.0)
+
+
+def test_grid_encoding_rgba():
+    im = helpers.gradient_rgba()
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=128)
+
+    tiling = _get_tiling_info(buf)
+    assert tiling is not None
+    assert tiling["num_columns"] == 2
+    assert tiling["num_rows"] == 2
+
+    buf.seek(0)
+    im_out = Image.open(buf)
+    assert im_out.size == (256, 256)
+    assert im_out.mode == "RGBA"
+    helpers.compare_hashes([im, im_out], hash_size=16)
+    helpers.assert_image_similar(im.getchannel("A").convert("L"), im_out.getchannel("A").convert("L"), 0.05)
+
+
+def test_grid_encoding_grayscale():
+    im = Image.linear_gradient("L")
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64)
+
+    tiling = _get_tiling_info(buf)
+    assert tiling is not None
+    assert tiling["num_columns"] == 4
+    assert tiling["num_rows"] == 4
+
+    buf.seek(0)
+    im_out = Image.open(buf)
+    assert im_out.size == (256, 256)
+    assert im_out.mode == "L"
+    helpers.compare_hashes([im, im_out], hash_size=16)
+
+
+def test_grid_encoding_la():
+    im = helpers.gradient_la()
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=128)
+
+    tiling = _get_tiling_info(buf)
+    assert tiling is not None
+    assert tiling["num_columns"] == 2
+    assert tiling["num_rows"] == 2
+
+    buf.seek(0)
+    im_out = Image.open(buf)
+    assert im_out.size == (256, 256)
+    helpers.compare_hashes([im.convert("RGBA"), im_out], hash_size=16)
+    helpers.assert_image_similar(im.getchannel("A").convert("L"), im_out.getchannel("A").convert("L"), 0.05)
+
+
+def test_grid_encoding_small_image_bypass():
+    im = Image.new("RGB", (50, 50), color=(255, 0, 0))
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=128)
+
+    assert _get_tiling_info(buf) is None
+
+    buf.seek(0)
+    im_out = Image.open(buf)
+    assert im_out.size == (50, 50)
+
+
+def test_grid_encoding_global_option():
+    try:
+        pillow_heif.options.GRID_TILE_SIZE = 64
+        im = helpers.gradient_rgb()
+        buf = BytesIO()
+        im.save(buf, format="HEIF")
+
+        tiling = _get_tiling_info(buf)
+        assert tiling is not None
+        assert tiling["num_columns"] == 4
+        assert tiling["num_rows"] == 4
+    finally:
+        pillow_heif.options.GRID_TILE_SIZE = 0
+
+
+def test_grid_encoding_preserves_exif():
+    from PIL.ExifTags import Base as ExifBase
+
+    im = helpers.gradient_rgb()
+    exif = Image.Exif()
+    exif[ExifBase.Make] = "TestCamera"
+    exif[ExifBase.Model] = "TestModel"
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64, exif=exif.tobytes())
+
+    assert _get_tiling_info(buf) is not None
+
+    buf.seek(0)
+    im_out = Image.open(buf)
+    exif_out = im_out.getexif()
+    assert exif_out.get(ExifBase.Make) == "TestCamera"
+    assert exif_out.get(ExifBase.Model) == "TestModel"
+
+
+def test_grid_encoding_preserves_xmp():
+    im = helpers.gradient_rgb()
+    xmp_data = b'<?xpacket begin="\xef\xbb\xbf"?><x:xmpmeta xmlns:x="adobe:ns:meta/"></x:xmpmeta><?xpacket end="w"?>'
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64, xmp=xmp_data)
+
+    assert _get_tiling_info(buf) is not None
+
+    buf.seek(0)
+    im_out = Image.open(buf)
+    assert im_out.info.get("xmp") is not None
+    assert b"xmpmeta" in im_out.info["xmp"]
+
+
+def test_grid_encoding_standalone_api():
+    im = Image.new("RGB", (256, 256), color=(100, 200, 50))
+    heif_im = pillow_heif.from_pillow(im)
+    buf = BytesIO()
+    heif_im.save(buf, tile_size=64)
+
+    tiling = _get_tiling_info(buf)
+    assert tiling is not None
+    assert tiling["num_columns"] == 4
+    assert tiling["num_rows"] == 4
+
+    buf.seek(0)
+    heif_out = pillow_heif.open_heif(buf)
+    assert heif_out.size == (256, 256)
+
+
+def test_grid_encoding_multi_image():
+    im1 = Image.new("RGB", (256, 256), color=(255, 0, 0))
+    im2 = Image.new("RGB", (128, 128), color=(0, 255, 0))
+    buf = BytesIO()
+    im1.save(buf, format="HEIF", save_all=True, append_images=[im2], tile_size=64)
+
+    buf.seek(0)
+    im_out = Image.open(buf)
+    assert im_out.n_frames == 2
+    assert im_out.size == (256, 256)
+    assert im_out.info["tiling"]["num_columns"] == 4
+    im_out.seek(1)
+    im_out.load()
+    assert im_out.size == (128, 128)
+    assert im_out.info["tiling"]["num_columns"] == 2
+
+
+def test_grid_encoding_vs_single_roundtrip():
+    im = helpers.gradient_rgb()
+
+    buf_single = BytesIO()
+    im.save(buf_single, format="HEIF", quality=90)
+    buf_single.seek(0)
+
+    buf_grid = BytesIO()
+    im.save(buf_grid, format="HEIF", quality=90, tile_size=64)
+    buf_grid.seek(0)
+
+    im_single = Image.open(buf_single)
+    im_grid = Image.open(buf_grid)
+
+    assert im_single.size == im_grid.size
+    assert im_single.mode == im_grid.mode
+    helpers.compare_hashes([im_single, im_grid], hash_size=16)
+
+
+def test_grid_no_tiling_info_for_single_image():
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format="HEIF")
+
+    assert _get_tiling_info(buf) is None
+
+
+def test_grid_encoding_nclx_profile():
+    srgb_nclx = {
+        "color_primaries": 1,
+        "transfer_characteristics": 13,
+        "matrix_coefficients": 6,
+        "full_range_flag": 1,
+    }
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format="HEIF", quality=90, tile_size=64)
+    assert _get_tiling_info(buf) is not None
+    nclx_grid = Image.open(buf).info.get("nclx_profile")
+    assert nclx_grid is not None
+    for k in srgb_nclx:
+        assert srgb_nclx[k] == nclx_grid[k]
+
+
+def test_grid_encoding_nclx_disabled():
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64, save_nclx_profile=False)
+    assert _get_tiling_info(buf) is not None
+    assert "nclx_profile" not in Image.open(buf).info
+
+
+def test_grid_encoding_pixel_aspect_ratio():
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64, pixel_aspect_ratio=(4, 3))
+
+    assert _get_tiling_info(buf) is not None
+
+    buf.seek(0)
+    heif_out = pillow_heif.open_heif(buf)
+    assert heif_out.info.get("pixel_aspect_ratio") == (4, 3)
+
+
+def test_grid_encoding_orientation():
+    im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
+    im = im.convert(mode="RGB")
+    exif_data = Image.Exif()
+    exif_data[0x0112] = 6  # 90 CW rotation
+
+    buf_single = BytesIO()
+    im.save(buf_single, format="HEIF", quality=-1, exif=exif_data.tobytes())
+    im_single = Image.open(buf_single)
+
+    buf_grid = BytesIO()
+    im.save(buf_grid, format="HEIF", quality=-1, tile_size=64, exif=exif_data.tobytes())
+    im_grid = Image.open(buf_grid)
+
+    assert im_grid.info.get("original_orientation") == 6
+    helpers.assert_image_similar(im_single, im_grid)
+
+
+@pytest.mark.parametrize(
+    "im_path,expected_bit_depth",
+    (("images/heif/RGB_10__128x128.heif", 10), ("images/heif/RGBA_12__128x128.heif", 12)),
+)
+def test_grid_encoding_hdr(im_path, expected_bit_depth):
+    heif_file = pillow_heif.open_heif(im_path, convert_hdr_to_8bit=False)
+    buf = BytesIO()
+    heif_file.save(buf, quality=-1, chroma=444, tile_size=64)
+    buf_single = BytesIO()
+    heif_file.save(buf_single, quality=-1, chroma=444, tile_size=0)
+
+    heif_file_out = pillow_heif.open_heif(buf, convert_hdr_to_8bit=False)
+    assert heif_file_out.info["tiling"]["num_columns"] == 2
+    assert heif_file_out.info["bit_depth"] == expected_bit_depth
+    helpers.compare_hashes([buf, buf_single], hash_size=16)
+
+
+@pytest.mark.parametrize("save_to_12bit,expected_bit_depth", ((False, 10), (True, 12)))
+def test_grid_encoding_16bit_input(save_to_12bit, expected_bit_depth):
+    im = Image.effect_mandelbrot((128, 128), (-3, -2.5, 2, 2.5), 100).convert(mode="I;16")
+    heif_file = pillow_heif.from_pillow(im)
+    try:
+        pillow_heif.options.SAVE_HDR_TO_12_BIT = save_to_12bit
+        buf = BytesIO()
+        heif_file.save(buf, quality=-1, chroma=444, tile_size=64)
+        buf_single = BytesIO()
+        heif_file.save(buf_single, quality=-1, chroma=444, tile_size=0)
+    finally:
+        pillow_heif.options.SAVE_HDR_TO_12_BIT = False
+
+    heif_file_out = pillow_heif.open_heif(buf, convert_hdr_to_8bit=False)
+    assert heif_file_out.info["tiling"]["num_columns"] == 2
+    assert heif_file_out.info["bit_depth"] == expected_bit_depth
+    helpers.compare_hashes([buf, buf_single], hash_size=16)
+
+
+def test_grid_encoding_stride():
+    im = Image.effect_mandelbrot((512, 256), (-3, -2.5, 2, 2.5), 100).convert(mode="RGB")
+    buf = BytesIO()
+    pillow_heif.encode(im.mode, (257, im.size[1]), im.tobytes(), buf, quality=-1, stride=512 * 3, tile_size=128)
+    assert _get_tiling_info(buf) is not None
+    im = im.crop((0, 0, 257, 256))
+    helpers.compare_hashes([buf, im], hash_size=32)
+
+
+def test_grid_encoding_nclx_resave():
+    nclx_profile = {
+        "color_primaries": 9,
+        "transfer_characteristics": 16,
+        "matrix_coefficients": 9,
+        "full_range_flag": 0,
+    }
+    im = helpers.gradient_rgb()
+    im.info["nclx_profile"] = nclx_profile
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64)  # the existing profile values should be written to the grid
+
+    nclx_out = Image.open(buf).info["nclx_profile"]
+    for key, value in nclx_profile.items():
+        assert nclx_out[key] == value
+
+
+def test_grid_encoding_nclx_explicit():
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64, matrix_coefficients=0, full_range_flag=1)
+
+    nclx_out = Image.open(buf).info["nclx_profile"]
+    assert nclx_out["matrix_coefficients"] == 0
+    assert nclx_out["full_range_flag"] == 1
+
+
+def test_grid_encoding_resave():
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64)
+
+    buf_resave = BytesIO()
+    Image.open(buf).save(buf_resave, format="HEIF")  # the grid structure is preserved by default
+    tiling = _get_tiling_info(buf_resave)
+    assert tiling is not None
+    assert tiling["tile_width"] == 64
+
+    buf_resave = BytesIO()
+    Image.open(buf).save(buf_resave, format="HEIF", tile_size=128)  # explicit `tile_size` has higher priority
+    tiling = _get_tiling_info(buf_resave)
+    assert tiling is not None
+    assert tiling["tile_width"] == 128
+
+    buf_resave = BytesIO()
+    Image.open(buf).save(buf_resave, format="HEIF", tile_size=0)  # zero disables the grid
+    assert _get_tiling_info(buf_resave) is None
+
+
+def test_grid_encoding_multi_image_standalone():
+    heif_file = pillow_heif.HeifFile()
+    heif_file.add_from_pillow(helpers.gradient_rgb())
+    heif_file.add_from_pillow(helpers.gradient_rgba().convert("RGB"))
+    buf = BytesIO()
+    heif_file.save(buf, tile_size=64)
+
+    heif_out = pillow_heif.open_heif(buf)
+    assert len(heif_out) == 2
+    for im in heif_out:
+        assert im.info["tiling"]["tile_width"] == 64
+
+
+def test_grid_encoding_thumbnails():
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64, thumbnails=[128])
+
+    assert _get_tiling_info(buf) is not None
+    buf.seek(0)
+    heif_file = pillow_heif.open_heif(buf)
+    assert heif_file.info["thumbnails"] == [128]
+    im_out = Image.open(buf)
+    helpers.compare_hashes([im, im_out], hash_size=16)
+
+
+def test_grid_encoding_too_many_tiles():
+    im = Image.new("RGB", (257 * 64, 64))
+    with pytest.raises(ValueError):
+        im.save(BytesIO(), format="HEIF", tile_size=64)
+    im = Image.new("RGB", (40 * 64, 25 * 64))  # 1000 tiles, default libheif reader limit is 1000 items
+    with pytest.raises(ValueError):
+        im.save(BytesIO(), format="HEIF", tile_size=64)
+    im = Image.new("RGB", (25 * 64, 20 * 64))  # 500 tiles per frame, the tiles limit is for the whole file
+    with pytest.raises(ValueError):
+        im.save(BytesIO(), format="HEIF", save_all=True, append_images=[im], tile_size=64)
+
+
+def test_grid_encoding_not_enough_data():
+    im = helpers.gradient_rgb().resize((301, 201))
+    data = im.tobytes()
+    with pytest.raises(ValueError):
+        pillow_heif.encode(im.mode, im.size, data[:-5000], BytesIO(), tile_size=128)
+
+
+def test_grid_encoding_from_pillow_resave():
+    im = helpers.gradient_rgb()
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=64)
+
+    buf_resave = BytesIO()
+    pillow_heif.from_pillow(Image.open(buf)).save(buf_resave)
+    tiling = _get_tiling_info(buf_resave)
+    assert tiling is not None
+    assert tiling["tile_width"] == 64
+
+
+def test_grid_encoding_premultiplied_alpha():
+    heif_file = pillow_heif.from_pillow(helpers.gradient_rgba())
+    heif_file.premultiplied_alpha = True
+    buf = BytesIO()
+    heif_file.save(buf, quality=-1, tile_size=64)
+    out_heif_file = pillow_heif.open_heif(buf)
+    assert out_heif_file.info.get("tiling") is None
+    assert out_heif_file.premultiplied_alpha
+
+
+def test_grid_encoding_ycbcr():
+    im = Image.new("YCbCr", (256, 128), color=(128, 128, 128))
+    with pytest.raises(ValueError):
+        im.save(BytesIO(), format="HEIF", tile_size=64)
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=512)
+    assert _get_tiling_info(buf) is None
+    buf = BytesIO()
+    im.save(buf, format="HEIF", tile_size=None)
+    assert _get_tiling_info(buf) is None

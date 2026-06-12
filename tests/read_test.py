@@ -445,6 +445,28 @@ def test_aux_image_ycbcr():
     assert aux_pil.mode == "RGB"
 
 
+@pytest.mark.parametrize(
+    "img_path,tiling",
+    (
+        # arrow.heic has orientation 6, `tiling` should be in the display space, the same as `size`
+        ("images/heif_other/arrow.heic", {"num_columns": 6, "num_rows": 8, "image_width": 3024, "image_height": 4032}),
+        ("images/heif_other/pug.heic", {"num_columns": 8, "num_rows": 6, "image_width": 4032, "image_height": 3024}),
+        (
+            "images/heif_special/xiaomi.heic",
+            {"num_columns": 6, "num_rows": 4, "image_width": 2592, "image_height": 1944},
+        ),
+        ("images/heif/zPug_3.heic", None),
+    ),
+)
+def test_read_tiling_info(img_path, tiling):
+    im = pillow_heif.open_heif(img_path)
+    if tiling is None:
+        assert im.info.get("tiling") is None
+    else:
+        assert im.info["tiling"] == {**tiling, "tile_width": 512, "tile_height": 512}
+        assert (im.info["tiling"]["image_width"], im.info["tiling"]["image_height"]) == im.size
+
+
 def test_read_heif_metadata():
     im = pillow_heif.open_heif("images/heif_other/spatial_photo.heic")
     assert "heif" in im.info

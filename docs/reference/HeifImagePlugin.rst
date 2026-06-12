@@ -24,7 +24,7 @@ HeifImageFile object
         Specific keys for this plugin that is always present are:
             exif, xmp, metadata, primary, bit_depth, thumbnails
         Optional there can be also such keys:
-            icc_profile, icc_profile_type, nclx_profile
+            icc_profile, icc_profile_type, nclx_profile, tiling
 
     .. py:method:: get_format_mimetype
 

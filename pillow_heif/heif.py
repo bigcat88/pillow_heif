@@ -185,6 +185,9 @@ class HeifImage(BaseImage):
         pixel_aspect_ratio = c_image.pixel_aspect_ratio
         if pixel_aspect_ratio:
             self.info["pixel_aspect_ratio"] = pixel_aspect_ratio
+        tiling = c_image.tiling
+        if tiling:
+            self.info["tiling"] = tiling
         save_colorspace_chroma(c_image, self.info)
         color_profile: dict[str, Any] = c_image.color_profile
         if color_profile:
@@ -388,6 +391,8 @@ class HeifFile:
 
             ``full_range_flag`` - nclx profile: full range flag, default: 1
 
+            ``tile_size`` - int, see :py:attr:`~pillow_heif.options.GRID_TILE_SIZE`
+
         :param fp: A filename (string), pathlib.Path object or an object with `write` method.
         """
         _encode_images(self._images, fp, **kwargs)
@@ -468,7 +473,7 @@ class HeifFile:
             img.size,
             img.tobytes(),
         )
-        for key in ["bit_depth", "thumbnails", "icc_profile", "icc_profile_type", "pixel_aspect_ratio"]:
+        for key in ["bit_depth", "thumbnails", "icc_profile", "icc_profile_type", "pixel_aspect_ratio", "tiling"]:
             if key in image.info:
                 added_image.info[key] = image.info[key]
         for key in ["nclx_profile", "metadata"]:
@@ -605,10 +610,13 @@ def _encode_images(images: list[HeifImage], fp, **kwargs) -> None:
         raise ValueError("Cannot write file with no images as HEIF.")
     primary_index = _get_primary_index(images_to_save, kwargs.get("primary_index"))
     ctx_write = CtxEncode(compression_format, **kwargs)
+    tile_size = kwargs.pop("tile_size", None)
     for i, img in enumerate(images_to_save):
         img.load()
         info = img.info.copy()
         info["primary"] = False
+        if tile_size is not None:  # `tile_size` is not per-image metadata, it applies to all images
+            info["tile_size"] = tile_size
         if i == primary_index:
             info.update(**kwargs)
             info["primary"] = True

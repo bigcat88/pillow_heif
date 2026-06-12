@@ -25,6 +25,7 @@ Features:
  * `EXIF`, `XMP`, `IPTC` read & write support.
  * Support of multiple images in one file and a `PrimaryImage` attribute.
  * Adding & removing `thumbnails`.
+ * Grid(tiled) image encoding, like Apple devices do.
  * Reading of `Depth Images`.
  * (beta) Reading of `Auxiliary Images` by [johncf](https://github.com/johncf)
  * Adding HEIF support to Pillow in one line of code as a plugin.
