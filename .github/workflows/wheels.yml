@@ -291,7 +291,7 @@ jobs:
       - name: Run cibuildwheel
         uses: pypa/cibuildwheel@f03ac7617d6cff873ccf24cc0d567ef5ba5a9e6d # v4.0.0
         env:
-          CIBW_ARCHS: "AMD64"
+          CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: ${{ github.event_name == 'push' && 'cp315-* cp315t-*' || '' }}
           # No Pillow cp315 wheels on PyPI yet and no way to build it from source in the
           # test env; remove once Pillow ships cp315 wheels.
