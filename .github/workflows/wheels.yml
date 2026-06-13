@@ -104,7 +104,7 @@ jobs:
           key: deps-linux-${{ matrix.libc }}-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
 
       - name: Run cibuildwheel
-        uses: pypa/cibuildwheel@f03ac7617d6cff873ccf24cc0d567ef5ba5a9e6d # v4.0.0
+        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: ${{ matrix.libc == 'manylinux' && '*-musllinux*' || '*-manylinux*' }}${{ github.event_name == 'push' && ' cp315-* cp315t-*' || '' }}
@@ -189,7 +189,7 @@ jobs:
         run: brew install libjpeg little-cms2
 
       - name: Run cibuildwheel
-        uses: pypa/cibuildwheel@f03ac7617d6cff873ccf24cc0d567ef5ba5a9e6d # v4.0.0
+        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: ${{ github.event_name == 'push' && 'cp315-* cp315t-*' || '' }}
@@ -289,7 +289,7 @@ jobs:
         run: echo 'CIBW_BUILD=cp310-* cp314-*' >> "$GITHUB_ENV"
 
       - name: Run cibuildwheel
-        uses: pypa/cibuildwheel@f03ac7617d6cff873ccf24cc0d567ef5ba5a9e6d # v4.0.0
+        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: ${{ github.event_name == 'push' && 'cp315-* cp315t-*' || '' }}
