@@ -98,7 +98,7 @@ jobs:
       - name: Restore dependencies cache
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         id: deps-cache
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .ph-deps
           key: deps-linux-${{ matrix.libc }}-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
@@ -121,7 +121,7 @@ jobs:
 
       - name: Save dependencies cache
         if: github.event_name != 'push' && steps.deps-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .ph-deps
           key: deps-linux-${{ matrix.libc }}-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
@@ -177,7 +177,7 @@ jobs:
       - name: Restore dependencies cache
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         id: deps-cache
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/ph-deps
           key: deps-macos-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
@@ -204,7 +204,7 @@ jobs:
 
       - name: Save dependencies cache
         if: github.event_name != 'push' && steps.deps-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/ph-deps
           key: deps-macos-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
@@ -345,7 +345,7 @@ jobs:
       - name: Restore dependencies cache
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         id: deps-cache
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/ph-deps
           key: deps-sdist-${{ hashFiles('libheif/build_libs.py') }}
@@ -355,7 +355,7 @@ jobs:
 
       - name: Save dependencies cache
         if: github.event_name != 'push' && steps.deps-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/ph-deps
           key: deps-sdist-${{ hashFiles('libheif/build_libs.py') }}
