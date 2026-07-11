@@ -63,6 +63,31 @@ def test_exif_orientation(orientation, im_format):
             assert_image_similar(im, im_heif)
 
 
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.parametrize("orientation", (1, 2, 3, 4, 5, 6, 7, 8))
+def test_grid_exif_orientation(orientation):
+    out_im = BytesIO()
+    out_heif_im = BytesIO()
+    im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))
+    im = im.convert(mode="RGB")
+    exif_data = Image.Exif()
+    exif_data[0x0112] = orientation
+    im.save(out_im, format="JPEG", exif=exif_data.tobytes())
+    im = Image.open(out_im)
+    im.save(out_heif_im, format="HEIF", quality=-1, tile_size=64)
+    out_heif_im.seek(0)
+    assert pillow_heif.open_heif(out_heif_im).info.get("tiling")
+    out_heif_im.seek(0)
+    im_heif = Image.open(out_heif_im)
+    im_heif_exif = im_heif.getexif()
+    assert 0x0112 not in im_heif_exif or im_heif_exif[0x0112] == 1
+    transposed_im = ImageOps.exif_transpose(im)
+    assert_image_similar(transposed_im, im_heif)
+    if orientation > 1:
+        with pytest.raises(AssertionError):
+            assert_image_similar(im, im_heif)
+
+
 @pytest.mark.parametrize("orientation", (1, 2, 3, 4, 5, 6, 7, 8))
 def test_png_xmp_orientation(orientation):
     im = Image.effect_mandelbrot((256, 128), (-3, -2.5, 2, 2.5), 100).crop((0, 0, 256, 96))

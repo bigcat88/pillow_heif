@@ -34,6 +34,7 @@ def test_options_change_from_plugin_registering(register_opener):
             save_nclx_profile=False,
             preferred_encoder={"HEIF": "id1", "AVIF": ""},
             preferred_decoder={"HEIF": "id3", "AVIF": ""},
+            grid_tile_size=512,
         )
         assert not options.THUMBNAILS
         assert options.QUALITY == 69
@@ -44,6 +45,7 @@ def test_options_change_from_plugin_registering(register_opener):
         assert options.SAVE_NCLX_PROFILE is False
         assert options.PREFERRED_ENCODER == {"HEIF": "id1", "AVIF": ""}
         assert options.PREFERRED_DECODER == {"HEIF": "id3", "AVIF": ""}
+        assert options.GRID_TILE_SIZE == 512
     finally:
         options.THUMBNAILS = True
         options.QUALITY = None
@@ -54,6 +56,7 @@ def test_options_change_from_plugin_registering(register_opener):
         options.SAVE_NCLX_PROFILE = True
         options.PREFERRED_ENCODER = {"HEIF": "", "AVIF": ""}
         options.PREFERRED_DECODER = {"HEIF": "", "AVIF": ""}
+        options.GRID_TILE_SIZE = 0
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")

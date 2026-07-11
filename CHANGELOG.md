@@ -4,10 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Grid(tiled) image encoding: `options.GRID_TILE_SIZE` option, `tile_size` parameter for `save` and `grid_tile_size` parameter for `register_*_opener`. #317
+- `info["tiling"]` dictionary with the grid info for tiled images. #317
+- `PH_LIBHEIF_CMAKE_ARGS` environment variable for `build_libs.py` to pass extra `cmake` arguments to the libheif build.
 - Windows ARM64 wheels.
 
 ### Changed
 
+- Minimum required `libheif` version is `1.23.1`.
 - Releases are now tag-triggered and published to PyPI with attestations via Trusted Publishing. #432
 - `libheif` was updated from the `1.23.0` to `1.23.1` version. #445
 

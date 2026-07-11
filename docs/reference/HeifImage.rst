@@ -72,6 +72,19 @@ HeifImage object
         List of :py:class:`~pillow_heif.heif.HeifDepthImage` if any present for image.
         Currently `libheif` does not support writing of them, only reading.
 
+    .. py:attribute:: info["tiling"]
+        :type: dict
+
+        Tiling information when the image is stored as a grid of tiles. Absent for non-tiled images.
+        All values are in the display space, the same as ``size``. Keys:
+
+            * `num_columns`: `int`
+            * `num_rows`: `int`
+            * `tile_width`: `int`
+            * `tile_height`: `int`
+            * `image_width`: `int`
+            * `image_height`: `int`
+
 .. autoclass:: pillow_heif.heif.BaseImage
     :show-inheritance:
     :inherited-members:

@@ -81,3 +81,30 @@ DISABLE_SECURITY_LIMITS = False
 """Option to completely disable libheif security limits.
 
 Reference: https://github.com/strukturag/libheif/issues/1275"""
+
+
+GRID_TILE_SIZE = 0
+"""Default tile size for grid encoding.
+
+When set to a positive value, images larger than this size in at least one dimension
+will be split into a grid of tiles during encoding. This matches how Apple
+devices encode HEIF photos and can improve compression efficiency.
+
+Common values: 512 (Apple default), 256, 1024.
+A value of 0 (default) disables grid encoding.
+A grid cannot have more than 256 rows or columns and a file cannot have more than 1000 items
+in total: tiles, thumbnails and metadata blocks all count. Readers with default libheif
+security limits cannot open files with more items.
+
+Images with an alpha channel are always encoded as a single image: libheif stores alpha
+only on the individual tiles, where readers like Apple's ImageIO ignore it and render the
+image fully opaque. ``AVIF`` images are also encoded as a single image when the grid would
+violate MIAF constraints that ``libavif``-based readers enforce: a tile size smaller than 64,
+or an odd width, height or tile size together with subsampled chroma. Saving an image in
+``YCbCr`` mode with grid encoding enabled raises ``ValueError``.
+
+When use pillow_heif as a plugin you can set it with: `register_*_opener(grid_tile_size=512)`
+
+.. note:: For images that were read from a tiled HEIF file, the source tile size is used
+    by default during saving, except for images converted to ``YCbCr`` mode.
+    ``tile_size`` specified during calling ``save`` has higher priority."""

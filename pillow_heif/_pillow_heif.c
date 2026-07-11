@@ -2,9 +2,11 @@
 
 #include "Python.h"
 #include "libheif/heif.h"
-#if LIBHEIF_HAVE_VERSION(1,20,0)
-    #include "libheif/heif_properties.h"
+#if !LIBHEIF_HAVE_VERSION(1,23,1)
+    #error "pillow_heif requires libheif >= 1.23.1"
 #endif
+#include "libheif/heif_tiling.h"
+#include "libheif/heif_properties.h"
 #include "_ph_postprocess.h"
 
 /* =========== Free-threading support ======== */
@@ -71,6 +73,8 @@ typedef struct {
     struct heif_image* image;
     struct heif_image_handle* handle;
     struct heif_color_profile_nclx* output_nclx_color_profile;
+    uint32_t grid_columns;                  // zero for non-grid images
+    uint32_t grid_rows;                     // zero for non-grid images
 } CtxWriteImageObject;
 
 static PyTypeObject CtxWriteImage_Type;
@@ -140,6 +144,10 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
     Py_buffer buffer;
     uint8_t* plane_data;
 
+    if (!self->image) {
+        PyErr_SetString(PyExc_ValueError, "image has no pixel data");
+        return NULL;
+    }
     if (!PyArg_ParseTuple(args, "(ii)iiy*ii", &width, &height, &depth, &depth_in, &buffer, &bgr_mode, &stride_in))
         return NULL;
 
@@ -332,6 +340,10 @@ static PyObject* _CtxWriteImage_add_plane_la(CtxWriteImageObject* self, PyObject
     Py_buffer buffer;
     uint8_t *plane_data_y, *plane_data_alpha;
 
+    if (!self->image) {
+        PyErr_SetString(PyExc_ValueError, "image has no pixel data");
+        return NULL;
+    }
     if (!PyArg_ParseTuple(args, "(ii)iiy*i", &width, &height, &depth, &depth_in, &buffer, &stride_in))
         return NULL;
 
@@ -437,6 +449,10 @@ static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject*
     Py_buffer buffer;
     uint8_t *plane_data;
 
+    if (!self->image) {
+        PyErr_SetString(PyExc_ValueError, "image has no pixel data");
+        return NULL;
+    }
     if (!PyArg_ParseTuple(args, "(ii)iiy*ii", &width, &height, &depth, &depth_in, &buffer, &stride_in, &target_heif_channel))
         return NULL;
 
@@ -505,6 +521,10 @@ static PyObject* _CtxWriteImage_set_icc_profile(CtxWriteImageObject* self, PyObj
     Py_buffer buffer;
     struct heif_error error;
 
+    if (!self->image) {
+        PyErr_SetString(PyExc_ValueError, "image has no pixel data");
+        return NULL;
+    }
     if (!PyArg_ParseTuple(args, "sy*", &type, &buffer))
         return NULL;
 
@@ -520,6 +540,10 @@ static PyObject* _CtxWriteImage_set_nclx_profile(CtxWriteImageObject* self, PyOb
     struct heif_error error;
     int color_primaries, transfer_characteristics, matrix_coefficients, full_range_flag;
 
+    if (!self->image) {
+        PyErr_SetString(PyExc_ValueError, "image has no pixel data");
+        return NULL;
+    }
     if (!PyArg_ParseTuple(args, "iiii",
         &color_primaries, &transfer_characteristics, &matrix_coefficients, &full_range_flag))
         return NULL;
@@ -540,7 +564,10 @@ static PyObject* _CtxWriteImage_set_pixel_aspect_ratio(CtxWriteImageObject* self
     unsigned int aspect_h, aspect_v;
     if (!PyArg_ParseTuple(args, "II", &aspect_h, &aspect_v))
         return NULL;
-    heif_image_set_pixel_aspect_ratio(self->image, aspect_h, aspect_v);
+    if (self->handle)
+        heif_image_handle_set_pixel_aspect_ratio(self->handle, aspect_h, aspect_v);
+    else
+        heif_image_set_pixel_aspect_ratio(self->image, aspect_h, aspect_v);
     Py_RETURN_NONE;
 }
 
@@ -552,6 +579,10 @@ static PyObject* _CtxWriteImage_encode(CtxWriteImageObject* self, PyObject* args
     struct heif_error error;
     struct heif_encoding_options* options;
 
+    if (!self->image) {
+        PyErr_SetString(PyExc_ValueError, "image has no pixel data");
+        return NULL;
+    }
     if (!PyArg_ParseTuple(args, "Oiiiiiii",
         (PyObject*)&ctx_write, &primary,
         &save_nclx, &color_primaries, &transfer_characteristics, &matrix_coefficients, &full_range_flag,
@@ -642,22 +673,33 @@ static PyObject* _CtxWriteImage_set_metadata(CtxWriteImageObject* self, PyObject
 }
 
 static PyObject* _CtxWriteImage_encode_thumbnail(CtxWriteImageObject* self, PyObject* args) {
-    /* ctx: CtxWriteObject, thumb_box: int */
+    /* ctx: CtxWriteObject, thumb_box: int, image_orientation: int, pixels: CtxWriteImage (for grid images) */
     struct heif_error error;
     struct heif_image_handle* thumb_handle;
     struct heif_encoding_options* options;
     CtxWriteObject* ctx_write;
+    CtxWriteImageObject* pixels_image = NULL;
+    struct heif_image* source_image;
     int thumb_box, image_orientation;
 
-    if (!PyArg_ParseTuple(args, "Oii", (PyObject*)&ctx_write, &thumb_box, &image_orientation))
+    if (!PyArg_ParseTuple(args, "Oii|O",
+        (PyObject*)&ctx_write, &thumb_box, &image_orientation, (PyObject*)&pixels_image))
         return NULL;
+
+    if ((PyObject*)pixels_image == Py_None)
+        pixels_image = NULL;
+    source_image = (pixels_image && pixels_image->image) ? pixels_image->image : self->image;
+    if (!source_image) {
+        PyErr_SetString(PyExc_ValueError, "no pixel data to encode thumbnail from");
+        return NULL;
+    }
 
     Py_BEGIN_ALLOW_THREADS
     options = heif_encoding_options_alloc();
     options->image_orientation = image_orientation;
     error = heif_context_encode_thumbnail(
         ctx_write->ctx,
-        self->image,
+        source_image,
         self->handle,
         ctx_write->encoder,
         options,
@@ -668,6 +710,17 @@ static PyObject* _CtxWriteImage_encode_thumbnail(CtxWriteImageObject* self, PyOb
     if (check_error(error))
         return NULL;
     heif_image_handle_release(thumb_handle);
+    Py_RETURN_NONE;
+}
+
+static PyObject* _CtxWriteImage_set_primary(CtxWriteImageObject* self, PyObject* args) {
+    CtxWriteObject* ctx_write;
+    if (!PyArg_ParseTuple(args, "O", (PyObject*)&ctx_write))
+        return NULL;
+    if (self->handle) {
+        if (check_error(heif_context_set_primary_image(ctx_write->ctx, self->handle)))
+            return NULL;
+    }
     Py_RETURN_NONE;
 }
 
@@ -683,6 +736,7 @@ static struct PyMethodDef _CtxWriteImage_methods[] = {
     {"set_xmp", (PyCFunction)_CtxWriteImage_set_xmp, METH_VARARGS},
     {"set_metadata", (PyCFunction)_CtxWriteImage_set_metadata, METH_VARARGS},
     {"encode_thumbnail", (PyCFunction)_CtxWriteImage_encode_thumbnail, METH_VARARGS},
+    {"set_primary", (PyCFunction)_CtxWriteImage_set_primary, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -734,7 +788,98 @@ static PyObject* _CtxWriteImage_create(CtxWriteObject* self, PyObject* args) {
     ctx_write_image->image = image;
     ctx_write_image->handle = NULL;
     ctx_write_image->output_nclx_color_profile = NULL;
+    ctx_write_image->grid_columns = 0;
+    ctx_write_image->grid_rows = 0;
     return (PyObject*)ctx_write_image;
+}
+
+static PyObject* _CtxWrite_create_grid(CtxWriteObject* self, PyObject* args) {
+    uint32_t image_width, image_height, tile_columns, tile_rows;
+    int save_nclx, color_primaries, transfer_characteristics, matrix_coefficients, full_range_flag, image_orientation;
+    struct heif_image_handle* grid_handle = NULL;
+    struct heif_encoding_options* enc_options;
+
+    if (!PyArg_ParseTuple(args, "IIIIiiiiii",
+        &image_width, &image_height, &tile_columns, &tile_rows,
+        &save_nclx, &color_primaries, &transfer_characteristics, &matrix_coefficients, &full_range_flag,
+        &image_orientation))
+        return NULL;
+
+    enc_options = heif_encoding_options_alloc();
+    enc_options->macOS_compatibility_workaround_no_nclx_profile = !save_nclx;
+    enc_options->image_orientation = image_orientation;
+    if (
+        (color_primaries != -1) ||
+        (transfer_characteristics != -1) ||
+        (matrix_coefficients != -1) ||
+        (full_range_flag != -1)
+       ) {
+        enc_options->output_nclx_profile = heif_nclx_color_profile_alloc();
+        if (color_primaries != -1)
+            enc_options->output_nclx_profile->color_primaries = color_primaries;
+        if (transfer_characteristics != -1)
+            enc_options->output_nclx_profile->transfer_characteristics = transfer_characteristics;
+        if (matrix_coefficients != -1)
+            enc_options->output_nclx_profile->matrix_coefficients = matrix_coefficients;
+        if (full_range_flag != -1)
+            enc_options->output_nclx_profile->full_range_flag = full_range_flag;
+    }
+    struct heif_color_profile_nclx* nclx_to_keep = enc_options->output_nclx_profile;
+    struct heif_error error = heif_context_add_grid_image(
+        self->ctx, image_width, image_height, tile_columns, tile_rows, enc_options, &grid_handle);
+    heif_encoding_options_free(enc_options);
+    if (check_error(error)) {
+        if (nclx_to_keep)
+            heif_nclx_color_profile_free(nclx_to_keep);
+        return NULL;
+    }
+
+    CtxWriteImageObject* grid_obj = PyObject_New(CtxWriteImageObject, &CtxWriteImage_Type);
+    if (!grid_obj) {
+        heif_image_handle_release(grid_handle);
+        if (nclx_to_keep)
+            heif_nclx_color_profile_free(nclx_to_keep);
+        return NULL;
+    }
+    grid_obj->chroma = 0;
+    grid_obj->image = NULL;
+    grid_obj->handle = grid_handle;
+    grid_obj->output_nclx_color_profile = nclx_to_keep;
+    grid_obj->grid_columns = tile_columns;
+    grid_obj->grid_rows = tile_rows;
+    return (PyObject*)grid_obj;
+}
+
+static PyObject* _CtxWrite_add_tile(CtxWriteObject* self, PyObject* args) {
+    CtxWriteImageObject *grid_image, *tile_image;
+    uint32_t tile_x, tile_y;
+
+    if (!PyArg_ParseTuple(args, "OIIO",
+        (PyObject*)&grid_image, &tile_x, &tile_y, (PyObject*)&tile_image))
+        return NULL;
+
+    if (!grid_image->handle) {
+        PyErr_SetString(PyExc_ValueError, "grid image has no handle");
+        return NULL;
+    }
+    if (!tile_image->image) {
+        PyErr_SetString(PyExc_ValueError, "tile image has no image data");
+        return NULL;
+    }
+    if (tile_x >= grid_image->grid_columns || tile_y >= grid_image->grid_rows) {
+        PyErr_SetString(PyExc_ValueError, "tile position is out of the grid bounds");
+        return NULL;
+    }
+
+    struct heif_error error;
+    Py_BEGIN_ALLOW_THREADS
+    error = heif_context_add_image_tile(
+        self->ctx, grid_image->handle, tile_x, tile_y, tile_image->image, self->encoder);
+    Py_END_ALLOW_THREADS
+    if (check_error(error))
+        return NULL;
+
+    Py_RETURN_NONE;
 }
 
 static PyObject* _CtxWrite_finalize(CtxWriteObject* self) {
@@ -751,6 +896,8 @@ static PyObject* _CtxWrite_finalize(CtxWriteObject* self) {
 static struct PyMethodDef _CtxWrite_methods[] = {
     {"set_parameter", (PyCFunction)_CtxWrite_set_parameter, METH_VARARGS},
     {"create_image", (PyCFunction)_CtxWriteImage_create, METH_VARARGS},
+    {"create_grid", (PyCFunction)_CtxWrite_create_grid, METH_VARARGS},
+    {"add_tile", (PyCFunction)_CtxWrite_add_tile, METH_VARARGS},
     {"finalize", (PyCFunction)_CtxWrite_finalize, METH_NOARGS},
     {NULL, NULL}
 };
@@ -1385,6 +1532,23 @@ static PyObject* _CtxImage_pixel_aspect_ratio(CtxImageObject* self, void* closur
     Py_RETURN_NONE;
 }
 
+static PyObject* _CtxImage_tiling(CtxImageObject* self, void* closure) {
+    struct heif_image_tiling tiling;
+    /* process_image_transformations=1: report display space values, like all other dimensions we expose */
+    struct heif_error error = heif_image_handle_get_image_tiling(self->handle, 1, &tiling);
+    if (error.code != heif_error_Ok || (tiling.num_columns <= 1 && tiling.num_rows <= 1)) {
+        Py_RETURN_NONE;
+    }
+    return Py_BuildValue("{sIsIsIsIsIsI}",
+        "num_columns", tiling.num_columns,
+        "num_rows", tiling.num_rows,
+        "tile_width", tiling.tile_width,
+        "tile_height", tiling.tile_height,
+        "image_width", tiling.image_width,
+        "image_height", tiling.image_height
+    );
+}
+
 /* =========== CtxImage Experimental Part ======== */
 
 static PyObject* _CtxImage_camera_intrinsic_matrix(CtxImageObject* self, void* closure) {
@@ -1443,6 +1607,7 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"pixel_aspect_ratio", (getter)_CtxImage_pixel_aspect_ratio, NULL, NULL, NULL},
     {"camera_intrinsic_matrix", (getter)_CtxImage_camera_intrinsic_matrix, NULL, NULL, NULL},
     {"camera_extrinsic_matrix_rot", (getter)_CtxImage_camera_extrinsic_matrix_rot, NULL, NULL, NULL},
+    {"tiling", (getter)_CtxImage_tiling, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}
 };
 
