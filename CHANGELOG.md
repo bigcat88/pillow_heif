@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Releases are now tag-triggered and published to PyPI with attestations via Trusted Publishing. #432
+- `libheif` was updated from the `1.23.0` to `1.23.1` version. #445
 
 ### Removed
 
