@@ -5,22 +5,22 @@ requires = [
 ]
 
 [tool.cibuildwheel]
-build-verbosity = "2"
 build = [
   "cp310-* cp311-* cp312-* cp313-* cp314-* cp314t-* cp315-* cp315t-* pp311-*",
 ]
-test-extras = "tests-min"
-test-requires = [ "coverage" ]
-test-command = "python {project}/.github/wheels-test.py {project}"
+# cp315/cp315t are built for early testing only: wheels.yml skips them on tag builds,
+# as wheels built against a beta CPython ABI must not be published to PyPI.
+# Once 3.15 ABI is stable (rc1+) in cibuildwheel: drop "cpython-prerelease" and the skips.
+enable = [ "cpython-prerelease", "pypy" ]
+build-verbosity = "2"
 before-test = [
   "pip install --prefer-binary pillow",
   "pip install --only-binary=:all: numpy || true",
   "pip install pympler || true",
 ]
-# cp315/cp315t are built for early testing only: wheels.yml skips them on tag builds,
-# as wheels built against a beta CPython ABI must not be published to PyPI.
-# Once 3.15 ABI is stable (rc1+) in cibuildwheel: drop "cpython-prerelease" and the skips.
-enable = [ "pypy", "cpython-prerelease" ]
+test-command = "python {project}/.github/wheels-test.py {project}"
+test-requires = [ "coverage" ]
+test-extras = "tests-min"
 macos.repair-wheel-command = [
   "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel}",
   "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}",
@@ -30,8 +30,8 @@ windows.before-build = [
 ]
 
 [tool.black]
-line-length = 120
 target-version = [ "py310" ]
+line-length = 120
 preview = true
 
 [tool.ruff]
@@ -111,45 +111,45 @@ lint.mccabe.max-complexity = 16
 profile = "black"
 
 [tool.pylint]
-master.py-version = "3.10"
 master.extension-pkg-allow-list = [
   "_pillow_heif",
 ]
-design.max-attributes = 16
-design.max-branches = 16
-design.max-locals = 18
-design.max-returns = 8
-similarities.min-similarity-lines = 6
-similarities.ignore-imports = "yes"
+master.py-version = "3.10"
+messages_control.disable = [
+  "line-too-long",
+  "missing-class-docstring",
+  "missing-function-docstring",
+]
+reports.output-format = "colorized"
 basic.good-names = [
+  "_",
   "a",
   "b",
   "c",
   "d",
   "e",
+  "ex",
   "f",
+  "fp",
+  "HeifImagePlugin",
   "i",
+  "im",
   "j",
   "k",
   "v",
-  "ex",
-  "_",
-  "fp",
-  "im",
-  "HeifImagePlugin",
 ]
-reports.output-format = "colorized"
-messages_control.disable = [
-  "missing-class-docstring",
-  "missing-function-docstring",
-  "line-too-long",
-]
+design.max-attributes = 16
+design.max-branches = 16
+design.max-locals = 18
+design.max-returns = 8
+similarities.ignore-imports = "yes"
+similarities.min-similarity-lines = 6
 
 [tool.mypy]
-warn_unreachable = true
 ignore_missing_imports = true
-warn_no_return = true
 strict_optional = true
+warn_no_return = true
+warn_unreachable = true
 show_error_codes = true
 
 [tool.pytest]
@@ -157,10 +157,10 @@ ini_options.minversion = "6.0"
 ini_options.testpaths = [
   "tests",
 ]
+ini_options.addopts = "-rs --color=yes"
 ini_options.filterwarnings = [
   "ignore::DeprecationWarning",
 ]
-ini_options.addopts = "-rs --color=yes"
 
 [tool.coverage]
 run.cover_pylib = true
