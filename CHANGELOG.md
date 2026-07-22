@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [1.5.0 - ]
+## [1.5.0 - 2026-07-22]
 
 ### Added
 
@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Minimum required `libheif` version is `1.23.1`.
 - Releases are now tag-triggered and published to PyPI with attestations via Trusted Publishing. #432
 - `libheif` was updated from the `1.23.0` to `1.23.1` version. #445
+- `libde265` was updated from the `1.1.0` to `1.1.1` version. #434
 
 ### Removed
 
