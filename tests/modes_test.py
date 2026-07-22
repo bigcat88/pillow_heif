@@ -1,3 +1,4 @@
+import gc
 import os
 from io import BytesIO
 
@@ -143,3 +144,18 @@ def test_open_save_disable_16bit(img, remove_stride):
     im.save(buf)
     im_out = open_heif(buf, convert_hdr_to_8bit=False, hdr_to_16bit=False, remove_stride=remove_stride)
     compare_heif_files_fields(im, im_out)
+
+
+def test_numpy_array_outlives_heif_file():
+    heif_file = open_heif("images/heif/RGB_8__128x128.heif")
+    arr = np.asarray(heif_file)
+    expected = arr.copy()
+    base = arr.base
+    while isinstance(base, np.ndarray):
+        base = base.base
+    assert base.obj is not None  # the view must own the decoded image, not just point into it
+    del heif_file
+    gc.collect()
+    reuse_pressure = [bytes(arr.nbytes) for _ in range(4)]
+    assert np.array_equal(arr, expected)
+    assert reuse_pressure
