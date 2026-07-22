@@ -108,7 +108,9 @@ jobs:
 
       - name: Prepare libheif plugin for load test
         run: |
-          PLUGIN_SO=$(find /usr/lib -name "libheif-aomdec.so" -print -quit)
+          # "-path" filter: the runner image also ships Ubuntu`s stale libheif plugins in "libheif/plugins/"
+          PLUGIN_SO=$(find /usr/lib -path "*/libheif/libheif-aomdec.so" -print -quit)
+          echo "Using plugin: $PLUGIN_SO"
           sudo mv "$PLUGIN_SO" "$GITHUB_WORKSPACE/"
           echo "TEST_PLUGIN_LOAD=$GITHUB_WORKSPACE/libheif-aomdec.so" >> "$GITHUB_ENV"
 
