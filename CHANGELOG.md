@@ -1,5 +1,7 @@
 All notable changes to this project will be documented in this file.
 
+## [1.6.0 - ]
+
 ## [1.5.0 - 2026-07-22]
 
 ### Added
