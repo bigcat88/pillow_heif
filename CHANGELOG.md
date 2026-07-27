@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Use-after-free when a numpy array or the `data` memoryview outlived the `HeifFile` it was created from. #453
+- Conflicting license metadata: removed the `GPLv2` classifier, the package license is `BSD-3-Clause`; bundled library licenses in wheels are described in `LICENSES_bundled.txt`, which was updated to match the current libraries. #455
 
 ## [1.5.0 - 2026-07-22]
 
