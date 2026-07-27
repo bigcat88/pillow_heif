@@ -507,6 +507,7 @@ class CtxEncode:
         pixel_aspect_ratio = kwargs.get("pixel_aspect_ratio")
         if pixel_aspect_ratio:
             grid_handle.set_pixel_aspect_ratio(pixel_aspect_ratio[0], pixel_aspect_ratio[1])
+        self._add_hdr_metadata(grid_handle, **kwargs)
         if kwargs.get("primary"):
             grid_handle.set_primary(self.ctx_write)
         self._add_metadata(grid_handle, **kwargs)
@@ -587,6 +588,8 @@ class CtxEncode:
             *_output_nclx_params(kwargs),
             image_orientation,
         )
+        # set HDR metadata; these are item properties, they require the encoded item handle
+        self._add_hdr_metadata(im_out, **kwargs)
         # adding metadata
         self._add_metadata(im_out, **kwargs)
         # adding thumbnails
@@ -594,6 +597,26 @@ class CtxEncode:
             if max(size) > thumb_box > 3:
                 self._items_count += _items_per_image(mode)
                 im_out.encode_thumbnail(self.ctx_write, thumb_box, image_orientation)
+
+    def _add_hdr_metadata(self, im_out, **kwargs) -> None:
+        clli = kwargs.get("content_light_level")
+        if clli:
+            im_out.set_content_light_level(clli["max_content_light_level"], clli["max_pic_average_light_level"])
+        mdcv = kwargs.get("mastering_display_colour_volume")
+        if mdcv:
+            im_out.set_mastering_display_colour_volume(
+                tuple(mdcv["display_primaries_x"]),
+                tuple(mdcv["display_primaries_y"]),
+                mdcv["white_point_x"],
+                mdcv["white_point_y"],
+                mdcv["max_display_mastering_luminance"],
+                mdcv["min_display_mastering_luminance"],
+            )
+        amve = kwargs.get("ambient_viewing_environment")
+        if amve:
+            im_out.set_ambient_viewing_environment(
+                amve["ambient_illumination"], amve["ambient_light_x"], amve["ambient_light_y"]
+            )
 
     def _add_metadata(self, im_out, **kwargs) -> None:
         exif = kwargs.get("exif")
@@ -625,7 +648,7 @@ class CtxEncode:
 
 
 @dataclass
-class MimCImage:
+class MimCImage:  # pylint: disable=too-many-instance-attributes
     """Mimicry of the HeifImage class."""
 
     def __init__(self, mode: str, size: tuple[int, int], data: bytes, **kwargs):
@@ -642,6 +665,9 @@ class MimCImage:
         self.chroma = HeifChroma.UNDEFINED.value
         self.colorspace = HeifColorspace.UNDEFINED.value
         self.pixel_aspect_ratio = None
+        self.content_light_level = None
+        self.mastering_display_colour_volume = None
+        self.ambient_viewing_environment = None
         self.camera_intrinsic_matrix = None
         self.camera_extrinsic_matrix_rot = None
         self.tiling = None

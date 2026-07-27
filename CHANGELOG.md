@@ -2,6 +2,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.0 - ]
 
+### Added
+
+- Reading and writing HDR metadata: `content_light_level`, `mastering_display_colour_volume`, `ambient_viewing_environment` keys in `info` dictionary. #456
+
 ### Fixed
 
 - Use-after-free when a numpy array or the `data` memoryview outlived the `HeifFile` it was created from. #453

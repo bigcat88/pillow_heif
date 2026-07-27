@@ -249,6 +249,105 @@ def test_pillow_pixel_aspect_ratio_roundtrip(save_format):
     assert im2.info["pixel_aspect_ratio"] == (4, 3)
 
 
+HDR_CLLI = {"max_content_light_level": 1000, "max_pic_average_light_level": 400}
+HDR_MDCV = {
+    "display_primaries_x": (35400, 8500, 6550),
+    "display_primaries_y": (14600, 39850, 2300),
+    "white_point_x": 15635,
+    "white_point_y": 16450,
+    "max_display_mastering_luminance": 10000000,
+    "min_display_mastering_luminance": 50,
+}
+HDR_AMVE = {"ambient_illumination": 100000, "ambient_light_x": 15635, "ambient_light_y": 16450}
+HDR_KEYS = ("content_light_level", "mastering_display_colour_volume", "ambient_viewing_environment")
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+def test_heif_hdr_metadata_absent():
+    heif_file = pillow_heif.open_heif(create_heif((64, 64)))
+    for key in HDR_KEYS:
+        assert key not in heif_file[0].info
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.parametrize("save_format", ("HEIF",))
+def test_heif_hdr_metadata_roundtrip(save_format):
+    heif_file = pillow_heif.HeifFile()
+    heif_file.add_from_pillow(Image.effect_mandelbrot((64, 64), (-3, -2.5, 2, 2.5), 100))
+    heif_file[0].info["content_light_level"] = HDR_CLLI
+    heif_file[0].info["mastering_display_colour_volume"] = HDR_MDCV
+    heif_file[0].info["ambient_viewing_environment"] = HDR_AMVE
+    buf1 = BytesIO()
+    heif_file.save(buf1, format=save_format)
+    for box_name in (b"clli", b"mdcv", b"amve"):
+        assert box_name in buf1.getvalue()
+    heif_out1 = pillow_heif.open_heif(buf1)
+    assert heif_out1[0].info["content_light_level"] == HDR_CLLI
+    assert heif_out1[0].info["mastering_display_colour_volume"] == HDR_MDCV
+    assert heif_out1[0].info["ambient_viewing_environment"] == HDR_AMVE
+    buf2 = BytesIO()
+    heif_out1.save(buf2, format=save_format)
+    heif_out2 = pillow_heif.open_heif(buf2)
+    assert heif_out2[0].info["content_light_level"] == HDR_CLLI
+    assert heif_out2[0].info["mastering_display_colour_volume"] == HDR_MDCV
+    assert heif_out2[0].info["ambient_viewing_environment"] == HDR_AMVE
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.parametrize("save_format", ("HEIF",))
+def test_pillow_hdr_metadata_roundtrip(save_format):
+    im = Image.effect_mandelbrot((64, 64), (-3, -2.5, 2, 2.5), 100)
+    buf1 = BytesIO()
+    im.save(
+        buf1,
+        format=save_format,
+        content_light_level=HDR_CLLI,
+        mastering_display_colour_volume=HDR_MDCV,
+        ambient_viewing_environment=HDR_AMVE,
+    )
+    im1 = Image.open(buf1)
+    im1.load()
+    assert im1.info["content_light_level"] == HDR_CLLI
+    assert im1.info["mastering_display_colour_volume"] == HDR_MDCV
+    assert im1.info["ambient_viewing_environment"] == HDR_AMVE
+    buf2 = BytesIO()
+    im1.save(buf2, format=save_format)
+    im2 = Image.open(buf2)
+    im2.load()
+    assert im2.info["content_light_level"] == HDR_CLLI
+    assert im2.info["mastering_display_colour_volume"] == HDR_MDCV
+    assert im2.info["ambient_viewing_environment"] == HDR_AMVE
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.parametrize("save_format", ("HEIF",))
+def test_pillow_hdr_metadata_multiframe(save_format):
+    im1 = Image.effect_mandelbrot((64, 64), (-3, -2.5, 2, 2.5), 100)
+    im1.info["content_light_level"] = HDR_CLLI
+    im2 = Image.effect_mandelbrot((32, 32), (-3, -2.5, 2, 2.5), 100)
+    im2.info["content_light_level"] = {"max_content_light_level": 4000, "max_pic_average_light_level": 1000}
+    out_buf = BytesIO()
+    im1.save(out_buf, format=save_format, save_all=True, append_images=[im2])
+    heif_out = pillow_heif.open_heif(out_buf)
+    assert heif_out[0].info["content_light_level"] == HDR_CLLI
+    assert heif_out[1].info["content_light_level"]["max_content_light_level"] == 4000
+    assert "mastering_display_colour_volume" not in heif_out[0].info
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+def test_heif_hdr_metadata_grid():
+    heif_file = pillow_heif.HeifFile()
+    heif_file.add_from_pillow(Image.effect_mandelbrot((300, 300), (-3, -2.5, 2, 2.5), 100))
+    heif_file[0].info["content_light_level"] = HDR_CLLI
+    heif_file[0].info["mastering_display_colour_volume"] = HDR_MDCV
+    buf = BytesIO()
+    heif_file.save(buf, tile_size=128)
+    heif_out = pillow_heif.open_heif(buf)
+    assert heif_out[0].info["tiling"]
+    assert heif_out[0].info["content_light_level"] == HDR_CLLI
+    assert heif_out[0].info["mastering_display_colour_volume"] == HDR_MDCV
+
+
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("save_format", ("HEIF",))
 def test_pillow_pixel_aspect_ratio_multiframe(save_format):
