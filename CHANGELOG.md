@@ -2,6 +2,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.0 - ]
 
+### Fixed
+
+- Use-after-free when a numpy array or the `data` memoryview outlived the `HeifFile` it was created from. #453
+
 ## [1.5.0 - 2026-07-22]
 
 ### Added

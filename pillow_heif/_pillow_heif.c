@@ -1429,16 +1429,23 @@ static PyObject* _CtxImage_stride(CtxImageObject* self, void* closure) {
     return PyLong_FromSsize_t(self->stride);
 }
 
-static PyObject* _CtxImage_data(CtxImageObject* self, void* closure) {
+static int _CtxImage_getbuffer(CtxImageObject* self, Py_buffer* view, int flags) {
     MUTEX_LOCK(&self->decode_mutex);
     if (!self->data) {
         if (!decode_image(self)) {
             MUTEX_UNLOCK(&self->decode_mutex);
-            return NULL;
+            view->obj = NULL;
+            return -1;
         }
     }
     MUTEX_UNLOCK(&self->decode_mutex);
-    return PyMemoryView_FromMemory((char*)self->data, self->stride * self->height, PyBUF_READ);
+    return PyBuffer_FillInfo(view, (PyObject*)self, self->data, (Py_ssize_t)self->stride * self->height, 1, flags);
+}
+
+static PyObject* _CtxImage_data(CtxImageObject* self, void* closure) {
+    // a view of the object, not of raw memory: it keeps the CtxImage alive,
+    // so the underlying heif_image plane cannot be released while views exist
+    return PyMemoryView_FromObject((PyObject*)self);
 }
 
 static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure) {
@@ -1861,6 +1868,10 @@ static PyTypeObject CtxWrite_Type = {
     .tp_methods = _CtxWrite_methods,
 };
 
+static PyBufferProcs _CtxImage_as_buffer = {
+    .bf_getbuffer = (getbufferproc)_CtxImage_getbuffer,
+};
+
 static PyTypeObject CtxImage_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "CtxImage",
@@ -1868,6 +1879,7 @@ static PyTypeObject CtxImage_Type = {
     .tp_itemsize = 0,
     .tp_dealloc = (destructor)_CtxImage_destructor,
     .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_as_buffer = &_CtxImage_as_buffer,
     .tp_getset = _CtxImage_getseters,
     .tp_methods = _CtxImage_methods,
 };
