@@ -137,6 +137,21 @@ Here is additional info, from the **libheif repo** with relevant information:
 https://github.com/strukturag/libheif/discussions/931
 https://github.com/strukturag/libheif/issues/995
 
+HDR metadata
+""""""""""""
+
+``content_light_level``, ``mastering_display_colour_volume`` and ``ambient_viewing_environment``
+from ``image.info`` are written to the output file as is, the same as they can be specified as
+``save`` keyword arguments(applies to the primary image):
+
+    .. code-block:: python
+
+        im.save(buf, format="HEIF", content_light_level={"max_content_light_level": 1000, "max_pic_average_light_level": 400})
+
+    .. note:: They are passed through also when an HDR image was opened with ``convert_hdr_to_8bit=True``:
+        the decoded data keeps the original transfer characteristics, so the metadata stays valid.
+        Remove a key from ``info`` before saving if you do not want it in the output file.
+
 Lossless encoding
 """""""""""""""""
 

@@ -66,6 +66,39 @@ HeifImage object
             * `matrix_coefficients`: :py:class:`HeifMatrixCoefficients`
             * `full_range_flag`: `bool`
 
+    .. py:attribute:: info["content_light_level"]
+        :type: dict
+
+        Content light level information(``clli``). Can be absent. Keys:
+
+            * `max_content_light_level`: `int`
+            * `max_pic_average_light_level`: `int`
+
+    .. py:attribute:: info["mastering_display_colour_volume"]
+        :type: dict
+
+        Mastering display colour volume(``mdcv``). Can be absent. Keys:
+
+            * `display_primaries_x`: `tuple[int, int, int]`
+            * `display_primaries_y`: `tuple[int, int, int]`
+            * `white_point_x`: `int`
+            * `white_point_y`: `int`
+            * `max_display_mastering_luminance`: `int`
+            * `min_display_mastering_luminance`: `int`
+
+    .. py:attribute:: info["ambient_viewing_environment"]
+        :type: dict
+
+        Ambient viewing environment(``amve``). Can be absent. Keys:
+
+            * `ambient_illumination`: `int`
+            * `ambient_light_x`: `int`
+            * `ambient_light_y`: `int`
+
+        .. note:: These three properties hold the raw code values as defined in ITU-T H.274.
+            Like ``nclx_profile`` and ``icc_profile`` they are written back during save;
+            remove a key from ``info`` if you do not want it in the output file.
+
     .. py:attribute:: info["depth_images"]
         :type: list
 

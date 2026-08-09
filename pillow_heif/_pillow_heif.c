@@ -571,6 +571,43 @@ static PyObject* _CtxWriteImage_set_pixel_aspect_ratio(CtxWriteImageObject* self
     Py_RETURN_NONE;
 }
 
+static PyObject* _CtxWriteImage_set_content_light_level(CtxWriteImageObject* self, PyObject* args) {
+    struct heif_content_light_level clli;
+    if (!PyArg_ParseTuple(args, "HH", &clli.max_content_light_level, &clli.max_pic_average_light_level))
+        return NULL;
+    if (self->handle)
+        heif_image_handle_set_content_light_level(self->handle, &clli);
+    else
+        heif_image_set_content_light_level(self->image, &clli);
+    Py_RETURN_NONE;
+}
+
+static PyObject* _CtxWriteImage_set_mastering_display_colour_volume(CtxWriteImageObject* self, PyObject* args) {
+    struct heif_mastering_display_colour_volume mdcv;
+    if (!PyArg_ParseTuple(args, "(HHH)(HHH)HHII",
+        &mdcv.display_primaries_x[0], &mdcv.display_primaries_x[1], &mdcv.display_primaries_x[2],
+        &mdcv.display_primaries_y[0], &mdcv.display_primaries_y[1], &mdcv.display_primaries_y[2],
+        &mdcv.white_point_x, &mdcv.white_point_y,
+        &mdcv.max_display_mastering_luminance, &mdcv.min_display_mastering_luminance))
+        return NULL;
+    if (self->handle)
+        heif_image_handle_set_mastering_display_colour_volume(self->handle, &mdcv);
+    else
+        heif_image_set_mastering_display_colour_volume(self->image, &mdcv);
+    Py_RETURN_NONE;
+}
+
+static PyObject* _CtxWriteImage_set_ambient_viewing_environment(CtxWriteImageObject* self, PyObject* args) {
+    struct heif_ambient_viewing_environment amve;
+    if (!PyArg_ParseTuple(args, "IHH", &amve.ambient_illumination, &amve.ambient_light_x, &amve.ambient_light_y))
+        return NULL;
+    if (self->handle)
+        heif_image_handle_set_ambient_viewing_environment(self->handle, &amve);
+    else
+        heif_image_set_ambient_viewing_environment(self->image, &amve);
+    Py_RETURN_NONE;
+}
+
 static PyObject* _CtxWriteImage_encode(CtxWriteImageObject* self, PyObject* args) {
     /* ctx: CtxWriteObject, primary: int */
     CtxWriteObject* ctx_write;
@@ -731,6 +768,9 @@ static struct PyMethodDef _CtxWriteImage_methods[] = {
     {"set_icc_profile", (PyCFunction)_CtxWriteImage_set_icc_profile, METH_VARARGS},
     {"set_nclx_profile", (PyCFunction)_CtxWriteImage_set_nclx_profile, METH_VARARGS},
     {"set_pixel_aspect_ratio", (PyCFunction)_CtxWriteImage_set_pixel_aspect_ratio, METH_VARARGS},
+    {"set_content_light_level", (PyCFunction)_CtxWriteImage_set_content_light_level, METH_VARARGS},
+    {"set_mastering_display_colour_volume", (PyCFunction)_CtxWriteImage_set_mastering_display_colour_volume, METH_VARARGS},
+    {"set_ambient_viewing_environment", (PyCFunction)_CtxWriteImage_set_ambient_viewing_environment, METH_VARARGS},
     {"encode", (PyCFunction)_CtxWriteImage_encode, METH_VARARGS},
     {"set_exif", (PyCFunction)_CtxWriteImage_set_exif, METH_VARARGS},
     {"set_xmp", (PyCFunction)_CtxWriteImage_set_xmp, METH_VARARGS},
@@ -1539,6 +1579,38 @@ static PyObject* _CtxImage_pixel_aspect_ratio(CtxImageObject* self, void* closur
     Py_RETURN_NONE;
 }
 
+static PyObject* _CtxImage_content_light_level(CtxImageObject* self, void* closure) {
+    struct heif_content_light_level clli;
+    if (!heif_image_handle_get_content_light_level(self->handle, &clli))
+        Py_RETURN_NONE;
+    return Py_BuildValue("{sHsH}",
+        "max_content_light_level", clli.max_content_light_level,
+        "max_pic_average_light_level", clli.max_pic_average_light_level);
+}
+
+static PyObject* _CtxImage_mastering_display_colour_volume(CtxImageObject* self, void* closure) {
+    struct heif_mastering_display_colour_volume mdcv;
+    if (!heif_image_handle_get_mastering_display_colour_volume(self->handle, &mdcv))
+        Py_RETURN_NONE;
+    return Py_BuildValue("{s(HHH)s(HHH)sHsHsIsI}",
+        "display_primaries_x", mdcv.display_primaries_x[0], mdcv.display_primaries_x[1], mdcv.display_primaries_x[2],
+        "display_primaries_y", mdcv.display_primaries_y[0], mdcv.display_primaries_y[1], mdcv.display_primaries_y[2],
+        "white_point_x", mdcv.white_point_x,
+        "white_point_y", mdcv.white_point_y,
+        "max_display_mastering_luminance", mdcv.max_display_mastering_luminance,
+        "min_display_mastering_luminance", mdcv.min_display_mastering_luminance);
+}
+
+static PyObject* _CtxImage_ambient_viewing_environment(CtxImageObject* self, void* closure) {
+    struct heif_ambient_viewing_environment amve;
+    if (!heif_image_handle_get_ambient_viewing_environment(self->handle, &amve))
+        Py_RETURN_NONE;
+    return Py_BuildValue("{sIsHsH}",
+        "ambient_illumination", amve.ambient_illumination,
+        "ambient_light_x", amve.ambient_light_x,
+        "ambient_light_y", amve.ambient_light_y);
+}
+
 static PyObject* _CtxImage_tiling(CtxImageObject* self, void* closure) {
     struct heif_image_tiling tiling;
     /* process_image_transformations=1: report display space values, like all other dimensions we expose */
@@ -1612,6 +1684,9 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"depth_image_list", (getter)_CtxImage_depth_image_list, NULL, NULL, NULL},
     {"aux_image_ids", (getter)_CtxImage_aux_image_ids, NULL, NULL, NULL},
     {"pixel_aspect_ratio", (getter)_CtxImage_pixel_aspect_ratio, NULL, NULL, NULL},
+    {"content_light_level", (getter)_CtxImage_content_light_level, NULL, NULL, NULL},
+    {"mastering_display_colour_volume", (getter)_CtxImage_mastering_display_colour_volume, NULL, NULL, NULL},
+    {"ambient_viewing_environment", (getter)_CtxImage_ambient_viewing_environment, NULL, NULL, NULL},
     {"camera_intrinsic_matrix", (getter)_CtxImage_camera_intrinsic_matrix, NULL, NULL, NULL},
     {"camera_extrinsic_matrix_rot", (getter)_CtxImage_camera_extrinsic_matrix_rot, NULL, NULL, NULL},
     {"tiling", (getter)_CtxImage_tiling, NULL, NULL, NULL},
