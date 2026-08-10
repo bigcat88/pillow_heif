@@ -17,10 +17,7 @@ before-test = [
   "pip install --only-binary=:all: numpy || true",
   "pip install pympler || true",
 ]
-# cp315/cp315t are built for early testing only: wheels.yml skips them on tag builds,
-# as wheels built against a beta CPython ABI must not be published to PyPI.
-# Once 3.15 ABI is stable (rc1+) in cibuildwheel: drop "cpython-prerelease" and the skips.
-enable = [ "pypy", "cpython-prerelease" ]
+enable = [ "pypy" ]
 macos.repair-wheel-command = [
   "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-listdeps {wheel}",
   "DYLD_LIBRARY_PATH=$REPAIR_LIBRARY_PATH delocate-wheel -v --require-archs {delocate_archs} -w {dest_dir} {wheel}",
