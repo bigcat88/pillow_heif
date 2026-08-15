@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Reading and writing HDR metadata: `content_light_level`, `mastering_display_colour_volume`, `ambient_viewing_environment` keys in `info` dictionary. #456
+- Python `3.15` and `3.15t` wheels added.
 
 ### Fixed
 
