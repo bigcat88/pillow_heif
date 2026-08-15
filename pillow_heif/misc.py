@@ -679,7 +679,7 @@ class MimCImage:  # pylint: disable=too-many-instance-attributes
 
     @property
     def bit_depth(self) -> int:
-        """Return bit-depth based on image mode."""
+        """Bit-depth based on image mode."""
         return MODE_INFO[self.mode][1]
 
 

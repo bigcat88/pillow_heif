@@ -497,7 +497,7 @@ class HeifFile:
 
     @property
     def __array_interface__(self):
-        """Returns the primary image as a numpy array."""
+        """Primary image as a numpy array."""
         return self._images[self.primary_index].__array_interface__
 
     def __getstate__(self):
