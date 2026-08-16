@@ -6,11 +6,13 @@ Options
 .. autodata:: pillow_heif.options.DECODE_THREADS
 .. autodata:: pillow_heif.options.THUMBNAILS
 .. autodata:: pillow_heif.options.DEPTH_IMAGES
+.. autodata:: pillow_heif.options.AUX_IMAGES
 .. autodata:: pillow_heif.options.QUALITY
 .. autodata:: pillow_heif.options.SAVE_HDR_TO_12_BIT
 .. autodata:: pillow_heif.options.SAVE_NCLX_PROFILE
 .. autodata:: pillow_heif.options.PREFERRED_ENCODER
 .. autodata:: pillow_heif.options.PREFERRED_DECODER
+.. autodata:: pillow_heif.options.DISABLE_SECURITY_LIMITS
 .. autodata:: pillow_heif.options.GRID_TILE_SIZE
 
 Example of use
