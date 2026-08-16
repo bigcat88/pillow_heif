@@ -148,7 +148,7 @@ jobs:
 
       - name: Install Libheif
         run: |
-          brew update
+          brew update || true
           brew install libheif
 
       - name: Install from source
