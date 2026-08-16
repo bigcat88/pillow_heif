@@ -22,9 +22,17 @@ HeifImageFile object
             They are the same as in :py:class:`~pillow_heif.HeifImage` class.
 
         Specific keys for this plugin that is always present are:
-            exif, xmp, metadata, primary, bit_depth, thumbnails
+            exif, metadata, primary, bit_depth, thumbnails, depth_images, aux, original_orientation
         Optional there can be also such keys:
-            icc_profile, icc_profile_type, nclx_profile, tiling
+            xmp, chroma, icc_profile, icc_profile_type, nclx_profile, content_light_level,
+            mastering_display_colour_volume, ambient_viewing_environment, pixel_aspect_ratio,
+            tiling, heif
+
+    .. describe:: info["original_orientation"]: int
+
+        Orientation that the ``EXIF``/``XMP`` tags had in the file, or ``None`` when there was none.
+        The plugin calls :py:func:`~pillow_heif.set_orientation` for every image, so the tags
+        themselves are already reset when the image is opened, see :doc:`/workaround-orientation`.
 
     .. py:method:: get_format_mimetype
 

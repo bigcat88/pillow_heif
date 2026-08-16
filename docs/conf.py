@@ -15,14 +15,12 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../."))
 
-import sphinx_rtd_theme  # noqa
-
 import pillow_heif  # noqa
 
 # -- Project information -----------------------------------------------------
 
 project = "pillow-heif"
-copyright = "2021-2022, Alexander Piskun and Contributors"  # noqa
+copyright = "2021-2026, Alexander Piskun and Contributors"  # noqa
 author = "Alexander Piskun and Contributors"
 
 # The short X.Y version.
@@ -78,7 +76,6 @@ nitpicky = True
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 html_logo = "resources/pillow-heif-logo.png"
 

@@ -236,7 +236,7 @@ class HeifImage(BaseImage):
     def get_aux_image(self, aux_id: int) -> HeifAuxImage:
         """Method to retrieve the auxiliary image at the given ID.
 
-        :returns: a :py:class:`~pillow_heif.HeifAuxImage` class instance.
+        :returns: a :py:class:`~pillow_heif.heif.HeifAuxImage` class instance.
         """
         aux_image = self._c_image.get_aux_image(aux_id)
         return HeifAuxImage(aux_image)
