@@ -135,7 +135,7 @@ jobs:
           fail_ci_if_error: false
 
   import-error:
-    runs-on: macos-14
+    runs-on: macos-26
     name: ImportError
 
     steps:
@@ -148,7 +148,7 @@ jobs:
 
       - name: Install Libheif
         run: |
-          brew update
+          brew update || true
           brew install libheif
 
       - name: Install from source
