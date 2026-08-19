@@ -13,6 +13,7 @@ from .misc import (
     MODE_INFO,
     CtxEncode,
     MimCImage,
+    _as_pillow,
     _exif_from_pillow,
     _get_bytes,
     _get_heif_meta,
@@ -89,20 +90,31 @@ class BaseImage:
             shape += (MODE_INFO[self.mode][0],)
         return {"shape": shape, "typestr": typestr, "version": 3, "data": self.data}
 
+    def __arrow_c_schema__(self):
+        """`Arrow C data interface <https://arrow.apache.org/docs/format/CDataInterface.html>`_ support."""
+        return self._arrow_source().__arrow_c_schema__()
+
+    # a schema request is best-effort by the interface, the decoded data is offered as it is
+    def __arrow_c_array__(self, requested_schema=None):  # pylint: disable=unused-argument
+        """`Arrow C data interface <https://arrow.apache.org/docs/format/CDataInterface.html>`_ support.
+
+        The decoded data is shared with the consumer and not copied, so it must be treated as read-only.
+        """
+        self.load()
+        return self._arrow_source().__arrow_c_array__()
+
+    def _arrow_source(self):
+        if not hasattr(self._c_image, "__arrow_c_array__"):
+            raise ValueError("Arrow interface is available only for images decoded from a file.")
+        return self._c_image
+
     def to_pillow(self) -> Image.Image:
         """Helper method to create :external:py:class:`~PIL.Image.Image` class.
 
         :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
         """
         self.load()
-        return Image.frombytes(
-            self.mode,  # noqa
-            self.size,
-            self.data,
-            "raw",
-            self.mode,
-            self.stride,
-        )
+        return _as_pillow(self._c_image, self.mode, self.size, self.data, self.stride)
 
     def load(self) -> None:
         """Method to decode image.
@@ -281,6 +293,7 @@ class HeifFile:
                 kwargs.get("hdr_to_16bit", True),
                 preferred_decoder,
                 options.DISABLE_SECURITY_LIMITS,
+                kwargs.get("pillow_layout", False),
             )
         self.mimetype = mimetype
         self._images: list[HeifImage] = [HeifImage(i) for i in images if i is not None]
@@ -559,6 +572,11 @@ def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
         should be converted to 16-bit mode during decoding. `Has lower priority than convert_hdr_to_8bit`!
         Default = **True**
 
+        **pillow_layout** a boolean value indicating that 8-bit `RGB` images should be decoded to the
+        four bytes per pixel layout `Pillow` keeps images in, so that :py:meth:`~pillow_heif.HeifImage.to_pillow`
+        can share the decoded data instead of copying it. `data` and `stride` of such an image have four
+        bytes per pixel, with the fourth one unused. Default = **False**
+
     :returns: :py:class:`~pillow_heif.HeifFile` object.
     :exception ValueError: invalid input data.
     :exception EOFError: corrupted image data.
@@ -583,6 +601,11 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :param kwargs: **hdr_to_16bit** a boolean value indicating that 10/12-bit image data
         should be converted to 16-bit mode during decoding. `Has lower priority than convert_hdr_to_8bit`!
         Default = **True**
+
+        **pillow_layout** a boolean value indicating that 8-bit `RGB` images should be decoded to the
+        four bytes per pixel layout `Pillow` keeps images in, so that :py:meth:`~pillow_heif.HeifImage.to_pillow`
+        can share the decoded data instead of copying it. `data` and `stride` of such an image have four
+        bytes per pixel, with the fourth one unused. Default = **False**
 
     :returns: :py:class:`~pillow_heif.HeifFile` object.
     :exception ValueError: invalid input data.

@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 - Reading and writing HDR metadata: `content_light_level`, `mastering_display_colour_volume`, `ambient_viewing_environment` keys in `info` dictionary. #456
 - Python `3.15` and `3.15t` wheels added.
+- `HeifImage`, `HeifDepthImage` and `HeifAuxImage` implement the `Arrow C data interface`, so the decoded
+  data can be given to `Pillow`, `PyArrow` or any other consumer of it without a copy.
+- `pillow_layout` option for `open_heif`/`read_heif` to decode `RGB` images in the layout `Pillow` uses internally.
+
+### Changed
+
+- Pillow plugin no longer copies the decoded image: it is given to `Pillow` as is, which lowers peak memory usage by about a third for large images.
+  Such an image is read-only until it is changed, so `im.load()[x, y] = value` now raises `ValueError`.
+  Every other way of changing an image(`putpixel`, `paste`, `ImageDraw`, ...) copies it first and keeps working.
+- Minimum required `Pillow` version is `11.3.0`.
 
 ### Fixed
 
