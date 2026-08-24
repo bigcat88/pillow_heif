@@ -131,6 +131,34 @@ HeifImage object
 
         .. note:: These values are currently not written back during save.
 
+Arrow C data interface
+----------------------
+
+Images decoded from a file implement the `Arrow PyCapsule interface
+<https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html>`_:
+:py:class:`~pillow_heif.HeifImage`, :py:class:`~pillow_heif.heif.HeifDepthImage` and
+:py:class:`~pillow_heif.heif.HeifAuxImage` can be given to ``Image.fromarrow``, ``pyarrow.array``
+or any other Arrow consumer without copying the decoded data. This is also what
+:py:meth:`~pillow_heif.HeifImage.to_pillow` uses to share the decoded plane with the created
+image when the file was opened with the ``pillow_layout`` option.
+
+The exported array is flat: `width * height * channels` values of ``uint8``, where an 8-bit
+``RGB`` image decoded with ``pillow_layout`` has four values per pixel with the fourth one unused.
+16-bit images are exported as ``int16`` — the format `Pillow` itself uses for ``I;16`` images —
+so an Arrow consumer that does arithmetic on the values should reinterpret them as ``uint16``,
+otherwise values above `32767` will be read as negative.
+
+.. note:: `Pillow` has no 16-bit multichannel modes, so of the 16-bit images only the single
+    channel ``I;16`` ones can be given to it; ``RGB;16``/``RGBA;16`` images export the same way,
+    but for consumers like `PyArrow`.
+
+The consumer must treat the data as read-only, and the data keeps the decoded image alive for
+as long as it is used. When an image was decoded with ``remove_stride=False`` and its rows got
+padded, there is no flat data to export and ``ValueError`` is raised.
+
+.. automethod:: pillow_heif.HeifImage.__arrow_c_schema__
+.. automethod:: pillow_heif.HeifImage.__arrow_c_array__
+
 .. autoclass:: pillow_heif.heif.BaseImage
     :show-inheritance:
     :inherited-members:

@@ -87,6 +87,31 @@ MAX_ITEMS_ERROR = (
     "File with grid images cannot have more than 1000 items (tiles, thumbnails, metadata), increase `tile_size`."
 )
 
+# Pillow stores every multi-band image as four bytes per pixel and a single-band one as one or two,
+# so it can borrow a decoded plane only for these modes, and only when the plane has that exact layout.
+PILLOW_PIXEL_SIZE = {
+    "L": 1,
+    "I;16": 2,
+    "RGB": 4,
+    "RGBA": 4,
+    "RGBa": 4,
+}
+
+
+def _as_pillow(c_image, mode: str, size: tuple[int, int], data, stride: int) -> Image.Image:
+    """Creates a Pillow image, sharing the decoded plane with it when Pillow can use the plane as is."""
+    pixel_size = PILLOW_PIXEL_SIZE.get(mode)
+    # with `pillow_layout` an `RGB` plane has four bytes per pixel, the fourth one unused;
+    # a three byte `RGB` plane cannot be borrowed even when padding makes its stride `width * 4`
+    rgbx_plane = mode == "RGB" and getattr(c_image, "plane_channels", 3) == 4
+    # only a `pillow_layout` image shares its plane, the default decode is always copied
+    borrowable = getattr(c_image, "pillow_layout", 0) and pixel_size is not None and (mode != "RGB" or rgbx_plane)
+    # a stride of its own means another pixel size or padding between the rows
+    if borrowable and stride == size[0] * pixel_size and hasattr(c_image, "__arrow_c_array__"):
+        return Image.fromarrow(c_image, mode, size)  # noqa
+    raw_mode = "RGBX" if rgbx_plane else mode
+    return Image.frombytes(mode, size, data, "raw", raw_mode, stride)  # noqa
+
 
 def save_colorspace_chroma(c_image, info: dict) -> None:
     """Converts `chroma` value from `c_image` to useful values and stores them in ``info`` dict."""
@@ -671,6 +696,8 @@ class MimCImage:  # pylint: disable=too-many-instance-attributes
         self.camera_intrinsic_matrix = None
         self.camera_extrinsic_matrix_rot = None
         self.tiling = None
+        self.plane_channels: int = MODE_INFO[mode][0]
+        self.pillow_layout: int = 0
 
     @property
     def size_mode(self):

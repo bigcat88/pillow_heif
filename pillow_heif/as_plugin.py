@@ -8,7 +8,7 @@ from PIL import Image, ImageFile, ImageSequence
 
 from . import options
 from .constants import HeifCompressionFormat
-from .heif import HeifFile
+from .heif import BaseImage, HeifFile
 from .misc import (
     CtxEncode,
     _exif_from_pillow,
@@ -42,7 +42,11 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def _open(self):
         try:
             # when Pillow starts supporting 16-bit multichannel images change `convert_hdr_to_8bit` to False
-            heif_file = HeifFile(self.fp, convert_hdr_to_8bit=True, hdr_to_16bit=True, remove_stride=False)
+            # `remove_stride` compacts the rows in place, which is what makes the decoded plane
+            # usable as Pillow image storage even when `libheif` padded it to its alignment
+            heif_file = HeifFile(
+                self.fp, convert_hdr_to_8bit=True, hdr_to_16bit=True, remove_stride=True, pillow_layout=True
+            )
         except (OSError, ValueError, SyntaxError, RuntimeError, EOFError) as exception:
             raise SyntaxError(str(exception)) from None
         self.custom_mimetype = heif_file.mimetype
@@ -55,10 +59,11 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         if self._heif_file:
             frame_heif = self._heif_file[self.tell()]
             try:
-                data = frame_heif.data  # Size of Image can change during decoding
-                self._size = frame_heif.size  # noqa
-                self.load_prepare()
-                self.frombytes(data, "raw", (frame_heif.mode, frame_heif.stride))
+                # `HeifImage.to_pillow` also fills `info`, which this class builds on its own;
+                # the decoded plane becomes the image storage itself, Pillow copies it on write
+                image = BaseImage.to_pillow(frame_heif)  # size of the image can change during decoding
+                self._size = image.size  # noqa
+                self.im = image.im
             except (EOFError, ValueError):
                 if not ImageFile.LOAD_TRUNCATED_IMAGES:
                     raise
