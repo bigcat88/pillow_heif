@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - `PyPy 3.12` wheels added. #508
+- `HeifImage`, `HeifDepthImage` and `HeifAuxImage` implement the `Arrow C data interface`, so the decoded
+  data can be given to `Pillow`, `PyArrow` or any other consumer of it without a copy. #463
 
 ### Changed
 
+- Pillow plugin no longer copies the decoded image: it is given to `Pillow` as is, which lowers peak memory usage by about a third for large images. #463
 - Minimum supported `Pillow` version raised to `13.0.0`.
 - Dropped `Python 3.10` support.
 - `PyPy 3.11` wheels are built for `PyPy 8.0`, `PyPy 7.3` installs build from the sdist. #498
