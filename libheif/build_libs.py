@@ -21,7 +21,7 @@ LIBHEIF_CMAKE_ARGS = environ.get("PH_LIBHEIF_CMAKE_ARGS", "")
 
 LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.2.tar.gz"
 LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.1.1/libde265-1.1.1.tar.gz"
-LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.23.1/libheif-1.23.1.tar.gz"
+LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.23.2/libheif-1.23.1.tar.gz"
 
 
 def download_file(url: str, out_path: str) -> bool:
