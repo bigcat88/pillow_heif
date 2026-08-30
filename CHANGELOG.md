@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file.
 - Reading and writing HDR metadata: `content_light_level`, `mastering_display_colour_volume`, `ambient_viewing_environment` keys in `info` dictionary. #456
 - Python `3.15` and `3.15t` wheels added.
 
+### Changed
+
+- `libheif` was updated from the `1.23.1` to `1.23.2` version. #466
+
 ### Fixed
 
 - Use-after-free when a numpy array or the `data` memoryview outlived the `HeifFile` it was created from. #453
