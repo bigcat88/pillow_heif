@@ -107,7 +107,7 @@ def test_full_build():
     assert info["HEIF"]
     assert info["encoders"]
     assert info["decoders"]
-    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.23.1")
+    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.23.2")
     if expected_version:
         assert info["libheif"] == expected_version
 
