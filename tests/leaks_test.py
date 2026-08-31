@@ -95,6 +95,7 @@ def _assert_no_mem_growth(iteration, warmup: int, block: int, tolerance: float =
 
 
 @requires_rss
+@requires_refcounting
 def test_mem_growth_is_detected():
     # guards the checks below: they are only meaningful if a leak of this size fails them.
     # `mmap` is used instead of a plain allocation, as it is not served from the allocator
