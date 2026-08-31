@@ -25,8 +25,8 @@ HeifImageFile object
             exif, metadata, primary, bit_depth, thumbnails, depth_images, aux, original_orientation
         Optional there can be also such keys:
             xmp, chroma, icc_profile, icc_profile_type, nclx_profile, content_light_level,
-            mastering_display_colour_volume, ambient_viewing_environment, pixel_aspect_ratio,
-            tiling, heif
+            mastering_display_colour_volume, ambient_viewing_environment, nominal_diffuse_white_luminance,
+            pixel_aspect_ratio, tiling, heif
 
     .. describe:: info["original_orientation"]: int
 

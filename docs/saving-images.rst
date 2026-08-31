@@ -140,9 +140,9 @@ https://github.com/strukturag/libheif/issues/995
 HDR metadata
 """"""""""""
 
-``content_light_level``, ``mastering_display_colour_volume`` and ``ambient_viewing_environment``
-from ``image.info`` are written to the output file as is, the same as they can be specified as
-``save`` keyword arguments(applies to the primary image):
+``content_light_level``, ``mastering_display_colour_volume``, ``ambient_viewing_environment``
+and ``nominal_diffuse_white_luminance`` from ``image.info`` are written to the output file as is,
+the same as they can be specified as ``save`` keyword arguments(applies to the primary image):
 
     .. code-block:: python
 

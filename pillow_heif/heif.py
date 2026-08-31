@@ -185,9 +185,14 @@ class HeifImage(BaseImage):
         pixel_aspect_ratio = c_image.pixel_aspect_ratio
         if pixel_aspect_ratio:
             self.info["pixel_aspect_ratio"] = pixel_aspect_ratio
-        for key in ("content_light_level", "mastering_display_colour_volume", "ambient_viewing_environment"):
+        for key in (
+            "content_light_level",
+            "mastering_display_colour_volume",
+            "ambient_viewing_environment",
+            "nominal_diffuse_white_luminance",  # 0 is a valid value for it
+        ):
             value = getattr(c_image, key)
-            if value:
+            if value is not None:
                 self.info[key] = value
         tiling = c_image.tiling
         if tiling:
@@ -486,6 +491,7 @@ class HeifFile:
             "content_light_level",
             "mastering_display_colour_volume",
             "ambient_viewing_environment",
+            "nominal_diffuse_white_luminance",
         ]:
             if key in image.info:
                 added_image.info[key] = deepcopy(image.info[key])
