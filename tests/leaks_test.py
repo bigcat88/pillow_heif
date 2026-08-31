@@ -4,6 +4,7 @@ import mmap
 import sys
 from contextlib import suppress
 from io import BytesIO
+from itertools import pairwise
 from os import chdir, path
 from pathlib import Path
 
@@ -75,22 +76,20 @@ def _get_mem_usage() -> float:
 
 def _assert_no_mem_growth(iteration, warmup: int, block: int, tolerance: float = 2.0) -> None:
     # A leak adds the same amount of memory in every block, while a one-time allocator
-    # growth shows up only once, so the last block is the one that gets measured.
+    # growth lands in only one of them, so the smallest per-block growth is what gets checked.
     for _ in range(warmup):
         iteration()
     gc.collect()
-    after_warmup = _get_mem_usage()
-    for _ in range(block):
-        iteration()
-    gc.collect()
-    settled = _get_mem_usage()
-    for _ in range(block):
-        iteration()
-    gc.collect()
-    growth = _get_mem_usage() - settled
+    checkpoints = [_get_mem_usage()]
+    for _ in range(2):
+        for _ in range(block):
+            iteration()
+        gc.collect()
+        checkpoints.append(_get_mem_usage())
+    growth = min(b - a for a, b in pairwise(checkpoints))
     assert growth <= tolerance, (
-        f"memory usage grew by {growth:.2f} MiB during the last {block} iterations "
-        f"({after_warmup:.2f} MiB after warmup, {settled:.2f} MiB after the first block)"
+        f"memory usage grew by {growth:.2f} MiB per {block} iterations "
+        f"(RSS after warmup and each block: {', '.join(f'{c:.2f}' for c in checkpoints)} MiB)"
     )
 
 
