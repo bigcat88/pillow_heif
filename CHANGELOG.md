@@ -2,6 +2,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.0 - ]
 
+### Added
+
+- Reading and writing nominal diffuse white luminance HDR metadata: `nominal_diffuse_white_luminance` key in `info` dictionary. #468
+
 ## [1.6.0 - 2026-08-31]
 
 ### Added
