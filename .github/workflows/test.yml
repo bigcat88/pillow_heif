@@ -159,6 +159,53 @@ jobs:
           flags: pillow-dev
           fail_ci_if_error: false
 
+  pillow-floor:
+    runs-on: ubuntu-24.04
+    name: Pillow-floor
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # the oldest supported Python together with the oldest supported Pillow
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.10'
+
+      - name: Restore dependencies cache
+        id: deps-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/ph-deps
+          key: deps-test-plugins-${{ hashFiles('libheif/build_libs.py', '.github/workflows/test.yml') }}
+
+      - name: Install Libheif
+        run: |
+          sudo apt update && sudo apt -y install nasm libaom-dev
+          sudo BUILD_DIR="${{ runner.temp }}/ph-deps" PH_LIBHEIF_CMAKE_ARGS="$PH_LIBHEIF_CMAKE_ARGS" python3 libheif/build_libs.py
+
+      - name: Save dependencies cache
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/ph-deps
+          key: deps-test-plugins-${{ hashFiles('libheif/build_libs.py', '.github/workflows/test.yml') }}
+
+      - name: Install from source
+        run: |
+          FLOOR=$(sed -n 's/.*pillow>=\([0-9][0-9.]*\).*/\1/p' setup.cfg)
+          echo "PILLOW_FLOOR=$FLOOR" >> "$GITHUB_ENV"
+          python3 -m pip -v install ".[tests]" "pillow==$FLOOR"
+
+      - name: Pillow version check
+        run: python3 -c "import os, PIL; assert PIL.__version__ == os.environ['PILLOW_FLOOR'], PIL.__version__"
+
+      - name: LibHeif info
+        run: python3 -c "import pillow_heif; print(pillow_heif.libheif_info())"
+
+      - name: Run tests
+        run: python3 -m pytest
+
   import-error:
     runs-on: macos-26
     name: ImportError

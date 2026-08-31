@@ -19,6 +19,46 @@
 #define MUTEX_UNLOCK(m)
 #endif
 
+/* =========== Arrow C data interface ======== */
+
+#include <stdint.h>
+
+/* Struct definitions from https://arrow.apache.org/docs/format/CDataInterface.html
+   (Apache Arrow project, Apache License 2.0), which is meant to be copied verbatim
+   into projects implementing the interface. */
+
+#ifndef ARROW_C_DATA_INTERFACE
+#define ARROW_C_DATA_INTERFACE
+
+struct ArrowSchema {
+    const char* format;
+    const char* name;
+    const char* metadata;
+    int64_t flags;
+    int64_t n_children;
+    struct ArrowSchema** children;
+    struct ArrowSchema* dictionary;
+
+    void (*release)(struct ArrowSchema*);
+    void* private_data;
+};
+
+struct ArrowArray {
+    int64_t length;
+    int64_t null_count;
+    int64_t offset;
+    int64_t n_buffers;
+    int64_t n_children;
+    const void** buffers;
+    struct ArrowArray** children;
+    struct ArrowArray* dictionary;
+
+    void (*release)(struct ArrowArray*);
+    void* private_data;
+};
+
+#endif  // ARROW_C_DATA_INTERFACE
+
 /* =========== Common stuff ======== */
 
 #define MAX_ENCODERS 20
@@ -98,6 +138,7 @@ typedef struct {
     int alpha;                                  // one of: 0, 1.
     char mode[8];                               // one of: L, RGB, RGBA, RGBa, BGR, BGRA, BGRa + Optional[;10/12/16]
     int n_channels;                             // 1, 2, 3, 4.
+    int plane_channels;                         // components in the decoded plane, 4 instead of 3 for `pillow_layout`
     int primary;                                // one of: 0, 1.
     enum heif_colorspace colorspace;
     enum heif_chroma chroma;
@@ -105,6 +146,7 @@ typedef struct {
     int bgr_mode;                               // private. decode option.
     int remove_stride;                          // private. decode option.
     int hdr_to_16bit;                           // private. decode option.
+    int pillow_layout;                          // private. decode option.
     char decoder_id[64];                        // private. decode option. optional
     struct heif_image_handle *handle;           // private
     struct heif_image *heif_image;              // private
@@ -119,11 +161,21 @@ typedef struct {
 
 static PyTypeObject CtxImage_Type;
 
+int get_bytes_in_cc(CtxImageObject *ctx_image) {
+    return ((ctx_image->bits == 8) || (ctx_image->hdr_to_8bit)) ? 1 : 2;
+}
+
+// Pillow keeps every multi-band image as four bytes per pixel, so with `pillow_layout` an
+// 8-bit RGB image is decoded to RGBA to get a plane Pillow can borrow without a copy.
+void set_plane_channels(CtxImageObject *ctx_image) {
+    ctx_image->plane_channels = ctx_image->n_channels;
+    if (ctx_image->pillow_layout && !ctx_image->bgr_mode
+        && (ctx_image->n_channels == 3) && (get_bytes_in_cc(ctx_image) == 1))
+        ctx_image->plane_channels = 4;
+}
+
 int get_stride(CtxImageObject *ctx_image) {
-    int stride = ctx_image->width * ctx_image->n_channels;
-    if ((ctx_image->bits > 8) && (!ctx_image->hdr_to_8bit))
-        stride = stride * 2;
-    return stride;
+    return ctx_image->width * ctx_image->plane_channels * get_bytes_in_cc(ctx_image);
 }
 
 /* =========== CtxWriteImage ======== */
@@ -960,7 +1012,7 @@ static const char* _colorspace_to_str(enum heif_colorspace colorspace) {
 }
 
 PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_image_id,
-                       int remove_stride, int hdr_to_16bit, PyObject* file_bytes,
+                       int remove_stride, int hdr_to_16bit, int pillow_layout, PyObject* file_bytes,
                        const char* decoder_id) {
     struct heif_image_handle* aux_handle;
     if (check_error(heif_image_handle_get_auxiliary_image_handle(main_handle, aux_image_id, &aux_handle))) {
@@ -1025,7 +1077,9 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
     ctx_image->data = NULL;
     ctx_image->remove_stride = remove_stride;
     ctx_image->hdr_to_16bit = hdr_to_16bit;
+    ctx_image->pillow_layout = pillow_layout;
     ctx_image->file_bytes = file_bytes;
+    set_plane_channels(ctx_image);
     ctx_image->stride = get_stride(ctx_image);
     strcpy(ctx_image->decoder_id, decoder_id);
 #ifdef Py_GIL_DISABLED
@@ -1038,7 +1092,7 @@ PyObject* _CtxAuxImage(struct heif_image_handle* main_handle, heif_item_id aux_i
 /* =========== CtxDepthImage ======== */
 
 PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id depth_image_id,
-                         int remove_stride, int hdr_to_16bit, PyObject* file_bytes,
+                         int remove_stride, int hdr_to_16bit, int pillow_layout, PyObject* file_bytes,
                          const char* decoder_id) {
     struct heif_image_handle* depth_handle;
     if (check_error(heif_image_handle_get_depth_image_handle(main_handle, depth_image_id, &depth_handle))) {
@@ -1078,7 +1132,9 @@ PyObject* _CtxDepthImage(struct heif_image_handle* main_handle, heif_item_id dep
     ctx_image->data = NULL;
     ctx_image->remove_stride = remove_stride;
     ctx_image->hdr_to_16bit = hdr_to_16bit;
+    ctx_image->pillow_layout = pillow_layout;
     ctx_image->file_bytes = file_bytes;
+    set_plane_channels(ctx_image);
     ctx_image->stride = get_stride(ctx_image);
     strcpy(ctx_image->decoder_id, decoder_id);
 #ifdef Py_GIL_DISABLED
@@ -1102,7 +1158,7 @@ static void _CtxImage_destructor(CtxImageObject* self) {
 }
 
 PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
-                    int bgr_mode, int remove_stride, int hdr_to_16bit,
+                    int bgr_mode, int remove_stride, int hdr_to_16bit, int pillow_layout,
                     int primary, PyObject* file_bytes,
                     const char *decoder_id,
                     enum heif_colorspace colorspace, enum heif_chroma chroma
@@ -1160,10 +1216,12 @@ PyObject* _CtxImage(struct heif_image_handle* handle, int hdr_to_8bit,
     ctx_image->data = NULL;
     ctx_image->remove_stride = remove_stride;
     ctx_image->hdr_to_16bit = hdr_to_16bit;
+    ctx_image->pillow_layout = pillow_layout;
     ctx_image->primary = primary;
     ctx_image->colorspace = colorspace;
     ctx_image->chroma = chroma;
     ctx_image->file_bytes = file_bytes;
+    set_plane_channels(ctx_image);
     ctx_image->stride = get_stride(ctx_image);
     strcpy(ctx_image->decoder_id, decoder_id);
 #ifdef Py_GIL_DISABLED
@@ -1399,18 +1457,13 @@ int decode_image(CtxImageObject* self) {
         channel = heif_channel_interleaved;
         colorspace = heif_colorspace_RGB;
         if ((self->bits == 8) || (self->hdr_to_8bit)) {
-            chroma = self->alpha ? heif_chroma_interleaved_RGBA : heif_chroma_interleaved_RGB;
+            chroma = self->plane_channels == 4 ? heif_chroma_interleaved_RGBA : heif_chroma_interleaved_RGB;
         }
         else {
             chroma = self->alpha ? heif_chroma_interleaved_RRGGBBAA_LE : heif_chroma_interleaved_RRGGBB_LE;
         }
     }
-    if ((self->bits == 8) || (self->hdr_to_8bit)) {
-        bytes_in_cc = 1;
-    }
-    else {
-        bytes_in_cc = 2;
-    }
+    bytes_in_cc = get_bytes_in_cc(self);
 
     if (strlen(self->decoder_id) > 0) {
         decode_options->decoder_id = self->decoder_id;
@@ -1440,16 +1493,16 @@ int decode_image(CtxImageObject* self) {
 
     if ((self->bgr_mode) && (!remove_stride))
         postprocess__bgr(self->width, self->height, self->data, stride,
-                         bytes_in_cc, self->n_channels, shift_size);
+                         bytes_in_cc, self->plane_channels, shift_size);
     else if ((self->bgr_mode) && (remove_stride))
         postprocess__bgr_stride(self->width, self->height, self->data, stride, self->stride,
-                                bytes_in_cc, self->n_channels, shift_size);
+                                bytes_in_cc, self->plane_channels, shift_size);
     else if ((!self->bgr_mode) && (!remove_stride))
         postprocess(self->width, self->height, self->data, stride,
-                    bytes_in_cc, self->n_channels, shift_size);
+                    bytes_in_cc, self->plane_channels, shift_size);
     else if ((!self->bgr_mode) && (remove_stride))
         postprocess__stride(self->width, self->height, self->data, stride, self->stride,
-                            bytes_in_cc, self->n_channels, shift_size);
+                            bytes_in_cc, self->plane_channels, shift_size);
     else {
         PyErr_SetString(PyExc_ValueError, "internal error, invalid postprocess condition");
         return 0;
@@ -1488,6 +1541,122 @@ static PyObject* _CtxImage_data(CtxImageObject* self, void* closure) {
     return PyMemoryView_FromObject((PyObject*)self);
 }
 
+static PyObject* _CtxImage_plane_channels(CtxImageObject* self, void* closure) {
+    return PyLong_FromLong(self->plane_channels);
+}
+
+static PyObject* _CtxImage_pillow_layout(CtxImageObject* self, void* closure) {
+    return PyLong_FromLong(self->pillow_layout);
+}
+
+/* =========== CtxImage: Arrow C data interface ======== */
+
+// "C" is uint8 and "s" is int16; they match the `arrow_band_format` Pillow uses for the
+// modes a plane of that element size can be borrowed into.
+static const char* arrow_format(CtxImageObject* self) {
+    return get_bytes_in_cc(self) == 2 ? "s" : "C";
+}
+
+static void arrow_schema_release(struct ArrowSchema* schema) {
+    schema->release = NULL;  // `format` and `name` are static strings, nothing to free
+}
+
+static void arrow_array_release(struct ArrowArray* array) {
+    PyGILState_STATE gil_state = PyGILState_Ensure();
+    free((void*)array->buffers);
+    array->buffers = NULL;
+    Py_XDECREF((PyObject*)array->private_data);
+    array->private_data = NULL;
+    array->release = NULL;
+    PyGILState_Release(gil_state);
+}
+
+static void arrow_schema_capsule_destructor(PyObject* capsule) {
+    struct ArrowSchema* schema = (struct ArrowSchema*)PyCapsule_GetPointer(capsule, "arrow_schema");
+    if (!schema) {
+        PyErr_Clear();
+        return;
+    }
+    if (schema->release)
+        schema->release(schema);
+    free(schema);
+}
+
+static void arrow_array_capsule_destructor(PyObject* capsule) {
+    struct ArrowArray* array = (struct ArrowArray*)PyCapsule_GetPointer(capsule, "arrow_array");
+    if (!array) {
+        PyErr_Clear();
+        return;
+    }
+    if (array->release)
+        array->release(array);
+    free(array);
+}
+
+static PyObject* _CtxImage_arrow_schema(CtxImageObject* self, PyObject* args) {
+    struct ArrowSchema* schema = (struct ArrowSchema*)calloc(1, sizeof(struct ArrowSchema));
+    if (!schema)
+        return PyErr_NoMemory();
+    schema->format = arrow_format(self);
+    schema->name = "";
+    schema->release = arrow_schema_release;
+    PyObject* capsule = PyCapsule_New(schema, "arrow_schema", arrow_schema_capsule_destructor);
+    if (!capsule)
+        free(schema);
+    return capsule;
+}
+
+static PyObject* _CtxImage_arrow_array(CtxImageObject* self, PyObject* args) {
+    MUTEX_LOCK(&self->decode_mutex);
+    if (!self->data) {
+        if (!decode_image(self)) {
+            MUTEX_UNLOCK(&self->decode_mutex);
+            return NULL;
+        }
+    }
+    MUTEX_UNLOCK(&self->decode_mutex);
+
+    // an Arrow array is a flat sequence of elements, so rows must follow each other without padding
+    if (self->stride != get_stride(self)) {
+        PyErr_SetString(PyExc_ValueError, "decoded image rows are padded, use the `data` property instead");
+        return NULL;
+    }
+
+    struct ArrowArray* array = (struct ArrowArray*)calloc(1, sizeof(struct ArrowArray));
+    if (!array)
+        return PyErr_NoMemory();
+    array->buffers = (const void**)calloc(2, sizeof(void*));
+    if (!array->buffers) {
+        free(array);
+        return PyErr_NoMemory();
+    }
+    array->length = (int64_t)self->width * self->height * self->plane_channels;
+    array->n_buffers = 2;
+    array->buffers[0] = NULL;  // no nulls, the validity bitmap is omitted
+    array->buffers[1] = self->data;
+    array->release = arrow_array_release;
+    array->private_data = self;  // the array keeps the CtxImage, and with it the plane, alive
+    Py_INCREF(self);
+
+    PyObject* schema_capsule = _CtxImage_arrow_schema(self, NULL);
+    if (!schema_capsule) {
+        arrow_array_release(array);
+        free(array);
+        return NULL;
+    }
+    PyObject* array_capsule = PyCapsule_New(array, "arrow_array", arrow_array_capsule_destructor);
+    if (!array_capsule) {
+        Py_DECREF(schema_capsule);
+        arrow_array_release(array);
+        free(array);
+        return NULL;
+    }
+    PyObject* result = PyTuple_Pack(2, schema_capsule, array_capsule);
+    Py_DECREF(schema_capsule);
+    Py_DECREF(array_capsule);
+    return result;
+}
+
 static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure) {
     int n_images = heif_image_handle_get_number_of_depth_images(self->handle);
     if (n_images == 0)
@@ -1505,8 +1674,8 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
 
     for (int i = 0; i < n_images; i++) {
         PyObject* ctx_depth_image = _CtxDepthImage(
-            self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->file_bytes,
-            self->decoder_id);
+            self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->pillow_layout,
+            self->file_bytes, self->decoder_id);
         if (!ctx_depth_image) {
             Py_DECREF(images_list);
             free(images_ids);
@@ -1543,8 +1712,8 @@ static PyObject* _CtxImage_aux_image_ids(CtxImageObject* self, void* closure) {
 static PyObject* _CtxImage_get_aux_image(CtxImageObject* self, PyObject* arg_image_id) {
     heif_item_id aux_image_id = (heif_item_id)PyLong_AsUnsignedLong(arg_image_id);
     return _CtxAuxImage(
-        self->handle, aux_image_id, self->remove_stride, self->hdr_to_16bit, self->file_bytes,
-        self->decoder_id
+        self->handle, aux_image_id, self->remove_stride, self->hdr_to_16bit, self->pillow_layout,
+        self->file_bytes, self->decoder_id
     );
 }
 
@@ -1681,6 +1850,8 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"thumbnails", (getter)_CtxImage_thumbnails, NULL, NULL, NULL},
     {"stride", (getter)_CtxImage_stride, NULL, NULL, NULL},
     {"data", (getter)_CtxImage_data, NULL, NULL, NULL},
+    {"plane_channels", (getter)_CtxImage_plane_channels, NULL, NULL, NULL},
+    {"pillow_layout", (getter)_CtxImage_pillow_layout, NULL, NULL, NULL},
     {"depth_image_list", (getter)_CtxImage_depth_image_list, NULL, NULL, NULL},
     {"aux_image_ids", (getter)_CtxImage_aux_image_ids, NULL, NULL, NULL},
     {"pixel_aspect_ratio", (getter)_CtxImage_pixel_aspect_ratio, NULL, NULL, NULL},
@@ -1696,6 +1867,8 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
 static struct PyMethodDef _CtxImage_methods[] = {
     {"get_aux_image", (PyCFunction)_CtxImage_get_aux_image, METH_O},
     {"get_aux_type", (PyCFunction)_CtxImage_get_aux_type, METH_O},
+    {"__arrow_c_schema__", (PyCFunction)_CtxImage_arrow_schema, METH_VARARGS},
+    {"__arrow_c_array__", (PyCFunction)_CtxImage_arrow_array, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1752,11 +1925,12 @@ static PyObject* _CtxWrite(PyObject* self, PyObject* args) {
 
 static PyObject* _load_file(PyObject* self, PyObject* args) {
     int hdr_to_8bit, threads_count, bgr_mode, remove_stride, hdr_to_16bit, disable_security_limits;
+    int pillow_layout;
     PyObject *heif_bytes;
     const char *decoder_id;
 
     if (!PyArg_ParseTuple(args,
-                          "Oiiiiisi",
+                          "Oiiiiisii",
                           &heif_bytes,
                           &threads_count,
                           &hdr_to_8bit,
@@ -1764,7 +1938,8 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
                           &remove_stride,
                           &hdr_to_16bit,
                           &decoder_id,
-                          &disable_security_limits))
+                          &disable_security_limits,
+                          &pillow_layout))
         return NULL;
 
     struct heif_context* heif_ctx = heif_context_alloc();
@@ -1817,8 +1992,8 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
             error = heif_image_handle_get_preferred_decoding_colorspace(handle, &colorspace, &chroma);
             if (error.code == heif_error_Ok) {
                 PyObject* ctx_image = _CtxImage(
-                    handle, hdr_to_8bit, bgr_mode, remove_stride, hdr_to_16bit, primary, heif_bytes,
-                    decoder_id, colorspace, chroma);
+                    handle, hdr_to_8bit, bgr_mode, remove_stride, hdr_to_16bit, pillow_layout, primary,
+                    heif_bytes, decoder_id, colorspace, chroma);
                 if (!ctx_image) {
                     Py_DECREF(images_list);
                     heif_image_handle_release(handle);
