@@ -259,7 +259,13 @@ HDR_MDCV = {
     "min_display_mastering_luminance": 50,
 }
 HDR_AMVE = {"ambient_illumination": 100000, "ambient_light_x": 15635, "ambient_light_y": 16450}
-HDR_KEYS = ("content_light_level", "mastering_display_colour_volume", "ambient_viewing_environment")
+HDR_NDWT = 2030000  # 203 cd/m2 in units of 0.0001 cd/m2
+HDR_KEYS = (
+    "content_light_level",
+    "mastering_display_colour_volume",
+    "ambient_viewing_environment",
+    "nominal_diffuse_white_luminance",
+)
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
@@ -277,20 +283,23 @@ def test_heif_hdr_metadata_roundtrip(save_format):
     heif_file[0].info["content_light_level"] = HDR_CLLI
     heif_file[0].info["mastering_display_colour_volume"] = HDR_MDCV
     heif_file[0].info["ambient_viewing_environment"] = HDR_AMVE
+    heif_file[0].info["nominal_diffuse_white_luminance"] = HDR_NDWT
     buf1 = BytesIO()
     heif_file.save(buf1, format=save_format)
-    for box_name in (b"clli", b"mdcv", b"amve"):
+    for box_name in (b"clli", b"mdcv", b"amve", b"ndwt"):
         assert box_name in buf1.getvalue()
     heif_out1 = pillow_heif.open_heif(buf1)
     assert heif_out1[0].info["content_light_level"] == HDR_CLLI
     assert heif_out1[0].info["mastering_display_colour_volume"] == HDR_MDCV
     assert heif_out1[0].info["ambient_viewing_environment"] == HDR_AMVE
+    assert heif_out1[0].info["nominal_diffuse_white_luminance"] == HDR_NDWT
     buf2 = BytesIO()
     heif_out1.save(buf2, format=save_format)
     heif_out2 = pillow_heif.open_heif(buf2)
     assert heif_out2[0].info["content_light_level"] == HDR_CLLI
     assert heif_out2[0].info["mastering_display_colour_volume"] == HDR_MDCV
     assert heif_out2[0].info["ambient_viewing_environment"] == HDR_AMVE
+    assert heif_out2[0].info["nominal_diffuse_white_luminance"] == HDR_NDWT
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
@@ -304,12 +313,14 @@ def test_pillow_hdr_metadata_roundtrip(save_format):
         content_light_level=HDR_CLLI,
         mastering_display_colour_volume=HDR_MDCV,
         ambient_viewing_environment=HDR_AMVE,
+        nominal_diffuse_white_luminance=HDR_NDWT,
     )
     im1 = Image.open(buf1)
     im1.load()
     assert im1.info["content_light_level"] == HDR_CLLI
     assert im1.info["mastering_display_colour_volume"] == HDR_MDCV
     assert im1.info["ambient_viewing_environment"] == HDR_AMVE
+    assert im1.info["nominal_diffuse_white_luminance"] == HDR_NDWT
     buf2 = BytesIO()
     im1.save(buf2, format=save_format)
     im2 = Image.open(buf2)
@@ -317,6 +328,19 @@ def test_pillow_hdr_metadata_roundtrip(save_format):
     assert im2.info["content_light_level"] == HDR_CLLI
     assert im2.info["mastering_display_colour_volume"] == HDR_MDCV
     assert im2.info["ambient_viewing_environment"] == HDR_AMVE
+    assert im2.info["nominal_diffuse_white_luminance"] == HDR_NDWT
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+def test_heif_hdr_metadata_ndwt_zero():
+    heif_file = pillow_heif.HeifFile()
+    heif_file.add_from_pillow(Image.effect_mandelbrot((64, 64), (-3, -2.5, 2, 2.5), 100))
+    heif_file[0].info["nominal_diffuse_white_luminance"] = 0  # valid value, selects the ISO/TS 22028-5 default
+    buf = BytesIO()
+    heif_file.save(buf)
+    assert b"ndwt" in buf.getvalue()
+    heif_out = pillow_heif.open_heif(buf)
+    assert heif_out[0].info["nominal_diffuse_white_luminance"] == 0
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
@@ -324,6 +348,7 @@ def test_pillow_hdr_metadata_roundtrip(save_format):
 def test_pillow_hdr_metadata_multiframe(save_format):
     im1 = Image.effect_mandelbrot((64, 64), (-3, -2.5, 2, 2.5), 100)
     im1.info["content_light_level"] = HDR_CLLI
+    im1.info["nominal_diffuse_white_luminance"] = 0
     im2 = Image.effect_mandelbrot((32, 32), (-3, -2.5, 2, 2.5), 100)
     im2.info["content_light_level"] = {"max_content_light_level": 4000, "max_pic_average_light_level": 1000}
     out_buf = BytesIO()
@@ -332,6 +357,8 @@ def test_pillow_hdr_metadata_multiframe(save_format):
     assert heif_out[0].info["content_light_level"] == HDR_CLLI
     assert heif_out[1].info["content_light_level"]["max_content_light_level"] == 4000
     assert "mastering_display_colour_volume" not in heif_out[0].info
+    assert heif_out[0].info["nominal_diffuse_white_luminance"] == 0
+    assert "nominal_diffuse_white_luminance" not in heif_out[1].info
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
@@ -340,12 +367,14 @@ def test_heif_hdr_metadata_grid():
     heif_file.add_from_pillow(Image.effect_mandelbrot((300, 300), (-3, -2.5, 2, 2.5), 100))
     heif_file[0].info["content_light_level"] = HDR_CLLI
     heif_file[0].info["mastering_display_colour_volume"] = HDR_MDCV
+    heif_file[0].info["nominal_diffuse_white_luminance"] = HDR_NDWT
     buf = BytesIO()
     heif_file.save(buf, tile_size=128)
     heif_out = pillow_heif.open_heif(buf)
     assert heif_out[0].info["tiling"]
     assert heif_out[0].info["content_light_level"] == HDR_CLLI
     assert heif_out[0].info["mastering_display_colour_volume"] == HDR_MDCV
+    assert heif_out[0].info["nominal_diffuse_white_luminance"] == HDR_NDWT
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")

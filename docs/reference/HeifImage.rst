@@ -92,6 +92,13 @@ HeifImage object
             Like ``nclx_profile`` and ``icc_profile`` they are written back during save;
             remove a key from ``info`` if you do not want it in the output file.
 
+    .. describe:: info["nominal_diffuse_white_luminance"]: int
+
+        Nominal diffuse white luminance(``ndwt``) in units of 0.0001 candelas per square metre.
+        Can be absent; ``0`` is a valid value and selects the default definition of ISO/TS 22028-5.
+        It is written back during save; remove the key from ``info`` if you do not want it
+        in the output file.
+
     .. describe:: info["pixel_aspect_ratio"]: tuple[int, int]
 
         Pixel aspect ratio(``pasp``) as ``(horizontal_spacing, vertical_spacing)``.

@@ -608,6 +608,17 @@ static PyObject* _CtxWriteImage_set_ambient_viewing_environment(CtxWriteImageObj
     Py_RETURN_NONE;
 }
 
+static PyObject* _CtxWriteImage_set_nominal_diffuse_white_luminance(CtxWriteImageObject* self, PyObject* args) {
+    unsigned int luminance;
+    if (!PyArg_ParseTuple(args, "I", &luminance))
+        return NULL;
+    if (self->handle)
+        heif_image_handle_set_nominal_diffuse_white_luminance(self->handle, luminance);
+    else
+        heif_image_set_nominal_diffuse_white_luminance(self->image, luminance);
+    Py_RETURN_NONE;
+}
+
 static PyObject* _CtxWriteImage_encode(CtxWriteImageObject* self, PyObject* args) {
     /* ctx: CtxWriteObject, primary: int */
     CtxWriteObject* ctx_write;
@@ -771,6 +782,7 @@ static struct PyMethodDef _CtxWriteImage_methods[] = {
     {"set_content_light_level", (PyCFunction)_CtxWriteImage_set_content_light_level, METH_VARARGS},
     {"set_mastering_display_colour_volume", (PyCFunction)_CtxWriteImage_set_mastering_display_colour_volume, METH_VARARGS},
     {"set_ambient_viewing_environment", (PyCFunction)_CtxWriteImage_set_ambient_viewing_environment, METH_VARARGS},
+    {"set_nominal_diffuse_white_luminance", (PyCFunction)_CtxWriteImage_set_nominal_diffuse_white_luminance, METH_VARARGS},
     {"encode", (PyCFunction)_CtxWriteImage_encode, METH_VARARGS},
     {"set_exif", (PyCFunction)_CtxWriteImage_set_exif, METH_VARARGS},
     {"set_xmp", (PyCFunction)_CtxWriteImage_set_xmp, METH_VARARGS},
@@ -1611,6 +1623,13 @@ static PyObject* _CtxImage_ambient_viewing_environment(CtxImageObject* self, voi
         "ambient_light_y", amve.ambient_light_y);
 }
 
+static PyObject* _CtxImage_nominal_diffuse_white_luminance(CtxImageObject* self, void* closure) {
+    /* 0 is a valid stored luminance, only the `has_` function can tell it apart from an absent box */
+    if (!heif_image_handle_has_nominal_diffuse_white_luminance(self->handle))
+        Py_RETURN_NONE;
+    return Py_BuildValue("I", heif_image_handle_get_nominal_diffuse_white_luminance(self->handle));
+}
+
 static PyObject* _CtxImage_tiling(CtxImageObject* self, void* closure) {
     struct heif_image_tiling tiling;
     /* process_image_transformations=1: report display space values, like all other dimensions we expose */
@@ -1687,6 +1706,7 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"content_light_level", (getter)_CtxImage_content_light_level, NULL, NULL, NULL},
     {"mastering_display_colour_volume", (getter)_CtxImage_mastering_display_colour_volume, NULL, NULL, NULL},
     {"ambient_viewing_environment", (getter)_CtxImage_ambient_viewing_environment, NULL, NULL, NULL},
+    {"nominal_diffuse_white_luminance", (getter)_CtxImage_nominal_diffuse_white_luminance, NULL, NULL, NULL},
     {"camera_intrinsic_matrix", (getter)_CtxImage_camera_intrinsic_matrix, NULL, NULL, NULL},
     {"camera_extrinsic_matrix_rot", (getter)_CtxImage_camera_extrinsic_matrix_rot, NULL, NULL, NULL},
     {"tiling", (getter)_CtxImage_tiling, NULL, NULL, NULL},

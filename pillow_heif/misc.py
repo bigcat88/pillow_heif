@@ -617,6 +617,9 @@ class CtxEncode:
             im_out.set_ambient_viewing_environment(
                 amve["ambient_illumination"], amve["ambient_light_x"], amve["ambient_light_y"]
             )
+        ndwt = kwargs.get("nominal_diffuse_white_luminance")
+        if ndwt is not None:  # 0 is a valid value
+            im_out.set_nominal_diffuse_white_luminance(ndwt)
 
     def _add_metadata(self, im_out, **kwargs) -> None:
         exif = kwargs.get("exif")
@@ -668,6 +671,7 @@ class MimCImage:  # pylint: disable=too-many-instance-attributes
         self.content_light_level = None
         self.mastering_display_colour_volume = None
         self.ambient_viewing_environment = None
+        self.nominal_diffuse_white_luminance = None
         self.camera_intrinsic_matrix = None
         self.camera_extrinsic_matrix_rot = None
         self.tiling = None
