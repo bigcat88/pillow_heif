@@ -12,8 +12,8 @@ Files: libheif.[dylib|so|dll]
 Name: libde265
 License: LGPLv3
 Files: libde265.[dylib|so|dll]
-  For details, see https://github.com/strukturag/libde265/tree/v1.1.1/COPYING
-  Source code: https://github.com/strukturag/libde265/tree/v1.1.1
+  For details, see https://github.com/strukturag/libde265/tree/v1.1.2/COPYING
+  Source code: https://github.com/strukturag/libde265/tree/v1.1.2
 
 Name: x265
 License: GPLv2
