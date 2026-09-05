@@ -43,7 +43,7 @@ def download_file(url: str, out_path: str) -> bool:
             break
     for _ in range(2):
         try:
-            run(["curl", "-L", url, "-o", out_path], timeout=90, stderr=DEVNULL, stdout=DEVNULL, check=True)
+            run(["curl", "-fL", url, "-o", out_path], timeout=90, stderr=DEVNULL, stdout=DEVNULL, check=True)
             return True
         except (CalledProcessError, TimeoutExpired):
             continue
@@ -58,7 +58,8 @@ def download_file(url: str, out_path: str) -> bool:
 def download_extract_to(url: str, out_path: str, strip: bool = True):
     makedirs(out_path, exist_ok=True)
     archive_path = path.join(out_path, "download.tar.gz")
-    download_file(url, archive_path)
+    if not download_file(url, archive_path):
+        raise RuntimeError(f"Failed to download {url}")
     tar_cmd = f"tar -xf {archive_path} -C {out_path}"
     if strip:
         tar_cmd += " --strip-components 1"

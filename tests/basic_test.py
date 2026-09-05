@@ -1,6 +1,7 @@
 import builtins
 import contextlib
 import os
+import re
 from pathlib import Path
 
 import dataset
@@ -100,6 +101,11 @@ def test_heif_str():
     assert str(heif_file2) == f"<HeifFile with 1 images: ['{str_img_l_1}']>"
 
 
+def bundled_libheif_version() -> str:
+    build_libs = Path(__file__).resolve().parent.parent / "libheif" / "build_libs.py"
+    return re.search(r"libheif-([0-9.]+)\.tar\.gz", build_libs.read_text()).group(1)
+
+
 @pytest.mark.skipif(not helpers.RELEASE_TESTS_FLAG, reason="Only when running release tests")
 def test_full_build():
     info = pillow_heif.libheif_info()
@@ -107,7 +113,7 @@ def test_full_build():
     assert info["HEIF"]
     assert info["encoders"]
     assert info["decoders"]
-    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", "1.23.2")
+    expected_version = os.getenv("EXP_PH_LIBHEIF_VERSION", bundled_libheif_version())
     if expected_version:
         assert info["libheif"] == expected_version
 

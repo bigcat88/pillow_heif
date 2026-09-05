@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
+    "config:recommended",
     ":disableDependencyDashboard",
     "helpers:pinGitHubActionDigests"
   ],
@@ -13,12 +13,24 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^libheif/build_libs\\.py$"],
+      "managerFilePatterns": ["/^libheif/build_libs\\.py$/", "/^LICENSES_bundled\\.txt$/"],
       "matchStrings": [
-        "\"https://github\\.com/(?<depName>strukturag/[a-z0-9]+)/releases/download/v(?<currentValue>[0-9.]+)/"
+        "\"https://github\\.com/(?<depName>strukturag/[a-z0-9]+)/releases/download/v(?<currentValue>[0-9.]+)/[^\"]+\"",
+        "https://github\\.com/(?<depName>strukturag/[a-z0-9]+)/tree/v(?<currentValue>[0-9.]+)"
       ],
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^libheif/windows/mingw-w64-libheif/PKGBUILD$/"],
+      "matchStrings": [
+        "pkgver=(?<version>[0-9.]+)\\nsha256sums=\\('(?<currentDigest>[a-f0-9]{64})'\\)"
+      ],
+      "depNameTemplate": "strukturag/libheif",
+      "datasourceTemplate": "github-release-attachments",
+      "currentValueTemplate": "v{{{version}}}",
+      "autoReplaceStringTemplate": "pkgver={{{replace '^v' '' newValue}}}\nsha256sums=('{{{newDigest}}}')"
     }
   ]
 }
