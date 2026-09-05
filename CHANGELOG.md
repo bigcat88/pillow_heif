@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 
 - `libde265` was updated from the `1.1.1` to `1.1.2` version. #471
 
+### Fixed
+
+- Out-of-bounds read in `encode()` when `stride` was smaller than the image row width. (GHSA-ccw6-q225-c975) Thanks to @arpitjain099 for finding this!
+
 ## [1.6.0 - 2026-08-31]
 
 ### Added
