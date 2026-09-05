@@ -5,6 +5,7 @@ _realname=libheif
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=1.23.2
+sha256sums=('8bd5d41d19dc84536d118b04774709f244df6104ef66d623dad5fa4650143405')
 pkgrel=1
 pkgdesc="HEIF image decoder/encoder library and tools (mingw-w64)"
 arch=('any')
@@ -22,7 +23,6 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-libde265"
          "${MINGW_PACKAGE_PREFIX}-x265")
 source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('8bd5d41d19dc84536d118b04774709f244df6104ef66d623dad5fa4650143405')
 
 build() {
   mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
