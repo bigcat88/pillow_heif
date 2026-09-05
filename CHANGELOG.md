@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 - Reading and writing nominal diffuse white luminance HDR metadata: `nominal_diffuse_white_luminance` key in `info` dictionary. #468
 
+### Changed
+
+- `libde265` was updated from the `1.1.1` to `1.1.2` version. #471
+
 ## [1.6.0 - 2026-08-31]
 
 ### Added
