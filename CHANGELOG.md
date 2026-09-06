@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 - Segmentation fault when opening a file whose metadata item type is not valid UTF-8. #478
 - Pillow plugin: `load()` of a multi-frame image reloaded the frame data on every call, discarding in-place changes and failing after `thumbnail()`. #477
+- A depth image of an item type that `libheif` cannot decode made the whole file unreadable with `libheif` `1.23.4`, such depth images are now skipped. #480
 
 ## [1.7.0 - 2026-09-06]
 
