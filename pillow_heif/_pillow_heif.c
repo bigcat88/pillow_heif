@@ -1747,6 +1747,48 @@ static PyObject* _CtxImage_item_id(CtxImageObject* self, void* closure) {
     return PyLong_FromUnsignedLong(heif_image_handle_get_item_id(self->handle));
 }
 
+static PyObject* _CtxImage_transformations(CtxImageObject* self, void* closure) {
+    struct heif_context* ctx = heif_image_handle_get_context(self->handle);
+    if (!ctx)
+        return PyErr_NoMemory();
+    heif_item_id item_id = heif_image_handle_get_item_id(self->handle);
+    heif_property_id* property_ids = NULL;
+    int n_properties = heif_item_get_transformation_properties(ctx, item_id, NULL, 0);
+    if (n_properties > 0) {
+        property_ids = (heif_property_id*)malloc(n_properties * sizeof(heif_property_id));
+        if (!property_ids) {
+            heif_context_free(ctx);
+            return PyErr_NoMemory();
+        }
+        n_properties = heif_item_get_transformation_properties(ctx, item_id, property_ids, n_properties);
+    }
+    PyObject* transformations = PyList_New(0);
+    for (int i = 0; transformations && i < n_properties; i++) {
+        PyObject* transformation;
+        enum heif_item_property_type type = heif_item_get_property_type(ctx, item_id, property_ids[i]);
+        if (type == heif_item_property_type_transform_rotation)
+            transformation = Py_BuildValue(
+                "(si)", "irot", heif_item_get_property_transform_rotation_ccw(ctx, item_id, property_ids[i])
+            );
+        else if (type == heif_item_property_type_transform_mirror)
+            transformation = Py_BuildValue(
+                "(si)", "imir", (int)heif_item_get_property_transform_mirror(ctx, item_id, property_ids[i])
+            );
+        else
+            continue;
+        if (!transformation || PyList_Append(transformations, transformation) < 0)
+            Py_CLEAR(transformations);
+        Py_XDECREF(transformation);
+    }
+    free(property_ids);
+    heif_context_free(ctx);
+    if (!transformations)
+        return NULL;
+    PyObject* result = PyList_AsTuple(transformations);
+    Py_DECREF(transformations);
+    return result;
+}
+
 /* =========== CtxImage properties available to Python Part ======== */
 
 static struct PyGetSetDef _CtxImage_getseters[] = {
@@ -1771,6 +1813,7 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"camera_extrinsic_matrix_rot", (getter)_CtxImage_camera_extrinsic_matrix_rot, NULL, NULL, NULL},
     {"tiling", (getter)_CtxImage_tiling, NULL, NULL, NULL},
     {"item_id", (getter)_CtxImage_item_id, NULL, NULL, NULL},
+    {"transformations", (getter)_CtxImage_transformations, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}
 };
 

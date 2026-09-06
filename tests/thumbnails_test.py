@@ -3,7 +3,13 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
-from helpers import assert_image_equal, compare_hashes, gradient_rgb, hevc_enc
+from helpers import (
+    assert_image_equal,
+    assert_image_similar,
+    compare_hashes,
+    gradient_rgb,
+    hevc_enc,
+)
 from PIL import Image, ImageSequence
 
 import pillow_heif
@@ -257,6 +263,93 @@ def test_pillow_draft_aspect_ratio_mismatch():
     assert im.info["thumbnails"] == [64]
     assert im.draft(None, (16, 16)) is None
     assert im.size == (128, 128)
+
+
+def test_pillow_draft_transform_mismatch():
+    # square 64x64 image with irot=270 and a 32x32 thumbnail with irot=0, such thumbnail is never used
+    heif_file = pillow_heif.open_heif(Path("images/heif_special/transform_mismatch_thumbnail.heic"))
+    thumbnail = heif_file[0].get_thumbnail(0)
+    assert thumbnail.size == (32, 32)
+    image = heif_file[0].to_pillow()
+    assert_image_similar(image.transpose(Image.Transpose.ROTATE_90).resize((32, 32)), thumbnail.to_pillow(), 20)
+    with pytest.raises(AssertionError):
+        assert_image_similar(image.resize((32, 32)), thumbnail.to_pillow(), 20)
+    im = Image.open(Path("images/heif_special/transform_mismatch_thumbnail.heic"))
+    assert im.info["thumbnails"] == [32]
+    assert im.draft(None, (16, 16)) is None
+    assert im.size == (64, 64)
+
+
+def test_pillow_draft_profile_mismatch():
+    # the image has a sRGB `nclx` profile and the thumbnail a BT.2020 PQ one, such thumbnail is never used
+    heif_file = pillow_heif.open_heif(Path("images/heif_special/profile_mismatch_thumbnail.heic"))
+    assert heif_file[0].info["nclx_profile"]["color_primaries"] == 1
+    thumbnail = heif_file[0].get_thumbnail(0)
+    assert thumbnail.info["nclx_profile"]["color_primaries"] == 9
+    assert thumbnail.info["nclx_profile"]["transfer_characteristics"] == 16
+    im = Image.open(Path("images/heif_special/profile_mismatch_thumbnail.heic"))
+    assert im.draft(None, (16, 16)) is None
+
+
+def test_pillow_draft_mode_mismatch():
+    original = pillow_heif.HeifImage.get_thumbnail
+
+    def get_thumbnail(self, index):
+        thumbnail = original(self, index)
+        thumbnail.mode = "RGBA"
+        return thumbnail
+
+    with mock.patch.object(pillow_heif.HeifImage, "get_thumbnail", get_thumbnail):
+        im = Image.open(Path("images/heif_other/arrow.heic"))
+        assert im.draft(None, (100, 100)) is None
+
+
+def test_pillow_draft_decoded_size_differs():
+    # libheif < 1.22 can decode a thumbnail to a size other than the signaled one, e.g. 512x512 instead of 384x512
+    original = pillow_heif.HeifThumbnail.load
+
+    def load(self):
+        original(self)
+        self.size = (self.size[1], self.size[1])
+
+    with mock.patch.object(pillow_heif.HeifThumbnail, "load", load):
+        im = Image.open(Path("images/heif_other/arrow.heic"))
+        assert im.draft(None, (100, 100)) is None
+        assert im.size == (3024, 4032)
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+@pytest.mark.parametrize("size", ((192, 128), (128, 128)))
+@pytest.mark.parametrize(
+    "orientation,transformations",
+    (
+        (1, ()),
+        (2, (("imir", 1),)),
+        (3, (("irot", 180),)),
+        (4, (("imir", 0),)),
+        (5, (("irot", 270), ("imir", 1))),
+        (6, (("irot", 270),)),
+        (7, (("irot", 270), ("imir", 0))),
+        (8, (("irot", 90),)),
+    ),
+)
+def test_pillow_thumbnail_orientation(size, orientation, transformations):
+    exif = Image.Exif()
+    exif[0x0112] = orientation
+    buf = BytesIO()
+    gradient_rgb().resize(size).save(buf, format="HEIF", exif=exif.tobytes(), thumbnails=[64], quality=90)
+    heif_file = pillow_heif.open_heif(buf)
+    assert heif_file[0]._c_image.transformations == transformations  # pylint: disable=protected-access
+    assert heif_file[0].get_thumbnail(0)._c_image.transformations == transformations  # pylint: disable=protected-access
+    selections: list = []
+    with _spy_thumbnail_selection(selections):
+        im = Image.open(buf)
+        im.thumbnail((16, 16))
+    assert max(selections[0][1].size) == 64
+    im_full = Image.open(buf)
+    im_full.thumbnail((16, 16), reducing_gap=None)
+    assert im.size == im_full.size
+    assert_image_similar(im, im_full, 20)  # a wrongly rotated result differs by ~380
 
 
 def test_pillow_draft_stale_thumbnails_info():

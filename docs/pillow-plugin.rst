@@ -69,8 +69,10 @@ image when the file has one that is big enough, which is much faster for large i
 the requested size: in the example above ``im.thumbnail((256, 256))`` would decode the full image, because
 the 384 pixels wide thumbnail is smaller than the 512 pixels asked for. Pass ``reducing_gap=1.0`` to allow
 a thumbnail of the requested size, or call ``im.draft(None, (256, 256))`` before resizing yourself.
-Thumbnails whose aspect ratio differs from the image are never used.
-Register the plugin with ``thumbnails=False`` to always decode the full image.
+An embedded thumbnail is used only when it is a scaled copy of the image: it must have the same mode, the same aspect
+ratio, the same rotation and mirroring transformations and no other color profile than the image.
+Thumbnails that fail to decode are skipped. Register the plugin with ``thumbnails=False`` to always decode
+the full image.
 
 Image Modes
 ***********

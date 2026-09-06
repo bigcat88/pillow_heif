@@ -649,6 +649,7 @@ class MimCImage:  # pylint: disable=too-many-instance-attributes
         self.metadata: list[dict] = []
         self.color_profile = None
         self.thumbnails: list[int] = []
+        self.transformations: tuple = ()
         self.depth_image_list: list = []
         self.aux_image_ids: list[int] = []
         self.primary = False

@@ -78,9 +78,9 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def draft(self, mode: str | None, size: tuple[int, int] | None) -> tuple[str, tuple[int, int, float, float]] | None:
         """Configures the loader to decode an embedded thumbnail instead of the image.
 
-        The smallest thumbnail that is not smaller than ``size`` and has the aspect ratio of the image is selected,
-        ``mode`` is ignored. :external:py:meth:`~PIL.Image.Image.thumbnail` calls this with ``size`` multiplied
-        by its ``reducing_gap``.
+        The smallest thumbnail that is not smaller than ``size`` and is a scaled copy of the image (same mode,
+        aspect ratio, rotation and mirroring, no other color profile) is selected, ``mode`` is ignored.
+        :external:py:meth:`~PIL.Image.Image.thumbnail` calls this with ``size`` multiplied by its ``reducing_gap``.
 
         :returns: ``(mode, box)`` when a thumbnail was selected, ``None`` otherwise.
         """
@@ -152,25 +152,44 @@ class HeifImageFile(_LibHeifImageFile):
 
 
 def _thumbnail_for_size(image: HeifImage, size: tuple[int, int]) -> HeifThumbnail | None:
-    width, height = image.size
     candidates = []
     for index in range(len(image.info.get("thumbnails", []))):
         try:
             thumbnail = image.get_thumbnail(index)
         except (OSError, ValueError, SyntaxError, RuntimeError, EOFError, IndexError):
             continue
-        t_width, t_height = thumbnail.size
-        if t_width < size[0] or t_height < size[1] or (t_width >= width and t_height >= height):
-            continue
-        if abs(t_width * height - t_height * width) > 2 * max(width, height):  # aspect ratio differs beyond rounding
-            continue
-        candidates.append(thumbnail)
+        if _is_scaled_copy(thumbnail, image, size):
+            candidates.append(thumbnail)
     for thumbnail in sorted(candidates, key=lambda i: i.size[0] * i.size[1]):
         try:
             thumbnail.load()
         except (OSError, ValueError, SyntaxError, RuntimeError, EOFError):
             continue
-        return thumbnail
+        if _is_scaled_copy(thumbnail, image, size):  # libheif < 1.22 can decode to a size other than the signaled one
+            return thumbnail
+    return None
+
+
+def _is_scaled_copy(thumbnail: HeifThumbnail, image: HeifImage, size: tuple[int, int]) -> bool:
+    width, height = image.size
+    t_width, t_height = thumbnail.size
+    if thumbnail.mode != image.mode or t_width < size[0] or t_height < size[1]:
+        return False
+    if t_width >= width and t_height >= height:
+        return False
+    if abs(t_width * height - t_height * width) > 2 * max(width, height):  # aspect ratio differs beyond rounding
+        return False
+    if thumbnail._c_image.transformations != image._c_image.transformations:  # pylint: disable=protected-access
+        return False
+    profile, t_profile = _color_profile(image.info), _color_profile(thumbnail.info)
+    return profile is None or t_profile is None or profile == t_profile
+
+
+def _color_profile(info: dict) -> tuple[str, object] | None:
+    if "icc_profile" in info:
+        return "icc", info["icc_profile"]
+    if "nclx_profile" in info:
+        return "nclx", info["nclx_profile"]
     return None
 
 
