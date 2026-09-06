@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 - Reading of entity groups: `entity_groups` key in `info` dictionary, tells which images form a stereo pair in spatial photos. #476
 
+### Fixed
+
+- Segmentation fault when opening a file whose metadata item type is not valid UTF-8. #478
+
 ## [1.7.0 - 2026-09-06]
 
 ### Added

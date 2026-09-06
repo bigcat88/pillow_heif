@@ -9,6 +9,17 @@ import pillow_heif
 pillow_heif.register_heif_opener()
 
 
+def test_metadata_invalid_item_type():
+    # the `Exif` item type of this file was changed to `E\xeaif`, libheif still reports the item as metadata
+    heif_file = pillow_heif.open_heif("images/heif_special/invalid_metadata_type.heic")
+    assert heif_file.info["exif"] is None
+    assert [(i["type"], i["content_type"], len(i["data"])) for i in heif_file.info["metadata"]] == [("E\xeaif", "", 48)]
+    im = Image.open("images/heif_special/invalid_metadata_type.heic")
+    im.load()
+    assert im.info["exif"] is None
+    assert (im.size, im.mode) == ((16, 16), "RGB")
+
+
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("save_format", ("HEIF",))
 def test_heif_primary_image(save_format):

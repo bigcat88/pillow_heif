@@ -55,6 +55,8 @@ int check_error(struct heif_error error) {
 }
 
 int __PyDict_SetItemString(PyObject *p, const char *key, PyObject *val) {
+    if (!val)
+        return -1;
     int r = PyDict_SetItemString(p, key, val);
     Py_DECREF(val);
     return r;
@@ -1319,9 +1321,24 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
                     free(meta_ids);
                     return NULL;
                 }
-                __PyDict_SetItemString(meta_item_info, "type", PyUnicode_FromString(type));
-                __PyDict_SetItemString(meta_item_info, "content_type", PyUnicode_FromString(content_type));
-                __PyDict_SetItemString(meta_item_info, "data", PyBytes_FromStringAndSize((char*)data, size));
+                if (!type)
+                    type = "";
+                if (!content_type)
+                    content_type = "";
+                // the item type is a raw 4CC, it is not always valid UTF-8
+                if (__PyDict_SetItemString(
+                        meta_item_info, "type", PyUnicode_DecodeLatin1(type, strlen(type), NULL)) < 0 ||
+                    __PyDict_SetItemString(
+                        meta_item_info, "content_type",
+                        PyUnicode_DecodeLatin1(content_type, strlen(content_type), NULL)) < 0 ||
+                    __PyDict_SetItemString(
+                        meta_item_info, "data", PyBytes_FromStringAndSize((char*)data, size)) < 0) {
+                    Py_DECREF(meta_item_info);
+                    free(data);
+                    Py_DECREF(meta_list);
+                    free(meta_ids);
+                    return NULL;
+                }
             }
             free(data);
             if (!meta_item_info) {
@@ -1568,7 +1585,7 @@ static PyObject* _get_aux_type(const struct heif_image_handle* aux_handle) {
     struct heif_error error = heif_image_handle_get_auxiliary_type(aux_handle, &aux_type_c);
     if (check_error(error))
         return NULL;
-    PyObject *aux_type = PyUnicode_FromString(aux_type_c);
+    PyObject *aux_type = PyUnicode_DecodeLatin1(aux_type_c, strlen(aux_type_c), NULL);
     heif_image_handle_release_auxiliary_type(aux_handle, &aux_type_c);
     return aux_type;
 }
