@@ -1,5 +1,6 @@
 """Functions and classes for heif images to read and write."""
 
+from collections.abc import Iterator
 from copy import copy, deepcopy
 from io import SEEK_SET
 from threading import Lock
@@ -409,18 +410,18 @@ class HeifFile:
     def __repr__(self):
         return f"<{self.__class__.__name__} with {len(self)} images: {[str(i) for i in self]}>"
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._images)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[HeifImage]:
         yield from self._images
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> HeifImage:
         if index < 0 or index >= len(self._images):
             raise IndexError(f"invalid image index: {index}")
         return self._images[index]
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: int) -> None:
         if key < 0 or key >= len(self._images):
             raise IndexError(f"invalid image index: {key}")
         del self._images[key]

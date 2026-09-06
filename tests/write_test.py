@@ -31,6 +31,14 @@ def test_save_format(save_format):
     assert mime == "image/heic"
 
 
+def test_save_ignores_non_str_info_keys():
+    im = helpers.gradient_rgb()
+    im.info[1, 2] = "value"
+    buf = BytesIO()
+    im.save(buf, format="HEIF")
+    assert pillow_heif.open_heif(buf)[0].size == im.size
+
+
 @pytest.mark.parametrize(
     "img",
     (

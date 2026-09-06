@@ -206,7 +206,7 @@ def __save_all(im: Image.Image, fp: IO[bytes], compression_format: HeifCompressi
 def _pil_encode_image(ctx: CtxEncode, img: Image.Image, primary: bool, **kwargs) -> None:
     if img.size[0] <= 0 or img.size[1] <= 0:
         raise ValueError("Empty images are not supported.")
-    info = img.info.copy()
+    info = {k: v for k, v in img.info.items() if isinstance(k, str)}
     info["exif"] = _exif_from_pillow(img)
     info["xmp"] = _xmp_from_pillow(img)
     info.update(**kwargs)
