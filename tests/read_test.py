@@ -196,6 +196,20 @@ def test_pillow_after_load():
         assert len(ImageSequence.Iterator(img)[2].tobytes())
 
 
+def test_pillow_multiframe_load_keeps_changes():
+    im = Image.open(Path("images/heif/zPug_3.heic"))
+    im.seek(0)
+    im.load()
+    original = im.getpixel((0, 0))
+    assert original != (1, 2, 3)
+    im.paste((1, 2, 3), (0, 0, 8, 8))
+    im.load()
+    assert im.getpixel((0, 0)) == (1, 2, 3)
+    im.seek(1)
+    im.seek(0)  # seeking to a frame loads it again
+    assert im.getpixel((0, 0)) == original
+
+
 @pytest.mark.parametrize("img_path", dataset.MINIMAL_DATASET)
 def test_heif_from_heif(img_path):
     def heif_from_heif(hdr_to_8bit=True):

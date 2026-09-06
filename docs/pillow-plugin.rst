@@ -70,7 +70,7 @@ the requested size: in the example above ``im.thumbnail((256, 256))`` would deco
 the 384 pixels wide thumbnail is smaller than the 512 pixels asked for. Pass ``reducing_gap=1.0`` to allow
 a thumbnail of the requested size, or call ``im.draft(None, (256, 256))`` before resizing yourself.
 An embedded thumbnail is used only when it is a scaled copy of the image: it must have the same mode, the same aspect
-ratio, the same rotation and mirroring transformations and no other color profile than the image.
+ratio, the same crop, rotation and mirroring transformations and no other color profile than the image.
 Thumbnails that fail to decode are skipped. Register the plugin with ``thumbnails=False`` to always decode
 the full image.
 

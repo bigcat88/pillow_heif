@@ -54,7 +54,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         self.tile = []
 
     def load(self):
-        if self._heif_file:
+        if self._heif_file and not self.__loaded:
             frame_heif = self.__thumbnail or self._heif_file[self.tell()]
             try:
                 data = frame_heif.data  # Size of Image can change during decoding
@@ -75,11 +75,17 @@ class _LibHeifImageFile(ImageFile.ImageFile):
                 self.__thumbnail = None
         return super().load()
 
+    def load_prepare(self) -> None:
+        # Pillow 11+ creates the image memory only when there is none, `seek` and `draft` can change the size or mode
+        if self._im is not None and (self.im.size != self.size or self.im.mode != self.mode):
+            self.im = Image.core.new(self.mode, self.size)  # pylint: disable=too-many-function-args
+        super().load_prepare()
+
     def draft(self, mode: str | None, size: tuple[int, int] | None) -> tuple[str, tuple[int, int, float, float]] | None:
         """Configures the loader to decode an embedded thumbnail instead of the image.
 
         The smallest thumbnail that is not smaller than ``size`` and is a scaled copy of the image (same mode,
-        aspect ratio, rotation and mirroring, no other color profile) is selected, ``mode`` is ignored.
+        aspect ratio, crop, rotation and mirroring, no other color profile) is selected, ``mode`` is ignored.
         :external:py:meth:`~PIL.Image.Image.thumbnail` calls this with ``size`` multiplied by its ``reducing_gap``.
 
         :returns: ``(mode, box)`` when a thumbnail was selected, ``None`` otherwise.
@@ -178,10 +184,34 @@ def _is_scaled_copy(thumbnail: HeifThumbnail, image: HeifImage, size: tuple[int,
         return False
     if abs(t_width * height - t_height * width) > 2 * max(width, height):  # aspect ratio differs beyond rounding
         return False
-    if thumbnail._c_image.transformations != image._c_image.transformations:  # pylint: disable=protected-access
+    transformations = image._c_image.transformations  # pylint: disable=protected-access
+    t_transformations = thumbnail._c_image.transformations  # pylint: disable=protected-access
+    if _orientation(t_transformations) != _orientation(transformations):
+        return False
+    if not _same_crop(t_transformations, transformations):
         return False
     profile, t_profile = _color_profile(image.info), _color_profile(thumbnail.info)
     return profile is None or t_profile is None or profile == t_profile
+
+
+def _orientation(transformations: tuple) -> tuple:
+    return tuple(i for i in transformations if i[0] != "clap")
+
+
+def _crop(transformations: tuple) -> list:
+    # a `clap` that only removes the padding of an encoder (anchored top-left, less than 64 pixels) is not a crop
+    return [i[1:] for i in transformations if i[0] == "clap" and (i[1] or i[2] or i[3] >= 64 or i[4] >= 64)]
+
+
+def _same_crop(t_transformations: tuple, transformations: tuple) -> bool:
+    t_crop, crop = _crop(t_transformations), _crop(transformations)
+    if len(t_crop) != len(crop):
+        return False
+    for t_clap, clap in zip(t_crop, crop, strict=True):  # (left, top, right, bottom, width, height)
+        for border, size in ((0, 4), (2, 4), (1, 5), (3, 5)):
+            if abs(t_clap[border] * clap[size] - clap[border] * t_clap[size]) > 2 * max(clap[size], t_clap[size]):
+                return False  # the crop differs beyond rounding
+    return True
 
 
 def _color_profile(info: dict) -> tuple[str, object] | None:

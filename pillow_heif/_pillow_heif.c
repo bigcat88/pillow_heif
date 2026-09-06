@@ -1762,18 +1762,34 @@ static PyObject* _CtxImage_transformations(CtxImageObject* self, void* closure) 
         }
         n_properties = heif_item_get_transformation_properties(ctx, item_id, property_ids, n_properties);
     }
+    int width = heif_image_handle_get_ispe_width(self->handle);
+    int height = heif_image_handle_get_ispe_height(self->handle);
     PyObject* transformations = PyList_New(0);
     for (int i = 0; transformations && i < n_properties; i++) {
         PyObject* transformation;
         enum heif_item_property_type type = heif_item_get_property_type(ctx, item_id, property_ids[i]);
-        if (type == heif_item_property_type_transform_rotation)
-            transformation = Py_BuildValue(
-                "(si)", "irot", heif_item_get_property_transform_rotation_ccw(ctx, item_id, property_ids[i])
-            );
+        if (type == heif_item_property_type_transform_rotation) {
+            int angle = heif_item_get_property_transform_rotation_ccw(ctx, item_id, property_ids[i]);
+            if (angle == 90 || angle == 270) {
+                int rotated_width = height;
+                height = width;
+                width = rotated_width;
+            }
+            transformation = Py_BuildValue("(si)", "irot", angle);
+        }
         else if (type == heif_item_property_type_transform_mirror)
             transformation = Py_BuildValue(
                 "(si)", "imir", (int)heif_item_get_property_transform_mirror(ctx, item_id, property_ids[i])
             );
+        else if (type == heif_item_property_type_transform_crop) {
+            int left, top, right, bottom;
+            heif_item_get_property_transform_crop_borders(
+                ctx, item_id, property_ids[i], width, height, &left, &top, &right, &bottom
+            );
+            transformation = Py_BuildValue("(siiiiii)", "clap", left, top, right, bottom, width, height);
+            width -= left + right;
+            height -= top + bottom;
+        }
         else
             continue;
         if (!transformation || PyList_Append(transformations, transformation) < 0)

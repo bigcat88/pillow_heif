@@ -190,7 +190,10 @@ def test_heif_thumbnail_roundtrip():
     thumbnail = image.get_thumbnail(0)
     assert (max(thumbnail.size), thumbnail.mode) == (64, "RGB")
     compare_hashes([im.resize(thumbnail.size), thumbnail.to_pillow()], hash_size=8, max_difference=6)
-    assert max(image.get_thumbnail(1).size) == 32
+    assert thumbnail._c_image.transformations == ()  # pylint: disable=protected-access
+    padded = image.get_thumbnail(1)  # the encoder pads images smaller than 64x64, libheif adds `clap` for it
+    assert max(padded.size) == 32
+    assert padded._c_image.transformations == (("clap", 0, 0, 32, 32, 64, 64),)  # pylint: disable=protected-access
 
 
 def test_pillow_draft():
@@ -251,7 +254,9 @@ def test_pillow_draft_rounded_thumbnail_size():
     # libheif rounds the thumbnail of a 201x101 image to 50x24, still the aspect ratio of the image
     buf = BytesIO()
     pillow_heif.from_pillow(Image.new("RGB", (201, 101), (200, 30, 30))).save(buf, quality=90, thumbnails=[50])
-    thumbnail = pillow_heif.open_heif(buf)[0].get_thumbnail(0)
+    image = pillow_heif.open_heif(buf)[0]
+    assert image._c_image.transformations == (("clap", 0, 0, 1, 1, 202, 102),)  # pylint: disable=protected-access
+    thumbnail = image.get_thumbnail(0)
     assert thumbnail.size[0] == 50
     im = Image.open(buf)
     assert im.draft(None, (12, 12)) == ("RGB", (0, 0, *thumbnail.size))
@@ -326,7 +331,12 @@ def test_pillow_thumbnail_orientation(size, orientation, transformations):
     gradient_rgb().resize(size).save(buf, format="HEIF", exif=exif.tobytes(), thumbnails=[64], quality=90)
     heif_file = pillow_heif.open_heif(buf)
     assert heif_file[0]._c_image.transformations == transformations  # pylint: disable=protected-access
-    assert heif_file[0].get_thumbnail(0)._c_image.transformations == transformations  # pylint: disable=protected-access
+    thumbnail_transformations = (
+        heif_file[0].get_thumbnail(0)._c_image.transformations
+    )  # pylint: disable=protected-access
+    assert (
+        pillow_heif.as_plugin._orientation(thumbnail_transformations) == transformations
+    )  # pylint: disable=protected-access
     selections: list = []
     with _spy_thumbnail_selection(selections):
         im = Image.open(buf)
@@ -407,3 +417,93 @@ def test_pillow_thumbnail_undecodable_thumbnails():
     im = Image.open(Path("images/heif_other/cat.hif"))
     im.thumbnail((100, 100))
     assert im.size == (100, 67)
+
+
+def test_pillow_draft_crop_mismatch():
+    # 128x128 image cropped to its 64x64 centre by `clap`, the 32x32 thumbnail is a scaled copy of the uncropped image
+    heif_file = pillow_heif.open_heif(Path("images/heif_special/crop_mismatch_thumbnail.heic"))
+    image, thumbnail = heif_file[0], heif_file[0].get_thumbnail(0)
+    assert image.size == (64, 64)
+    assert image._c_image.transformations == (("clap", 32, 32, 32, 32, 128, 128),)  # pylint: disable=protected-access
+    assert thumbnail._c_image.transformations == (("clap", 0, 0, 32, 32, 64, 64),)  # pylint: disable=protected-access
+    cropped = image.to_pillow().resize((32, 32))
+    assert_image_similar(cropped, thumbnail.to_pillow().crop((8, 8, 24, 24)).resize((32, 32)), 20)
+    with pytest.raises(AssertionError):
+        assert_image_similar(cropped, thumbnail.to_pillow(), 20)
+    im = Image.open(Path("images/heif_special/crop_mismatch_thumbnail.heic"))
+    assert im.info["thumbnails"] == [32]
+    assert im.draft(None, (16, 16)) is None
+    assert im.size == (64, 64)
+
+
+@pytest.mark.parametrize(
+    "t_transformations,transformations,result",
+    (
+        ((), (), True),
+        ((("clap", 0, 0, 32, 32, 64, 64),), (), True),  # the padding of the encoder is not a crop
+        ((("clap", 0, 0, 14, 40, 64, 64),), (("clap", 0, 0, 1, 1, 202, 102),), True),
+        ((("clap", 8, 8, 8, 8, 32, 32),), (("clap", 32, 32, 32, 32, 128, 128),), True),
+        ((("clap", 7, 8, 8, 9, 32, 32),), (("clap", 32, 32, 32, 32, 128, 128),), True),  # rounded at the thumbnail
+        ((("clap", 4, 8, 8, 8, 32, 32),), (("clap", 32, 32, 32, 32, 128, 128),), False),
+        ((("clap", 0, 0, 32, 32, 64, 64),), (("clap", 32, 32, 32, 32, 128, 128),), False),
+        ((("clap", 8, 8, 8, 8, 32, 32), ("irot", 90)), (("clap", 32, 32, 32, 32, 128, 128), ("irot", 90)), True),
+        ((("irot", 90),), (("clap", 0, 0, 64, 64, 128, 128), ("irot", 90)), False),
+        # a crop of less than 64 pixels anchored top-left cannot be told from the padding, such thumbnail is skipped
+        ((("clap", 0, 0, 16, 16, 32, 32),), (("clap", 0, 0, 64, 64, 128, 128),), False),
+    ),
+)
+def test_same_crop(t_transformations, transformations, result):
+    assert (
+        pillow_heif.as_plugin._same_crop(t_transformations, transformations) is result
+    )  # pylint: disable=protected-access
+
+
+def test_pillow_thumbnail_multiframe():
+    im = Image.open(Path("images/heif/zPug_3.heic"))
+    assert im.is_animated
+    im.thumbnail((8, 8))
+    im.load()
+    assert (im.size, im.im.size) == ((8, 8), (8, 8))
+    buf = BytesIO()
+    im.save(buf, format="PNG")
+    assert Image.open(buf).size == (8, 8)
+    im.seek(2)  # frame without thumbnails
+    im.thumbnail((8, 8))
+    im.load()
+    assert (im.size, im.im.size) == ((8, 5), (8, 5))
+
+
+def test_pillow_draft_after_seek():
+    im = Image.open(Path("images/heif/zPug_3.heic"))
+    assert im.tell() == 1
+    im.seek(0)
+    assert im.draft(None, (8, 8)) == ("RGB", (0, 0, 16, 16))
+    im.load()
+    assert (im.size, im.im.size) == ((16, 16), (16, 16))
+    assert im.copy().size == (16, 16)
+    assert_image_equal(im, pillow_heif.open_heif(Path("images/heif/zPug_3.heic"))[0].get_thumbnail(1).to_pillow())
+
+
+@pytest.mark.parametrize(
+    "img_path,frame,size,thumbnail_size,epsilon",
+    (
+        ("images/heif_other/arrow.heic", 0, (100, 100), (240, 320), 10),
+        ("images/heif_other/empty_icc.heic", 1, (50, 50), (114, 128), 30),
+        ("images/heif_other/nokia/stereo_1200x800.heic", 1, (100, 100), (480, 320), 10),
+        ("images/heif/zPug_3.heic", 0, (16, 16), (32, 32), 25),
+        ("images/heif/zPug_3.heic", 1, (16, 16), (32, 32), 10),
+        ("images/heif_special/broken_thumbnail.heic", 0, (16, 16), (64, 64), 5),
+    ),
+)
+def test_pillow_thumbnail_matches_full_decode(img_path, frame, size, thumbnail_size, epsilon):
+    selections: list = []
+    with _spy_thumbnail_selection(selections):
+        im = Image.open(Path(img_path))
+        im.seek(frame)
+        im.thumbnail(size)
+    assert selections[0][1].size == thumbnail_size
+    im_full = Image.open(Path(img_path))
+    im_full.seek(frame)
+    im_full.thumbnail(size, reducing_gap=None)
+    assert (im.size, im.mode) == (im_full.size, im_full.mode)
+    assert_image_similar(im, im_full, epsilon)  # a wrongly selected thumbnail differs by 100+

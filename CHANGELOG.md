@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Segmentation fault when opening a file whose metadata item type is not valid UTF-8. #478
+- Pillow plugin: `load()` of a multi-frame image reloaded the frame data on every call, discarding in-place changes and failing after `thumbnail()`. #477
 
 ## [1.7.0 - 2026-09-06]
 
