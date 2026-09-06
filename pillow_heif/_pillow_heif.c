@@ -1529,7 +1529,7 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
         return PyErr_NoMemory();
 
     n_images = heif_image_handle_get_list_of_depth_image_IDs(self->handle, images_ids, n_images);
-    PyObject* images_list = PyList_New(n_images);
+    PyObject* images_list = PyList_New(0);
     if (!images_list) {
         free(images_ids);
         return NULL;
@@ -1540,11 +1540,26 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
             self->handle, images_ids[i], self->remove_stride, self->hdr_to_16bit, self->file_bytes,
             self->decoder_id);
         if (!ctx_depth_image) {
+            if (PyErr_ExceptionMatches(PyExc_MemoryError)) {
+                Py_DECREF(images_list);
+                free(images_ids);
+                return NULL;
+            }
+            // libheif >= 1.23.4 reports an item it could not parse (e.g. an unsupported item type) when the
+            // handle is requested, older versions return a handle without a size for it: skip such depth images
+            PyErr_Clear();
+            continue;
+        }
+        CtxImageObject* depth_image = (CtxImageObject*)ctx_depth_image;
+        int append_error = 0;
+        if (depth_image->width > 0 && depth_image->height > 0)
+            append_error = PyList_Append(images_list, ctx_depth_image);
+        Py_DECREF(ctx_depth_image);
+        if (append_error) {
             Py_DECREF(images_list);
             free(images_ids);
             return NULL;
         }
-        PyList_SET_ITEM(images_list, i, ctx_depth_image);
     }
     free(images_ids);
     return images_list;
