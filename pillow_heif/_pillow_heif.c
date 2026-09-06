@@ -1690,6 +1690,10 @@ static PyObject* _CtxImage_camera_extrinsic_matrix_rot(CtxImageObject* self, voi
     return Py_BuildValue("(ddddddddd)", rot[0], rot[1], rot[2], rot[3], rot[4], rot[5], rot[6], rot[7], rot[8]);
 }
 
+static PyObject* _CtxImage_item_id(CtxImageObject* self, void* closure) {
+    return PyLong_FromUnsignedLong(heif_image_handle_get_item_id(self->handle));
+}
+
 /* =========== CtxImage properties available to Python Part ======== */
 
 static struct PyGetSetDef _CtxImage_getseters[] = {
@@ -1713,6 +1717,7 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
     {"camera_intrinsic_matrix", (getter)_CtxImage_camera_intrinsic_matrix, NULL, NULL, NULL},
     {"camera_extrinsic_matrix_rot", (getter)_CtxImage_camera_extrinsic_matrix_rot, NULL, NULL, NULL},
     {"tiling", (getter)_CtxImage_tiling, NULL, NULL, NULL},
+    {"item_id", (getter)_CtxImage_item_id, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}
 };
 
@@ -1771,6 +1776,37 @@ static PyObject* _CtxWrite(PyObject* self, PyObject* args) {
     ctx_write->size = 0;
     ctx_write->data = NULL;
     return (PyObject*)ctx_write;
+}
+
+static PyObject* _entity_groups(struct heif_context* ctx) {
+    int n_groups = 0;
+    struct heif_entity_group* groups = heif_context_get_entity_groups(ctx, 0, 0, &n_groups);
+    PyObject* groups_list = PyList_New(n_groups);
+    if (!groups_list) {
+        heif_entity_groups_release(groups, n_groups);
+        return NULL;
+    }
+    for (int i = 0; i < n_groups; i++) {
+        PyObject* group = PyDict_New();
+        PyObject* entities = PyList_New(groups[i].num_entities);
+        if (!group || !entities) {
+            Py_XDECREF(group);
+            Py_XDECREF(entities);
+            Py_DECREF(groups_list);
+            heif_entity_groups_release(groups, n_groups);
+            return NULL;
+        }
+        for (uint32_t k = 0; k < groups[i].num_entities; k++)
+            PyList_SET_ITEM(entities, k, PyLong_FromUnsignedLong(groups[i].entities[k]));
+        uint32_t type = groups[i].entity_group_type;
+        char fourcc[4] = {(char)(type >> 24), (char)(type >> 16), (char)(type >> 8), (char)type};
+        __PyDict_SetItemString(group, "id", PyLong_FromUnsignedLong(groups[i].entity_group_id));
+        __PyDict_SetItemString(group, "type", PyUnicode_DecodeLatin1(fourcc, 4, NULL));
+        __PyDict_SetItemString(group, "entities", entities);
+        PyList_SET_ITEM(groups_list, i, group);
+    }
+    heif_entity_groups_release(groups, n_groups);
+    return groups_list;
 }
 
 static PyObject* _load_file(PyObject* self, PyObject* args) {
@@ -1860,8 +1896,16 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
         }
     }
     free(images_ids);
+    PyObject* entity_groups = _entity_groups(heif_ctx);
     heif_context_free(heif_ctx);
-    return images_list;
+    if (!entity_groups) {
+        Py_DECREF(images_list);
+        return NULL;
+    }
+    PyObject* result = PyTuple_Pack(2, images_list, entity_groups);
+    Py_DECREF(images_list);
+    Py_DECREF(entity_groups);
+    return result;
 }
 
 static PyObject* _get_lib_info(PyObject* self) {

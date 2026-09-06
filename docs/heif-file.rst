@@ -45,6 +45,19 @@ Enumerating images
 
 .. note:: ``HeifFile`` itself points to the primary image in the container.
 
+Stereo pairs
+------------
+
+Spatial photos store the left and right views as two images bound by a ``ster`` entity group,
+``info["entity_groups"]`` tells which image is which:
+
+.. code-block:: python
+
+    heif_file = pillow_heif.open_heif("spatial_photo.heic")
+    for group in heif_file.info.get("entity_groups", []):
+        if group["type"] == "ster":
+            left, right = (heif_file[i] for i in group["images"])
+
 Adding images
 -------------
 
