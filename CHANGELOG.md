@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Reading and writing nominal diffuse white luminance HDR metadata: `nominal_diffuse_white_luminance` key in `info` dictionary. #468
+- `py.typed` marker, the package type annotations are now visible to type checkers. #475
 
 ### Changed
 
@@ -14,6 +15,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Out-of-bounds read in `encode()` when `stride` was smaller than the image row width. (GHSA-ccw6-q225-c975) Thanks to @arpitjain099 for finding this!
+- `TypeError` when saving an image whose `info` dictionary contains non-string keys. #475
 
 ## [1.6.0 - 2026-08-31]
 
