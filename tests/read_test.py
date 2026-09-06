@@ -504,10 +504,10 @@ def test_read_entity_groups():
 
 
 def test_pillow_read_entity_groups():
-    im = Image.open("images/heif_other/spatial_photo.heic")
-    assert im.n_frames == 2
-    for frame in ImageSequence.Iterator(im):
-        assert frame.info["entity_groups"] == SPATIAL_PHOTO_GROUPS
+    with Image.open("images/heif_other/spatial_photo.heic") as im:
+        assert im.n_frames == 2
+        for frame in ImageSequence.Iterator(im):
+            assert frame.info["entity_groups"] == SPATIAL_PHOTO_GROUPS
 
 
 def test_stereo_pair_left_right():

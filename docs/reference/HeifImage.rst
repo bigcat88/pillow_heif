@@ -148,8 +148,8 @@ HeifImage object
             * `entities`: `list[int]`, item IDs of the group members in the order stored in the file.
               For ``ster`` the first one is the left view and the second one is the right view.
             * `images`: `list[int | None]`, the same members as indexes of the images in
-              :py:class:`~pillow_heif.HeifFile` (frame numbers in Pillow), ``None`` for members
-              that are not top-level images
+              :py:class:`~pillow_heif.HeifFile` (frame numbers in Pillow) at the time the file was opened,
+              ``None`` for members that are not top-level images
 
         .. note:: Only group types known to `libheif` are reported, as of libheif 1.23 these are
             ``altr``, ``ster`` and ``pymd``. Entity groups are not written back during save.
