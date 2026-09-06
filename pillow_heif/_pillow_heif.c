@@ -2,8 +2,8 @@
 
 #include "Python.h"
 #include "libheif/heif.h"
-#if !LIBHEIF_HAVE_VERSION(1,23,1)
-    #error "pillow_heif requires libheif >= 1.23.1"
+#if !LIBHEIF_HAVE_VERSION(1,23,4)
+    #error "pillow_heif requires libheif >= 1.23.4"
 #endif
 #include "libheif/heif_tiling.h"
 #include "libheif/heif_properties.h"
@@ -1545,15 +1545,12 @@ static PyObject* _CtxImage_depth_image_list(CtxImageObject* self, void* closure)
                 free(images_ids);
                 return NULL;
             }
-            // libheif >= 1.23.4 reports an item it could not parse (e.g. an unsupported item type) when the
-            // handle is requested, older versions return a handle without a size for it: skip such depth images
+            // libheif reports an item it could not parse (e.g. an unsupported item type) when the handle
+            // is requested: skip such depth images
             PyErr_Clear();
             continue;
         }
-        CtxImageObject* depth_image = (CtxImageObject*)ctx_depth_image;
-        int append_error = 0;
-        if (depth_image->width > 0 && depth_image->height > 0)
-            append_error = PyList_Append(images_list, ctx_depth_image);
+        int append_error = PyList_Append(images_list, ctx_depth_image);
         Py_DECREF(ctx_depth_image);
         if (append_error) {
             Py_DECREF(images_list);

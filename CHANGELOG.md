@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file.
 - Reading of entity groups: `entity_groups` key in `info` dictionary, tells which images form a stereo pair in spatial photos. #476
 - Decoding of embedded thumbnails: `HeifImage.get_thumbnail` method and `draft` in the Pillow plugin, `Image.thumbnail()` uses them instead of decoding the full image. #477
 
+### Changed
+
+- Minimum required `libheif` version is `1.23.4`. #480
+- `libheif` was updated from the `1.23.3` to `1.23.4` version. #479
+
 ### Fixed
 
 - Segmentation fault when opening a file whose metadata item type is not valid UTF-8. #478
