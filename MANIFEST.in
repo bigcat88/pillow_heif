@@ -5,6 +5,7 @@ include pyproject.toml
 include .github/wheels-test.py
 
 recursive-include pillow_heif *.c *.h
+include pillow_heif/py.typed
 
 graft libheif
 graft tests

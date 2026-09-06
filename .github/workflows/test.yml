@@ -73,7 +73,9 @@ jobs:
         run: python3 -m pip install ".[dev]" wheel setuptools
 
       - name: Run Analysis
-        run: python3 -m pylint "setup.py" "pillow_heif/"
+        run: |
+          python3 -m pylint "setup.py" "pillow_heif/"
+          python3 -m mypy "pillow_heif/"
 
   docs:
     runs-on: ubuntu-24.04
