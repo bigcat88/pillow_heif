@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Reading of entity groups: `entity_groups` key in `info` dictionary, tells which images form a stereo pair in spatial photos.
+- Reading of entity groups: `entity_groups` key in `info` dictionary, tells which images form a stereo pair in spatial photos. #476
 
 ## [1.7.0 - 2026-09-06]
 
