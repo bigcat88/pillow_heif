@@ -9,6 +9,9 @@ When use pillow_heif as a plugin you can set it with: `register_*_opener(decode_
 THUMBNAILS = True
 """Option to enable/disable thumbnail support
 
+When disabled, ``info["thumbnails"]`` is always empty and the Pillow plugin never decodes an embedded
+thumbnail instead of the image in ``draft``.
+
 When use pillow_heif as a plugin you can set it with: `register_*_opener(thumbnails=False)`"""
 
 

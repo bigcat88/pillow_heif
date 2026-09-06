@@ -649,6 +649,7 @@ class MimCImage:  # pylint: disable=too-many-instance-attributes
         self.metadata: list[dict] = []
         self.color_profile = None
         self.thumbnails: list[int] = []
+        self.transformations: tuple = ()
         self.depth_image_list: list = []
         self.aux_image_ids: list[int] = []
         self.primary = False
@@ -672,6 +673,10 @@ class MimCImage:  # pylint: disable=too-many-instance-attributes
     def bit_depth(self) -> int:
         """Bit-depth based on image mode."""
         return MODE_INFO[self.mode][1]
+
+    def get_thumbnail(self, index: int):
+        """Mimicry of c_image method, there is nothing to decode for images not read from a file."""
+        raise IndexError(f"invalid thumbnail index: {index}")
 
 
 def load_libheif_plugin(plugin_path: str | Path) -> None:

@@ -45,6 +45,20 @@ Enumerating images
 
 .. note:: ``HeifFile`` itself points to the primary image in the container.
 
+Thumbnails
+----------
+
+``info["thumbnails"]`` lists the sizes of the embedded thumbnails,
+:py:meth:`~pillow_heif.HeifImage.get_thumbnail` decodes one of them without decoding the image itself:
+
+.. code-block:: python
+
+    heif_file = pillow_heif.open_heif("image.heif")
+    if heif_file.info["thumbnails"]:
+        thumbnail = heif_file[0].get_thumbnail(0)
+        print(thumbnail.size, thumbnail.mode)
+        pil_image = thumbnail.to_pillow()
+
 Stereo pairs
 ------------
 

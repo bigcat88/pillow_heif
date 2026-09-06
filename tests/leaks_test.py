@@ -133,6 +133,20 @@ def test_open_to_numpy_mem_leaks():
 
 @requires_rss
 @requires_refcounting
+def test_thumbnail_decode_mem_leaks():
+    image_path = Path("images/heif_other/arrow.heic")
+
+    def iteration():
+        pillow_heif.open_heif(image_path)[0].get_thumbnail(0).load()
+        im = Image.open(image_path)
+        im.draft(None, (100, 100))
+        im.load()
+
+    _assert_no_mem_growth(iteration, warmup=20, block=200)
+
+
+@requires_rss
+@requires_refcounting
 @pytest.mark.parametrize(
     "im, cp_type", [("images/heif_other/cat.hif", "NCLX"), ("images/heif_other/arrow.heic", "ICC")]
 )
