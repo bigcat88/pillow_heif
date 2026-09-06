@@ -53,6 +53,25 @@ Remember, then you can pass multiply config values to :py:func:`~pillow_heif.reg
 
     register_heif_opener(thumbnails=False, quality=-1)
 
+Thumbnails
+**********
+
+:external:py:meth:`~PIL.Image.Image.thumbnail` and ``draft`` decode an embedded thumbnail instead of the full
+image when the file has one that is big enough, which is much faster for large images:
+
+.. code-block:: python
+
+    im = Image.open("IMG_0001.heic")  # 12240x16320 with a 384x512 embedded thumbnail
+    im.thumbnail((128, 128))          # decodes only the 384x512 thumbnail
+
+``thumbnail`` asks ``draft`` for an image not smaller than the requested size multiplied by its ``reducing_gap``
+(``2.0`` by default), so with the defaults an embedded thumbnail is used only when it is at least twice as big as
+the requested size: in the example above ``im.thumbnail((256, 256))`` would decode the full image, because
+the 384 pixels wide thumbnail is smaller than the 512 pixels asked for. Pass ``reducing_gap=1.0`` to allow
+a thumbnail of the requested size, or call ``im.draft(None, (256, 256))`` before resizing yourself.
+Thumbnails whose aspect ratio differs from the image are never used.
+Register the plugin with ``thumbnails=False`` to always decode the full image.
+
 Image Modes
 ***********
 

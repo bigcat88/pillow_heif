@@ -1580,6 +1580,42 @@ static PyObject* _CtxImage_get_aux_image(CtxImageObject* self, PyObject* arg_ima
     );
 }
 
+static PyObject* _CtxImage_get_thumbnail(CtxImageObject* self, PyObject* arg_index) {
+    long index = PyLong_AsLong(arg_index);
+    if (index == -1 && PyErr_Occurred())
+        return NULL;
+    int n_thumbnails = heif_image_handle_get_number_of_thumbnails(self->handle);
+    if (index < 0 || index >= n_thumbnails) {
+        PyErr_Format(PyExc_IndexError, "invalid thumbnail index: %ld", index);
+        return NULL;
+    }
+    heif_item_id* thumbnail_ids = (heif_item_id*)malloc(n_thumbnails * sizeof(heif_item_id));
+    if (!thumbnail_ids)
+        return PyErr_NoMemory();
+    n_thumbnails = heif_image_handle_get_list_of_thumbnail_IDs(self->handle, thumbnail_ids, n_thumbnails);
+    if (index >= n_thumbnails) {
+        free(thumbnail_ids);
+        PyErr_Format(PyExc_IndexError, "invalid thumbnail index: %ld", index);
+        return NULL;
+    }
+    heif_item_id thumbnail_id = thumbnail_ids[index];
+    free(thumbnail_ids);
+
+    struct heif_image_handle* handle;
+    if (check_error(heif_image_handle_get_thumbnail(self->handle, thumbnail_id, &handle)))
+        return NULL;
+    enum heif_colorspace colorspace;
+    enum heif_chroma chroma;
+    if (check_error(heif_image_handle_get_preferred_decoding_colorspace(handle, &colorspace, &chroma))) {
+        heif_image_handle_release(handle);
+        return NULL;
+    }
+    return _CtxImage(
+        handle, self->hdr_to_8bit, self->bgr_mode, self->remove_stride, self->hdr_to_16bit, 0, self->file_bytes,
+        self->decoder_id, colorspace, chroma
+    );
+}
+
 static PyObject* _get_aux_type(const struct heif_image_handle* aux_handle) {
     const char* aux_type_c = NULL;
     struct heif_error error = heif_image_handle_get_auxiliary_type(aux_handle, &aux_type_c);
@@ -1741,6 +1777,7 @@ static struct PyGetSetDef _CtxImage_getseters[] = {
 static struct PyMethodDef _CtxImage_methods[] = {
     {"get_aux_image", (PyCFunction)_CtxImage_get_aux_image, METH_O},
     {"get_aux_type", (PyCFunction)_CtxImage_get_aux_type, METH_O},
+    {"get_thumbnail", (PyCFunction)_CtxImage_get_thumbnail, METH_O},
     {NULL, NULL}
 };
 

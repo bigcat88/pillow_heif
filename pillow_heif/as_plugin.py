@@ -8,7 +8,7 @@ from PIL import Image, ImageFile, ImageSequence
 
 from . import options
 from .constants import HeifCompressionFormat
-from .heif import HeifFile
+from .heif import HeifFile, HeifImage, HeifThumbnail
 from .misc import (
     CtxEncode,
     _exif_from_pillow,
@@ -37,6 +37,8 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
     def __init__(self, *args, **kwargs):
         self.__frame = 0
+        self.__thumbnail: HeifThumbnail | None = None
+        self.__loaded = False
         super().__init__(*args, **kwargs)
 
     def _open(self):
@@ -53,7 +55,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
     def load(self):
         if self._heif_file:
-            frame_heif = self._heif_file[self.tell()]
+            frame_heif = self.__thumbnail or self._heif_file[self.tell()]
             try:
                 data = frame_heif.data  # Size of Image can change during decoding
                 self._size = frame_heif.size  # noqa
@@ -63,13 +65,34 @@ class _LibHeifImageFile(ImageFile.ImageFile):
                 if not ImageFile.LOAD_TRUNCATED_IMAGES:
                     raise
                 self.load_prepare()
+            self.__loaded = True
             # In any case, we close `fp`, since the input data bytes are held by the `HeifFile` class.
             if self.fp and getattr(self, "_exclusive_fp", False) and hasattr(self.fp, "close"):
                 self.fp.close()
             self.fp = None
             if not self.is_animated:
                 self._heif_file = None
+                self.__thumbnail = None
         return super().load()
+
+    def draft(self, mode: str | None, size: tuple[int, int] | None) -> tuple[str, tuple[int, int, float, float]] | None:
+        """Configures the loader to decode an embedded thumbnail instead of the image.
+
+        The smallest thumbnail that is not smaller than ``size`` and has the aspect ratio of the image is selected,
+        ``mode`` is ignored. :external:py:meth:`~PIL.Image.Image.thumbnail` calls this with ``size`` multiplied
+        by its ``reducing_gap``.
+
+        :returns: ``(mode, box)`` when a thumbnail was selected, ``None`` otherwise.
+        """
+        if not size or not self._heif_file or self.__loaded or self.__thumbnail:
+            return None
+        thumbnail = _thumbnail_for_size(self._heif_file[self.tell()], size)
+        if thumbnail is None:
+            return None
+        self.__thumbnail = thumbnail
+        self._size = thumbnail.size
+        self._mode = thumbnail.mode
+        return self.mode, (0, 0, *thumbnail.size)
 
     def seek(self, frame: int):
         if not self._seek_check(frame):
@@ -113,6 +136,8 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
     def _init_from_heif_file(self, img_index: int) -> None:
         if self._heif_file:
+            self.__thumbnail = None
+            self.__loaded = False
             self._size = self._heif_file[img_index].size
             self._mode = self._heif_file[img_index].mode
             self.info = self._heif_file[img_index].info
@@ -124,6 +149,29 @@ class HeifImageFile(_LibHeifImageFile):
 
     format = "HEIF"  # noqa
     format_description = "HEIF container"
+
+
+def _thumbnail_for_size(image: HeifImage, size: tuple[int, int]) -> HeifThumbnail | None:
+    width, height = image.size
+    candidates = []
+    for index in range(len(image.info.get("thumbnails", []))):
+        try:
+            thumbnail = image.get_thumbnail(index)
+        except (OSError, ValueError, SyntaxError, RuntimeError, EOFError, IndexError):
+            continue
+        t_width, t_height = thumbnail.size
+        if t_width < size[0] or t_height < size[1] or (t_width >= width and t_height >= height):
+            continue
+        if abs(t_width * height - t_height * width) > max(width, height):  # the aspect ratio differs beyond rounding
+            continue
+        candidates.append(thumbnail)
+    for thumbnail in sorted(candidates, key=lambda i: i.size[0] * i.size[1]):
+        try:
+            thumbnail.load()
+        except (OSError, ValueError, SyntaxError, RuntimeError, EOFError):
+            continue
+        return thumbnail
+    return None
 
 
 def _is_supported_heif(fp) -> bool:

@@ -18,6 +18,7 @@ from .heif import (
     HeifDepthImage,
     HeifFile,
     HeifImage,
+    HeifThumbnail,
     encode,
     from_bytes,
     from_pillow,

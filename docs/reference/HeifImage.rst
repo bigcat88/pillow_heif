@@ -174,3 +174,11 @@ HeifImage object
     :show-inheritance:
     :inherited-members:
     :members:
+
+.. autoclass:: pillow_heif.heif.HeifThumbnail
+    :show-inheritance:
+    :inherited-members:
+    :members:
+
+    ``info`` holds the ``bit_depth``, ``chroma`` and color profile(``icc_profile``, ``icc_profile_type`` or
+    ``nclx_profile``) keys of the thumbnail, with the same meaning as in :py:class:`~pillow_heif.HeifImage`.

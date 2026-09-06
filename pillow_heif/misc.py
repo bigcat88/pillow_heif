@@ -673,6 +673,10 @@ class MimCImage:  # pylint: disable=too-many-instance-attributes
         """Bit-depth based on image mode."""
         return MODE_INFO[self.mode][1]
 
+    def get_thumbnail(self, index: int):
+        """Mimicry of c_image method, there is nothing to decode for images not read from a file."""
+        raise IndexError(f"invalid thumbnail index: {index}")
+
 
 def load_libheif_plugin(plugin_path: str | Path) -> None:
     """Load specified LibHeif plugin."""
