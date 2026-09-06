@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [1.7.0 - ]
+## [1.7.0 - 2026-09-06]
 
 ### Added
 
@@ -8,7 +8,12 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- `libheif` was updated from the `1.23.2` to `1.23.3` version. #470
 - `libde265` was updated from the `1.1.1` to `1.1.2` version. #471
+
+### Fixed
+
+- Out-of-bounds read in `encode()` when `stride` was smaller than the image row width. (GHSA-ccw6-q225-c975) Thanks to @arpitjain099 for finding this!
 
 ## [1.6.0 - 2026-08-31]
 

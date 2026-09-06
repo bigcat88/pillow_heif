@@ -162,7 +162,8 @@ static PyObject* _CtxWriteImage_add_plane(CtxWriteImageObject* self, PyObject* a
         real_stride = real_stride * 2;
     if (stride_in == 0)
         stride_in = real_stride;
-    if ((Py_ssize_t)stride_in * height > buffer.len) {
+    if ((width <= 0) || (height <= 0) || (real_stride <= 0) || (stride_in < real_stride) ||
+        ((Py_ssize_t)stride_in * height > buffer.len)) {
         PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_ValueError, "image plane does not contain enough data");
         return NULL;
@@ -352,7 +353,8 @@ static PyObject* _CtxWriteImage_add_plane_la(CtxWriteImageObject* self, PyObject
         real_stride = real_stride * 2;
     if (stride_in == 0)
         stride_in = real_stride;
-    if ((Py_ssize_t)stride_in * height > buffer.len) {
+    if ((width <= 0) || (height <= 0) || (real_stride <= 0) || (stride_in < real_stride) ||
+        ((Py_ssize_t)stride_in * height > buffer.len)) {
         PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_ValueError, "image plane does not contain enough data");
         return NULL;
@@ -461,7 +463,8 @@ static PyObject* _CtxWriteImage_add_plane_l(CtxWriteImageObject* self, PyObject*
         real_stride = real_stride * 2;
     if (stride_in == 0)
         stride_in = real_stride;
-    if ((Py_ssize_t)stride_in * height > buffer.len) {
+    if ((width <= 0) || (height <= 0) || (real_stride <= 0) || (stride_in < real_stride) ||
+        ((Py_ssize_t)stride_in * height > buffer.len)) {
         PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_ValueError, "image plane does not contain enough data");
         return NULL;
