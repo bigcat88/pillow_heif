@@ -271,7 +271,7 @@ def test_heif_read_images(image_path):
             assert image.info["bit_depth"] >= 8
             assert image.stride >= minimal_stride
             assert len(image.data) == image.stride * image.size[1]
-            if str(image_path).find("spatial_photo.heic") == -1:
+            if image_path.name not in ("spatial_photo.heic", "stereo_pair.heic"):
                 assert "heif" not in image.info
         return heif_file.info["bit_depth"] > 8
 
@@ -296,7 +296,7 @@ def test_pillow_read_images(image_path):
         collect()
         assert len(ImageSequence.Iterator(pillow_image)[i].tobytes())
         assert isinstance(image.getxmp(), dict)
-        if str(image_path).find("spatial_photo.heic") == -1:
+        if image_path.name not in ("spatial_photo.heic", "stereo_pair.heic"):
             assert "heif" not in image.info
     assert getattr(pillow_image, "fp") is None
     if images_count > 1:
@@ -491,6 +491,67 @@ def test_pillow_read_heif_metadata():
         "skew": 0.0,
     }
     assert im.info["heif"]["camera_extrinsic_matrix_rot"] == (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
+
+
+SPATIAL_PHOTO_GROUPS = [{"id": 53, "type": "ster", "entities": [26, 52], "images": [0, 1]}]
+
+
+def test_read_entity_groups():
+    im = pillow_heif.open_heif("images/heif_other/spatial_photo.heic")
+    assert [i.info["entity_groups"] for i in im] == [SPATIAL_PHOTO_GROUPS, SPATIAL_PHOTO_GROUPS]
+    assert im.primary_index == 0
+    assert "entity_groups" not in pillow_heif.open_heif("images/heif_other/pug.heic").info
+
+
+def test_pillow_read_entity_groups():
+    im = Image.open("images/heif_other/spatial_photo.heic")
+    assert im.n_frames == 2
+    for frame in ImageSequence.Iterator(im):
+        assert frame.info["entity_groups"] == SPATIAL_PHOTO_GROUPS
+
+
+def test_stereo_pair_left_right():
+    # written by Apple ImageIO: image 0 is red and the left view, image 1 is blue and the right view
+    im = pillow_heif.open_heif("images/heif_other/stereo_pair.heic")
+    (group,) = im.info["entity_groups"]
+    assert group == {"id": 3, "type": "ster", "entities": [1, 2], "images": [0, 1]}
+    left, right = (im[i].to_pillow() for i in group["images"])
+    assert left.getpixel((32, 32)) == pytest.approx((255, 0, 0), abs=2)
+    assert right.getpixel((32, 32)) == pytest.approx((0, 0, 255), abs=2)
+    assert im.info["heif"]["camera_intrinsic_matrix"]["focal_length_x"] == pytest.approx(64.0)
+
+
+def test_entity_groups_non_image_members():
+    im = pillow_heif.open_heif("images/heif_other/nokia/stereo_1200x800.heic")
+    assert len(im) == 2
+    assert im.info["entity_groups"] == [
+        {"id": 1012, "type": "ster", "entities": [1002, 1008], "images": [0, 1]},
+        {"id": 1013, "type": "ster", "entities": [1005, 1011], "images": [None, None]},
+    ]
+
+
+def test_entity_groups_special():
+    # `ster` with the left view second, `altr`, `pymd`, `ster` with a missing item, two group types unknown to libheif
+    im = pillow_heif.open_heif("images/heif_special/entity_groups.heic")
+    groups = {g["id"]: g for g in im.info["entity_groups"]}
+    assert {10, 11, 12, 14} <= set(groups)
+    assert groups[10] == {"id": 10, "type": "ster", "entities": [2, 1], "images": [1, 0]}
+    assert groups[11] == {"id": 11, "type": "altr", "entities": [1, 2], "images": [0, 1]}
+    assert groups[12] == {"id": 12, "type": "pymd", "entities": [1, 2], "images": [0, 1]}
+    assert groups[14] == {"id": 14, "type": "ster", "entities": [1, 99], "images": [0, None]}
+    left = im[groups[10]["images"][0]].to_pillow()
+    assert left.getpixel((32, 32)) == pytest.approx((0, 0, 255), abs=2)
+
+
+@pytest.mark.skipif(not helpers.hevc_enc(), reason="Requires HEVC encoder.")
+def test_entity_groups_not_saved():
+    im = pillow_heif.open_heif("images/heif_other/stereo_pair.heic")
+    out = BytesIO()
+    im.save(out, quality=-1)
+    im_out = pillow_heif.open_heif(out)
+    assert len(im_out) == 2
+    assert "entity_groups" not in im_out.info
+    assert "entity_groups" not in pillow_heif.HeifFile().add_from_heif(im[0]).info
 
 
 # to-do: looks like we need now image with 400MP size to hit the security limits :(

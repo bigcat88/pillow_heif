@@ -138,6 +138,22 @@ HeifImage object
 
         .. note:: These values are currently not written back during save.
 
+    .. describe:: info["entity_groups"]: list
+
+        Entity groups(``grpl``) of the file the image was read from, every image of the file gets the same list.
+        Absent when the file has no entity groups. Each group is a dict with keys:
+
+            * `id`: `int`, the group ID
+            * `type`: `str`, four-character group type, e.g. ``ster`` for a stereo pair
+            * `entities`: `list[int]`, item IDs of the group members in the order stored in the file.
+              For ``ster`` the first one is the left view and the second one is the right view.
+            * `images`: `list[int | None]`, the same members as indexes of the images in
+              :py:class:`~pillow_heif.HeifFile` (frame numbers in Pillow), ``None`` for members
+              that are not top-level images
+
+        .. note:: Only group types known to `libheif` are reported, as of libheif 1.23 these are
+            ``altr``, ``ster`` and ``pymd``. Entity groups are not written back during save.
+
 .. autoclass:: pillow_heif.heif.BaseImage
     :show-inheritance:
     :inherited-members:

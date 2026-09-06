@@ -268,6 +268,7 @@ class HeifFile:
 
         if fp is None:
             images = []
+            entity_groups = []
             mimetype = ""
         else:
             fp_bytes = _get_bytes(fp)
@@ -278,7 +279,7 @@ class HeifFile:
                 preferred_decoder = options.PREFERRED_DECODER.get("HEIF", "")
             else:
                 preferred_decoder = ""
-            images = _pillow_heif.load_file(
+            images, entity_groups = _pillow_heif.load_file(
                 fp_bytes,
                 options.DECODE_THREADS,
                 convert_hdr_to_8bit,
@@ -289,11 +290,18 @@ class HeifFile:
                 options.DISABLE_SECURITY_LIMITS,
             )
         self.mimetype = mimetype
-        self._images: list[HeifImage] = [HeifImage(i) for i in images if i is not None]
+        images = [i for i in images if i is not None]
+        self._images: list[HeifImage] = [HeifImage(i) for i in images]
         self.primary_index = 0
         for index, _ in enumerate(self._images):
             if _.info.get("primary", False):
                 self.primary_index = index
+        if entity_groups:
+            item_ids = {c_image.item_id: index for index, c_image in enumerate(images)}
+            for group in entity_groups:
+                group["images"] = [item_ids.get(i) for i in group["entities"]]
+            for image in self._images:
+                image.info["entity_groups"] = deepcopy(entity_groups)
 
     @property
     def size(self):
@@ -457,6 +465,7 @@ class HeifFile:
         )
         added_image.info = deepcopy(image.info)
         added_image.info.pop("primary", None)
+        added_image.info.pop("entity_groups", None)
         return added_image
 
     def add_from_pillow(self, image: Image.Image) -> HeifImage:
