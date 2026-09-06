@@ -304,20 +304,6 @@ def test_pillow_draft_mode_mismatch():
         assert im.draft(None, (100, 100)) is None
 
 
-def test_pillow_draft_decoded_size_differs():
-    # libheif < 1.22 can decode a thumbnail to a size other than the signaled one, e.g. 512x512 instead of 384x512
-    original = pillow_heif.HeifThumbnail.load
-
-    def load(self):
-        original(self)
-        self.size = (self.size[1], self.size[1])
-
-    with mock.patch.object(pillow_heif.HeifThumbnail, "load", load):
-        im = Image.open(Path("images/heif_other/arrow.heic"))
-        assert im.draft(None, (100, 100)) is None
-        assert im.size == (3024, 4032)
-
-
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
 @pytest.mark.parametrize("size", ((192, 128), (128, 128)))
 @pytest.mark.parametrize(

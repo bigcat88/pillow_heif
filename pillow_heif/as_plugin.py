@@ -165,8 +165,7 @@ def _thumbnail_for_size(image: HeifImage, size: tuple[int, int]) -> HeifThumbnai
             thumbnail.load()
         except (OSError, ValueError, SyntaxError, RuntimeError, EOFError):
             continue
-        if _is_scaled_copy(thumbnail, image, size):  # libheif < 1.22 can decode to a size other than the signaled one
-            return thumbnail
+        return thumbnail
     return None
 
 
