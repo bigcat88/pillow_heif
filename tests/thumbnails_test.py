@@ -123,6 +123,7 @@ def test_heif_get_thumbnail():
     heif_file = pillow_heif.open_heif(Path("images/heif_other/arrow.heic"))
     thumbnail = heif_file[0].get_thumbnail(0)
     assert isinstance(thumbnail, pillow_heif.HeifThumbnail)
+    assert repr(thumbnail) == "<HeifThumbnail 240x320 RGB>"
     assert (thumbnail.size, thumbnail.mode) == ((240, 320), "RGB")
     assert thumbnail.info["bit_depth"] == 8
     assert thumbnail.info["chroma"] == 420
@@ -135,6 +136,8 @@ def test_heif_get_thumbnail():
         heif_file[0].get_thumbnail(1)
     with pytest.raises(IndexError):
         heif_file[0].get_thumbnail(-1)
+    with pytest.raises(TypeError):
+        heif_file[0].get_thumbnail("0")
     assert pillow_heif.open_heif(Path("images/heif/zPug_3.heic"))[1].get_thumbnail(0).mode == "L"
 
 
@@ -235,6 +238,31 @@ def test_pillow_draft_broken_thumbnail():
     assert im.draft(None, (40, 40)) == ("RGB", (0, 0, 64, 64))
     im.load()
     assert im.size == (64, 64)
+
+
+@pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
+def test_pillow_draft_rounded_thumbnail_size():
+    # libheif rounds the thumbnail of a 201x101 image to 50x24, still the aspect ratio of the image
+    buf = BytesIO()
+    pillow_heif.from_pillow(Image.new("RGB", (201, 101), (200, 30, 30))).save(buf, quality=90, thumbnails=[50])
+    thumbnail = pillow_heif.open_heif(buf)[0].get_thumbnail(0)
+    assert thumbnail.size[0] == 50
+    im = Image.open(buf)
+    assert im.draft(None, (12, 12)) == ("RGB", (0, 0, *thumbnail.size))
+
+
+def test_pillow_draft_aspect_ratio_mismatch():
+    # the `ispe` of the thumbnail says 64x32 for a 128x128 image, such thumbnail is never used
+    im = Image.open(Path("images/heif_special/aspect_mismatch_thumbnail.heic"))
+    assert im.info["thumbnails"] == [64]
+    assert im.draft(None, (16, 16)) is None
+    assert im.size == (128, 128)
+
+
+def test_pillow_draft_stale_thumbnails_info():
+    im = Image.open(Path("images/heif_other/arrow.heic"))
+    im.info["thumbnails"].append(10)
+    assert im.draft(None, (100, 100)) == ("RGB", (0, 0, 240, 320))
 
 
 def test_pillow_draft_thumbnails_disabled():

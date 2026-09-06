@@ -162,7 +162,7 @@ def _thumbnail_for_size(image: HeifImage, size: tuple[int, int]) -> HeifThumbnai
         t_width, t_height = thumbnail.size
         if t_width < size[0] or t_height < size[1] or (t_width >= width and t_height >= height):
             continue
-        if abs(t_width * height - t_height * width) > max(width, height):  # the aspect ratio differs beyond rounding
+        if abs(t_width * height - t_height * width) > 2 * max(width, height):  # aspect ratio differs beyond rounding
             continue
         candidates.append(thumbnail)
     for thumbnail in sorted(candidates, key=lambda i: i.size[0] * i.size[1]):
