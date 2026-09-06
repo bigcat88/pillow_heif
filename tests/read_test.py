@@ -431,6 +431,18 @@ def test_depth_image():
     assert im_pil.info == depth_image.info
 
 
+def test_depth_image_unsupported_type():
+    # the depth image is an item of a type libheif cannot decode (`unci`): it is skipped, the image itself is fine
+    im = pillow_heif.open_heif("images/heif_special/unsupported_depth_image.heic")
+    assert im.info["depth_images"] == []
+    assert im.info["thumbnails"] == []
+    assert im.to_pillow().size == (128, 128)
+    im = Image.open("images/heif_special/unsupported_depth_image.heic")
+    assert im.info["depth_images"] == []
+    im.load()
+    assert im.size == (128, 128)
+
+
 def test_aux_image():
     im = pillow_heif.open_heif("images/heif_other/pug.heic")
     assert len(im.info["aux"]) == 1
