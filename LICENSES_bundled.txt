@@ -6,8 +6,8 @@ Binary wheels combine several license-compatible libraries. Here they are listed
 Name: libheif
 License: LGPLv3
 Files: libheif.[dylib|so|dll]
-  For details, see https://github.com/strukturag/libheif/tree/v1.23.3/COPYING
-  Source code: https://github.com/strukturag/libheif/tree/v1.23.3
+  For details, see https://github.com/strukturag/libheif/tree/v1.23.4/COPYING
+  Source code: https://github.com/strukturag/libheif/tree/v1.23.4
 
 Name: libde265
 License: LGPLv3
