@@ -5,7 +5,7 @@ from ._lib_info import libheif_info, libheif_version
 from ._version import __version__
 from .as_plugin import (
     HeifImageFile,
-    register_heif_opener,
+    register_heif_opener as register_heif_opener,
 )
 from .constants import (
     HeifColorPrimaries,
