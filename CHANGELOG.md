@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Segmentation fault when opening a file whose metadata item type is not valid UTF-8. #478
 - Pillow plugin: `load()` of a multi-frame image reloaded the frame data on every call, discarding in-place changes and failing after `thumbnail()`. #477
 - A depth image of an item type that `libheif` cannot decode made the whole file unreadable with `libheif` `1.23.4`, such depth images are now skipped. #480
+- Type checkers treated the names imported from `pillow_heif` as private since the `py.typed` marker was added in `1.7.0`: `Pyright`/`Pylance` and `mypy --strict` reported them as not exported, `Pyright`/`Pylance` autocompletion did not offer them. #490 Thanks to @BetoFernandez123
 
 ## [1.7.0 - 2026-09-06]
 

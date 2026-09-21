@@ -27,3 +27,30 @@ from .heif import (
     read_heif,
 )
 from .misc import get_file_mimetype, load_libheif_plugin, set_orientation
+
+__all__ = [
+    "HeifAuxImage",
+    "HeifColorPrimaries",
+    "HeifDepthImage",
+    "HeifDepthRepresentationType",
+    "HeifFile",
+    "HeifImage",
+    "HeifImageFile",
+    "HeifMatrixCoefficients",
+    "HeifThumbnail",
+    "HeifTransferCharacteristics",
+    "__version__",
+    "encode",
+    "from_bytes",
+    "from_pillow",
+    "get_file_mimetype",
+    "is_supported",
+    "libheif_info",
+    "libheif_version",
+    "load_libheif_plugin",
+    "open_heif",
+    "options",
+    "read_heif",
+    "register_heif_opener",
+    "set_orientation",
+]
