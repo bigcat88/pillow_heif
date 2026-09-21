@@ -116,7 +116,8 @@ def test_open_heif_compare_non_standard_modes_data(img):
     for i in (rgb, rgb_stride, rgb_no16, rgb_no16_stride, bgr, bgr_stride, bgr_no16, bgr_no16_stride):
         _ = from_bytes(i.mode, i.size, i.data, stride=i.stride)
         _.save(buf, chroma=444, quality=-1)
-        compare_hashes([Image.open(buf), im_pillow], hash_size=24)
+        # Pillow 13 resizes such narrow images vertically first, one bit of the 12 bit image hash differs with it.
+        compare_hashes([Image.open(buf), im_pillow], hash_size=24, max_difference=1)
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
