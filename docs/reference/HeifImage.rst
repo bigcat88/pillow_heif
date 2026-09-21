@@ -107,6 +107,7 @@ HeifImage object
     .. describe:: info["depth_images"]: list
 
         List of :py:class:`~pillow_heif.heif.HeifDepthImage` if any present for image.
+        Depth images that `libheif` cannot represent (an unsupported item type) are not listed.
         Currently `libheif` does not support writing of them, only reading.
 
     .. describe:: info["aux"]: dict
