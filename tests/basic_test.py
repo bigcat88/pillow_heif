@@ -1,3 +1,4 @@
+import ast
 import builtins
 import contextlib
 import os
@@ -21,6 +22,16 @@ def test_libheif_info():
     version = pillow_heif.libheif_version()
     valid_prefixes = ["1.23"]
     assert any(version.startswith(prefix) for prefix in valid_prefixes)
+
+
+def test_public_names_in_all():
+    # with `py.typed` a name imported in `__init__` is private for type checkers unless `__all__` lists it
+    tree = ast.parse(Path(pillow_heif.__file__).read_text(encoding="utf-8"))
+    imports = [node for node in tree.body if isinstance(node, ast.ImportFrom)]
+    imported = [alias.asname or alias.name for node in imports for alias in node.names]
+    assert sorted(imported) == sorted(pillow_heif.__all__)
+    for name in pillow_heif.__all__:
+        assert getattr(pillow_heif, name) is not None
 
 
 @pytest.mark.parametrize("img_path", dataset.FULL_DATASET)
