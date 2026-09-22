@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [1.8.0 - ]
+## [1.8.0 - 2026-09-22]
 
 ### Added
 
@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 - Minimum required `libheif` version is `1.23.4`. #480
 - `libheif` was updated from the `1.23.3` to `1.23.4` version. #479
+- `libde265` was updated from the `1.1.2` to `1.1.3` version. #483
 
 ### Fixed
 
