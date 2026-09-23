@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Pillow plugin: `Image.open()` with a file path reads only the metadata of the file, the rest of it is read when the image is loaded. The whole file was read into memory when opening before. #493
 - `PyPy 3.12` wheels added. #508
 
 ### Changed
@@ -15,6 +16,8 @@ All notable changes to this project will be documented in this file.
 - `libheif` was updated from the `1.23.6` to `1.23.7` version. #515
 - A file with a metadata item that cannot be read now opens, the item is skipped. #515
 - HEVC data with an invalid NAL unit size raises `ValueError` instead of `EOFError`. #515
+- Pillow plugin: a file opened by path must stay unchanged on disk until `load()`, when `load()` reads from it, it raises `OSError` if its size or modification time changed in between or it was removed after it was closed. #493
+- Pillow plugin: `seek()` after `close()` raises `ValueError`, as with Pillow's own plugins. #493
 
 ### Fixed
 
