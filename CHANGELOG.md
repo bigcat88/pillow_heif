@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [1.9.0 - ]
+
+### Changed
+
+- `libheif` was updated from the `1.23.4` to `1.23.5` version. #491
+
 ## [1.8.0 - 2026-09-22]
 
 ### Added
