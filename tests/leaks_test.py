@@ -64,6 +64,8 @@ def test_open_save_objects_leaks(image):
         gc.set_debug(0)
     summary2 = tracker.SummaryTracker().create_summary()
     results = summary._sweep(summary.get_diff(_summary1, summary2))  # noqa
+    # Python 3.10 gives a function an inline cache at its 1024th call: its code object grows, nothing leaks
+    results = [i for i in results if i[0] != "code" or i[1]]
     if results:
         summary.print_(results)
         raise MemoryError("Potential memory leaks")
@@ -103,15 +105,24 @@ def test_mem_growth_is_detected():
     # `mmap` is used instead of a plain allocation, as it is not served from the allocator
     # free lists, that on macOS stay accounted as resident and can hide a small leak.
     leaked = []
+    fill = b"x" * (64 * 1024)  # created once: free-threaded builds reuse the memory of freed objects with a delay
 
     def iteration():
         chunk = mmap.mmap(-1, 64 * 1024)
-        chunk.write(b"x" * (64 * 1024))
+        chunk.write(fill)
         leaked.append(chunk)
 
     try:
-        with pytest.raises(AssertionError, match="memory usage grew"):
-            _assert_no_mem_growth(iteration, warmup=10, block=100)
+        # free-threaded builds give the memory freed by the previous tests back with a delay, it can happen during
+        # a measurement and hide the leak there: the leak must be seen in one of the attempts
+        for _ in range(3):
+            try:
+                _assert_no_mem_growth(iteration, warmup=10, block=100)
+            except AssertionError as exception:
+                assert "memory usage grew" in str(exception)
+                break
+        else:
+            pytest.fail("the leak was not detected")
     finally:
         for chunk in leaked:
             chunk.close()
