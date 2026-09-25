@@ -74,6 +74,17 @@ ratio, the same crop, rotation and mirroring transformations and no other color 
 Thumbnails that fail to decode are skipped. Register the plugin with ``thumbnails=False`` to always decode
 the full image.
 
+Reading files
+*************
+
+:external:py:func:`~PIL.Image.open` with a file path reads only the metadata of the file when it is opened
+(usually its first 128 KB), as Pillow's own plugins do, and the rest of the file when the image is loaded for the
+first time, also when :external:py:meth:`~PIL.Image.Image.thumbnail` decodes only an embedded thumbnail.
+Reading the EXIF of many files does not read them whole, which matters on a network share or a slow disk.
+The file must stay unchanged on disk until the image is loaded: ``load`` raises ``OSError`` when the file was
+modified in between, or removed after the image was closed. After the first load nothing is read from the file.
+Files opened from a file object are read whole when they are opened.
+
 Image Modes
 ***********
 
