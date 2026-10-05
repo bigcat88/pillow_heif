@@ -51,15 +51,11 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
             libs = re.split(
                 r"(^|\s+)-L",
                 subprocess.check_output(command_libs, stderr=stderr).decode("utf8").strip(),
-            )[
-                ::2
-            ][1:]
+            )[::2][1:]
             cflags = re.split(
                 r"(^|\s+)-I",
                 subprocess.check_output(command_cflags).decode("utf8").strip(),
-            )[
-                ::2
-            ][1:]
+            )[::2][1:]
             return libs, cflags
         except Exception:  # noqa  # pylint: disable=broad-exception-caught
             pass
