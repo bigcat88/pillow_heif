@@ -44,7 +44,14 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def _open(self):
         try:
             # when Pillow starts supporting 16-bit multichannel images change `convert_hdr_to_8bit` to False
-            heif_file = HeifFile(self.fp, convert_hdr_to_8bit=True, hdr_to_16bit=True, remove_stride=False)
+            heif_file = HeifFile(
+                self.fp,
+                convert_hdr_to_8bit=True,
+                hdr_to_16bit=True,
+                remove_stride=False,
+                lazy_read=bool(self.filename),  # Pillow has opened the file itself
+                filename=self.filename,
+            )
         except (OSError, ValueError, SyntaxError, RuntimeError, EOFError) as exception:
             raise SyntaxError(str(exception)) from None
         self.custom_mimetype = heif_file.mimetype
@@ -169,7 +176,7 @@ def _thumbnail_for_size(image: HeifImage, size: tuple[int, int]) -> HeifThumbnai
     for thumbnail in sorted(candidates, key=lambda i: i.size[0] * i.size[1]):
         try:
             thumbnail.load()
-        except (OSError, ValueError, SyntaxError, RuntimeError, EOFError):
+        except (ValueError, SyntaxError, RuntimeError, EOFError):  # an `OSError` of reading the file is not skipped
             continue
         return thumbnail
     return None

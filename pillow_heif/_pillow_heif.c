@@ -113,7 +113,7 @@ typedef struct {
     const struct heif_depth_representation_info* depth_metadata; // only for image_type == 2
     uint8_t *data;                              // pointer to data after decoding
     int stride;                                 // time when it get filled depends on `remove_stride` value
-    PyObject *file_bytes;                       // private
+    PyObject *file_bytes;                       // private. bytes of the file or CtxReader
 #ifdef Py_GIL_DISABLED
     PyMutex decode_mutex;                       // protects lazy decode in free-threaded builds
 #endif
@@ -121,12 +121,270 @@ typedef struct {
 
 static PyTypeObject CtxImage_Type;
 
+typedef struct {
+    int64_t start;
+    int64_t end;
+    PyObject* data;                             // bytes
+    const char* ptr;                            // PyBytes_AS_STRING(data), taken with the GIL: on PyPy it is a function
+} ReaderSegment;
+
+typedef struct {
+    PyObject_HEAD
+    PyObject* source;                           // object with the `read_at(offset, length)` method
+    int64_t size;                               // size of the file
+    int64_t position;                           // position of libheif in the file
+    ReaderSegment* segments;                    // parts of the file that were read
+    int n_segments;
+    int64_t chunk;                              // number of bytes to read next time
+    int n_fetches;                              // reads of missing parts while the file is parsed
+    int64_t missing_start;                      // first range libheif failed to read, -1 when there is none
+    int64_t missing_end;
+    PyThread_type_lock segments_lock;           // libheif calls `read` from its threads, without the GIL
+    PyThread_type_lock fetch_lock;              // one read of the file at a time
+} CtxReaderObject;
+
+static PyTypeObject CtxReader_Type;
+
 int get_stride(CtxImageObject *ctx_image) {
     int stride = ctx_image->width * ctx_image->n_channels;
     if ((ctx_image->bits > 8) && (!ctx_image->hdr_to_8bit))
         stride = stride * 2;
     return stride;
 }
+
+/* =========== CtxReader ======== */
+
+#define READER_FIRST_CHUNK (128 * 1024)
+#define READER_MAX_FETCHES 4
+
+static int64_t _reader_get_position(void* userdata) {
+    return ((CtxReaderObject*)userdata)->position;
+}
+
+static int _reader_seek(int64_t position, void* userdata) {
+    if ((position < 0) || (position > ((CtxReaderObject*)userdata)->size))
+        return 1;  // as libheif's own memory reader
+    ((CtxReaderObject*)userdata)->position = position;
+    return 0;
+}
+
+static enum heif_reader_grow_status _reader_wait_for_file_size(int64_t target_size, void* userdata) {
+    if (target_size <= ((CtxReaderObject*)userdata)->size)
+        return heif_reader_grow_status_size_reached;
+    return heif_reader_grow_status_size_beyond_eof;
+}
+
+static int _reader_read(void* data, size_t size, void* userdata) {
+    CtxReaderObject* self = (CtxReaderObject*)userdata;
+    int64_t start = self->position;
+    int64_t position = start;
+    int64_t end = start + (int64_t)size;
+    PyThread_acquire_lock(self->segments_lock, WAIT_LOCK);
+    while (position < end) {
+        int i;
+        for (i = 0; i < self->n_segments; i++) {
+            if ((position >= self->segments[i].start) && (position < self->segments[i].end))
+                break;
+        }
+        if (i == self->n_segments)
+            break;
+        int64_t n_bytes = ((end < self->segments[i].end) ? end : self->segments[i].end) - position;
+        memcpy((char*)data + (position - start),
+               self->segments[i].ptr + (position - self->segments[i].start),
+               (size_t)n_bytes);
+        position += n_bytes;
+    }
+    int result = (position < end);
+    if (!result)
+        self->position = end;
+    else if ((self->missing_start < 0) && (position >= 0) && (end <= self->size)) {
+        self->missing_start = position;
+        self->missing_end = end;
+    }
+    PyThread_release_lock(self->segments_lock);
+    return result;
+}
+
+// The callbacks never call the Python C API: libheif holds a process-wide mutex while it reads the data of an item.
+static struct heif_reader ph_reader = {
+    .reader_api_version = 1,
+    .get_position = _reader_get_position,
+    .read = _reader_read,
+    .seek = _reader_seek,
+    .wait_for_file_size = _reader_wait_for_file_size,
+};
+
+static void _reader_lock(CtxReaderObject* self) {
+    if (!PyThread_acquire_lock(self->fetch_lock, NOWAIT_LOCK)) {
+        Py_BEGIN_ALLOW_THREADS
+        PyThread_acquire_lock(self->fetch_lock, WAIT_LOCK);
+        Py_END_ALLOW_THREADS
+    }
+}
+
+static int64_t _reader_loaded_until(CtxReaderObject* self, int64_t position) {
+    for (int i = 0; i < self->n_segments; i++) {
+        if ((position >= self->segments[i].start) && (position < self->segments[i].end)) {
+            position = self->segments[i].end;
+            i = -1;
+        }
+    }
+    return position;
+}
+
+static int _reader_fetch(CtxReaderObject* self, int64_t start, int64_t length) {
+    if (length > self->size - start)
+        length = self->size - start;
+    PyObject* data = PyObject_CallMethod(self->source, "read_at", "Ln", (long long)start, (Py_ssize_t)length);
+    if (!data)
+        return 0;
+    if ((!PyBytes_Check(data)) || (PyBytes_GET_SIZE(data) != (Py_ssize_t)length)) {
+        Py_DECREF(data);
+        PyErr_SetString(PyExc_EOFError, "file is truncated");
+        return 0;
+    }
+
+    ReaderSegment* segments = (ReaderSegment*)malloc((self->n_segments + 1) * sizeof(ReaderSegment));
+    if (!segments) {
+        Py_DECREF(data);
+        PyErr_NoMemory();
+        return 0;
+    }
+    memcpy(segments, self->segments, self->n_segments * sizeof(ReaderSegment));
+    segments[self->n_segments].start = start;
+    segments[self->n_segments].end = start + length;
+    segments[self->n_segments].data = data;
+    segments[self->n_segments].ptr = PyBytes_AS_STRING(data);
+
+    PyThread_acquire_lock(self->segments_lock, WAIT_LOCK);
+    ReaderSegment* old_segments = self->segments;
+    self->segments = segments;
+    self->n_segments += 1;
+    PyThread_release_lock(self->segments_lock);
+    free(old_segments);
+    return 1;
+}
+
+static int _reader_load_all(CtxReaderObject* self) {
+    int64_t position = _reader_loaded_until(self, 0);
+    while (position < self->size) {
+        int64_t next_start = self->size;
+        for (int i = 0; i < self->n_segments; i++) {
+            if ((self->segments[i].start > position) && (self->segments[i].start < next_start))
+                next_start = self->segments[i].start;
+        }
+        if (!_reader_fetch(self, position, next_start - position))
+            return 0;
+        position = _reader_loaded_until(self, position);
+    }
+    return 1;
+}
+
+static int _reader_fetch_missing(CtxReaderObject* self) {
+    int64_t start = self->missing_start;
+    int64_t end = self->missing_end;
+    self->missing_start = -1;
+    // every read costs one more parse: a file that is needed in many parts is read whole
+    if (++self->n_fetches > READER_MAX_FETCHES)
+        return _reader_load_all(self);
+
+    int64_t previous_end = 0;
+    int64_t next_start = self->size;
+    for (int i = 0; i < self->n_segments; i++) {
+        if ((self->segments[i].end <= start) && (self->segments[i].end > previous_end))
+            previous_end = self->segments[i].end;
+        if ((self->segments[i].start > start) && (self->segments[i].start < next_start))
+            next_start = self->segments[i].start;
+    }
+    if (end < next_start) {
+        if (start - previous_end <= self->chunk)
+            start = previous_end;
+        if (end - start < self->chunk)
+            end = start + self->chunk;
+    }
+    if (end > next_start)
+        end = next_start;
+    // what follows is loaded, libheif reads this part of the file backwards
+    if (end - start < self->chunk)
+        start = end - self->chunk;
+    if (start < previous_end)
+        start = previous_end;
+    self->chunk *= 2;
+    return _reader_fetch(self, start, end - start);
+}
+
+static PyObject* _CtxReader_fetch_missing(CtxReaderObject* self) {
+    if (self->missing_start < 0)
+        Py_RETURN_FALSE;
+    _reader_lock(self);
+    int result = _reader_fetch_missing(self);
+    PyThread_release_lock(self->fetch_lock);
+    if (!result)
+        return NULL;
+    Py_RETURN_TRUE;
+}
+
+static PyObject* _CtxReader_missing(CtxReaderObject* self, void* closure) {
+    return PyBool_FromLong(self->missing_start >= 0);
+}
+
+static void _CtxReader_destructor(CtxReaderObject* self) {
+    for (int i = 0; i < self->n_segments; i++)
+        Py_DECREF(self->segments[i].data);
+    free(self->segments);
+    if (self->segments_lock)
+        PyThread_free_lock(self->segments_lock);
+    if (self->fetch_lock)
+        PyThread_free_lock(self->fetch_lock);
+    Py_XDECREF(self->source);
+    PyObject_Del(self);
+}
+
+static PyObject* _CtxReader(PyObject* self, PyObject* args) {
+    PyObject *source, *head;
+    long long size;
+
+    if (!PyArg_ParseTuple(args, "OLS", &source, &size, &head))
+        return NULL;
+
+    CtxReaderObject* reader = PyObject_New(CtxReaderObject, &CtxReader_Type);
+    if (!reader)
+        return NULL;
+    reader->source = NULL;
+    reader->size = size;
+    reader->position = 0;
+    reader->n_segments = 0;
+    reader->chunk = READER_FIRST_CHUNK;
+    reader->n_fetches = 0;
+    reader->missing_start = -1;
+    reader->missing_end = -1;
+    reader->segments = (ReaderSegment*)malloc(sizeof(ReaderSegment));
+    reader->segments_lock = PyThread_allocate_lock();
+    reader->fetch_lock = PyThread_allocate_lock();
+    if ((!reader->segments) || (!reader->segments_lock) || (!reader->fetch_lock)) {
+        _CtxReader_destructor(reader);
+        return PyErr_NoMemory();
+    }
+    reader->segments[0].start = 0;
+    reader->segments[0].end = (int64_t)PyBytes_GET_SIZE(head);
+    reader->segments[0].data = head;
+    reader->segments[0].ptr = PyBytes_AS_STRING(head);
+    Py_INCREF(head);
+    reader->n_segments = 1;
+    reader->source = source;
+    Py_INCREF(source);
+    return (PyObject*)reader;
+}
+
+static struct PyMethodDef _CtxReader_methods[] = {
+    {"fetch_missing", (PyCFunction)_CtxReader_fetch_missing, METH_NOARGS},
+    {NULL, NULL}
+};
+
+static struct PyGetSetDef _CtxReader_getseters[] = {
+    {"missing", (getter)_CtxReader_missing, NULL, NULL, NULL},
+    {NULL, NULL, NULL, NULL, NULL}
+};
 
 /* =========== CtxWriteImage ======== */
 
@@ -1419,6 +1677,16 @@ int decode_image(CtxImageObject* self) {
     enum heif_chroma chroma;
     enum heif_channel channel;
 
+    if (Py_TYPE(self->file_bytes) == &CtxReader_Type) {
+        // the first decode reads the rest of the file, nothing is read from it after that
+        CtxReaderObject* reader = (CtxReaderObject*)self->file_bytes;
+        _reader_lock(reader);
+        int loaded = _reader_load_all(reader);
+        PyThread_release_lock(reader->fetch_lock);
+        if (!loaded)
+            return 0;
+    }
+
     Py_BEGIN_ALLOW_THREADS
     struct heif_decoding_options *decode_options = heif_decoding_options_alloc();
     decode_options->convert_hdr_to_8bit = self->hdr_to_8bit;
@@ -1957,8 +2225,22 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
         heif_context_set_security_limits(heif_ctx, heif_get_disabled_security_limits());
     }
 
-    if (check_error(heif_context_read_from_memory_without_copy(
-                        heif_ctx, (void*)PyBytes_AS_STRING(heif_bytes), PyBytes_GET_SIZE(heif_bytes), NULL))) {
+    CtxReaderObject* reader = NULL;
+    struct heif_error error;
+    if (Py_TYPE(heif_bytes) == &CtxReader_Type) {
+        reader = (CtxReaderObject*)heif_bytes;
+        reader->position = 0;
+        reader->missing_start = -1;
+        error = heif_context_read_from_reader(heif_ctx, &ph_reader, reader, NULL);
+    }
+    else
+        error = heif_context_read_from_memory_without_copy(
+            heif_ctx, (void*)PyBytes_AS_STRING(heif_bytes), PyBytes_GET_SIZE(heif_bytes), NULL);
+    if ((reader) && (reader->missing_start >= 0)) {
+        heif_context_free(heif_ctx);
+        Py_RETURN_NONE;
+    }
+    if (check_error(error)) {
         heif_context_free(heif_ctx);
         return NULL;
     }
@@ -1988,7 +2270,6 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
     enum heif_colorspace colorspace;
     enum heif_chroma chroma;
     struct heif_image_handle* handle;
-    struct heif_error error;
     for (int i = 0; i < n_images; i++) {
         int primary = 0;
         if (images_ids[i] == primary_image_id) {
@@ -2026,6 +2307,11 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
     if (!entity_groups) {
         Py_DECREF(images_list);
         return NULL;
+    }
+    if ((reader) && (reader->missing_start >= 0)) {
+        Py_DECREF(images_list);
+        Py_DECREF(entity_groups);
+        Py_RETURN_NONE;
     }
     PyObject* result = PyTuple_Pack(2, images_list, entity_groups);
     Py_DECREF(images_list);
@@ -2108,6 +2394,7 @@ static PyObject* _load_plugin(PyObject* self, PyObject* args) {
 
 static PyMethodDef heifMethods[] = {
     {"CtxWrite", (PyCFunction)_CtxWrite, METH_VARARGS},
+    {"CtxReader", (PyCFunction)_CtxReader, METH_VARARGS},
     {"load_file", (PyCFunction)_load_file, METH_VARARGS},
     {"get_lib_info", (PyCFunction)_get_lib_info, METH_NOARGS},
     {"load_plugins", (PyCFunction)_load_plugins, METH_VARARGS},
@@ -2135,6 +2422,17 @@ static PyTypeObject CtxWrite_Type = {
     .tp_methods = _CtxWrite_methods,
 };
 
+static PyTypeObject CtxReader_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "CtxReader",
+    .tp_basicsize = sizeof(CtxReaderObject),
+    .tp_itemsize = 0,
+    .tp_dealloc = (destructor)_CtxReader_destructor,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_getset = _CtxReader_getseters,
+    .tp_methods = _CtxReader_methods,
+};
+
 static PyBufferProcs _CtxImage_as_buffer = {
     .bf_getbuffer = (getbufferproc)_CtxImage_getbuffer,
 };
@@ -2159,6 +2457,9 @@ static int setup_module(PyObject* m) {
         return -1;
 
     if (PyType_Ready(&CtxImage_Type) < 0)
+        return -1;
+
+    if (PyType_Ready(&CtxReader_Type) < 0)
         return -1;
 
     heif_init(NULL);

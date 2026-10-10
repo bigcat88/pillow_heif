@@ -2,9 +2,14 @@ All notable changes to this project will be documented in this file.
 
 ## [1.9.0 - ]
 
+### Added
+
+- Pillow plugin: `Image.open()` with a file path reads only the metadata of the file, the rest of it is read when the image is loaded. The whole file was read into memory when opening before. #493
+
 ### Changed
 
 - `libheif` was updated from the `1.23.4` to `1.23.5` version. #491
+- Pillow plugin: a file opened by path must stay unchanged on disk until `load()`, `load()` raises `OSError` when it was modified in between or removed after the image was closed. #493
 
 ## [1.8.0 - 2026-09-22]
 
