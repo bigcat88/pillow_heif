@@ -125,7 +125,7 @@ jobs:
           key: deps-linux-${{ matrix.libc }}-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist-linux-${{ matrix.libc }}-${{ matrix.arch }}
           path: wheelhouse/*.whl
@@ -134,7 +134,7 @@ jobs:
 
       - name: Upload coverage data
         if: github.event_name != 'push'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-linux-${{ matrix.libc }}-${{ matrix.arch }}
           path: coverage-data/
@@ -204,7 +204,7 @@ jobs:
           key: deps-macos-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist-macos-${{ matrix.arch }}
           path: wheelhouse/*.whl
@@ -213,7 +213,7 @@ jobs:
 
       - name: Upload coverage data
         if: github.event_name != 'push'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-macos-${{ matrix.arch }}
           path: coverage-data/
@@ -292,7 +292,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -vv -w {dest_dir} {wheel} --add-path ${{ env.MSYS2_PREFIX }}/bin"
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist-windows-${{ matrix.arch_name }}
           path: wheelhouse/*.whl
@@ -301,7 +301,7 @@ jobs:
 
       - name: Upload coverage data
         if: github.event_name != 'push'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-windows-${{ matrix.arch_name }}
           path: coverage-data/
@@ -367,7 +367,7 @@ jobs:
         run: python3 -m pytest
 
       - name: Upload sdist
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist-sdist
           path: wheelhouse/*.tar.gz
