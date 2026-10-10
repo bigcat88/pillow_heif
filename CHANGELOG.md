@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- `libheif` was updated from the `1.23.4` to `1.23.5` version. #491
+- `libheif` was updated from the `1.23.4` to `1.23.6` version. #491 #499
+- Saving `;10`/`;12` data with sample values above its bit depth now raises `ValueError`. #499
 
 ## [1.8.0 - 2026-09-22]
 
