@@ -1,6 +1,8 @@
 All notable changes to this project will be documented in this file.
 
-## [1.9.0 - ]
+## [1.8.1 - 2026-10-11]
+
+This is the last version that supports `Python 3.10` and `Pillow` `11`/`12`: version `1.9.0` will require `Pillow 13`, which needs `Python 3.11` or newer.
 
 ### Changed
 
