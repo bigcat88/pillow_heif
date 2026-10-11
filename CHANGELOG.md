@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - `libheif` was updated from the `1.23.4` to `1.23.6` version. #491 #499
 - Saving `;10`/`;12` data with sample values above its bit depth now raises `ValueError`. #499
+- `libx265` was updated from the `4.2` to `4.3` version. #503
 
 ## [1.8.0 - 2026-09-22]
 

@@ -18,8 +18,8 @@ Files: libde265.[dylib|so|dll]
 Name: x265
 License: GPLv2
 Files: libx265.[dylib|so|dll]
-  For details, see https://bitbucket.org/multicoreware/x265_git/src/4.2/COPYING
-  Source code: https://bitbucket.org/multicoreware/x265_git/src/4.2
+  For details, see https://github.com/Multicorewareinc/x265/tree/4.3/COPYING
+  Source code: https://github.com/Multicorewareinc/x265/tree/4.3
 
 Name: MinGW-w64 runtime (Windows wheels only)
 License: GPL-3.0-with-GCC-exception (libgcc, libstdc++), MIT and BSD (libwinpthread)

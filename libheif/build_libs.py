@@ -19,7 +19,7 @@ INSTALL_DIR_LIBS = environ.get("INSTALL_DIR_LIBS", _DEFAULT_PREFIX)
 # Extra arguments for the libheif `cmake` configure step, they override the default ones.
 LIBHEIF_CMAKE_ARGS = environ.get("PH_LIBHEIF_CMAKE_ARGS", "")
 
-LIBX265_URL = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.2.tar.gz"
+LIBX265_URL = "https://github.com/Multicorewareinc/x265/releases/download/4.3/x265_4.3.tar.gz"
 LIBDE265_URL = "https://github.com/strukturag/libde265/releases/download/v1.1.3/libde265-1.1.3.tar.gz"
 LIBHEIF_URL = "https://github.com/strukturag/libheif/releases/download/v1.23.6/libheif-1.23.6.tar.gz"
 
