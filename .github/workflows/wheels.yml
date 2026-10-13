@@ -102,7 +102,7 @@ jobs:
           key: deps-linux-${{ matrix.libc }}-${{ matrix.arch }}-${{ hashFiles('libheif/build_libs.py') }}
 
       - name: Run cibuildwheel
-        uses: pypa/cibuildwheel@e090b81e30c4d855ea63bf4b6e59204c09a101ae # v4.2.1
+        uses: pypa/cibuildwheel@b3395e271a35f73dad77f21802abe9b986dfe299 # v4.3.1
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: ${{ matrix.libc == 'manylinux' && '*-musllinux*' || '*-manylinux*' }}
@@ -187,7 +187,7 @@ jobs:
         run: brew install libjpeg little-cms2
 
       - name: Run cibuildwheel
-        uses: pypa/cibuildwheel@e090b81e30c4d855ea63bf4b6e59204c09a101ae # v4.2.1
+        uses: pypa/cibuildwheel@b3395e271a35f73dad77f21802abe9b986dfe299 # v4.3.1
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_ENVIRONMENT_MACOS: >-
@@ -283,7 +283,7 @@ jobs:
         run: echo 'CIBW_BUILD=cp310-* cp315-*' >> "$GITHUB_ENV"
 
       - name: Run cibuildwheel
-        uses: pypa/cibuildwheel@e090b81e30c4d855ea63bf4b6e59204c09a101ae # v4.2.1
+        uses: pypa/cibuildwheel@b3395e271a35f73dad77f21802abe9b986dfe299 # v4.3.1
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_ENVIRONMENT_WINDOWS: >-
