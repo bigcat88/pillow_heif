@@ -64,8 +64,6 @@ def test_open_save_objects_leaks(image):
         gc.set_debug(0)
     summary2 = tracker.SummaryTracker().create_summary()
     results = summary._sweep(summary.get_diff(_summary1, summary2))  # noqa
-    # Python 3.10 gives a function an inline cache at its 1024th call: its code object grows, nothing leaks
-    results = [i for i in results if i[0] != "code" or i[1]]
     if results:
         summary.print_(results)
         raise MemoryError("Potential memory leaks")
