@@ -690,9 +690,7 @@ def test_lossless_encoding_non_primary_image(save_format):
     im_out = Image.open(buf)
     helpers.assert_image_equal(im_rgb, im_out)
     bin_data = ImageSequence.Iterator(im_out)[1].copy()
-    flattened_binary_array = list(bin_data.getdata())
-    binary_data_with_padding = b"".join(bytes(pixel) for pixel in flattened_binary_array)
-    z = binary_data_with_padding.rstrip(b"\x00")
+    z = bin_data.tobytes().rstrip(b"\x00")
     assert zlib.decompress(z) == binary_data_to_encode
 
 

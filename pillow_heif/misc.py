@@ -545,7 +545,7 @@ class CtxEncode:
         im_out = self.ctx_write.create_image(img.size, MODE_INFO[img.mode][2], MODE_INFO[img.mode][3], 0)
         # image data
         for i in (HeifChannel.CHANNEL_Y, HeifChannel.CHANNEL_CB, HeifChannel.CHANNEL_CR):
-            im_out.add_plane_l(img.size, 8, 8, bytes(img.getdata(i)), kwargs.get("stride", 0), i)
+            im_out.add_plane_l(img.size, 8, 8, img.getchannel(i).tobytes(), kwargs.get("stride", 0), i)
         self._finish_add_image(im_out, img.size, img.mode, **kwargs)
 
     def _finish_add_image(self, im_out, size: tuple[int, int], mode: str, **kwargs):
