@@ -6,7 +6,7 @@ requires = [
 
 [tool.cibuildwheel]
 build = [
-  "cp310-* cp311-* cp312-* cp313-* cp314-* cp314t-* cp315-* cp315t-* pp311-*",
+  "cp311-* cp312-* cp313-* cp314-* cp314t-* cp315-* cp315t-* pp311-*",
 ]
 enable = [ "pypy" ]
 build-verbosity = "2"
@@ -27,12 +27,12 @@ windows.before-build = [
 ]
 
 [tool.black]
-target-version = [ "py310" ]
+target-version = [ "py311" ]
 line-length = 120
 preview = true
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 120
 preview = true
 lint.select = [
@@ -112,7 +112,7 @@ profile = "black"
 master.extension-pkg-allow-list = [
   "_pillow_heif",
 ]
-master.py-version = "3.10"
+master.py-version = "3.11"
 messages_control.disable = [
   "line-too-long",
   "missing-class-docstring",

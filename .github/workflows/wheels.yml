@@ -25,7 +25,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  EXPECTED_DISTS: 70
+  EXPECTED_DISTS: 62
 
 jobs:
   check-version:
@@ -91,7 +91,7 @@ jobs:
 
       - name: Reduce build to oldest and newest stable Python
         if: github.event_name == 'pull_request'
-        run: echo 'CIBW_BUILD=cp310-* cp315-*' >> "$GITHUB_ENV"
+        run: echo 'CIBW_BUILD=cp311-* cp315-*' >> "$GITHUB_ENV"
 
       - name: Restore dependencies cache
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
@@ -170,7 +170,7 @@ jobs:
 
       - name: Reduce build to oldest and newest stable Python
         if: github.event_name == 'pull_request'
-        run: echo 'CIBW_BUILD=cp310-* cp315-*' >> "$GITHUB_ENV"
+        run: echo 'CIBW_BUILD=cp311-* cp315-*' >> "$GITHUB_ENV"
 
       - name: Restore dependencies cache
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
@@ -280,7 +280,7 @@ jobs:
       - name: Reduce build to oldest and newest stable Python
         if: github.event_name == 'pull_request'
         shell: bash
-        run: echo 'CIBW_BUILD=cp310-* cp315-*' >> "$GITHUB_ENV"
+        run: echo 'CIBW_BUILD=cp311-* cp315-*' >> "$GITHUB_ENV"
 
       - name: Run cibuildwheel
         uses: pypa/cibuildwheel@b3395e271a35f73dad77f21802abe9b986dfe299 # v4.3.1

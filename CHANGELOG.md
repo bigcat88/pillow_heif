@@ -1,5 +1,13 @@
 All notable changes to this project will be documented in this file.
 
+## [1.9.0 - ]
+
+### Changed
+
+- Minimum supported `Pillow` version raised to `13.0.0`.
+- Dropped `Python 3.10` support.
+- `PyPy 3.11` wheels are built for `PyPy 8.0`, `PyPy 7.3` installs build from the sdist. #498
+
 ## [1.8.1 - 2026-10-11]
 
 This is the last version that supports `Python 3.10` and `Pillow` `11`/`12`: version `1.9.0` will require `Pillow 13`, which needs `Python 3.11` or newer.
