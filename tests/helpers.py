@@ -27,8 +27,8 @@ def convert_to_comparable(a, b):
     if a.mode == "P":
         new_a = Image.new("L", a.size)
         new_b = Image.new("L", b.size)
-        new_a.putdata(a.getdata())
-        new_b.putdata(b.getdata())
+        new_a.putdata(a.get_flattened_data())
+        new_b.putdata(b.get_flattened_data())
     elif a.mode == "I;16":
         new_a = a.convert("I")
         new_b = b.convert("I")
