@@ -6,7 +6,7 @@ requires = [
 
 [tool.cibuildwheel]
 build = [
-  "cp311-* cp312-* cp313-* cp314-* cp314t-* cp315-* cp315t-* pp311-*",
+  "cp311-* cp312-* cp313-* cp314-* cp314t-* cp315-* cp315t-* pp311-* pp312-*",
 ]
 enable = [ "pypy" ]
 build-verbosity = "2"

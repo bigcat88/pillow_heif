@@ -25,7 +25,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  EXPECTED_DISTS: 62
+  EXPECTED_DISTS: 67
 
 jobs:
   check-version:

@@ -2,6 +2,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.9.0 - ]
 
+### Added
+
+- `PyPy 3.12` wheels added. #508
+
 ### Changed
 
 - Minimum supported `Pillow` version raised to `13.0.0`.
