@@ -342,7 +342,7 @@ class HeifFile:
                 kwargs.get("hdr_to_16bit", True),
                 preferred_decoder,
                 options.DISABLE_SECURITY_LIMITS,
-                kwargs.get("pillow_layout", False),
+                kwargs.get("_pillow_layout", False),
             )
         self.mimetype = mimetype
         images = [i for i in images if i is not None]
@@ -630,13 +630,6 @@ def open_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
         should be converted to 16-bit mode during decoding. `Has lower priority than convert_hdr_to_8bit`!
         Default = **True**
 
-        **pillow_layout** a boolean value indicating that images should be decoded for `Pillow`:
-        8-bit `RGB` images get the four bytes per pixel layout `Pillow` keeps images in, and
-        :py:meth:`~pillow_heif.HeifImage.to_pillow` shares the decoded data with the created image
-        instead of copying it, so that image is read-only until it is changed. `data` and `stride`
-        of an `RGB` image decoded this way have four bytes per pixel, with the fourth one unused.
-        Default = **False**
-
     :returns: :py:class:`~pillow_heif.HeifFile` object.
     :exception ValueError: invalid input data.
     :exception EOFError: corrupted image data.
@@ -661,13 +654,6 @@ def read_heif(fp, convert_hdr_to_8bit=True, bgr_mode=False, **kwargs) -> HeifFil
     :param kwargs: **hdr_to_16bit** a boolean value indicating that 10/12-bit image data
         should be converted to 16-bit mode during decoding. `Has lower priority than convert_hdr_to_8bit`!
         Default = **True**
-
-        **pillow_layout** a boolean value indicating that images should be decoded for `Pillow`:
-        8-bit `RGB` images get the four bytes per pixel layout `Pillow` keeps images in, and
-        :py:meth:`~pillow_heif.HeifImage.to_pillow` shares the decoded data with the created image
-        instead of copying it, so that image is read-only until it is changed. `data` and `stride`
-        of an `RGB` image decoded this way have four bytes per pixel, with the fourth one unused.
-        Default = **False**
 
     :returns: :py:class:`~pillow_heif.HeifFile` object.
     :exception ValueError: invalid input data.

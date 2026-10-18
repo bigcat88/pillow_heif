@@ -162,12 +162,12 @@ Images decoded from a file implement the `Arrow PyCapsule interface
 <https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html>`_:
 :py:class:`~pillow_heif.HeifImage`, :py:class:`~pillow_heif.heif.HeifDepthImage` and
 :py:class:`~pillow_heif.heif.HeifAuxImage` can be given to ``Image.fromarrow``, ``pyarrow.array``
-or any other Arrow consumer without copying the decoded data. This is also what
-:py:meth:`~pillow_heif.HeifImage.to_pillow` uses to share the decoded plane with the created
-image when the file was opened with the ``pillow_layout`` option.
+or any other Arrow consumer without copying the decoded data. This is also how the `Pillow`
+plugin gives the decoded image to `Pillow`.
 
-The exported array is flat: `width * height * channels` values of ``uint8``, where an 8-bit
-``RGB`` image decoded with ``pillow_layout`` has four values per pixel with the fourth one unused.
+The exported array is flat: `width * height * channels` values of ``uint8``. `Pillow` can use
+``L``, ``I;16`` and ``RGBA`` planes as they are; an ``RGB`` plane has three values per pixel,
+which is not how `Pillow` stores images, so ``Image.fromarrow`` rejects it.
 16-bit images are exported as ``int16`` — the format `Pillow` itself uses for ``I;16`` images —
 so an Arrow consumer that does arithmetic on the values should reinterpret them as ``uint16``,
 otherwise values above `32767` will be read as negative.

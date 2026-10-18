@@ -47,7 +47,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
             # `remove_stride` compacts the rows in place, which is what makes the decoded plane
             # usable as Pillow image storage even when `libheif` padded it to its alignment
             heif_file = HeifFile(
-                self.fp, convert_hdr_to_8bit=True, hdr_to_16bit=True, remove_stride=True, pillow_layout=True
+                self.fp, convert_hdr_to_8bit=True, hdr_to_16bit=True, remove_stride=True, _pillow_layout=True
             )
         except (OSError, ValueError, SyntaxError, RuntimeError, EOFError) as exception:
             raise SyntaxError(str(exception)) from None

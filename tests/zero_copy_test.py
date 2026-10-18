@@ -54,7 +54,7 @@ def test_to_pillow_borrows_only_with_pillow_layout(mode):
     default = pillow_heif.open_heif(BytesIO(data))[0].to_pillow()
     assert not borrowed(default)
     default.load()[0, 0] = default.getpixel((1, 1))
-    assert borrowed(pillow_heif.open_heif(BytesIO(data), pillow_layout=True)[0].to_pillow())
+    assert borrowed(pillow_heif.open_heif(BytesIO(data), _pillow_layout=True)[0].to_pillow())
 
 
 @pytest.mark.skipif(np is None, reason="`numpy` not installed")
@@ -62,7 +62,7 @@ def test_to_pillow_borrows_only_with_pillow_layout(mode):
 def test_numpy_array_does_not_depend_on_the_layout(mode):
     data = encoded(mode, (128, 64))
     expected = np.asarray(pillow_heif.open_heif(BytesIO(data))[0])
-    result = np.asarray(pillow_heif.open_heif(BytesIO(data), pillow_layout=True)[0])
+    result = np.asarray(pillow_heif.open_heif(BytesIO(data), _pillow_layout=True)[0])
     assert result.shape == expected.shape
     assert np.array_equal(result, expected)
 
@@ -70,7 +70,7 @@ def test_numpy_array_does_not_depend_on_the_layout(mode):
 @pytest.mark.skipif(np is None, reason="`numpy` not installed")
 def test_numpy_array_of_a_padded_pillow_layout_plane():
     data = encoded("RGB", (101, 64))
-    heif_image = pillow_heif.open_heif(BytesIO(data), remove_stride=False, pillow_layout=True)[0]
+    heif_image = pillow_heif.open_heif(BytesIO(data), remove_stride=False, _pillow_layout=True)[0]
     heif_image.load()
     assert heif_image.stride != heif_image.size[0] * 4
     arr = np.asarray(heif_image)
@@ -83,12 +83,12 @@ def test_numpy_array_of_a_padded_pillow_layout_plane():
 def test_to_pillow_pixels_do_not_depend_on_the_layout(pillow_layout):
     data = encoded("RGB", (128, 64))
     expected = pillow_heif.open_heif(BytesIO(data))[0].to_pillow()
-    result = pillow_heif.open_heif(BytesIO(data), pillow_layout=pillow_layout)[0].to_pillow()
+    result = pillow_heif.open_heif(BytesIO(data), _pillow_layout=pillow_layout)[0].to_pillow()
     helpers.assert_image_equal(result, expected)
 
 
 def test_borrowed_image_is_copy_on_write():
-    heif_file = pillow_heif.open_heif(BytesIO(encoded("RGBA", (128, 64))), pillow_layout=True)
+    heif_file = pillow_heif.open_heif(BytesIO(encoded("RGBA", (128, 64))), _pillow_layout=True)
     heif_image = heif_file[0]
     im = heif_image.to_pillow()
     assert borrowed(im)
@@ -113,7 +113,7 @@ def test_borrowed_image_pixel_access_is_read_only():
 
 
 def test_borrowed_images_do_not_share_writes():
-    heif_image = pillow_heif.open_heif(BytesIO(encoded("RGBA", (128, 64))), pillow_layout=True)[0]
+    heif_image = pillow_heif.open_heif(BytesIO(encoded("RGBA", (128, 64))), _pillow_layout=True)[0]
     first, second = heif_image.to_pillow(), heif_image.to_pillow()
     original = second.getpixel((5, 5))
     first.putpixel((5, 5), (9, 9, 9, 9))
@@ -133,7 +133,7 @@ def test_borrowed_image_outlives_the_heif_file():
 
 
 def test_arrow_c_array_shares_the_plane():
-    heif_image = pillow_heif.open_heif(BytesIO(encoded("RGB", (128, 64))), pillow_layout=True)[0]
+    heif_image = pillow_heif.open_heif(BytesIO(encoded("RGB", (128, 64))), _pillow_layout=True)[0]
     schema_capsule, array_capsule = heif_image.__arrow_c_array__()
     assert "arrow_schema" in repr(schema_capsule)
     assert "arrow_array" in repr(array_capsule)
@@ -148,7 +148,7 @@ def test_arrow_shares_a_16bit_plane():
     im16 = helpers.gradient_rgb().resize((128, 64)).convert("L").convert("I;16")
     buf = BytesIO()
     pillow_heif.from_pillow(im16).save(buf, quality=-1)
-    heif_image = pillow_heif.open_heif(BytesIO(buf.getvalue()), convert_hdr_to_8bit=False, pillow_layout=True)[0]
+    heif_image = pillow_heif.open_heif(BytesIO(buf.getvalue()), convert_hdr_to_8bit=False, _pillow_layout=True)[0]
     assert heif_image.mode == "I;16"
     im = heif_image.to_pillow()
     assert borrowed(im)  # `fromarrow` accepts only the `int16` format it uses for `I;16` itself
@@ -162,7 +162,7 @@ def test_arrow_shares_a_16bit_plane():
 def test_16bit_color_is_not_borrowable():
     # Pillow has no 16-bit multichannel modes, only the single channel `I;16` plane can be borrowed
     heif_image = pillow_heif.open_heif(
-        Path("images/heif/RGB_10__128x128.heif"), convert_hdr_to_8bit=False, pillow_layout=True
+        Path("images/heif/RGB_10__128x128.heif"), convert_hdr_to_8bit=False, _pillow_layout=True
     )[0]
     heif_image.load()
     assert heif_image.mode == "RGB;16"
@@ -185,7 +185,7 @@ def test_arrow_interface_needs_a_decoded_image():
 def test_to_pillow_copies_a_padded_pillow_layout_plane():
     # four bytes per pixel but with padding between the rows, so it has to be copied as "RGBX"
     data = encoded("RGB", (101, 64))
-    heif_image = pillow_heif.open_heif(BytesIO(data), remove_stride=False, pillow_layout=True)[0]
+    heif_image = pillow_heif.open_heif(BytesIO(data), remove_stride=False, _pillow_layout=True)[0]
     heif_image.load()
     assert heif_image._c_image.plane_channels == 4
     assert heif_image.stride != heif_image.size[0] * 4
@@ -208,7 +208,7 @@ def test_to_pillow_copies_a_padded_three_byte_plane():
 
 def test_arrow_c_array_rejects_a_padded_plane():
     # 101 pixels are 404 bytes, which `libheif` pads to its 16 byte alignment: nothing flat to export
-    heif_image = pillow_heif.open_heif(BytesIO(encoded("RGB", (101, 64))), remove_stride=False, pillow_layout=True)[0]
+    heif_image = pillow_heif.open_heif(BytesIO(encoded("RGB", (101, 64))), remove_stride=False, _pillow_layout=True)[0]
     heif_image.load()
     assert heif_image.stride != heif_image.size[0] * 4
     with pytest.raises(ValueError, match="padded"):
