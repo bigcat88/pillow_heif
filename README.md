@@ -145,5 +145,6 @@ if im.info["depth_images"]:
 | CPython 3.15       |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | CPython 3.15t      |        ✅        |         ✅         |      ✅       |     ✅      |     ✅      |
 | PyPy 3.11 v8.0     |        ✅        |         ✅         |      ✅       |    N/A     |     ✅      |
+| PyPy 3.12 v8.0     |        ✅        |         ✅         |      ✅       |    N/A     |     ✅      |
 
 &ast; **x86_64**, **aarch64** wheels.
