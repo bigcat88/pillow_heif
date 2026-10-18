@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- `numpy` array of an image decoded with `remove_stride=False` had shifted rows when the padded stride is not a multiple of the pixel size, e.g. 8-bit `RGB` 101 pixels wide. #463
 - Saving a `YCbCr` image emitted the `Pillow` `DeprecationWarning` for `Image.getdata`, deprecated since `Pillow` `12.1.0`. #507
 
 ## [1.8.1 - 2026-10-11]

@@ -1638,7 +1638,13 @@ static PyObject* _CtxImage_arrow_schema(CtxImageObject* self, PyObject* args) {
     return capsule;
 }
 
-static PyObject* _CtxImage_arrow_array(CtxImageObject* self, PyObject* args) {
+static PyObject* _CtxImage_arrow_array(CtxImageObject* self, PyObject* args, PyObject* kwargs) {
+    // a schema request is best-effort by the interface, the decoded data is offered as it is
+    static char* kwlist[] = {"requested_schema", NULL};
+    PyObject* requested_schema = NULL;
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &requested_schema))
+        return NULL;
+
     MUTEX_LOCK(&self->decode_mutex);
     if (!self->data) {
         if (!decode_image(self)) {
@@ -2020,8 +2026,8 @@ static struct PyMethodDef _CtxImage_methods[] = {
     {"get_aux_image", (PyCFunction)_CtxImage_get_aux_image, METH_O},
     {"get_aux_type", (PyCFunction)_CtxImage_get_aux_type, METH_O},
     {"get_thumbnail", (PyCFunction)_CtxImage_get_thumbnail, METH_O},
-    {"__arrow_c_schema__", (PyCFunction)_CtxImage_arrow_schema, METH_VARARGS},
-    {"__arrow_c_array__", (PyCFunction)_CtxImage_arrow_array, METH_VARARGS},
+    {"__arrow_c_schema__", (PyCFunction)_CtxImage_arrow_schema, METH_NOARGS},
+    {"__arrow_c_array__", (PyCFunction)_CtxImage_arrow_array, METH_VARARGS | METH_KEYWORDS},
     {NULL, NULL}
 };
 

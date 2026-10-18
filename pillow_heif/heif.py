@@ -97,11 +97,13 @@ class BaseImage:
         shape: tuple[Any, ...] = (self.size[1], width)
         if channels > 1:
             shape += (channels,)
-        interface = {"shape": shape, "typestr": "<u2" if item_size == 2 else "|u1", "version": 3, "data": self.data}
-        # with `pillow_layout` a pixel of the plane is wider than its `channels`, the unused byte is stepped over
-        if plane_channels != channels:
-            interface["strides"] = (self.stride, plane_channels * item_size, item_size)
-        return interface
+        # `stride` is not always a multiple of the pixel size, and with `pillow_layout` a pixel of the plane
+        # is wider than its `channels`, the unused byte is stepped over
+        strides: tuple[int, ...] = (self.stride, plane_channels * item_size)
+        if channels > 1:
+            strides += (item_size,)
+        typestr = "<u2" if item_size == 2 else "|u1"
+        return {"shape": shape, "typestr": typestr, "strides": strides, "version": 3, "data": self.data}
 
     def __arrow_c_schema__(self):
         """`Arrow C data interface <https://arrow.apache.org/docs/format/CDataInterface.html>`_ support."""
@@ -113,8 +115,8 @@ class BaseImage:
 
         The decoded data is shared with the consumer and not copied, so it must be treated as read-only.
 
-        16-bit images are exported as ``int16`` — the format `Pillow` itself uses for ``I;16`` images —
-        so for arithmetic on the values reinterpret them as ``uint16``.
+        Images with more than 8 bits per sample are exported as ``int16`` — the format `Pillow` itself uses
+        for ``I;16`` images — so for arithmetic on the values reinterpret them as ``uint16``.
         """
         self.load()
         return self._arrow_source().__arrow_c_array__()

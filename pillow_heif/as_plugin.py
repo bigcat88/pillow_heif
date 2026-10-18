@@ -80,6 +80,11 @@ class _LibHeifImageFile(ImageFile.ImageFile):
                 self.__thumbnail = None
         return super().load()
 
+    def close(self) -> None:
+        self._heif_file = None
+        self.__thumbnail = None
+        super().close()
+
     def load_prepare(self) -> None:
         # Pillow 11+ creates the image memory only when there is none, `seek` and `draft` can change the size or mode
         if self._im is not None and (self.im.size != self.size or self.im.mode != self.mode):

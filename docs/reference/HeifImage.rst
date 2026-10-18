@@ -168,9 +168,11 @@ plugin gives the decoded image to `Pillow`.
 The exported array is flat: `width * height * channels` values of ``uint8``. `Pillow` can use
 ``L``, ``I;16`` and ``RGBA`` planes as they are; an ``RGB`` plane has three values per pixel,
 which is not how `Pillow` stores images, so ``Image.fromarrow`` rejects it.
-16-bit images are exported as ``int16`` — the format `Pillow` itself uses for ``I;16`` images —
-so an Arrow consumer that does arithmetic on the values should reinterpret them as ``uint16``,
-otherwise values above `32767` will be read as negative.
+
+Images with more than 8 bits per sample (``;10``, ``;12``, ``;16`` and ``I;16`` modes) are exported
+as ``int16`` — the format `Pillow` itself uses for ``I;16`` images — so an Arrow consumer that
+does arithmetic on the values should reinterpret them as ``uint16``, otherwise values above
+`32767` will be read as negative.
 
 .. note:: `Pillow` has no 16-bit multichannel modes, so of the 16-bit images only the single
     channel ``I;16`` ones can be given to it; ``RGB;16``/``RGBA;16`` images export the same way,

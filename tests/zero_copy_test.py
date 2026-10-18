@@ -104,12 +104,20 @@ def test_borrowed_image_pixel_access_is_read_only():
     # Every other way of changing an image copies it first, see `test_borrowed_image_is_copy_on_write`.
     im = Image.open(BytesIO(encoded("RGB", (128, 64))))
     pixels = im.load()
+    assert borrowed(im)
     assert pixels[0, 0] == im.getpixel((0, 0))
     with pytest.raises(ValueError, match="readonly"):
         pixels[0, 0] = (1, 2, 3)
     im.putpixel((0, 0), (1, 2, 3))  # detaches the image from the plane
     im.load()[1, 1] = (4, 5, 6)
     assert im.getpixel((1, 1)) == (4, 5, 6)
+
+
+def test_plugin_load_after_close_raises():
+    im = Image.open(BytesIO(encoded("RGB", (128, 64))))
+    im.close()
+    with pytest.raises(ValueError, match="closed image"):
+        im.load()
 
 
 def test_borrowed_images_do_not_share_writes():
@@ -138,6 +146,9 @@ def test_arrow_c_array_shares_the_plane():
     assert "arrow_schema" in repr(schema_capsule)
     assert "arrow_array" in repr(array_capsule)
     assert "arrow_schema" in repr(heif_image.__arrow_c_schema__())
+    # consumers like `nanoarrow` pass the schema request by keyword
+    requested_schema = heif_image.__arrow_c_schema__()
+    assert "arrow_array" in repr(heif_image._c_image.__arrow_c_array__(requested_schema=requested_schema)[1])
     im = Image.fromarrow(heif_image, "RGB", heif_image.size)
     assert borrowed(im)
     helpers.assert_image_equal(im, heif_image.to_pillow())
