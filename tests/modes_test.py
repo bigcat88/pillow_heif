@@ -6,8 +6,7 @@ import pytest
 from helpers import compare_hashes, compare_heif_files_fields, hevc_enc
 from PIL import Image
 
-from pillow_heif import HeifImagePlugin  # noqa
-from pillow_heif import from_bytes, open_heif
+from pillow_heif import HeifImagePlugin, from_bytes, open_heif  # noqa
 
 np = pytest.importorskip("numpy", reason="NumPy not installed")
 
