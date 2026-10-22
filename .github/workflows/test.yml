@@ -39,7 +39,7 @@ env:
 
 jobs:
   lint:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     name: Analysis
 
     steps:
@@ -78,7 +78,7 @@ jobs:
           python3 -m mypy "pillow_heif/"
 
   docs:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     name: Docs
 
     steps:
@@ -99,7 +99,7 @@ jobs:
         run: python3 -m sphinx -b html -W --keep-going docs docs/_build
 
   pillow-dev:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     name: Pillow-dev
 
     steps:
