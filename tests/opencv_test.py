@@ -10,8 +10,7 @@ import pytest
 from helpers import compare_hashes, hevc_enc
 from PIL import Image
 
-from pillow_heif import HeifImagePlugin  # noqa
-from pillow_heif import from_bytes, open_heif, options
+from pillow_heif import HeifImagePlugin, from_bytes, open_heif, options  # noqa
 
 np = pytest.importorskip("numpy", reason="NumPy not installed")
 cv2 = pytest.importorskip("cv2", reason="OpenCV not installed")
