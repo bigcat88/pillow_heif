@@ -77,3 +77,22 @@ def test_numpy_disable_stride_removal(img):
     heif_file = pillow_heif.open_heif(img, convert_hdr_to_8bit=False, remove_stride=False)
     heif_array = np.asarray(heif_file)
     assert heif_array.shape == (100, 64, 4 if heif_file.has_alpha else 3)
+    expected = np.asarray(pillow_heif.open_heif(img, convert_hdr_to_8bit=False))
+    assert np.array_equal(heif_array[:, :29], expected)
+
+
+@pytest.mark.parametrize("mode", ("L", "RGB", "RGBA", "RGB;16"))
+@pytest.mark.parametrize("width", (29, 64, 65, 101))
+def test_numpy_padded_rows(mode, width):
+    # the padded stride is not always a multiple of the pixel size, e.g. 65 `RGB` pixels are padded to 208 bytes
+    gradient = helpers.gradient_rgb().resize((width, 32))
+    if mode == "RGB;16":
+        data = (np.asarray(gradient).astype(np.uint16) << 8).tobytes()
+        heif_file = pillow_heif.from_bytes(mode, gradient.size, data)
+    else:
+        heif_file = pillow_heif.from_pillow(gradient.convert(mode))
+    buf = BytesIO()
+    heif_file.save(buf, quality=-1, chroma=444)
+    padded = pillow_heif.open_heif(buf, convert_hdr_to_8bit=False, remove_stride=False)[0]
+    expected = np.asarray(pillow_heif.open_heif(buf, convert_hdr_to_8bit=False)[0])
+    assert np.array_equal(np.asarray(padded)[:, :width], expected)

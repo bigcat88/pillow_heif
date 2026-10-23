@@ -14,6 +14,7 @@ from .misc import (
     MODE_INFO,
     CtxEncode,
     MimCImage,
+    _as_pillow,
     _exif_from_pillow,
     _get_bytes,
     _get_heif_meta,
@@ -89,16 +90,41 @@ class BaseImage:
     def __array_interface__(self):
         """Numpy array interface support."""
         self.load()
-        width = int(self.stride / MODE_INFO[self.mode][0])
-        if MODE_INFO[self.mode][1] <= 8:
-            typestr = "|u1"
-        else:
-            width = int(width / 2)
-            typestr = "<u2"
+        channels, bits = MODE_INFO[self.mode][:2]
+        item_size = 2 if bits > 8 else 1
+        plane_channels = getattr(self._c_image, "plane_channels", channels)
+        width = self.stride // (plane_channels * item_size)
         shape: tuple[Any, ...] = (self.size[1], width)
-        if MODE_INFO[self.mode][0] > 1:
-            shape += (MODE_INFO[self.mode][0],)
-        return {"shape": shape, "typestr": typestr, "version": 3, "data": self.data}
+        if channels > 1:
+            shape += (channels,)
+        # `stride` is not always a multiple of the pixel size, and with `pillow_layout` a pixel of the plane
+        # is wider than its `channels`, the unused byte is stepped over
+        strides: tuple[int, ...] = (self.stride, plane_channels * item_size)
+        if channels > 1:
+            strides += (item_size,)
+        typestr = "<u2" if item_size == 2 else "|u1"
+        return {"shape": shape, "typestr": typestr, "strides": strides, "version": 3, "data": self.data}
+
+    def __arrow_c_schema__(self):
+        """`Arrow C data interface <https://arrow.apache.org/docs/format/CDataInterface.html>`_ support."""
+        return self._arrow_source().__arrow_c_schema__()
+
+    # a schema request is best-effort by the interface, the decoded data is offered as it is
+    def __arrow_c_array__(self, requested_schema=None):  # pylint: disable=unused-argument
+        """`Arrow C data interface <https://arrow.apache.org/docs/format/CDataInterface.html>`_ support.
+
+        The decoded data is shared with the consumer and not copied, so it must be treated as read-only.
+
+        Images with more than 8 bits per sample are exported as ``int16`` — the format `Pillow` itself uses
+        for ``I;16`` images — so for arithmetic on the values reinterpret them as ``uint16``.
+        """
+        self.load()
+        return self._arrow_source().__arrow_c_array__()
+
+    def _arrow_source(self):
+        if not hasattr(self._c_image, "__arrow_c_array__"):
+            raise ValueError("Arrow interface is available only for images decoded from a file.")
+        return self._c_image
 
     def to_pillow(self) -> Image.Image:
         """Helper method to create :external:py:class:`~PIL.Image.Image` class.
@@ -106,14 +132,7 @@ class BaseImage:
         :returns: :external:py:class:`~PIL.Image.Image` class created from an image.
         """
         self.load()
-        return Image.frombytes(
-            self.mode,  # noqa
-            self.size,
-            self.data,
-            "raw",
-            self.mode,
-            self.stride,
-        )
+        return _as_pillow(self._c_image, self.mode, self.size, self.data, self.stride)
 
     def load(self) -> None:
         """Method to decode image.
@@ -325,6 +344,7 @@ class HeifFile:
                 kwargs.get("hdr_to_16bit", True),
                 preferred_decoder,
                 options.DISABLE_SECURITY_LIMITS,
+                kwargs.get("_pillow_layout", False),
             )
         self.mimetype = mimetype
         images = [i for i in images if i is not None]
