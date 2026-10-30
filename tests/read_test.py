@@ -9,7 +9,6 @@ from unittest import mock
 import dataset
 import helpers
 import pytest
-from packaging.version import parse as parse_version
 from PIL import Image, ImageCms, ImageSequence, UnidentifiedImageError
 
 import pillow_heif
@@ -323,9 +322,6 @@ def test_pillow_read_images(image_path):
         assert len(ImageSequence.Iterator(pillow_image)[0].tobytes())
 
 
-@pytest.mark.skipif(
-    parse_version(pillow_heif.libheif_version()) < parse_version("1.21.0"), reason="requires LibHeif 1.21+"
-)
 @pytest.mark.parametrize("img_path", dataset.TRUNCATED_DATASET)
 def test_pillow_truncated_fail(img_path):
     im = Image.open(img_path)
@@ -334,9 +330,6 @@ def test_pillow_truncated_fail(img_path):
             frame.load()
 
 
-@pytest.mark.skipif(
-    parse_version(pillow_heif.libheif_version()) < parse_version("1.21.0"), reason="requires LibHeif 1.21+"
-)
 @mock.patch("PIL.ImageFile.LOAD_TRUNCATED_IMAGES", True)
 @pytest.mark.parametrize("img_path", dataset.TRUNCATED_DATASET)
 def test_pillow_truncated_ok(img_path):
@@ -582,9 +575,6 @@ def test_entity_groups_not_saved():
 
 # to-do: looks like we need now image with 400MP size to hit the security limits :(
 #
-# @pytest.mark.skipif(
-#     parse_version(pillow_heif.libheif_version()) < parse_version("1.19.7"), reason="Requires libheif 1.19.7"
-# )
 # def test_200_megapixels():
 #     with pytest.raises(RuntimeError):
 #         _ = pillow_heif.open_heif("images/heif_special/200MP.heic").data

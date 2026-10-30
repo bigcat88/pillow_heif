@@ -76,4 +76,8 @@ def test_numpy_disable_hdr16bit(img):
 def test_numpy_disable_stride_removal(img):
     heif_file = pillow_heif.open_heif(img, convert_hdr_to_8bit=False, remove_stride=False)
     heif_array = np.asarray(heif_file)
-    assert heif_array.shape == (100, 64, 4 if heif_file.has_alpha else 3)
+    channels = 4 if heif_file.has_alpha else 3
+    # libheif decides the row padding, since 1.23.7 a stride that is a multiple of 512 bytes gets 64 more
+    assert heif_array.shape == (100, heif_file.stride // (heif_array.itemsize * channels), channels)
+    assert heif_array.shape[1] > 29
+    np.testing.assert_array_equal(heif_array[:, :29], np.asarray(pillow_heif.open_heif(img, convert_hdr_to_8bit=False)))
