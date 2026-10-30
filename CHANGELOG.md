@@ -11,10 +11,15 @@ All notable changes to this project will be documented in this file.
 - Minimum supported `Pillow` version raised to `13.0.0`.
 - Dropped `Python 3.10` support.
 - `PyPy 3.11` wheels are built for `PyPy 8.0`, `PyPy 7.3` installs build from the sdist. #498
+- Minimum required `libheif` version is `1.23.6`. #515
+- `libheif` was updated from the `1.23.6` to `1.23.7` version. #515
+- A file with a metadata item that cannot be read now opens, the item is skipped. #515
+- HEVC data with an invalid NAL unit size raises `ValueError` instead of `EOFError`. #515
 
 ### Fixed
 
 - Saving a `YCbCr` image emitted the `Pillow` `DeprecationWarning` for `Image.getdata`, deprecated since `Pillow` `12.1.0`. #507
+- Images with a NAL unit larger than 16 MiB, such as big lossless images, could not be read. #515
 
 ## [1.8.1 - 2026-10-11]
 

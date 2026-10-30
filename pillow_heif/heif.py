@@ -189,7 +189,7 @@ class HeifImage(BaseImage):
 
     def __init__(self, c_image):
         super().__init__(c_image)
-        metadata: list[dict] = c_image.metadata
+        metadata: list[dict] = [i for i in c_image.metadata if i is not None]
         exif = _retrieve_exif(metadata)
         xmp = _retrieve_xmp(metadata)
         thumbnails: list[int | None] = [i for i in c_image.thumbnails if i is not None] if options.THUMBNAILS else []

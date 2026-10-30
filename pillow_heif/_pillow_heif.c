@@ -2,8 +2,8 @@
 
 #include "Python.h"
 #include "libheif/heif.h"
-#if !LIBHEIF_HAVE_VERSION(1,23,4)
-    #error "pillow_heif requires libheif >= 1.23.4"
+#if !LIBHEIF_HAVE_VERSION(1,23,6)
+    #error "pillow_heif requires libheif >= 1.23.6"
 #endif
 #include "libheif/heif_tiling.h"
 #include "libheif/heif_properties.h"

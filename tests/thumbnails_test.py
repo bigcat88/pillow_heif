@@ -241,7 +241,7 @@ def test_pillow_draft_frames():
 
 
 def test_pillow_draft_broken_thumbnail():
-    with pytest.raises(EOFError):
+    with pytest.raises((EOFError, ValueError)):
         pillow_heif.open_heif(Path("images/heif_special/broken_thumbnail.heic"))[0].get_thumbnail(1).load()
     im = Image.open(Path("images/heif_special/broken_thumbnail.heic"))
     assert im.draft(None, (40, 40)) == ("RGB", (0, 0, 64, 64))
