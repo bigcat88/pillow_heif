@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Pillow plugin: `Image.open()` with a file path reads only the metadata of the file, the rest of it is read when the image is loaded. The whole file was read into memory when opening before. #493
 - `PyPy 3.12` wheels added. #508
 
 ### Changed
@@ -11,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Minimum supported `Pillow` version raised to `13.0.0`.
 - Dropped `Python 3.10` support.
 - `PyPy 3.11` wheels are built for `PyPy 8.0`, `PyPy 7.3` installs build from the sdist. #498
+- Pillow plugin: a file opened by path must stay unchanged on disk until `load()`, `load()` raises `OSError` when its size or modification time changed in between or it was removed after it was closed. #493
 
 ### Fixed
 

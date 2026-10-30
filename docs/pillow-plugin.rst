@@ -71,8 +71,21 @@ the 384 pixels wide thumbnail is smaller than the 512 pixels asked for. Pass ``r
 a thumbnail of the requested size, or call ``im.draft(None, (256, 256))`` before resizing yourself.
 An embedded thumbnail is used only when it is a scaled copy of the image: it must have the same mode, the same aspect
 ratio, the same crop, rotation and mirroring transformations and no other color profile than the image.
-Thumbnails that fail to decode are skipped. Register the plugin with ``thumbnails=False`` to always decode
-the full image.
+Thumbnails that fail to decode are skipped, an error reading the file is raised. Register the plugin with
+``thumbnails=False`` to always decode the full image.
+
+Reading files
+*************
+
+:external:py:func:`~PIL.Image.open` with a file path reads only the metadata of the file when it is opened
+(usually its first 128 KB), as Pillow's own plugins do, and the rest of the file when the image is loaded for the
+first time, also when :external:py:meth:`~PIL.Image.Image.thumbnail` decodes only an embedded thumbnail.
+Reading the EXIF of many files does not read them whole, which matters on a network share or a slow disk.
+The file must stay unchanged on disk until the image is loaded: ``load`` raises ``OSError`` when the size or the
+modification time of the file changed in between, or when the file was removed after the ``with`` block closed it.
+After the first load nothing is read from the file. Pillow empties the file it saves to before it encodes the images
+of ``append_images``: load them first when they were opened from that file.
+Files opened from a file object are read whole when they are opened.
 
 Image Modes
 ***********
