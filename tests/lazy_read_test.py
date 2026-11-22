@@ -201,7 +201,9 @@ def test_file_read_short():
 def test_unpickled_image():
     with Image.open(Path("images/heif_other/cat.hif")) as im:
         unpickled = pickle.loads(pickle.dumps(im))
-    assert (unpickled.n_frames, unpickled.is_animated) == (1, False)
+    assert (unpickled.n_frames, unpickled.is_animated, unpickled.tell()) == (1, False, 0)
+    unpickled.seek(0)
+    assert unpickled.tobytes() == open_from_memory("images/heif_other/cat.hif").tobytes()
 
 
 def test_image_decoded_while_its_file_is_read():

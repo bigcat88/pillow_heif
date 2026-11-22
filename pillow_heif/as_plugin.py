@@ -8,7 +8,7 @@ from PIL import Image, ImageFile, ImageSequence
 
 from . import options
 from .constants import HeifCompressionFormat
-from .heif import HeifFile, HeifImage, HeifThumbnail
+from .heif import HeifFile, HeifImage, HeifThumbnail, _preferred_decoder
 from .misc import (
     CtxEncode,
     _exif_from_pillow,
@@ -17,6 +17,7 @@ from .misc import (
     _get_primary_index,
     _pil_to_supported_mode,
     _xmp_from_pillow,
+    get_file_mimetype,
     set_orientation,
 )
 
@@ -32,7 +33,8 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     """Base class with all functionality for ``HeifImageFile`` class."""
 
     _heif_file: HeifFile | None = None
-    __n_frames = 1  # an unpickled image has no `__init__` call
+    __frame = 0  # an unpickled image has no `__init__` call
+    __n_frames = 1
     _close_exclusive_fp_after_loading = True
     _mode: str
 
@@ -44,6 +46,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
         super().__init__(*args, **kwargs)
 
     def _open(self):
+        _preferred_decoder(get_file_mimetype(self.fp))  # a wrong option is not a file that cannot be identified
         try:
             # when Pillow starts supporting 16-bit multichannel images change `convert_hdr_to_8bit` to False
             heif_file = HeifFile(

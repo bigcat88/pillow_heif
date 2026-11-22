@@ -23,6 +23,7 @@
 
 #define MAX_ENCODERS 20
 #define MAX_DECODERS 20
+#define DECODER_ID_SIZE 64
 
 static struct heif_error heif_error_no = { .code = 0, .subcode = 0, .message = "" };
 
@@ -107,7 +108,7 @@ typedef struct {
     int bgr_mode;                               // private. decode option.
     int remove_stride;                          // private. decode option.
     int hdr_to_16bit;                           // private. decode option.
-    char decoder_id[64];                        // private. decode option. optional
+    char decoder_id[DECODER_ID_SIZE];           // private. decode option. optional
     struct heif_image_handle *handle;           // private
     struct heif_image *heif_image;              // private
     const struct heif_depth_representation_info* depth_metadata; // only for image_type == 2
@@ -1245,8 +1246,10 @@ static PyObject* _CtxWrite_finalize(CtxWriteObject* self) {
     if (!check_error(error)) {
         if (ret != NULL)
             return ret;
-        PyErr_SetString(PyExc_RuntimeError, "Unknown runtime or memory error");
+        if (!PyErr_Occurred())  // `MemoryError` of the write callback
+            PyErr_SetString(PyExc_RuntimeError, "Unknown runtime or memory error");
     }
+    Py_XDECREF(ret);
     return NULL;
 }
 
@@ -1525,55 +1528,76 @@ static PyObject* _CtxImage_color_profile(CtxImageObject* self, void* closure) {
             heif_nclx_color_profile_free(nclx_profile);
             return NULL;
         }
-        __PyDict_SetItemString(result, "type", PyUnicode_FromString("nclx"));
+        if (__PyDict_SetItemString(result, "type", PyUnicode_FromString("nclx")) < 0) {
+            heif_nclx_color_profile_free(nclx_profile);
+            Py_DECREF(result);
+            return NULL;
+        }
         PyObject* d = PyDict_New();
         if (!d) {
             heif_nclx_color_profile_free(nclx_profile);
             Py_DECREF(result);
             return NULL;
         }
-        __PyDict_SetItemString(d, "color_primaries", PyLong_FromLong(nclx_profile->color_primaries));
-        __PyDict_SetItemString(d, "transfer_characteristics", PyLong_FromLong(nclx_profile->transfer_characteristics));
-        __PyDict_SetItemString(d, "matrix_coefficients", PyLong_FromLong(nclx_profile->matrix_coefficients));
-        __PyDict_SetItemString(d, "full_range_flag", PyLong_FromLong(nclx_profile->full_range_flag));
-        __PyDict_SetItemString(d, "color_primary_red_x", PyFloat_FromDouble(nclx_profile->color_primary_red_x));
-        __PyDict_SetItemString(d, "color_primary_red_y", PyFloat_FromDouble(nclx_profile->color_primary_red_y));
-        __PyDict_SetItemString(d, "color_primary_green_x", PyFloat_FromDouble(nclx_profile->color_primary_green_x));
-        __PyDict_SetItemString(d, "color_primary_green_y", PyFloat_FromDouble(nclx_profile->color_primary_green_y));
-        __PyDict_SetItemString(d, "color_primary_blue_x", PyFloat_FromDouble(nclx_profile->color_primary_blue_x));
-        __PyDict_SetItemString(d, "color_primary_blue_y", PyFloat_FromDouble(nclx_profile->color_primary_blue_y));
-        __PyDict_SetItemString(d, "color_primary_white_x", PyFloat_FromDouble(nclx_profile->color_primary_white_x));
-        __PyDict_SetItemString(d, "color_primary_white_y", PyFloat_FromDouble(nclx_profile->color_primary_white_y));
+        // `__PyDict_SetItemString` releases the value also when it fails
+        int failed =
+            __PyDict_SetItemString(d, "color_primaries", PyLong_FromLong(nclx_profile->color_primaries)) < 0 ||
+            __PyDict_SetItemString(
+                d, "transfer_characteristics", PyLong_FromLong(nclx_profile->transfer_characteristics)) < 0 ||
+            __PyDict_SetItemString(d, "matrix_coefficients", PyLong_FromLong(nclx_profile->matrix_coefficients)) < 0 ||
+            __PyDict_SetItemString(d, "full_range_flag", PyLong_FromLong(nclx_profile->full_range_flag)) < 0 ||
+            __PyDict_SetItemString(
+                d, "color_primary_red_x", PyFloat_FromDouble(nclx_profile->color_primary_red_x)) < 0 ||
+            __PyDict_SetItemString(
+                d, "color_primary_red_y", PyFloat_FromDouble(nclx_profile->color_primary_red_y)) < 0 ||
+            __PyDict_SetItemString(
+                d, "color_primary_green_x", PyFloat_FromDouble(nclx_profile->color_primary_green_x)) < 0 ||
+            __PyDict_SetItemString(
+                d, "color_primary_green_y", PyFloat_FromDouble(nclx_profile->color_primary_green_y)) < 0 ||
+            __PyDict_SetItemString(
+                d, "color_primary_blue_x", PyFloat_FromDouble(nclx_profile->color_primary_blue_x)) < 0 ||
+            __PyDict_SetItemString(
+                d, "color_primary_blue_y", PyFloat_FromDouble(nclx_profile->color_primary_blue_y)) < 0 ||
+            __PyDict_SetItemString(
+                d, "color_primary_white_x", PyFloat_FromDouble(nclx_profile->color_primary_white_x)) < 0 ||
+            __PyDict_SetItemString(
+                d, "color_primary_white_y", PyFloat_FromDouble(nclx_profile->color_primary_white_y)) < 0;
         heif_nclx_color_profile_free(nclx_profile);
-        __PyDict_SetItemString(result, "data", d);
+        if (failed || __PyDict_SetItemString(result, "data", d) < 0) {
+            if (failed)
+                Py_DECREF(d);
+            Py_DECREF(result);
+            return NULL;
+        }
         return result;
     }
 
     PyObject* result = PyDict_New();
-    if (!result) {
+    if (!result)
+        return NULL;
+    if (__PyDict_SetItemString(
+            result, "type", PyUnicode_FromString(profile_type == heif_color_profile_type_rICC ? "rICC" : "prof")) < 0) {
+        Py_DECREF(result);
         return NULL;
     }
-    __PyDict_SetItemString(
-        result, "type", PyUnicode_FromString(profile_type == heif_color_profile_type_rICC ? "rICC" : "prof"));
     size_t size = heif_image_handle_get_raw_color_profile_size(self->handle);
+    PyObject* data_bytes = NULL;
     if (!size)
-        __PyDict_SetItemString(result, "data", PyBytes_FromString(""));
+        data_bytes = PyBytes_FromString("");
     else {
         void* data = malloc(size);
         if (!data) {
             Py_DECREF(result);
-            result = NULL;
-            PyErr_NoMemory();
+            return PyErr_NoMemory();
         }
-        else {
-            if (!check_error(heif_image_handle_get_raw_color_profile(self->handle, data)))
-                __PyDict_SetItemString(result, "data", PyBytes_FromStringAndSize(data, size));
-            else {
-                Py_DECREF(result);
-                result = NULL;
-            }
-            free(data);
-        }
+        if (!check_error(heif_image_handle_get_raw_color_profile(self->handle, data)))
+            data_bytes = PyBytes_FromStringAndSize(data, size);
+        free(data);
+    }
+    // `data_bytes` is NULL with the exception set when it could not be read
+    if (__PyDict_SetItemString(result, "data", data_bytes) < 0) {
+        Py_DECREF(result);
+        return NULL;
     }
     return result;
 }
@@ -1657,23 +1681,22 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
         if (!self->depth_metadata)
             return meta;
 
-        if (self->depth_metadata->has_z_near)
-            __PyDict_SetItemString(meta, "z_near", PyFloat_FromDouble(self->depth_metadata->z_near));
-        if (self->depth_metadata->has_z_far)
-            __PyDict_SetItemString(meta, "z_far", PyFloat_FromDouble(self->depth_metadata->z_far));
-        if (self->depth_metadata->has_d_min)
-            __PyDict_SetItemString(meta, "d_min", PyFloat_FromDouble(self->depth_metadata->d_min));
-        if (self->depth_metadata->has_d_max)
-            __PyDict_SetItemString(meta, "d_max", PyFloat_FromDouble(self->depth_metadata->d_max));
-
-        __PyDict_SetItemString(
-            meta, "representation_type", PyLong_FromUnsignedLong(self->depth_metadata->depth_representation_type));
-        __PyDict_SetItemString(
-            meta, "disparity_reference_view", PyLong_FromUnsignedLong(self->depth_metadata->disparity_reference_view));
-
-        __PyDict_SetItemString(
-            meta, "nonlinear_representation_model_size",
-            PyLong_FromUnsignedLong(self->depth_metadata->depth_nonlinear_representation_model_size));
+        const struct heif_depth_representation_info* info = self->depth_metadata;
+        // `__PyDict_SetItemString` releases the value also when it fails
+        if ((info->has_z_near && __PyDict_SetItemString(meta, "z_near", PyFloat_FromDouble(info->z_near)) < 0) ||
+            (info->has_z_far && __PyDict_SetItemString(meta, "z_far", PyFloat_FromDouble(info->z_far)) < 0) ||
+            (info->has_d_min && __PyDict_SetItemString(meta, "d_min", PyFloat_FromDouble(info->d_min)) < 0) ||
+            (info->has_d_max && __PyDict_SetItemString(meta, "d_max", PyFloat_FromDouble(info->d_max)) < 0) ||
+            __PyDict_SetItemString(
+                meta, "representation_type", PyLong_FromUnsignedLong(info->depth_representation_type)) < 0 ||
+            __PyDict_SetItemString(
+                meta, "disparity_reference_view", PyLong_FromUnsignedLong(info->disparity_reference_view)) < 0 ||
+            __PyDict_SetItemString(
+                meta, "nonlinear_representation_model_size",
+                PyLong_FromUnsignedLong(info->depth_nonlinear_representation_model_size)) < 0) {
+            Py_DECREF(meta);
+            return NULL;
+        }
         // need an example file with this info. need info about depth_nonlinear_representation_model
         return meta;
     }
@@ -1955,8 +1978,6 @@ static PyObject* _CtxImage_get_aux_type(CtxImageObject* self, PyObject* arg_imag
     if (check_error(heif_image_handle_get_auxiliary_image_handle(self->handle, aux_image_id, &aux_handle)))
         return NULL;
     PyObject* aux_type = _get_aux_type(aux_handle);
-    if (!aux_type)
-        return NULL;
     heif_image_handle_release(aux_handle);
     return aux_type;
 }
@@ -2233,13 +2254,27 @@ static PyObject* _entity_groups(struct heif_context* ctx) {
             heif_entity_groups_release(groups, n_groups);
             return NULL;
         }
-        for (uint32_t k = 0; k < groups[i].num_entities; k++)
-            PyList_SET_ITEM(entities, k, PyLong_FromUnsignedLong(groups[i].entities[k]));
+        int failed = 0;
+        for (uint32_t k = 0; (k < groups[i].num_entities) && !failed; k++) {
+            PyObject* entity = PyLong_FromUnsignedLong(groups[i].entities[k]);
+            if (entity)
+                PyList_SET_ITEM(entities, k, entity);
+            else
+                failed = 1;
+        }
         uint32_t type = groups[i].entity_group_type;
         char fourcc[4] = {(char)(type >> 24), (char)(type >> 16), (char)(type >> 8), (char)type};
-        __PyDict_SetItemString(group, "id", PyLong_FromUnsignedLong(groups[i].entity_group_id));
-        __PyDict_SetItemString(group, "type", PyUnicode_DecodeLatin1(fourcc, 4, NULL));
-        __PyDict_SetItemString(group, "entities", entities);
+        failed = failed ||
+            __PyDict_SetItemString(group, "id", PyLong_FromUnsignedLong(groups[i].entity_group_id)) < 0 ||
+            __PyDict_SetItemString(group, "type", PyUnicode_DecodeLatin1(fourcc, 4, NULL)) < 0 ||
+            PyDict_SetItemString(group, "entities", entities) < 0;
+        Py_DECREF(entities);
+        if (failed) {
+            Py_DECREF(group);
+            Py_DECREF(groups_list);
+            heif_entity_groups_release(groups, n_groups);
+            return NULL;
+        }
         PyList_SET_ITEM(groups_list, i, group);
     }
     heif_entity_groups_release(groups, n_groups);
@@ -2262,6 +2297,10 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
                           &decoder_id,
                           &disable_security_limits))
         return NULL;
+    if (strlen(decoder_id) >= DECODER_ID_SIZE) {
+        PyErr_Format(PyExc_ValueError, "decoder ID is longer than %d bytes", DECODER_ID_SIZE - 1);
+        return NULL;
+    }
 
     struct heif_context* heif_ctx = heif_context_alloc();
 
@@ -2328,9 +2367,8 @@ static PyObject* _load_file(PyObject* self, PyObject* args) {
                 PyObject* ctx_image = _CtxImage(
                     handle, hdr_to_8bit, bgr_mode, remove_stride, hdr_to_16bit, primary, heif_bytes,
                     decoder_id, colorspace, chroma);
-                if (!ctx_image) {
+                if (!ctx_image) {  // `_CtxImage` has released the handle
                     Py_DECREF(images_list);
-                    heif_image_handle_release(handle);
                     free(images_ids);
                     heif_context_free(heif_ctx);
                     return NULL;
