@@ -19,7 +19,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-gdk-pixbuf2"
              "${MINGW_PACKAGE_PREFIX}-cc")
-depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
          "${MINGW_PACKAGE_PREFIX}-libde265"
          "${MINGW_PACKAGE_PREFIX}-x265")
 source=("https://github.com/strukturag/libheif/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz")
@@ -38,7 +38,7 @@ build() {
       "${extra_config[@]}" \
       -DBUILD_SHARED_LIBS=ON \
       -DWITH_OPENJPH_DECODER=OFF \
-      -DDWITH_OPENJPH_ENCODER=OFF \
+      -DWITH_OPENJPH_ENCODER=OFF \
       -DWITH_HEADER_COMPRESSION=OFF \
       -DWITH_LIBDE265=ON \
       -DWITH_LIBDE265_PLUGIN=OFF \
