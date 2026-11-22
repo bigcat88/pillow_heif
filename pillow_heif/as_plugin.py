@@ -32,11 +32,13 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     """Base class with all functionality for ``HeifImageFile`` class."""
 
     _heif_file: HeifFile | None = None
+    __n_frames = 1  # an unpickled image has no `__init__` call
     _close_exclusive_fp_after_loading = True
     _mode: str
 
     def __init__(self, *args, **kwargs):
         self.__frame = 0
+        self.__n_frames = 1
         self.__thumbnail: HeifThumbnail | None = None
         self.__loaded = False
         super().__init__(*args, **kwargs)
@@ -44,18 +46,27 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def _open(self):
         try:
             # when Pillow starts supporting 16-bit multichannel images change `convert_hdr_to_8bit` to False
-            heif_file = HeifFile(self.fp, convert_hdr_to_8bit=True, hdr_to_16bit=True, remove_stride=False)
+            heif_file = HeifFile(
+                self.fp,
+                convert_hdr_to_8bit=True,
+                hdr_to_16bit=True,
+                remove_stride=False,
+                lazy_read=bool(self.filename),  # Pillow has opened the file itself
+                filename=self.filename,
+            )
         except (OSError, ValueError, SyntaxError, RuntimeError, EOFError) as exception:
             raise SyntaxError(str(exception)) from None
         self.custom_mimetype = heif_file.mimetype
         self._heif_file = heif_file
+        self.__n_frames = len(heif_file)
         self.__frame = heif_file.primary_index
         self._init_from_heif_file(self.__frame)
         self.tile = []
 
     def load(self):
-        if self._heif_file and not self.__loaded:
-            frame_heif = self.__thumbnail or self._heif_file[self.tell()]
+        heif_file = self._heif_file  # `close` in another thread drops it
+        if heif_file and not self.__loaded:
+            frame_heif = self.__thumbnail or heif_file[self.tell()]
             try:
                 data = frame_heif.data  # Size of Image can change during decoding
                 self._size = frame_heif.size  # noqa
@@ -74,6 +85,11 @@ class _LibHeifImageFile(ImageFile.ImageFile):
                 self._heif_file = None
                 self.__thumbnail = None
         return super().load()
+
+    def close(self) -> None:
+        super().close()
+        self._heif_file = None
+        self.__thumbnail = None
 
     def load_prepare(self) -> None:
         # Pillow 11+ creates the image memory only when there is none, `seek` and `draft` can change the size or mode
@@ -103,6 +119,8 @@ class _LibHeifImageFile(ImageFile.ImageFile):
     def seek(self, frame: int):
         if not self._seek_check(frame):
             return
+        if not self._heif_file:
+            raise ValueError("Operation on closed image")
         self.__frame = frame
         self._init_from_heif_file(frame)
 
@@ -128,7 +146,7 @@ class _LibHeifImageFile(ImageFile.ImageFile):
 
         :returns: Frame number, starting with 0.
         """
-        return len(self._heif_file) if self._heif_file else 1
+        return self.__n_frames
 
     @property
     def is_animated(self) -> bool:
@@ -169,7 +187,7 @@ def _thumbnail_for_size(image: HeifImage, size: tuple[int, int]) -> HeifThumbnai
     for thumbnail in sorted(candidates, key=lambda i: i.size[0] * i.size[1]):
         try:
             thumbnail.load()
-        except (OSError, ValueError, SyntaxError, RuntimeError, EOFError):
+        except (ValueError, SyntaxError, RuntimeError, EOFError):  # an `OSError` of reading the file is not skipped
             continue
         return thumbnail
     return None

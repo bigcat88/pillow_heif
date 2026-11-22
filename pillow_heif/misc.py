@@ -4,7 +4,11 @@ Mostly for internal use, so prototypes can change between versions.
 """
 
 import builtins
+import io
+import os
 import re
+import stat
+import weakref
 from dataclasses import dataclass
 from math import ceil
 from pathlib import Path
@@ -215,6 +219,98 @@ def _get_bytes(fp, length=None) -> bytes:
             fp.seek(offset)
         return result
     return bytes(fp)[:length]
+
+
+class FileSource:
+    """Reads the requested parts of a file for the ``CtxReader`` of the C module."""
+
+    HEAD_SIZE = 131072
+
+    def __init__(self, fp, filename: str):
+        if not isinstance(getattr(fp, "raw", None), io.FileIO):  # e.g. pyfakefs: the descriptor is not of this file
+            raise ValueError("not a file of the operating system")
+        self.fp = weakref.ref(fp)
+        filename = os.fsdecode(filename)
+        # not `abspath`: `link/..` is not `.`
+        self.filename = filename if os.path.isabs(filename) else os.path.join(os.getcwd(), filename)
+        file_stat = os.fstat(fp.fileno())
+        if not stat.S_ISREG(file_stat.st_mode) or not file_stat.st_size:
+            raise ValueError("not a regular file")
+        self.size = file_stat.st_size
+        self.identity = self._identity(file_stat)
+
+    def read_head(self, fp) -> bytes:
+        """Returns the first part of the file, Pillow has already read the beginning of it into the buffer of ``fp``."""
+        fp.seek(0)
+        head = fp.peek(self.HEAD_SIZE) if hasattr(fp, "peek") else b""
+        if len(head) < min(self.HEAD_SIZE, self.size):
+            head += self.read_at(len(head), self.HEAD_SIZE - len(head))
+        return head
+
+    def read_at(self, offset: int, length: int) -> bytes:
+        """Returns ``length`` bytes of the file starting from the ``offset``."""
+        fp = self.fp()
+        if fp is not None and not fp.closed:  # a removed or replaced file is still read as it was
+            try:
+                data = self._read_unchanged(fp, offset, length)
+            except (OSError, ValueError):
+                if not fp.closed:
+                    raise
+            else:
+                if not fp.closed:
+                    return data
+            # Pillow has closed the file in another thread meanwhile, its descriptor could belong to another file
+        # Pillow has already closed the file. Not blocking: a FIFO without a writer can be at the path now
+        fd = os.open(self.filename, os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NONBLOCK", 0))
+        with builtins.open(fd, "rb") as file:
+            return self._read_unchanged(file, offset, length)
+
+    def _read_unchanged(self, fp, offset: int, length: int) -> bytes:
+        # a write changes the size or the modification time, also one during the read
+        self._check_unchanged(fp)
+        data = self._read(fp, offset, length)
+        self._check_unchanged(fp, len(data) == min(length, self.size - offset))  # a short read: the file is shorter
+        return data
+
+    def _check_unchanged(self, fp, complete: bool = True) -> None:
+        if not complete or self._identity(os.fstat(fp.fileno())) != self.identity:
+            raise OSError(f"{self.filename} was changed after it was opened")
+
+    @staticmethod
+    def _identity(file_stat: os.stat_result) -> tuple:
+        # not `st_ctime`: removing, linking, `chmod` and extended attributes change it for the same data
+        return file_stat.st_size, file_stat.st_mtime_ns
+
+    def _read(self, fp, offset: int, length: int) -> bytes:
+        length = min(length, self.size - offset)
+        if hasattr(os, "pread"):  # one read of the file, the buffer and the position of `fp` stay untouched
+            data = os.pread(fp.fileno(), length, offset)
+            if len(data) in (0, length):
+                return data
+            chunks, received = [data], len(data)
+            while received < length:  # a file system can return less than requested
+                chunk = os.pread(fp.fileno(), length - received, offset + received)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+                received += len(chunk)
+            return b"".join(chunks)
+        position = fp.tell()
+        try:
+            fp.seek(offset)
+            # for a buffered file this is one read of the file, `read(length)` is two
+            return fp.read(length) if offset + length < self.size else fp.read()[:length]
+        finally:
+            fp.seek(position)
+
+
+def _get_reader(fp, filename):
+    try:
+        source = FileSource(fp, filename)
+    except (AttributeError, OSError, TypeError, ValueError):
+        return None, b""
+    head = source.read_head(fp)
+    return _pillow_heif.CtxReader(source, source.size, head), head
 
 
 def _retrieve_exif(metadata: list[dict]) -> bytes | None:
@@ -677,6 +773,9 @@ class MimCImage:  # pylint: disable=too-many-instance-attributes
     def get_thumbnail(self, index: int):
         """Mimicry of c_image method, there is nothing to decode for images not read from a file."""
         raise IndexError(f"invalid thumbnail index: {index}")
+
+    def read_file(self) -> None:
+        """Mimicry of c_image method, there is no file to read for images not read from a file."""
 
 
 def load_libheif_plugin(plugin_path: str | Path) -> None:
