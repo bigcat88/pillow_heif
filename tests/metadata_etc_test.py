@@ -2,7 +2,6 @@ from io import BytesIO
 
 import pytest
 from helpers import assert_image_equal, create_heif, hevc_enc
-from packaging.version import parse as parse_version
 from PIL import Image
 
 import pillow_heif
@@ -22,11 +21,8 @@ def test_metadata_invalid_item_type():
 
 
 @pytest.mark.skipif(not hevc_enc(), reason="Requires HEVC encoder.")
-@pytest.mark.skipif(
-    parse_version(pillow_heif.libheif_version()) < parse_version("1.23.7"), reason="requires LibHeif 1.23.7+"
-)
 def test_metadata_unreadable_item():
-    # since 1.23.7 libheif reads metadata on access, a file whose XMP item is cut off opens without that item
+    # libheif reads metadata on access, a file whose XMP item is cut off opens without that item
     exif = Image.Exif()
     exif[0x010F] = "Maker"
     xmp = b"<x:xmpmeta xmlns:x='adobe:ns:meta/'></x:xmpmeta>"

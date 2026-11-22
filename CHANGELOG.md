@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - Minimum supported `Pillow` version raised to `13.0.0`.
 - Dropped `Python 3.10` support.
 - `PyPy 3.11` wheels are built for `PyPy 8.0`, `PyPy 7.3` installs build from the sdist. #498
-- Minimum required `libheif` version is `1.23.6`. #515
+- Minimum required `libheif` version is `1.23.7`. #515 #523
 - `libheif` was updated from the `1.23.6` to `1.23.7` version. #515
 - A file with a metadata item that cannot be read now opens, the item is skipped. #515
 - HEVC data with an invalid NAL unit size raises `ValueError` instead of `EOFError`. #515
