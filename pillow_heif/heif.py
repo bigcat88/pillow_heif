@@ -287,6 +287,19 @@ class HeifImage(BaseImage):
         return HeifThumbnail(self._c_image.get_thumbnail(index))
 
 
+def _preferred_decoder(mimetype: str) -> str:
+    if mimetype.find("avif") != -1:
+        decoder_id = options.PREFERRED_DECODER.get("AVIF", "")
+    elif mimetype.find("heic") != -1 or mimetype.find("heif") != -1:
+        decoder_id = options.PREFERRED_DECODER.get("HEIF", "")
+    else:
+        decoder_id = ""
+    # the C module has room for 63 bytes, checked before the file is parsed
+    if isinstance(decoder_id, str) and len(decoder_id.encode()) > 63:
+        raise ValueError("decoder ID is longer than 63 bytes")
+    return decoder_id
+
+
 class HeifFile:
     """Representation of the :py:class:`~pillow_heif.HeifImage` classes container.
 
@@ -315,12 +328,7 @@ class HeifFile:
             if reader is None:
                 fp_bytes = _get_bytes(fp)
             mimetype = get_file_mimetype(fp_bytes)
-            if mimetype.find("avif") != -1:
-                preferred_decoder = options.PREFERRED_DECODER.get("AVIF", "")
-            elif mimetype.find("heic") != -1 or mimetype.find("heif") != -1:
-                preferred_decoder = options.PREFERRED_DECODER.get("HEIF", "")
-            else:
-                preferred_decoder = ""
+            preferred_decoder = _preferred_decoder(mimetype)
             load_args = (
                 options.DECODE_THREADS,
                 convert_hdr_to_8bit,

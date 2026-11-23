@@ -59,6 +59,24 @@ def test_options_change_from_plugin_registering(register_opener):
         options.GRID_TILE_SIZE = 0
 
 
+def test_preferred_decoder_too_long():
+    register_heif_opener()
+    try:
+        options.PREFERRED_DECODER["HEIF"] = "d" * 63
+        heif_file = open_heif("images/heif/zPug_3.heic")
+        with pytest.raises(RuntimeError, match="No decoder with that ID found"):
+            heif_file[0].load()
+        for decoder_id in ("d" * 64, "é" * 32):  # the limit is in bytes of UTF-8
+            options.PREFERRED_DECODER["HEIF"] = decoder_id
+            with mock.patch("_pillow_heif.load_file", side_effect=AssertionError("the file was parsed")):
+                with pytest.raises(ValueError, match="decoder ID is longer than 63 bytes"):
+                    open_heif("images/heif/zPug_3.heic")
+                with pytest.raises(ValueError, match="decoder ID is longer than 63 bytes"):
+                    Image.open("images/heif/zPug_3.heic")
+    finally:
+        options.PREFERRED_DECODER = {"HEIF": "", "AVIF": ""}
+
+
 @pytest.mark.skipif(not hevc_enc(), reason="No HEVC encoder.")
 def test_thumbnails_option():
     heif_buf = create_heif((128, 128), [64])

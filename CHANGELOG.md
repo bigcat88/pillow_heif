@@ -23,6 +23,11 @@ All notable changes to this project will be documented in this file.
 
 - Saving a `YCbCr` image emitted the `Pillow` `DeprecationWarning` for `Image.getdata`, deprecated since `Pillow` `12.1.0`. #507
 - Images with a NAL unit larger than 16 MiB, such as big lossless images, could not be read. #515
+- Segmentation fault instead of `MemoryError` when memory ran out while the images of a file were created. #524
+- A preferred decoder ID longer than 63 bytes overflowed a buffer, opening a file raises `ValueError` now. #524
+- A file with an auxiliary image stayed in memory when the type of that image could not be read, e.g. out of memory. #524
+- When memory ran out, reading the color profile, the depth image metadata or the entity groups of a file and saving a file raised `SystemError`, `KeyError` or `RuntimeError`, sometimes later in unrelated code, instead of `MemoryError`. #524
+- Pillow plugin: `tell()` and `seek()` of an unpickled image raised `AttributeError`. #524
 
 ## [1.8.1 - 2026-10-11]
 
