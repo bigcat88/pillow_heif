@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 - `PyPy 3.11` wheels are built for `PyPy 8.0`, `PyPy 7.3` installs build from the sdist. #498
 - Minimum required `libheif` version is `1.23.7`. #515 #523
 - `libheif` was updated from the `1.23.6` to `1.23.7` version. #515
-- A file with a metadata item that cannot be read now opens, the item is skipped. #515
+- A file with a metadata item that cannot be read now opens, the item is skipped; memory errors of `libheif`, including exceeded memory limits, are raised as before. #515 #525
 - HEVC data with an invalid NAL unit size raises `ValueError` instead of `EOFError`. #515
 - Pillow plugin: a file opened by path must stay unchanged on disk until `load()`, when `load()` reads from it, it raises `OSError` if its size or modification time changed in between or it was removed after it was closed. #493
 - Pillow plugin: `seek()` after `close()` raises `ValueError`, as with Pillow's own plugins. #493
