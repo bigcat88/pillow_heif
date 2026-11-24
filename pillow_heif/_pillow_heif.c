@@ -1664,6 +1664,14 @@ static PyObject* _CtxImage_metadata(CtxImageObject* self, void* closure) {
                     return NULL;
                 }
             }
+            else if (error.code == heif_error_Memory_allocation_error) {
+                // a security limit was exceeded: the item is readable, the file must not open without it
+                free(data);
+                Py_DECREF(meta_list);
+                free(meta_ids);
+                check_error(error);
+                return NULL;
+            }
             free(data);
             if (!meta_item_info) {
                 meta_item_info = Py_None;
